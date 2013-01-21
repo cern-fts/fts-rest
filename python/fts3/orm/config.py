@@ -9,7 +9,7 @@ class  ConfigAudit(Base):
 	__tablename__ = 't_config_audit'
 	
 	datetime = Column(DateTime, primary_key = True)	 
-	dn	     = Column(String(1024), primary_key = True)
+	dn       = Column(String(1024), primary_key = True)
 	config   = Column(String(4000), primary_key = True)
 	action   = Column(String(100), primary_key = True)
 	
