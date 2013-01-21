@@ -6,7 +6,7 @@ from sqlalchemy import (Boolean, Date, DateTime, Integer,
 from tastypie import fields
 from tastypie.bundle import Bundle
 from tastypie.exceptions import NotFound
-from tastypie.resources import Resource
+from tastypie.resources import Resource, ModelResource
 
 FIELD_MAP = {
     Boolean: fields.BooleanField,
@@ -17,6 +17,28 @@ FIELD_MAP = {
     Unicode: fields.CharField,
     UnicodeText: fields.CharField,
 }
+
+
+class SQLIterator: 
+	"""
+	Used internally to avoid fetching all the elements when
+	the top layer is limiting the length
+	"""
+	def __init__(self, query):
+		self.query = query
+		
+	def __iter__(self):
+		return self
+	
+	def __len__(self):
+		return len(self.query)
+	
+	def __getitem__(self, index):
+		return self.query[index]
+	
+	def next(self):
+		return query.next()
+	
 
 
 class SQLAlchemyResource(Resource):
@@ -47,10 +69,7 @@ class SQLAlchemyResource(Resource):
 
     def get_object_list(self, request):
         sess = self._meta.session_maker()
-        results = []
-        for obj in sess.query(self._meta.object_class).all():
-            results.append(obj)
-        return results
+        return SQLIterator(sess.query(self._meta.object_class).all())
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
