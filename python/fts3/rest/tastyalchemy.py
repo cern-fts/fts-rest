@@ -31,7 +31,7 @@ class SQLIterator:
 		return self
 	
 	def __len__(self):
-		return len(self.query)
+		return int(self.query.count())
 	
 	def __getitem__(self, index):
 		return self.query[index]
@@ -69,7 +69,12 @@ class SQLAlchemyResource(Resource):
 
     def get_object_list(self, request):
         sess = self._meta.session_maker()
-        return SQLIterator(sess.query(self._meta.object_class).all())
+        items = sess.query(self._meta.object_class)
+        
+        if hasattr(self._meta, 'order_by'):
+        	items = items.order_by(self._meta.order_by)
+        
+        return SQLIterator(items)
 
     def obj_get_list(self, request=None, **kwargs):
         return self.get_object_list(request)
