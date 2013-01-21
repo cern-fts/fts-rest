@@ -21,6 +21,7 @@ class JobResource(SQLAlchemyResource):
 		object_class    = orm.Job
 		allowed_methods = ['get']
 		key_field       = 'job_id'
+		order_by        = '-submit_time'
 		
 		session_maker = sessionMaker
 
@@ -33,6 +34,7 @@ class FileResource(SQLAlchemyResource):
 		object_class    = orm.File
 		allowed_methods = ['get']
 		key_field       = 'file_id'
+		order_by        = '-file_id'
 		
 		session_maker   = sessionMaker
 
