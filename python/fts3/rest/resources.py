@@ -2,7 +2,7 @@ from django.conf import settings
 from django.conf.urls.defaults import url
 from fts3 import orm
 from tastyalchemy import SQLAlchemyResource
-from tastypie.resources import ALL
+from tastypie.resources import ALL, ModelResource
 import threading
 
 @staticmethod
@@ -24,6 +24,22 @@ class JobResource(SQLAlchemyResource):
 		order_by        = '-submit_time'
 		
 		session_maker = sessionMaker
+		
+	def override_urls(self):
+		return [
+			url(r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/files/$" % self._meta.resource_name,
+			    self.wrap_view('get_transfers'), name="api_dispatch_transfers"),
+		]
+		
+	def get_transfers(self, request, **kwargs):
+		try:
+			obj = self.cached_obj_get(request=request, **self.remove_api_resource_names(kwargs))
+		except ObjectDoesNotExist():
+			raise HttpGone()
+		except MultipleObjectsReturned:
+			raise HttpMultipleChoices()
+		transfers = FileResource()
+		return transfers.get_list(request, job_id = obj.job_id)
 
 
 
