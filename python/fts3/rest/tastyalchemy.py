@@ -82,7 +82,7 @@ class SQLAlchemyResource(Resource):
 		items = sess.query(self._meta.object_class)
 		
 		for field in kwargs:
-			items = items.filter("t_file.%s = '%s'" % (field, kwargs[field]))
+			items = items.filter("t_file.%s = :%s" % (field, field)).params({field: kwargs[field]})
 			
 		if hasattr(self._meta, 'order_by'):
 			items = items.order_by(self._meta.order_by)
