@@ -7,6 +7,8 @@ from tastypie import fields
 from tastypie.bundle import Bundle
 from tastypie.exceptions import NotFound
 from tastypie.resources import Resource, ModelResource
+from session import session
+
 
 FIELD_MAP = {
 	Boolean: fields.BooleanField,
@@ -78,7 +80,7 @@ class SQLAlchemyResource(Resource):
 
 	def obj_get_list(self, request=None, **kwargs):
 		print kwargs
-		sess = self._meta.session_maker()
+		sess = session()
 		items = sess.query(self._meta.object_class)
 		
 		for field in kwargs:
@@ -92,7 +94,7 @@ class SQLAlchemyResource(Resource):
 
 
 	def obj_get(self, request=None, **kwargs):
-		sess = self._meta.session_maker()
+		sess = session()
 		obj = sess.query(self._meta.object_class).get(kwargs['pk'])
 		if not obj:
 			raise NotFound('%s not found' % self._meta.resource_name)
@@ -101,7 +103,7 @@ class SQLAlchemyResource(Resource):
 
 
 	def obj_create(self, bundle, request=None, **kwargs):
-		sess = self._meta.session_maker()
+		sess = session()
 		bundle.obj = self._meta.object_class()
 		bundle.obj.update(bundle.data)
 		sess.add(bundle.obj)
@@ -111,7 +113,7 @@ class SQLAlchemyResource(Resource):
 
 
 	def obj_update(self, bundle, request=None, **kwargs):
-		sess = self._meta.session_maker()
+		sess = session()
 		obj = sess.query(self._meta.object_class).get(kwargs['pk'])
 		obj.update(bundle.data)
 		sess.commit()
@@ -123,7 +125,7 @@ class SQLAlchemyResource(Resource):
 
 
 	def obj_delete(self, request=None, **kwargs):
-		sess = self._meta.session_maker()
+		sess = session()
 		obj = sess.query(self._meta.object_class).get(kwargs['pk'])
 		sess.delete(obj)
 		sess.commit()
