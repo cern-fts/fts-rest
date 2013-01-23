@@ -114,7 +114,7 @@ import sys
 sys.path.append('..')
 
 INSTALLED_APPS = (
-	'fts3.rest'
+	'fts3.rest.server'
 )
 
 # A sample logging configuration. The only tangible logging
