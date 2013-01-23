@@ -1,9 +1,10 @@
 import sqlalchemy
-from base    import Base
-from config  import *
-from file    import *
-from job     import *
-from version import *
+from base        import Base
+from config      import *
+from credentials import *
+from file        import *
+from job         import *
+from version     import *
 
 # Convenience method
 def connect(connectString):
