@@ -19,7 +19,10 @@ def make_map(config):
     map.connect('/error/{action}/{id}', controller='error')
     
     # Root
-    map.connect('/', controller='version', action='api')
+    map.connect('/', controller='misc', action='apiVersion')
+    
+    # Whoami
+    map.connect('/whoami', controller='misc', action='whoami')
     
     # Delegation
     map.connect('/delegation/{action}', controller='delegation')

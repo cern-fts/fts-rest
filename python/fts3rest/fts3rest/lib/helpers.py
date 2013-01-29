@@ -7,7 +7,7 @@ import json
 
 class ClassEncoder(json.JSONEncoder):
 	def default(self, obj):
-		if isinstance(obj, Base):
+		if isinstance(obj, Base) or isinstance(obj, object):
 			values = {}
 			for (k, v) in obj.__dict__.iteritems():
 				if not k.startswith('_'):
