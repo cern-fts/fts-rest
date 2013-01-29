@@ -21,6 +21,10 @@ def make_map(config):
     # Root
     map.connect('/', controller='version', action='api')
     
+    # Delegation
+    map.connect('/delegation/{action}', controller='delegation')
+    map.connect('/delegation/{action}/{id}', controller='delegation')
+    
     # Jobs
     map.resource('job', 'jobs')
 
