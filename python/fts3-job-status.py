@@ -29,11 +29,11 @@ try:
 	client    = ClientV1(endpoint)
 	info      = client.getEndpointInfo()
 	job       = client.getJobStatus(jobId)
-	transfers = client.getJobTransfers(jobId)
 
 	print "# Using endpoint: %s" % info['url']
-	print "# REST API version: %s" % info['version']
-	print "# Schema version: %s" % info['schema']
+	print "# REST API version: %s" % info['api']
+	print "# Schema version: %(major)d.%(minor)d.%(patch)d" % info['schema']
+	print "# Delegation version: %(major)d.%(minor)d.%(patch)d" % info['delegation']
 	print "Request ID: %s" % job['job_id']
 	print "Status: %s" % job['job_state']
 	print "Client DN: %s" % job['user_dn']
@@ -41,11 +41,11 @@ try:
 	print "Submission time: %s" % job['submit_time']
 	print "Priority: %d" % job['priority']
 	print "VOName: %s" % job['vo_name']
-	print "Files: %d" % len(transfers)
-	for t in transfers:
-		print "\tTransfer id: %d" % t['file_id']
-		print "\tStatus: %s" % t['file_state']
-		print "\tReason: %s" % t['reason']
+	print "Files: %d" % len(job['files'])
+	for f in job['files']:
+		print "\tTransfer id: %d" % f['file_id']
+		print "\tStatus: %s" % f['file_state']
+		print "\tReason: %s" % f['reason']
 
 except Exception, e:
 	print >>sys.stderr, e

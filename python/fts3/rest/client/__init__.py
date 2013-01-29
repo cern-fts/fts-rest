@@ -59,31 +59,23 @@ class ClientV1(object):
 	
 			
 	
-	def getEndpointInfo(self):
-		url = "%s/ping" % (self.endpoint)
-		
+	def getEndpointInfo(self):		
 		try:
-			r = requests.get(url)
+			r = requests.get(self.endpoint)
 			j = r.json
-			return {'url': self.endpoint,
-			    	'version': j['api'],
-			    	'schema': j['schema']}
+			j['url'] = self.endpoint
+			return j
 		except Exception, e:
 			raise IOError(e)
 		
 	
 		
 	def getJobStatus(self, jobId):
-		url = "%s/job/%s/" % (self.endpoint, jobId)
+		url = "%s/jobs/%s" % (self.endpoint, jobId)
 		
 		try:
 			r = requests.get(url)
 			return r.json
-		except urllib2.HTTPError, e:
-			if e.code == 404:
-				raise KeyError("requestID <%s> was not found" % jobId)
-			else:
-				raise IOError(e)
 		except Exception, e:
 			raise IOError(e)
 	
@@ -94,11 +86,6 @@ class ClientV1(object):
 		try:
 			r = requests.get(url)
 			return r.json['objects']
-		except urllib2.HTTPError, e:
-			if e.code == 404:
-				raise KeyError("requestID <%s> was not found" % jobId)
-			else:
-				raise IOError(e)
 		except Exception, e:
 			raise IOError(e)
 		

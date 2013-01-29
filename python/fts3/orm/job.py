@@ -3,6 +3,8 @@ from sqlalchemy.orm import relation, backref
 
 from base import Base
 
+JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE']
+
 class Job(Base):
 	__tablename__ = 't_job'
     
@@ -48,7 +50,7 @@ class Job(Base):
 					 backref = backref("job", lazy = False))
 	
 	def isFinished(self):
-		return self.job_state in ['SUBMITTED', 'READY', 'ACTIVE']
+		return self.job_state not in JobActiveStates
 	
 	def __str__(self):
 		return self.job_id
