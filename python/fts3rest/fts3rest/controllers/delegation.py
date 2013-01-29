@@ -1,5 +1,6 @@
 from fts3.orm import CredentialCache, Credential
 from fts3rest.lib.base import BaseController, Session
+from fts3rest.lib.credentials import UserCredentials
 from M2Crypto import X509, RSA, EVP
 from pylons.decorators import rest
 from pylons import request
@@ -35,32 +36,32 @@ def generateProxyRequest(userDN):
 	return (request, requestPKey)
 
 
-X509_SUBJECT = '/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=aalvarez/CN=678984/CN=Alejandro Alvarez Ayllon/CN=proxy'
-
 
 class DelegationController(BaseController):
 	
 	def request(self, start_response):
-		# Hardcoded for development
-		(proxyRequest, proxyKey) = generateProxyRequest(X509_SUBJECT)
+		user = UserCredentials(request.environ)
+		(proxyRequest, proxyKey) = generateProxyRequest(user.user_dn)
 		
 		# Register in the database
 		credentialCache = CredentialCache(dlg_id = uuid.uuid1(),
-										  dn = X509_SUBJECT,
+										  dn = user.user_dn,
 										  cert_request = proxyRequest.as_pem(),
 										  priv_key     = proxyKey.as_pem(cipher = None),
-										  voms_attrs   = '') 
+										  voms_attrs   = ' '.join(user.voms_cred)) 
 		
 		start_response('200 OK', [('X-Delegation-ID', credentialCache.dlg_id)])
 
-		#Session.add(credentialCache)
-		#Session.commit()
+		Session.add(credentialCache)
+		Session.commit()
 		
 		return proxyRequest.as_pem()
 	
 	
 	@rest.restrict('PUT')
 	def credential(self, start_response, delegation_id = None):
+		user = UserCredentials(request.environ)
+		
 		if id is None:
 			raise Exception
 		
@@ -69,7 +70,7 @@ class DelegationController(BaseController):
 		
 		# Save
 		credential = Credential(dlg_id           = delegation_id,
-								dn               = X509_SUBJECT,
+								dn               = user.user_dn,
 								proxy            = x509ProxyPEM,
 								voms_attrs       = '',
 								termination_time = x509Proxy.get_not_after().get_datetime())
