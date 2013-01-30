@@ -25,8 +25,8 @@ def make_map(config):
     map.connect('/whoami', controller='misc', action='whoami')
     
     # Delegation
-    map.connect('/delegation/{action}', controller='delegation')
-    map.connect('/delegation/{action}/{id}', controller='delegation')
+    map.connect('/delegation/{id}', controller='delegation', action='view')
+    map.connect('/delegation/{id}/{action}', controller='delegation')
     
     # Jobs
     map.resource('job', 'jobs')

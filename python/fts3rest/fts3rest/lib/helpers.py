@@ -7,14 +7,13 @@ import json
 
 class ClassEncoder(json.JSONEncoder):
 	def default(self, obj):
-		if isinstance(obj, Base) or isinstance(obj, object):
+		if isinstance(obj, datetime):
+			return obj.strftime('%Y-%m-%dT%H:%M:%S%z')
+		elif isinstance(obj, Base) or isinstance(obj, object):
 			values = {}
 			for (k, v) in obj.__dict__.iteritems():
 				if not k.startswith('_'):
-					if isinstance(v, datetime):
-						values[k] = str(v)
-					else:
-						values[k] = v
+					values[k] = v
 			return values
 		else:
 			return super(ClassEncoder, self).default(obj)

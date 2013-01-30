@@ -1,6 +1,7 @@
 from fts3.orm import CredentialCache, Credential
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.credentials import UserCredentials
+from fts3rest.lib.helpers import jsonify
 from M2Crypto import X509, RSA, EVP
 from pylons.decorators import rest
 from pylons import request
@@ -39,43 +40,51 @@ def generateProxyRequest(userDN):
 
 class DelegationController(BaseController):
 	
-	def request(self, start_response):
+	@jsonify
+	def view(self, id):
 		user = UserCredentials(request.environ)
-		(proxyRequest, proxyKey) = generateProxyRequest(user.user_dn)
+		cred = Session.query(Credential).get((id, user.user_dn))
+		if not cred:
+			return None
+		else:
+			return {'termination_time': cred.termination_time}
+	
+	
+	def request(self, id, start_response):
+		user = UserCredentials(request.environ)
 		
-		# Register in the database
-		credentialCache = CredentialCache(dlg_id = uuid.uuid1(),
-										  dn = user.user_dn,
-										  cert_request = proxyRequest.as_pem(),
-										  priv_key     = proxyKey.as_pem(cipher = None),
-										  voms_attrs   = ' '.join(user.voms_cred)) 
+		credentialCache = Session.query(CredentialCache).get((id, user.user_dn))
+		
+		if credentialCache is None:
+			(proxyRequest, proxyKey) = generateProxyRequest(user.user_dn)
+			credentialCache = CredentialCache(dlg_id = user.delegation_id,
+											  dn = user.user_dn,
+										 	  cert_request = proxyRequest.as_pem(),
+										  	  priv_key     = proxyKey.as_pem(cipher = None),
+										  	  voms_attrs   = ' '.join(user.voms_cred))
+			Session.add(credentialCache)
+			Session.commit()	
+		
 		
 		start_response('200 OK', [('X-Delegation-ID', credentialCache.dlg_id)])
-
-		Session.add(credentialCache)
-		Session.commit()
-		
-		return proxyRequest.as_pem()
+		return credentialCache.cert_request
 	
 	
 	@rest.restrict('PUT')
-	def credential(self, start_response, delegation_id = None):
+	def credential(self, id, start_response):
 		user = UserCredentials(request.environ)
-		
-		if id is None:
-			raise Exception
+		credentialCache = Session.query(CredentialCache).get((id, user.user_dn))
 		
 		x509ProxyPEM = request.body
 		x509Proxy    = X509.load_cert_string(x509ProxyPEM)
 		
-		# Save
-		credential = Credential(dlg_id           = delegation_id,
+		credential = Credential(dlg_id           = id,
 								dn               = user.user_dn,
 								proxy            = x509ProxyPEM,
-								voms_attrs       = '',
+								voms_attrs       = credentialCache.voms_attrs,
 								termination_time = x509Proxy.get_not_after().get_datetime())
 		
-		Session.add(credential)
+		Session.merge(credential)
 		Session.commit()
 		
 		start_response('201 CREATED', [])
