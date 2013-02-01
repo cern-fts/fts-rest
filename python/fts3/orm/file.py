@@ -33,6 +33,7 @@ class File(Base):
 	tx_duration  	     = Column(Float)
 	throughput   	     = Column(Float)
 	retry       	     = Column(Integer)
+	user_filesize        = Column(Integer)
 	file_metadata        = Column(String(255))
 	staging_start        = Column(DateTime)  
 	staging_finished     = Column(DateTime)   
