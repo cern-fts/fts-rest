@@ -45,6 +45,9 @@ class Job(Base):
 	lan_connection           = Column(String(1))
 	fail_nearline            = Column(String(1))
 	checksum_method          = Column(String(1))
+	bring_online             = Column(Integer)
+	job_metadata             = Column(String(255))
+	
 	
 	files = relation("File", uselist = True, lazy = True,
 					 backref = backref("job", lazy = False))

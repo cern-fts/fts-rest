@@ -29,6 +29,7 @@ class LinkConfig(Base):
 	tcp_buffer_size   = Column(Integer)
 	urlcopy_tx_to     = Column(Integer)
 	no_tx_activity_to = Column(Integer)
+	auto_protocol     = Column(String(3))
 	
 	share_config = relation('ShareConfig', backref = 'link_config',
 							primaryjoin = 'ShareConfig.source == LinkConfig.source and ShareConfig.destination == LinkConfig.destination',
