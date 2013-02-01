@@ -3,7 +3,7 @@ from sqlalchemy.orm import relation, backref
 
 from base import Base
 
-JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE']
+JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING']
 
 class Job(Base):
 	__tablename__ = 't_job'
