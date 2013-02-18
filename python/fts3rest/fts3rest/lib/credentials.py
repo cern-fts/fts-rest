@@ -1,11 +1,16 @@
 from M2Crypto import EVP
+import re
 import urllib
 
 
 def voFromFqan(fqan):
 	components = fqan.split('/')[1:]
-	components = filter(lambda x: not x.endswith('=NULL'), components)
-	return '/'.join(components)
+	groups = []
+	for c in components:
+		if (c.lower().startswith('role=')):
+			break
+		groups.append(c)
+	return '/'.join(groups)
 
 
 
@@ -43,7 +48,8 @@ class UserCredentials(object):
 				fqan = urllib.unquote_plus(cred[5:])
 				vo   = voFromFqan(fqan)
 				self.voms_cred.append(fqan)
-				self.vos.append(vo)
+				if vo not in self.vos:
+					self.vos.append(vo)
 				
 			
 			grstIndex += 1
@@ -56,4 +62,16 @@ class UserCredentials(object):
 		# Generate the delegation ID
 		if self.user_dn is not None:
 			self.delegation_id = generateDelegationId(self.user_dn, self.voms_cred)
+			
+		# Populate roles
+		self.roles = self._populate_roles()
+
+	def _populate_roles(self):
+		roles = []
+		for fqan in self.voms_cred:
+			match = re.match('(/.+)*/Role=(\\w+)(/.*)?', fqan, re.IGNORECASE)
+			if match and match.group(2).upper() != 'NULL':
+				roles.append(match.group(2))
 		
+		return roles
+
