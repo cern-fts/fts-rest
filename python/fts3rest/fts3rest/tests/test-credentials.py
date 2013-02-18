@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import common
-from fts3rest.lib.credentials import UserCredentials
+from fts3rest.lib.middleware.fts3auth import UserCredentials
 import unittest
 
 

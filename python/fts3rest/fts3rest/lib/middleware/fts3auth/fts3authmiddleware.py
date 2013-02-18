@@ -1,5 +1,5 @@
 from fts3rest.lib.base import Session
-from fts3rest.lib.credentials import UserCredentials
+from credentials import UserCredentials
 from webob.exc import HTTPForbidden
 
 
@@ -19,5 +19,3 @@ class FTS3AuthMiddleware(object):
         environ['fts3.user.credentials'] = credentials
         
         return self.app(environ, start_response)
-    
-    
