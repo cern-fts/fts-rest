@@ -1,39 +1,46 @@
 #!/usr/bin/env python
-from fts3.rest.client import ClientV1
+from fts3.rest.client import Client, setDefaultLogging
 import getopt
+import logging
 import sys
+import traceback
 
+
+setDefaultLogging()
+
+
+# Parameters
 def usage():
-	print "Usage: %s [-h|--help] -s|--endpoint <endpoint> job-id" % sys.argv[0]
+	print "Usage: %s [-v|--verbose] [-h|--help] -s|--endpoint <endpoint> job-id" % sys.argv[0]
 	sys.exit(0)
 
+
+
+
 endpoint = None
-opt, args = getopt.getopt(sys.argv[1:], 'hs:', ['--help', '--endpoint'])
+opt, args = getopt.getopt(sys.argv[1:], 'hs:v', ['--help', '--endpoint', '--verbose'])
 for o, v in opt:
 	if o in ('-h', '--help'):
 		usage()
 	elif o in ('-s', '--endpoint'):
 		endpoint = v
+	elif o in ('-v', '--verbose'):
+		logging.getLogger().setLevel(logging.DEBUG)
 
 if endpoint is None:
-	print >>sys.stderr, "Need an endpoint"
+	logging.critical("Need an endpoint")
 	sys.exit(1)
 	
 if len(args) == 0:
-	print >>sys.stderr, "Need a job id"
+	logging.critical("Need a job id")
 	sys.exit(1)
 	
 jobId = args[0]
 
 try:
-	client    = ClientV1(endpoint)
-	info      = client.getEndpointInfo()
+	client    = Client(endpoint, logger = logging.getLogger())
 	job       = client.getJobStatus(jobId)
-
-	print "# Using endpoint: %s" % info['url']
-	print "# REST API version: %s" % info['api']
-	print "# Schema version: %(major)d.%(minor)d.%(patch)d" % info['schema']
-	print "# Delegation version: %(major)d.%(minor)d.%(patch)d" % info['delegation']
+	
 	print "Request ID: %s" % job['job_id']
 	print "Status: %s" % job['job_state']
 	print "Client DN: %s" % job['user_dn']
@@ -48,5 +55,7 @@ try:
 		print "\tReason: %s" % f['reason']
 
 except Exception, e:
-	print >>sys.stderr, e
+	print >>sys.stderr, str(e)
+	if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+		traceback.print_exc()
 	sys.exit(1)
