@@ -8,6 +8,7 @@ from pylons.middleware import ErrorHandler, StatusCodeRedirect
 from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
 
+from fts3rest.lib.middleware import FTS3AuthMiddleware
 from fts3rest.config.environment import load_environment
 
 def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
@@ -43,8 +44,10 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     app = RoutesMiddleware(app, config['routes.map'], singleton=False)
     app = SessionMiddleware(app, config)
 
-    # CUSTOM MIDDLEWARE HERE (filtered by error handling middlewares)
+    # FTS3 authentication/authorization middleware
+    app = FTS3AuthMiddleware(app, config)
 
+    # Error handling
     if asbool(full_stack):
         # Handle Python exceptions
         app = ErrorHandler(app, global_conf, **config['pylons.errorware'])

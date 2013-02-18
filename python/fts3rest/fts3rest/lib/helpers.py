@@ -53,4 +53,10 @@ def fts3_config_load(path = '/etc/fts3/fts3config'):
 	else:
 		raise ValueError("Database type '%s' is not recognized" % dbType)
 	
+	fts3cfg['fts3.Db.Type']             = dbType
+	fts3cfg['fts3.Db.Username']         = dbUser
+	fts3cfg['fts3.Db.Password']         = dbPass
+	fts3cfg['fts3.Db.ConnectionString'] = dbConn
+	fts3cfg['fts3.AuthorizedVO']        = parser.get('DEFAULT', 'AuthorizedVO')
+	
 	return fts3cfg

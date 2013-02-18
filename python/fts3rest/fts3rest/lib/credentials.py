@@ -54,5 +54,6 @@ class UserCredentials(object):
 			self.user_dn = urllib.unquote_plus(env['SSL_CLIENT_S_DN'])
 			
 		# Generate the delegation ID
-		self.delegation_id = generateDelegationId(self.user_dn, self.voms_cred)
+		if self.user_dn is not None:
+			self.delegation_id = generateDelegationId(self.user_dn, self.voms_cred)
 		

@@ -1,6 +1,5 @@
 from fts3.orm import CredentialCache, Credential
 from fts3rest.lib.base import BaseController, Session
-from fts3rest.lib.credentials import UserCredentials
 from fts3rest.lib.helpers import jsonify
 from M2Crypto import X509, RSA, EVP
 from pylons.decorators import rest
@@ -42,7 +41,7 @@ class DelegationController(BaseController):
 	
 	@jsonify
 	def view(self, id):
-		user = UserCredentials(request.environ)
+		user = request.environ['fts3.user.credentials']
 		cred = Session.query(Credential).get((id, user.user_dn))
 		if not cred:
 			return None
@@ -51,7 +50,7 @@ class DelegationController(BaseController):
 	
 	
 	def request(self, id, start_response):
-		user = UserCredentials(request.environ)
+		user = request.environ['fts3.user.credentials']
 		
 		credentialCache = Session.query(CredentialCache).get((id, user.user_dn))
 		
@@ -72,7 +71,7 @@ class DelegationController(BaseController):
 	
 	@rest.restrict('PUT')
 	def credential(self, id, start_response):
-		user = UserCredentials(request.environ)
+		user = request.environ['fts3.user.credentials']
 		credentialCache = Session.query(CredentialCache).get((id, user.user_dn))
 		
 		x509ProxyPEM = request.body
