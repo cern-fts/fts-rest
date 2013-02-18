@@ -35,6 +35,10 @@ def load_environment(global_conf, app_conf):
     import pylons
     pylons.cache._push_object(config['pylons.app_globals'].cache)
     
+    # If fts3.config is set, load configuration from there
+    if config.get('fts3.config'):
+        fts3cfg = fts3rest.lib.helpers.fts3_config_load(config.get('fts3.config'))
+        config.update(fts3cfg)            
 
     # Create the Mako TemplateLookup, with the default auto-escaping
     config['pylons.app_globals'].mako_lookup = TemplateLookup(

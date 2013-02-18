@@ -1,6 +1,7 @@
 from fts3.orm import Job, File, JobActiveStates
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
+from pylons.controllers.util import abort
 
 
 
@@ -43,6 +44,9 @@ class JobsController(BaseController):
 	def show(self, id):
 		"""GET /jobs/id: Show a specific item"""
 		job   = Session.query(Job).get(id)
+		if job is None:
+			abort(404)
+			
 		files = job.files # Trigger the query, so it is serialized
 		return job
 	
