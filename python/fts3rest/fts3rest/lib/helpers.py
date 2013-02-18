@@ -35,16 +35,16 @@ def fts3_config_load(path = '/etc/fts3/fts3config'):
 	# Dirty workaroundpython o: ConfigParser doesn't like files without
 	# headers, so fake one (since FTS3 config file doesn't have a
 	# default one)
-	content = "[DEFAULT]\n" + open(path).read()
+	content = "[fts3]\n" + open(path).read()
 	io = StringIO(content)
 	
 	parser = SafeConfigParser()
 	parser.readfp(io)
 
-	dbType = parser.get('DEFAULT', 'DbType')
-	dbUser = parser.get('DEFAULT', 'DbUserName')
-	dbPass = parser.get('DEFAULT', 'DbPassword')
-	dbConn = parser.get('DEFAULT', 'DbConnectString')
+	dbType = parser.get('fts3', 'DbType')
+	dbUser = parser.get('fts3', 'DbUserName')
+	dbPass = parser.get('fts3', 'DbPassword')
+	dbConn = parser.get('fts3', 'DbConnectString')
 	
 	fts3cfg = {}
 	
@@ -57,6 +57,15 @@ def fts3_config_load(path = '/etc/fts3/fts3config'):
 	fts3cfg['fts3.Db.Username']         = dbUser
 	fts3cfg['fts3.Db.Password']         = dbPass
 	fts3cfg['fts3.Db.ConnectionString'] = dbConn
-	fts3cfg['fts3.AuthorizedVO']        = parser.get('DEFAULT', 'AuthorizedVO')
+	fts3cfg['fts3.AuthorizedVO']        = parser.get('fts3', 'AuthorizedVO')
+	
+	fts3cfg['fts3.Roles'] = {}
+	for role in parser.options('roles'):
+		grantedArray = parser.get('roles', role).split(';')
+		for granted in grantedArray:
+			(level, operation) = granted.split(':')
+			if role not in fts3cfg['fts3.Roles']: 
+				fts3cfg['fts3.Roles'][role] = {}
+			fts3cfg['fts3.Roles'][role][operation] = level
 	
 	return fts3cfg

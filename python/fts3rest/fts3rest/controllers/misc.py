@@ -15,4 +15,4 @@ class MiscController(BaseController):
 
 	@jsonify
 	def whoami(self):
-		return request.environ['fts3.user.credentials']
+		return request.environ['fts3.User.Credentials']

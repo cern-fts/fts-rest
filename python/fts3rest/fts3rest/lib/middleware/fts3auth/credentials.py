@@ -30,7 +30,7 @@ def generateDelegationId(dn, fqans):
 
 
 class UserCredentials(object):
-	def __init__(self, env):
+	def __init__(self, env, roles = None):
 		# Default
 		self.user_dn   = None
 		self.voms_cred = []
@@ -65,6 +65,10 @@ class UserCredentials(object):
 			
 		# Populate roles
 		self.roles = self._populate_roles()
+		
+		# And granted level
+		self.level = self._granted_level(roles)
+
 
 	def _populate_roles(self):
 		roles = []
@@ -75,3 +79,20 @@ class UserCredentials(object):
 		
 		return roles
 
+	def _granted_level(self, roles):
+		if roles is None:
+			return None
+			
+		# Start with basic one
+		grantedLevel = roles['public']
+		return grantedLevel
+
+
+
+	def getGrantedLevelFor(self, operation):
+		if operation in self.level:
+			return self.level[operation]
+		elif '*' in self.level:
+			return self.level['*']
+		else:
+			return None

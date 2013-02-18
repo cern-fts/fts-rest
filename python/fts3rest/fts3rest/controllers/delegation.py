@@ -41,7 +41,7 @@ class DelegationController(BaseController):
 	
 	@jsonify
 	def view(self, id):
-		user = request.environ['fts3.user.credentials']
+		user = request.environ['fts3.User.Credentials']
 		cred = Session.query(Credential).get((id, user.user_dn))
 		if not cred:
 			return None
@@ -50,7 +50,7 @@ class DelegationController(BaseController):
 	
 	
 	def request(self, id, start_response):
-		user = request.environ['fts3.user.credentials']
+		user = request.environ['fts3.User.Credentials']
 		
 		credentialCache = Session.query(CredentialCache).get((id, user.user_dn))
 		
@@ -71,7 +71,7 @@ class DelegationController(BaseController):
 	
 	@rest.restrict('PUT')
 	def credential(self, id, start_response):
-		user = request.environ['fts3.user.credentials']
+		user = request.environ['fts3.User.Credentials']
 		credentialCache = Session.query(CredentialCache).get((id, user.user_dn))
 		
 		x509ProxyPEM = request.body
