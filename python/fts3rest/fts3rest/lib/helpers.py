@@ -57,7 +57,7 @@ def fts3_config_load(path = '/etc/fts3/fts3config'):
 	fts3cfg['fts3.Db.Username']         = dbUser
 	fts3cfg['fts3.Db.Password']         = dbPass
 	fts3cfg['fts3.Db.ConnectionString'] = dbConn
-	fts3cfg['fts3.AuthorizedVO']        = parser.get('fts3', 'AuthorizedVO')
+	fts3cfg['fts3.AuthorizedVO']        = parser.get('fts3', 'AuthorizedVO').split(';')
 	
 	fts3cfg['fts3.Roles'] = {}
 	for role in parser.options('roles'):
