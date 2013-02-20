@@ -1,5 +1,6 @@
 import sqlalchemy
 from base        import Base
+from banned      import *
 from config      import *
 from credentials import *
 from file        import *

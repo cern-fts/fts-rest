@@ -1,4 +1,5 @@
 from fts3rest.lib.base import Session
+from fts3.orm import BannedDN
 from credentials import UserCredentials
 from webob.exc import HTTPForbidden
 
@@ -19,6 +20,9 @@ class FTS3AuthMiddleware(object):
 		if not self._hasAuthorizedVo(credentials):
 			return HTTPForbidden('The user does not belong to any authorized vo')(environ, start_response)
 		
+		if self._isBanned(credentials):
+			return HTTPForbidden('The user has been banned')(environ, start_response)
+		
 		environ['fts3.User.Credentials'] = credentials
 		
 		return self.app(environ, start_response)
@@ -32,3 +36,8 @@ class FTS3AuthMiddleware(object):
 			if v in self.config['fts3.AuthorizedVO']:
 				return True 
 		return False
+
+	
+	def _isBanned(self, credentials):
+		banned = Session.query(BannedDN).get(credentials.user_dn)
+		return banned is not None
