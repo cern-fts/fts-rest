@@ -2,15 +2,18 @@ from fts3.orm import Job, File, JobActiveStates
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from pylons.controllers.util import abort
-
+from fts3rest.lib.middleware.fts3auth import authorize, authorized
+from fts3rest.lib.middleware.fts3auth.constants import *
 
 
 class JobsController(BaseController):
 
+	@authorize(TRANSFER)
 	@jsonify
-	def index(self):
+	def index(self, **kwargs):
 		"""GET /jobs: All jobs in the collection"""
-		return Session.query(Job).filter(Job.job_state.in_(JobActiveStates)).all()
+		jobs = Session.query(Job).filter(Job.job_state.in_(JobActiveStates)).all()
+		return jobs 
 
 	def create(self):
 		"""POST /jobs: Create a new job"""
@@ -22,22 +25,10 @@ class JobsController(BaseController):
 
 	def update(self, id):
 		"""PUT /jobs/id: Update an existing item"""
-		# Forms posted to this method should contain a hidden field:
-		#    <input type="hidden" name="_method" value="PUT" />
-		# Or using helpers:
-		#    h.form(url('job', id=ID),
-		#           method='put')
-		# url('job', id=ID)
-		pass
+		abort(400, 'Jobs can not be modified')
 	
 	def delete(self, id):
 		"""DELETE /jobs/id: Delete an existing item"""
-		# Forms posted to this method should contain a hidden field:
-		#    <input type="hidden" name="_method" value="DELETE" />
-		# Or using helpers:
-		#    h.form(url('job', id=ID),
-		#           method='delete')
-		# url('job', id=ID)
 		pass
 	
 	@jsonify
@@ -45,7 +36,10 @@ class JobsController(BaseController):
 		"""GET /jobs/id: Show a specific item"""
 		job   = Session.query(Job).get(id)
 		if job is None:
-			abort(404)
+			abort(404, 'No job with the id "%s" has been found' % id)
+			
+		if not authorized(TRANSFER, resource_owner = job.user_dn, resource_vo = job.vo_name):
+			abort(403, 'Not enough permissions to check the job "%s"' % id)
 			
 		files = job.files # Trigger the query, so it is serialized
 		return job
