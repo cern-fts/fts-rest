@@ -8,14 +8,23 @@ import json
 
 
 class ClassEncoder(json.JSONEncoder):
+	
+	def __init__(self, *args, **kwargs):
+		super(ClassEncoder, self).__init__(*args, **kwargs)
+		self.visited = []
+
+
 	def default(self, obj):
+		self.visited.append(obj)
+		
 		if isinstance(obj, datetime):
 			return obj.strftime('%Y-%m-%dT%H:%M:%S%z')
-		elif isinstance(obj, Base) or isinstance(obj, object):
+		elif isinstance(obj, Base) or isinstance(obj, object):			
 			values = {}
 			for (k, v) in obj.__dict__.iteritems():
-				if not k.startswith('_'):
+				if not k.startswith('_') and v not in self.visited:
 					values[k] = v
+					self.visited.append(v)
 			return values
 		else:
 			return super(ClassEncoder, self).default(obj)
