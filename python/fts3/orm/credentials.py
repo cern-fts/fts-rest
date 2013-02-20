@@ -1,6 +1,7 @@
+from base import Base
+from datetime import datetime, timedelta 
 from sqlalchemy import Column, DateTime, LargeBinary, String
 
-from base import Base
 
 class CredentialCache(Base):
 	__tablename__ = 't_credential_cache'
@@ -20,3 +21,9 @@ class Credential(Base):
 	proxy            = Column(LargeBinary)
 	voms_attrs       = Column(LargeBinary)
 	termination_time = Column(DateTime)
+	
+	def expired(self):
+		return self.termination_time <= datetime.now() 
+	
+	def remaining(self):
+		return self.termination_time - datetime.now() 
