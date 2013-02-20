@@ -7,31 +7,36 @@ refer to the routes manual at http://routes.groovie.org/docs/
 from routes import Mapper
 
 def make_map(config):
-    """Create, configure and return the routes Mapper"""
-    map = Mapper(directory=config['pylons.paths']['controllers'],
-                 always_scan=config['debug'])
-    map.minimization = False
-    map.explicit = False
+	"""Create, configure and return the routes Mapper"""
+	map = Mapper(directory=config['pylons.paths']['controllers'],
+	             always_scan=config['debug'])
+	map.minimization = False
+	map.explicit = False
+	
+	# The ErrorController route (handles 404/500 error pages); it should
+	# likely stay at the top, ensuring it can always be resolved
+	map.connect('/error/{action}', controller='error')
+	map.connect('/error/{action}/{id}', controller='error')
+	
+	# Root
+	map.connect('/', controller='misc', action='apiVersion')
+	
+	# Whoami
+	map.connect('/whoami', controller='misc', action='whoami')
+	
+	# Delegation
+	map.connect('/delegation/{id}', controller='delegation', action='view')
+	map.connect('/delegation/{id}/{action}', controller='delegation')
+	
+	# Jobs
+	map.connect('/jobs', controller='jobs', action='index',
+				conditions = dict(method = ['GET']))
+	map.connect('/jobs/{id}', controller='jobs', action='show',
+				conditions = dict(method = ['GET']))
+	map.connect('/jobs/{id}', controller='jobs', action='cancel',
+				conditions = dict(method = ['DELETE']))
+	
+	# Configuration audit
+	map.connect('/config/audit', controller='config', action='audit')
 
-    # The ErrorController route (handles 404/500 error pages); it should
-    # likely stay at the top, ensuring it can always be resolved
-    map.connect('/error/{action}', controller='error')
-    map.connect('/error/{action}/{id}', controller='error')
-    
-    # Root
-    map.connect('/', controller='misc', action='apiVersion')
-    
-    # Whoami
-    map.connect('/whoami', controller='misc', action='whoami')
-    
-    # Delegation
-    map.connect('/delegation/{id}', controller='delegation', action='view')
-    map.connect('/delegation/{id}/{action}', controller='delegation')
-    
-    # Jobs
-    map.resource('job', 'jobs')
-    
-    # Configuration audit
-    map.connect('/config/audit', controller='config', action='audit')
-
-    return map
+	return map
