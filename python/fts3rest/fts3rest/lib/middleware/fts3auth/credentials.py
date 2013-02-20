@@ -81,7 +81,7 @@ class UserCredentials(object):
 
 	def _granted_level(self, roles):
 		if roles is None:
-			return None
+			return []
 			
 		# Start with basic one
 		grantedLevel = roles['public']
@@ -96,3 +96,8 @@ class UserCredentials(object):
 			return self.level['*']
 		else:
 			return None
+
+
+
+	def hasVo(self, vo):
+		return vo in self.vos

@@ -30,5 +30,8 @@ def make_map(config):
     
     # Jobs
     map.resource('job', 'jobs')
+    
+    # Configuration audit
+    map.connect('/config/audit', controller='config', action='audit')
 
     return map
