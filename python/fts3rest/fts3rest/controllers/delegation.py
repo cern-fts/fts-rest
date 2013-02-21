@@ -4,6 +4,7 @@ from fts3rest.lib.helpers import jsonify
 from M2Crypto import X509, RSA, EVP
 from pylons.decorators import rest
 from pylons import request
+import pytz
 import uuid
 
 
@@ -77,11 +78,13 @@ class DelegationController(BaseController):
 		x509ProxyPEM = request.body
 		x509Proxy    = X509.load_cert_string(x509ProxyPEM)
 		
+		proxyExpirationTime = x509Proxy.get_not_after().get_datetime().replace(tzinfo = None)
+		
 		credential = Credential(dlg_id           = id,
 								dn               = user.user_dn,
 								proxy            = x509ProxyPEM,
 								voms_attrs       = credentialCache.voms_attrs,
-								termination_time = x509Proxy.get_not_after().get_datetime())
+								termination_time = proxyExpirationTime)
 		
 		Session.merge(credential)
 		Session.commit()
