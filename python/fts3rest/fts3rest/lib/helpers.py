@@ -5,7 +5,6 @@ from fts3.orm.base import Base
 from pylons.decorators.util import get_pylons
 from StringIO import StringIO
 import json
-import types
 
 
 class ClassEncoder(json.JSONEncoder):
@@ -16,8 +15,9 @@ class ClassEncoder(json.JSONEncoder):
 
 
 	def default(self, obj):
-		self.visited.append(obj)
-		
+		if isinstance(obj, Base):
+			self.visited.append(obj)
+				
 		if isinstance(obj, datetime):
 			return obj.strftime('%Y-%m-%dT%H:%M:%S%z')
 		elif isinstance(obj, Base) or isinstance(obj, object):			
@@ -25,7 +25,7 @@ class ClassEncoder(json.JSONEncoder):
 			for (k, v) in obj.__dict__.iteritems():
 				if not k.startswith('_') and v not in self.visited:
 					values[k] = v
-					if type(v) is types.InstanceType:
+					if isinstance(v, Base):
 						self.visited.append(v)
 					
 			return values
