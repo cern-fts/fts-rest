@@ -56,4 +56,24 @@ class RequestFactory(object):
 				raise ClientError(e.reason)
 			elif e.code >= 500:
 				raise ServerError(e.reason)
+			
+	def put(self, url, body, headers = {}):
+		opener = urllib2.build_opener(HTTPSWithCertHandler(self.ucert, self.ukey))
+		
+		try:
+			request = urllib2.Request(url, data = body, headers = headers)
+			request.get_method = lambda: 'PUT'
+			response = opener.open(request)
+			return response.read()
+		except urllib2.HTTPError, e:
+			if e.code == 400:
+				raise ClientError(e.reason)
+			elif e.code >= 401 and e.code <= 403:
+				raise Unauthorized()
+			elif e.code == 404:
+				raise NotFound(url)
+			elif e.code > 404 and e.code < 500:
+				raise ClientError(e.reason)
+			elif e.code >= 500:
+				raise ServerError(e.reason)
 
