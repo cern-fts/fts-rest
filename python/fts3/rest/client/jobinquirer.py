@@ -1,7 +1,7 @@
 from base import Actor
 from exceptions import *
 import json
-
+import urllib
 
 
 class JobInquirer(Actor):
@@ -17,3 +17,15 @@ class JobInquirer(Actor):
 			return json.loads(self.requester.get(url))
 		except NotFound:
 			raise NotFound(jobId)
+
+
+	def getJobList(self, userDn = None, voName = None):
+		url = "%s/jobs?" % self.endpoint	
+		args = {}
+		if userDn: args['user'] = userDn
+		if voName: args['vo'] = voName
+		
+		query = '&'.join(map(lambda (k, v): "%s=%s" % (k, urllib.quote(v, '')), args.iteritems()))
+		url += query
+		
+		return json.loads(self.requester.get(url))
