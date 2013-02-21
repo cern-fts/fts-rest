@@ -36,11 +36,11 @@ class Delegator(Actor):
 		return X509.load_request_string(proxy)
 	
 	
-	def _signRequest(self, x509Request):		
+	def _signRequest(self, x509Request, lifetime):		
 		notBefore = ASN1.ASN1_UTCTIME()
 		notBefore.set_datetime(datetime.now(pytz.UTC))
 		notAfter  = ASN1.ASN1_UTCTIME()
-		notAfter.set_datetime(datetime.now(pytz.UTC) + timedelta(hours = 7))
+		notAfter.set_datetime(datetime.now(pytz.UTC) + lifetime)
 		
 		proxy = X509.X509()
 		proxy.set_subject(x509Request.get_subject())
@@ -59,7 +59,7 @@ class Delegator(Actor):
 		self.requester.put(self.delegationRoot + '/' + delegationId + '/credential', x509Proxy.as_pem())
 		
 
-	def delegate(self):	
+	def delegate(self, lifetime = timedelta(hours = 7)):	
 		try:
 			delegationId = self._getDelegationId()		
 			self.logger.debug("Delegation ID: " + delegationId)
@@ -80,7 +80,7 @@ class Delegator(Actor):
 			
 			# Sign request
 			self.logger.debug("Signing request for %s" % x509Request.get_subject().as_text())
-			x509Proxy = self._signRequest(x509Request)
+			x509Proxy = self._signRequest(x509Request, lifetime)
 			
 			# Send the signed proxy
 			self._putProxy(delegationId, x509Proxy)
