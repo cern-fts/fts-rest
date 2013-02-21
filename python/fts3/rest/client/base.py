@@ -100,7 +100,7 @@ class Actor(object):
 		return endpointInfo
 		
 	
-	def __init__(self, endpoint, ucert = None, ukey = None, logger = None):
+	def __init__(self, endpoint, ucert = None, ukey = None, logger = None, **kwargs):
 		self._setLogger(logger)
 		self._setEndpoint(endpoint)
 		self._setX509(ucert, ukey)

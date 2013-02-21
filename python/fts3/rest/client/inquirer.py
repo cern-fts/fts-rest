@@ -4,10 +4,10 @@ import json
 import urllib
 
 
-class JobInquirer(Actor):
+class Inquirer(Actor):
 	
 	def __init__(self, *args, **kwargs):
-		super(JobInquirer, self).__init__(*args, **kwargs)
+		super(Inquirer, self).__init__(*args, **kwargs)
 
 
 	def getJobStatus(self, jobId):

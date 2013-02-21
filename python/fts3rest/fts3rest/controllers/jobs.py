@@ -10,13 +10,14 @@ from pylons.controllers.util import abort
 import json
 import re
 import socket
+import types
 import uuid
 
 
 DEFAULT_PARAMS = {
-	'bring_online'     : 'N',
+	'bring_online'     : -1,
 	'checksum_method'  : '',
-	'copy_pin_lifetime': 0,
+	'copy_pin_lifetime': -1,
 	'fail_nearline'    : 'N',
 	'gridftp'          : '',
 	'job_metadata'     : '',
@@ -138,17 +139,24 @@ class JobsController(BaseController):
 				if self._getSE(t['destination']) != dest_se:
 					abort(400, 'Not all destination files belong to the same storage elements')
 								
-			# Create
-			params = DEFAULT_PARAMS
+			# Initialize defaults
+			# If the client is giving a NULL for a parameter with a default,
+			# use the default
+			params = dict()
+			params.update(DEFAULT_PARAMS)
 			if 'params' in json:
 				params.update(json['params'])
+				for (k, v) in params.iteritems():
+					if v is None and k in DEFAULT_PARAMS:
+						params[k] = DEFAULT_PARAMS[k]
 			
+			# Create
 			job = Job()
 			
 			# Job
 			job.job_id                   = str(uuid.uuid1())
 			job.job_state                = 'SUBMITTED'
-			job.reuse_job                = params['reuse'][0]
+			job.reuse_job                = self._yesOrNo(params['reuse'])
 			job.job_params               = params['gridftp']
 			job.submit_host              = socket.getfqdn() 
 			job.source_se                = source_se
@@ -167,14 +175,15 @@ class JobsController(BaseController):
 			job.submit_time              = datetime.now()
 			job.priority                 = 3
 			job.space_token              = params['spacetoken']
-			job.overwrite_flag           = params['overwrite'][0]
+			job.overwrite_flag           = self._yesOrNo(params['overwrite'])
 			job.source_space_token       = params['source_spacetoken'] 
 			job.copy_pin_lifetime        = int(params['copy_pin_lifetime'])
-			job.lan_connection           = params['lan_connection'][0]
-			job.fail_nearline            = params['fail_nearline'][0]
+			job.lan_connection           = self._yesOrNo(params['lan_connection'])
+			job.fail_nearline            = self._yesOrNo(params['fail_nearline'])
 			job.checksum_method          = params['checksum_method']
-			job.bring_online             = params['bring_online'][0]
+			job.bring_online             = int(params['bring_online'])
 			job.job_metadata             = params['job_metadata']
+			job.job_params               = str()
 			
 			# Files
 			for t in json['transfers']:
@@ -183,8 +192,12 @@ class JobsController(BaseController):
 				file.file_state    = 'SUBMITTED'
 				file.source_surl   = t['source']
 				file.dest_surl     = t['destination']
-				if 'checksum' in t:
-					file.checksum      = t['checksum']
+				
+				if 'checksum' in t and t['checksum']:
+					file.checksum = t['checksum']
+				else:
+					file.checksum = str()
+					
 				if 'filesize' in t:
 					file.user_filesize = t['filesize']
 				if 'metadata' in t:
@@ -212,4 +225,15 @@ class JobsController(BaseController):
 	def _isSeBanned(self, se):
 		banned = Session.query(BannedSE).get(se)
 		return banned is not None
-
+	
+	
+	def _yesOrNo(self, value):
+		if type(value) is types.StringType:
+			if len(value) == 0:
+				return 'N'
+			else:
+				return value[0] 
+		elif value:
+			return 'Y'
+		else:
+			return 'N'

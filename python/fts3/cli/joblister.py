@@ -1,4 +1,4 @@
-from fts3.rest.client import JobInquirer
+from fts3.rest.client import Inquirer
 from base import Base
 from utils import *
 import logging
@@ -28,7 +28,7 @@ class JobLister(Base):
 			
 	
 	def __call__(self):
-		inquirer = JobInquirer(self.options.endpoint)
+		inquirer = Inquirer(self.options.endpoint)
 		jobList  = inquirer.getJobList(self.options.user_dn, self.options.vo_name)
 	
 		if not self.options.json:

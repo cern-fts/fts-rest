@@ -1,3 +1,4 @@
-from delegator import Delegator
-from jobinquirer import JobInquirer
+from delegator  import Delegator
+from inquirer   import Inquirer
+from submitter  import Submitter
 from exceptions import *

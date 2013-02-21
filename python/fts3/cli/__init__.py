@@ -1,5 +1,6 @@
 from joblister import JobLister
 from jobshower import JobShower
+from jobsubmitter import JobSubmitter
 import logging
 import sys
 

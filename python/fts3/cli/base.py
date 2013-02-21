@@ -4,11 +4,15 @@ import logging
 
 class Base(object):
 	
-	def __init__(self):
+	def __init__(self, extra_args = None):	
 		self.logger = logging.getLogger()
 		
 		# Common CLI options
-		self.optParser = OptionParser()
+		usage = None
+		if extra_args:
+			usage = "usage: %prog [options] " + extra_args
+			
+		self.optParser = OptionParser(usage = usage)
 		
 		self.optParser.add_option('-v', '--verbose', dest = 'verbose', default = False, action = 'store_true',
 								  help = 'verbose output.')
