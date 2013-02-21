@@ -42,8 +42,16 @@ class JobsController(BaseController):
 	@jsonify
 	def index(self, **kwargs):
 		"""GET /jobs: All jobs in the collection"""
-		jobs = Session.query(Job).filter(Job.job_state.in_(JobActiveStates)).all()
-		return jobs 
+		jobs = Session.query(Job).filter(Job.job_state.in_(JobActiveStates))
+		
+		# Filtering
+		if 'user_dn' in request.params:
+			jobs = jobs.filter(Job.user_dn == request.params['user_dn'])
+		if 'vo_name' in request.params:
+			jobs = jobs.filter(Job.vo_name == request.params['vo_name'])
+		
+		# Return
+		return jobs.all()
 	
 	@jsonify
 	def cancel(self, id, **kwargs):

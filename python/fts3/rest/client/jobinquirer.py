@@ -22,8 +22,8 @@ class JobInquirer(Actor):
 	def getJobList(self, userDn = None, voName = None):
 		url = "%s/jobs?" % self.endpoint	
 		args = {}
-		if userDn: args['user'] = userDn
-		if voName: args['vo'] = voName
+		if userDn: args['user_dn'] = userDn
+		if voName: args['vo_name'] = voName
 		
 		query = '&'.join(map(lambda (k, v): "%s=%s" % (k, urllib.quote(v, '')), args.iteritems()))
 		url += query
