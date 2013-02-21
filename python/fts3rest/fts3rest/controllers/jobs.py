@@ -1,10 +1,31 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from fts3.orm import Job, File, JobActiveStates
+from fts3.orm import Credential, BannedSE
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.middleware.fts3auth import authorize, authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
+from pylons import request
 from pylons.controllers.util import abort
+import json
+import re
+import socket
+import uuid
+
+
+DEFAULT_PARAMS = {
+	'bring_online'     : 'N',
+	'checksum_method'  : '',
+	'copy_pin_lifetime': 0,
+	'fail_nearline'    : 'N',
+	'gridftp'          : '',
+	'job_metadata'     : '',
+	'lan_connection'   : 'N',
+	'overwrite'        : 'N',
+	'reuse'            : 'N',
+	'source_spacetoken': '',
+	'spacetoken'       : ''
+}
 
 
 class JobsController(BaseController):
@@ -25,7 +46,7 @@ class JobsController(BaseController):
 		return jobs 
 	
 	@jsonify
-	def cancel(self, id):
+	def cancel(self, id, **kwargs):
 		"""DELETE /jobs/id: Delete an existing item"""
 		job = self._getJob(id)
 		
@@ -53,8 +74,134 @@ class JobsController(BaseController):
 		return job
 	
 	@jsonify
-	def show(self, id):
+	def show(self, id, **kwargs):
 		"""GET /jobs/id: Show a specific item"""
 		job = self._getJob(id)
 		files = job.files # Trigger the query, so it is serialized
 		return job
+	
+	@authorize(TRANSFER)
+	@jsonify
+	def submit(self, **kwargs):
+		"""PUT /jobs: Submits a new job"""
+		# First, the request has to be valid JSON
+		try:
+			submittedDict = json.loads(request.body)
+		except ValueError, e:
+			abort(400, 'Badly formatted JSON request')
+
+		# The auto-generated delegation id must be valid
+		user = request.environ['fts3.User.Credentials']
+		credential = Session.query(Credential).get((user.delegation_id, user.user_dn))
+		if credential is None:
+			abort(403, 'No delegation id found for "%s"' % user.user_dn)
+		if credential.expired():
+			abort(403, 'The delegated credentials expired %d seconds ago' % credential.remaining().total_seconds())
+		if credential.remaining() < timedelta(hours = 1):
+			abort(403, 'The delegated credentials has less than one hour left')
+		
+		# Populate the job and file
+		job = self._setupJobFromDict(submittedDict, user)
+		
+		# Banned?
+		if self._isSeBanned(job.source_se):
+			abort(403, 'Source storage element is banned')
+		if self._isSeBanned(job.dest_se):
+			abort(403, 'Destination storage element is banned')
+		
+		# Return it
+		Session.merge(job)
+		Session.commit()
+		return job
+
+
+	def _setupJobFromDict(self, json, user):
+		try:
+			if len(json['transfers']) == 0:
+				abort(400, 'No transfers specified')
+				
+			# Get source and destination se, and validate
+			source_se = self._getSE(json['transfers'][0]['source'])
+			dest_se   = self._getSE(json['transfers'][0]['destination'])
+			
+			for t in json['transfers']:
+				if self._getSE(t['source']) != source_se:
+					abort(400, 'Not all source files belong to the same storage elements')
+				if self._getSE(t['destination']) != dest_se:
+					abort(400, 'Not all destination files belong to the same storage elements')
+								
+			# Create
+			params = DEFAULT_PARAMS
+			if 'params' in json:
+				params.update(json['params'])
+			
+			job = Job()
+			
+			# Job
+			job.job_id                   = str(uuid.uuid1())
+			job.job_state                = 'SUBMITTED'
+			job.reuse_job                = params['reuse'][0]
+			job.job_params               = params['gridftp']
+			job.submit_host              = socket.getfqdn() 
+			job.source_se                = source_se
+			job.dest_se                  = dest_se
+			job.user_dn                  = user.user_dn
+			
+			if 'credential' in json:
+				job.user_cred  = json['credential']
+				job.cred_id    = str()
+			else:
+				job.user_cred  = str()
+				job.cred_id    = user.delegation_id
+			
+			job.voms_cred                = ' '.join(user.voms_cred)
+			job.vo_name                  = user.vos[0]
+			job.submit_time              = datetime.now()
+			job.priority                 = 3
+			job.space_token              = params['spacetoken']
+			job.overwrite_flag           = params['overwrite'][0]
+			job.source_space_token       = params['source_spacetoken'] 
+			job.copy_pin_lifetime        = int(params['copy_pin_lifetime'])
+			job.lan_connection           = params['lan_connection'][0]
+			job.fail_nearline            = params['fail_nearline'][0]
+			job.checksum_method          = params['checksum_method']
+			job.bring_online             = params['bring_online'][0]
+			job.job_metadata             = params['job_metadata']
+			
+			# Files
+			for t in json['transfers']:
+				file = File()
+				
+				file.file_state    = 'SUBMITTED'
+				file.source_surl   = t['source']
+				file.dest_surl     = t['destination']
+				if 'checksum' in t:
+					file.checksum      = t['checksum']
+				if 'filesize' in t:
+					file.user_filesize = t['filesize']
+				if 'metadata' in t:
+					file.file_metadata = t['metadata']
+				
+				job.files.append(file)
+			
+			return job
+		
+		except ValueError:
+			abort(400, 'Invalid value within the request')
+		except TypeError, e:
+			abort(400, 'Malformed request: %s' % str(e))
+		except KeyError, e:
+			abort(400, 'Missing parameter: %s' % str(e))
+
+			
+	def _getSE(self, uri):
+		match = re.match('.+://([a-zA-Z0-9\\.-]+)(:\\d+)?/.+', uri)
+		if not match:
+			raise ValueError('"%s" is an invalid SURL' % uri)
+		return match.group(1)
+
+	
+	def _isSeBanned(self, se):
+		banned = Session.query(BannedSE).get(se)
+		return banned is not None
+
