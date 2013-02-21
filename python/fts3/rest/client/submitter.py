@@ -38,5 +38,5 @@ class Submitter(Actor):
 
 	def submit(self, source, destination, **kwargs):
 		job = self._buildSubmission(source, destination, **kwargs)
-		r = self.requester.put("%s/jobs" % self.endpoint, job)
+		r = json.loads(self.requester.put("%s/jobs" % self.endpoint, job))
 		return r['job_id']
