@@ -1,0 +1,119 @@
+from datetime import datetime, timedelta
+from exceptions import *
+from M2Crypto import X509, RSA, EVP, ASN1
+from request import RequestFactory
+import json
+import logging
+import os
+import pytz
+import sys
+
+
+# Return a list of certificates from the file
+def getX509List(file, logger):
+	SEEKING_CERT = 0
+	LOADING_CERT = 1
+
+	buffer = ""
+	x509List = []
+	
+	fd = open(file, 'r')	
+	status = SEEKING_CERT
+	for line in fd:
+		if line == '-----BEGIN CERTIFICATE-----\n':
+			status = LOADING_CERT
+		elif line == '-----END CERTIFICATE-----\n':
+			buffer += line
+			x509 = X509.load_cert_string(buffer, X509.FORMAT_PEM)
+			x509List.append(x509)
+			
+			logger.debug("Loaded " + x509.get_subject().as_text())
+			
+			buffer = ""
+			status = SEEKING_CERT
+			
+		if status == LOADING_CERT:
+			buffer += line
+				
+	del fd
+	
+	return x509List
+
+
+
+# Base class for actors
+class Actor(object):
+	
+	def _setLogger(self, logger):
+		if logger:
+			self.logger = logger
+		else:
+			self.logger = logging.getLogger()
+
+
+	def _setX509(self, ucert, ukey):
+		if not ucert:
+			if 'X509_USER_PROXY' in os.environ:
+				ucert = os.environ['X509_USER_PROXY']
+			elif 'X509_USER_CERT' in os.environ:
+				ucert = os.environ['X509_USER_CERT']
+				
+		if not ukey:
+			if 'X509_USER_PROXY' in os.environ:
+				ukey = os.environ['X509_USER_PROXY']
+			elif 'X509_USER_KEY' in os.environ:
+				ukey = os.environ['X509_USER_KEY']
+				
+		if ucert and ukey:
+			self.x509List = getX509List(ucert, self.logger)
+			self.x509     = self.x509List[0]
+			if self.x509.get_not_after().get_datetime() < datetime.now(pytz.UTC):
+				raise Exception("Proxy expired!")
+			
+			self.rsaKey = RSA.load_key(ukey)
+			self.evpKey = EVP.PKey()
+			self.evpKey.assign_rsa(self.rsaKey)
+			
+			self.ucert = ucert
+			self.ukey  = ukey
+
+
+	def _setEndpoint(self, endpoint):
+		self.endpoint = endpoint
+		if self.endpoint.endswith('/'):
+			self.endpoint = self.endpoint[:-1]
+			
+			
+	def _validateEndpoint(self):
+		try:
+			endpointInfo = json.loads(self.requester.get(self.endpoint))
+			endpointInfo['url'] = self.endpoint
+			
+			if endpointInfo['api'] != 'Mk.1':
+				raise ValueError("Wrong API version")
+		
+		except FTS3ClientException:
+			raise
+		except Exception, e:
+			raise BadEndpoint, "%s (%s)" % (self.endpoint, str(e)), sys.exc_info()[2]
+		
+		return endpointInfo
+		
+	
+	def __init__(self, endpoint, ucert = None, ukey = None, logger = None):
+		self._setLogger(logger)
+		self._setEndpoint(endpoint)
+		self._setX509(ucert, ukey)
+		self.requester = RequestFactory(self.ucert, self.ukey)
+		self.endpointInfo = self._validateEndpoint()
+		
+		# Log obtained information
+		self.logger.debug("Using endpoint: %s" % self.endpointInfo['url'])
+		self.logger.debug("REST API version: %s" % self.endpointInfo['api'])
+		self.logger.debug("Schema version: %(major)d.%(minor)d.%(patch)d" % self.endpointInfo['schema'])
+		self.logger.debug("Delegation version: %(major)d.%(minor)d.%(patch)d" % self.endpointInfo['delegation'])
+
+		
+	def getEndpointInfo(self):		
+		return self.endpointInfo
+
