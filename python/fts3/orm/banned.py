@@ -10,3 +10,14 @@ class BannedDN(Base):
 	message       = Column(String(256))
 	addition_time = Column(DateTime)
 	admin_dn      = Column(String(1024))
+
+
+
+class BannedSE(Base):
+	__tablename__ = 't_bad_ses'
+	
+	se            = Column(String(256), primary_key = True)
+	message       = Column(String(256))
+	addition_time = Column(DateTime)
+	admin_dn      = Column(String(1024))
+
