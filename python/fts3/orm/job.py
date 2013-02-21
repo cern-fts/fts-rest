@@ -13,7 +13,7 @@ class Job(Base):
 	reuse_job                = Column(String(3))
 	cancel_job               = Column(String(1))
 	job_params               = Column(String(255))
-	submitHost               = Column(String(255))
+	submit_host              = Column(String(255))
 	source                   = Column(String(255))
 	dest                     = Column(String(255))
 	source_se                = Column(String(255))
