@@ -21,7 +21,10 @@ def populatedName(components):
 
 
 
-def generateProxyRequest(userDN):
+def generateProxyRequest(dnList):
+	# By convection, use the longer representation
+	userDN = dnList[-1]
+			
 	components = getDNComponents(userDN)
 	components.append(('CN', 'proxy'))
 	
@@ -56,7 +59,7 @@ class DelegationController(BaseController):
 		credentialCache = Session.query(CredentialCache).get((id, user.user_dn))
 		
 		if credentialCache is None:
-			(proxyRequest, proxyKey) = generateProxyRequest(user.user_dn)
+			(proxyRequest, proxyKey) = generateProxyRequest(user.dn)
 			credentialCache = CredentialCache(dlg_id = user.delegation_id,
 											  dn = user.user_dn,
 										 	  cert_request = proxyRequest.as_pem(),

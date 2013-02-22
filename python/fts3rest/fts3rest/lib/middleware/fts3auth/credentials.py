@@ -33,6 +33,7 @@ class UserCredentials(object):
 	def __init__(self, env, roles = None):
 		# Default
 		self.user_dn   = None
+		self.dn        = []
 		self.voms_cred = []
 		self.vos       = []
 		
@@ -42,22 +43,26 @@ class UserCredentials(object):
 		while grstEnv in env:
 			cred = env[grstEnv]
 			
-			if cred.startswith('dn:') and self.user_dn is None:
-				self.user_dn = urllib.unquote_plus(cred[3:])
+			if cred.startswith('dn:'):
+				self.dn.append(urllib.unquote_plus(cred[3:]))
 			elif cred.startswith('fqan:'):
 				fqan = urllib.unquote_plus(cred[5:])
 				vo   = voFromFqan(fqan)
 				self.voms_cred.append(fqan)
 				if vo not in self.vos:
 					self.vos.append(vo)
-				
 			
 			grstIndex += 1
 			grstEnv = 'GRST_CRED_AURI_%d' % grstIndex
-		
+				
 		# If not, try with regular SSL_
-		if self.user_dn is None and 'SSL_CLIENT_S_DN' in env:
-			self.user_dn = urllib.unquote_plus(env['SSL_CLIENT_S_DN'])
+		if len(self.dn) == 0 and 'SSL_CLIENT_S_DN' in env:
+			self.dn.append(urllib.unquote_plus(env['SSL_CLIENT_S_DN']))
+			
+			
+		# Pick first one
+		if len(self.dn) > 0:
+			self.user_dn = self.dn[0]
 			
 		# Generate the delegation ID
 		if self.user_dn is not None:
