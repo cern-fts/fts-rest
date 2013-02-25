@@ -1,4 +1,3 @@
-from base import Actor
 from datetime import datetime, timedelta
 from exceptions import *
 from M2Crypto import X509, RSA, EVP, ASN1, m2
@@ -9,21 +8,19 @@ import time
 
 
 
-class Delegator(Actor):
+class Delegator(object):
 	
-	def __init__(self, *args, **kwargs):
-		super(Delegator, self).__init__(*args, **kwargs)
-		self.whoami         = "%s/whoami" % self.endpoint
-		self.delegationRoot = "%s/delegation" % self.endpoint
+	def __init__(self, context):
+		self.context = context
 
 
 	def _getDelegationId(self):
-		r = json.loads(self.requester.get(self.whoami))
+		r = json.loads(self.context.get('/whoami'))
 		return r['delegation_id']
 	
 	
 	def _getRemainingLife(self, delegationId):
-		r = json.loads(self.requester.get(self.delegationRoot + '/' + delegationId))
+		r = json.loads(self.context.get('/delegation/' + delegationId))
 		
 		if r is None:
 			return None
@@ -33,7 +30,7 @@ class Delegator(Actor):
 		
 		
 	def _getProxyRequest(self, delegationId):
-		requestPEM = self.requester.get(self.delegationRoot + '/' + delegationId + '/request')
+		requestPEM = self.context.get('/delegation/' + delegationId + '/request')
 		x509Request = X509.load_request_string(requestPEM)
 		if x509Request.verify(x509Request.get_pubkey()) != 1:
 			raise ServerError('Error verifying signature on the request')		
@@ -48,7 +45,7 @@ class Delegator(Actor):
 		notAfter.set_datetime(datetime.now(pytz.UTC) + lifetime)
 		
 		proxySubject = X509.X509_Name()
-		for c in self.x509.get_subject():
+		for c in self.context.x509.get_subject():
 			m2.x509_name_add_entry(proxySubject._ptr(), c._ptr(), -1, 0)
 		proxySubject.add_entry_by_txt('commonName', 0x1000, 'proxy', -1, -1, 0)
 		
@@ -57,12 +54,12 @@ class Delegator(Actor):
 		proxy.set_subject(proxySubject)
 		proxy.set_serial_number(long(time.time()))
 		proxy.set_version(x509Request.get_version())
-		proxy.set_issuer(self.x509.get_subject())
+		proxy.set_issuer(self.context.x509.get_subject())
 		proxy.set_pubkey(x509Request.get_pubkey())
 		
 		# Make sure the proxy is not longer than any other inside the chain
 		any_rfc_proxies = False
-		for cert in self.x509List:
+		for cert in self.context.x509List:
 			if cert.get_not_after() < notAfter:
 				notAfter = cert.get_not_after()
 			try:
@@ -77,18 +74,18 @@ class Delegator(Actor):
 		if any_rfc_proxies:
 			raise NotImplementedError('RFC proxies not supported yet')		
 		
-		proxy.sign(self.evpKey, 'sha1')
+		proxy.sign(self.context.evpKey, 'sha1')
 		
 		return proxy
 	
 	
 	def _putProxy(self, delegationId, x509Proxy):
-		self.requester.put(self.delegationRoot + '/' + delegationId + '/credential', x509Proxy)
+		self.context.put('/delegation/' + delegationId + '/credential', x509Proxy)
 
 
 	def _fullProxyChain(self, x509Proxy):
 		chain = x509Proxy.as_pem()
-		for cert in self.x509List:
+		for cert in self.context.x509List:
 			chain += cert.as_pem()
 		return chain
 		
@@ -96,24 +93,24 @@ class Delegator(Actor):
 	def delegate(self, lifetime = timedelta(hours = 7)):	
 		try:
 			delegationId = self._getDelegationId()		
-			self.logger.debug("Delegation ID: " + delegationId)
+			self.context.logger.debug("Delegation ID: " + delegationId)
 			
 			remainingLife = self._getRemainingLife(delegationId)
 			
 			if remainingLife is None: 
-				self.logger.debug("No previous delegation found")
+				self.context.logger.debug("No previous delegation found")
 			elif remainingLife <= timedelta(0):
-				self.logger.debug("The delegated credentials expired")
+				self.context.logger.debug("The delegated credentials expired")
 			elif remainingLife >= timedelta(hours = 1):
-				self.logger.debug("Not bothering doing the delegation")
+				self.context.logger.debug("Not bothering doing the delegation")
 				return delegationId
 							
 			# Ask for the request
-			self.logger.debug("Delegating")
+			self.context.logger.debug("Delegating")
 			x509Request = self._getProxyRequest(delegationId)
 					
 			# Sign request
-			self.logger.debug("Signing request")
+			self.context.logger.debug("Signing request")
 			x509Proxy = self._signRequest(x509Request, lifetime)
 			x509ProxyPEM = self._fullProxyChain(x509Proxy)
 					

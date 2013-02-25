@@ -1,4 +1,4 @@
-from fts3.rest.client import Inquirer
+from fts3.rest.client import Inquirer, Context
 from base import Base
 from utils import *
 import logging
@@ -28,7 +28,8 @@ class JobShower(Base):
 
 
 	def __call__(self):
-		inquirer = Inquirer(self.options.endpoint)
+		context  = Context(self.options.endpoint)
+		inquirer = Inquirer(context)
 		job      = inquirer.getJobStatus(self.jobId)
 		
 		if not self.options.json:

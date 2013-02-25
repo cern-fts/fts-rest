@@ -1,6 +1,6 @@
 from base import Base
 from datetime import timedelta
-from fts3.rest.client import Submitter, Delegator, Inquirer
+from fts3.rest.client import Submitter, Delegator, Inquirer, Context
 import logging
 import sys
 import time
@@ -70,15 +70,15 @@ class JobSubmitter(Base):
 			self.logger.setLevel(logging.DEBUG)
 
 
-	def _doSubmit(self, submitter):
+	def _doSubmit(self):	
 		checksum_method = None
 		if self.options.compare_checksum:
 			self.options.compare_checksum = 'compare'
 		
-		delegator = Delegator(self.options.endpoint,
-								  lifetime = timedelta(minutes = self.options.proxy_lifetime))
-		delegationId = delegator.delegate()
-			
+		delegator = Delegator(self.context)
+		delegationId = delegator.delegate(timedelta(minutes = self.options.proxy_lifetime))
+		
+		submitter = Submitter(self.context)	
 		jobId = submitter.submit(self.source, self.destination,
 								 checksum          = self.checksum,
 								 bring_online      = self.options.bring_online,
@@ -110,11 +110,12 @@ class JobSubmitter(Base):
 		return jobId
 
 
-	def _doDryRun(self, submitter):
+	def _doDryRun(self):
 		checksum_method = None
 		if self.options.compare_checksum:
 			self.options.compare_checksum = 'compare'
 			
+		submitter = Submitter(self.context)
 		print submitter.buildSubmission(self.source, self.destination,
 								 checksum          = self.checksum,
 								 bring_online      = self.options.bring_online,
@@ -135,9 +136,10 @@ class JobSubmitter(Base):
 
 
 	def __call__(self):
-		submitter = Submitter(self.options.endpoint)
+		self.context = Context(self.options.endpoint)
+		
 		if not self.options.dry_run:
-			return self._doSubmit(submitter)
+			return self._doSubmit()
 		else:
-			return self._doDryRun(submitter)
+			return self._doDryRun()
 

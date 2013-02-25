@@ -1,14 +1,13 @@
-from base import Actor
 from exceptions import *
 import json
 import urllib
 
 
 
-class Submitter(Actor):
+class Submitter(object):
 	
-	def __init__(self, *args, **kwargs):
-		super(Submitter, self).__init__(*args, **kwargs)
+	def __init__(self, context):
+		self.context = context
 
 
 	def buildSubmission(self, source, destination, **kwargs):
@@ -38,5 +37,5 @@ class Submitter(Actor):
 
 	def submit(self, source, destination, **kwargs):
 		job = self.buildSubmission(source, destination, **kwargs)
-		r = json.loads(self.requester.put("%s/jobs" % self.endpoint, job))
+		r = json.loads(self.context.put('/jobs', job))
 		return r['job_id']

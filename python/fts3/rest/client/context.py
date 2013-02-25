@@ -29,7 +29,7 @@ def getX509List(file, logger):
 
 
 # Base class for actors
-class Actor(object):
+class Context(object):
 	
 	def _setLogger(self, logger):
 		if logger:
@@ -73,7 +73,7 @@ class Actor(object):
 			
 	def _validateEndpoint(self):
 		try:
-			endpointInfo = json.loads(self.requester.get(self.endpoint))
+			endpointInfo = json.loads(self.get('/'))
 			endpointInfo['url'] = self.endpoint
 			
 			if endpointInfo['api'] != 'Mk.1':
@@ -91,7 +91,7 @@ class Actor(object):
 		self._setLogger(logger)
 		self._setEndpoint(endpoint)
 		self._setX509(ucert, ukey)
-		self.requester = RequestFactory(self.ucert, self.ukey)
+		self._requester = RequestFactory(self.ucert, self.ukey)
 		self.endpointInfo = self._validateEndpoint()
 		
 		# Log obtained information
@@ -103,4 +103,11 @@ class Actor(object):
 		
 	def getEndpointInfo(self):		
 		return self.endpointInfo
-
+	
+	
+	def get(self, path):
+		return self._requester.get("%s/%s" % (self.endpoint, path))
+	
+	
+	def put(self, path, body):
+		return self._requester.put("%s/%s" % (self.endpoint, path), body)
