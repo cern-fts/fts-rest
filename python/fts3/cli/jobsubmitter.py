@@ -96,8 +96,11 @@ class JobSubmitter(Base):
 								 reuse             = self.options.reuse
 							 	)
 		
-		self.logger.info("Job successfully submitted.")
-		self.logger.info("Job id: %s" % jobId)
+		if self.options.json:
+			self.logger.info(jobId)
+		else:
+			self.logger.info("Job successfully submitted.")
+			self.logger.info("Job id: %s" % jobId)
 	
 		if jobId and self.options.blocking:
 			inquirer = Inquirer(self.options.endpoint)
