@@ -23,7 +23,7 @@ def populatedName(components):
 
 
 def generateProxyRequest(dnList):
-	# By convection, use the longer representation
+	# By convention, use the longer representation
 	userDN = dnList[-1]
 	
 	requestKeyPair = RSA.gen_key(512, 65537)
