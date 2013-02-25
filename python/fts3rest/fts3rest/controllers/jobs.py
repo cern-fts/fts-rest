@@ -20,7 +20,7 @@ DEFAULT_PARAMS = {
 	'copy_pin_lifetime': -1,
 	'fail_nearline'    : 'N',
 	'gridftp'          : '',
-	'job_metadata'     : '',
+	'job_metadata'     : None,
 	'lan_connection'   : 'N',
 	'overwrite'        : 'N',
 	'reuse'            : '',
