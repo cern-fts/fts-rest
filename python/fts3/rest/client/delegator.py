@@ -1,10 +1,11 @@
 from base import Actor
 from datetime import datetime, timedelta
 from exceptions import *
-from M2Crypto import X509, RSA, EVP, ASN1
+from M2Crypto import X509, RSA, EVP, ASN1, m2
 import json
 import pytz
 import sys
+import time
 
 
 
@@ -32,8 +33,12 @@ class Delegator(Actor):
 		
 		
 	def _getProxyRequest(self, delegationId):
-		proxy = self.requester.get(self.delegationRoot + '/' + delegationId + '/request')
-		return X509.load_request_string(proxy)
+		requestPEM = self.requester.get(self.delegationRoot + '/' + delegationId + '/request')
+		x509Request = X509.load_request_string(requestPEM)
+		if x509Request.verify(x509Request.get_pubkey()) != 1:
+			raise ServerError('Error verifying signature on the request')		
+		# Return
+		return x509Request
 	
 	
 	def _signRequest(self, x509Request, lifetime):		
@@ -42,21 +47,50 @@ class Delegator(Actor):
 		notAfter  = ASN1.ASN1_UTCTIME()
 		notAfter.set_datetime(datetime.now(pytz.UTC) + lifetime)
 		
+		proxySubject = X509.X509_Name()
+		for c in self.x509.get_subject():
+			m2.x509_name_add_entry(proxySubject._ptr(), c._ptr(), -1, 0)
+		proxySubject.add_entry_by_txt('commonName', 0x1000, 'proxy', -1, -1, 0)
+		
 		proxy = X509.X509()
-		proxy.set_subject(x509Request.get_subject())
-		proxy.set_serial_number(x509Request.get_subject().as_hash())
+		proxy.set_version(2)
+		proxy.set_subject(proxySubject)
+		proxy.set_serial_number(long(time.time()))
 		proxy.set_version(x509Request.get_version())
-		proxy.set_not_before(notBefore)
-		proxy.set_not_after(notAfter)
 		proxy.set_issuer(self.x509.get_subject())
 		proxy.set_pubkey(x509Request.get_pubkey())
+		
+		# Make sure the proxy is not longer than any other inside the chain
+		any_rfc_proxies = False
+		for cert in self.x509List:
+			if cert.get_not_after() < notAfter:
+				notAfter = cert.get_not_after()
+			try:
+				cert.get_ext('1.3.6.1.5.5.7.1.14')
+				any_rfc_proxies = True
+			except:
+				pass	
+
+		proxy.set_not_after(notAfter)
+		proxy.set_not_before(notBefore)
+		
+		if any_rfc_proxies:
+			raise NotImplementedError('RFC proxies not supported yet')		
+		
 		proxy.sign(self.evpKey, 'sha1')
 		
 		return proxy
 	
 	
 	def _putProxy(self, delegationId, x509Proxy):
-		self.requester.put(self.delegationRoot + '/' + delegationId + '/credential', x509Proxy.as_pem())
+		self.requester.put(self.delegationRoot + '/' + delegationId + '/credential', x509Proxy)
+
+
+	def _fullProxyChain(self, x509Proxy):
+		chain = x509Proxy.as_pem()
+		for cert in self.x509List:
+			chain += cert.as_pem()
+		return chain
 		
 
 	def delegate(self, lifetime = timedelta(hours = 7)):	
@@ -77,13 +111,14 @@ class Delegator(Actor):
 			# Ask for the request
 			self.logger.debug("Delegating")
 			x509Request = self._getProxyRequest(delegationId)
-			
+					
 			# Sign request
-			self.logger.debug("Signing request for %s" % x509Request.get_subject().as_text())
+			self.logger.debug("Signing request")
 			x509Proxy = self._signRequest(x509Request, lifetime)
-			
+			x509ProxyPEM = self._fullProxyChain(x509Proxy)
+					
 			# Send the signed proxy
-			self._putProxy(delegationId, x509Proxy)
+			self._putProxy(delegationId, x509ProxyPEM)
 				
 			return delegationId			
 		

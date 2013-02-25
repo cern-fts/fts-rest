@@ -1,7 +1,8 @@
 from fts3.orm import CredentialCache, Credential
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
-from M2Crypto import X509, RSA, EVP
+from M2Crypto import X509, RSA, EVP, BIO
+from pylons.controllers.util import abort
 from pylons.decorators import rest
 from pylons import request
 import pytz
@@ -24,18 +25,15 @@ def populatedName(components):
 def generateProxyRequest(dnList):
 	# By convection, use the longer representation
 	userDN = dnList[-1]
-			
-	components = getDNComponents(userDN)
-	components.append(('CN', 'proxy'))
 	
-	requestKeyPair = RSA.gen_key(1024, 65537)
+	requestKeyPair = RSA.gen_key(512, 65537)
 	requestPKey = EVP.PKey()
 	requestPKey.assign_rsa(requestKeyPair)
 	request = X509.Request()
 	request.set_pubkey(requestPKey)	
-	request.set_subject(populatedName(components))
-	request.set_version(2)
-	request.sign(requestPKey, 'sha1')
+	request.set_subject(populatedName([('O', 'Dummy')]))
+	request.set_version(0)
+	request.sign(requestPKey, 'md5')
 	
 	return (request, requestPKey)
 
@@ -71,6 +69,24 @@ class DelegationController(BaseController):
 		
 		start_response('200 OK', [('X-Delegation-ID', credentialCache.dlg_id)])
 		return credentialCache.cert_request
+
+
+	def _readX509List(self, pemString):
+		x509List = []
+		
+		bio = BIO.MemoryBuffer(pemString)
+		try:
+			while True:
+				cert = X509.load_cert_bio(bio)
+				x509List.append(cert)
+		except X509.X509Error:
+			pass
+		
+		return x509List
+	
+	def _buildFullProxyPEM(self, proxyPEM, privKey):
+		x509List = self._readX509List(proxyPEM)
+		return x509List[0].as_pem() + privKey + ''.join(map(lambda x: x.as_pem(), x509List[1:]))
 	
 	
 	@rest.restrict('PUT')
@@ -78,14 +94,14 @@ class DelegationController(BaseController):
 		user = request.environ['fts3.User.Credentials']
 		credentialCache = Session.query(CredentialCache).get((id, user.user_dn))
 		
-		x509ProxyPEM = request.body
-		x509Proxy    = X509.load_cert_string(x509ProxyPEM)
-		
+		x509ProxyPEM        = request.body
+		x509Proxy           = X509.load_cert_string(x509ProxyPEM)
 		proxyExpirationTime = x509Proxy.get_not_after().get_datetime().replace(tzinfo = None)
+		x509FullProxyPEM    = self._buildFullProxyPEM(x509ProxyPEM, credentialCache.priv_key)
 		
 		credential = Credential(dlg_id           = id,
 								dn               = user.user_dn,
-								proxy            = x509ProxyPEM,
+								proxy            = x509FullProxyPEM,
 								voms_attrs       = credentialCache.voms_attrs,
 								termination_time = proxyExpirationTime)
 		
