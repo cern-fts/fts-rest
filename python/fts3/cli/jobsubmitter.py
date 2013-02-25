@@ -45,6 +45,8 @@ class JobSubmitter(Base):
 								  help = 'use LAN as the connection type.')
 		self.optParser.add_option('--fail-nearline', dest = 'fail_nearline', default = False, action = 'store_true',
 								  help = 'fail the transfer is the file is nearline.')
+		self.optParser.add_option('--dry-run', dest = 'dry_run', default = False, action = 'store_true',
+								  help = 'do not send anything, just print the JSON message.')
 		
 		(self.options, self.args) = self.optParser.parse_args(argv)
 		
@@ -68,16 +70,15 @@ class JobSubmitter(Base):
 			self.logger.setLevel(logging.DEBUG)
 
 
-	def __call__(self):
-		delegator = Delegator(self.options.endpoint,
-							  lifetime = timedelta(minutes = self.options.proxy_lifetime))
-		delegationId = delegator.delegate()
-		
+	def _doSubmit(self, submitter):
 		checksum_method = None
 		if self.options.compare_checksum:
-			checksum_method = 'compare'
-	
-		submitter = Submitter(self.options.endpoint)
+			self.options.compare_checksum = 'compare'
+		
+		delegator = Delegator(self.options.endpoint,
+								  lifetime = timedelta(minutes = self.options.proxy_lifetime))
+		delegationId = delegator.delegate()
+			
 		jobId = submitter.submit(self.source, self.destination,
 								 checksum          = self.checksum,
 								 bring_online      = self.options.bring_online,
@@ -93,11 +94,11 @@ class JobSubmitter(Base):
 								 overwrite         = self.options.overwrite,
 								 copy_pin_lifetime = self.options.pin_lifetime,
 								 reuse             = self.options.reuse
-								 )
+							 	)
 		
 		self.logger.info("Job successfully submitted.")
 		self.logger.info("Job id: %s" % jobId)
-		
+	
 		if jobId and self.options.blocking:
 			inquirer = Inquirer(self.options.endpoint)
 			while True:
@@ -105,5 +106,38 @@ class JobSubmitter(Base):
 				job = inquirer.getJobStatus(jobId)
 				if job['job_state'] not in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE']:
 					break;
-
+				
 		return jobId
+
+
+	def _doDryRun(self, submitter):
+		checksum_method = None
+		if self.options.compare_checksum:
+			self.options.compare_checksum = 'compare'
+			
+		print submitter.buildSubmission(self.source, self.destination,
+								 checksum          = self.checksum,
+								 bring_online      = self.options.bring_online,
+								 checksum_method   = checksum_method,
+								 spacetoken        = self.options.destination_token,
+								 source_spacetoken = self.options.source_token,
+								 fail_nearline     = self.options.fail_nearline,
+								 file_metadata     = self.options.file_metadata,
+								 filesize          = self.options.file_size,
+								 gridftp           = self.options.gridftp_params,
+								 job_metadata      = self.options.job_metadata,
+								 lan_connection    = self.options.lan_connection,
+								 overwrite         = self.options.overwrite,
+								 copy_pin_lifetime = self.options.pin_lifetime,
+								 reuse             = self.options.reuse
+							 	)
+		return None
+
+
+	def __call__(self):
+		submitter = Submitter(self.options.endpoint)
+		if not self.options.dry_run:
+			return self._doSubmit(submitter)
+		else:
+			return self._doDryRun(submitter)
+

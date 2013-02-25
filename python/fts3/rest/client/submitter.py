@@ -11,7 +11,7 @@ class Submitter(Actor):
 		super(Submitter, self).__init__(*args, **kwargs)
 
 
-	def _buildSubmission(self, source, destination, **kwargs):
+	def buildSubmission(self, source, destination, **kwargs):
 		job = dict()
 
 		job['transfers'] = []
@@ -37,6 +37,6 @@ class Submitter(Actor):
 
 
 	def submit(self, source, destination, **kwargs):
-		job = self._buildSubmission(source, destination, **kwargs)
+		job = self.buildSubmission(source, destination, **kwargs)
 		r = json.loads(self.requester.put("%s/jobs" % self.endpoint, job))
 		return r['job_id']
