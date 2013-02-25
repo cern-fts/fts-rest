@@ -1,3 +1,4 @@
+from jobcanceller import JobCanceller
 from joblister import JobLister
 from jobshower import JobShower
 from jobsubmitter import JobSubmitter

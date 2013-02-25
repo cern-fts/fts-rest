@@ -39,3 +39,7 @@ class Submitter(object):
 		job = self.buildSubmission(source, destination, **kwargs)
 		r = json.loads(self.context.put('/jobs', job))
 		return r['job_id']
+	
+	
+	def cancel(self, jobId):
+		return json.loads(self.context.delete('/jobs/%s' % jobId))
