@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from exceptions import *
-from M2Crypto import X509, RSA, EVP, ASN1
+from M2Crypto import X509, RSA, EVP, ASN1, BIO
 from request import RequestFactory
 import json
 import logging
@@ -11,32 +11,19 @@ import sys
 
 # Return a list of certificates from the file
 def getX509List(file, logger):
-	SEEKING_CERT = 0
-	LOADING_CERT = 1
-
-	buffer = ""
 	x509List = []
 	
-	fd = open(file, 'r')	
-	status = SEEKING_CERT
-	for line in fd:
-		if line == '-----BEGIN CERTIFICATE-----\n':
-			status = LOADING_CERT
-		elif line == '-----END CERTIFICATE-----\n':
-			buffer += line
-			x509 = X509.load_cert_string(buffer, X509.FORMAT_PEM)
-			x509List.append(x509)
-			
-			logger.debug("Loaded " + x509.get_subject().as_text())
-			
-			buffer = ""
-			status = SEEKING_CERT
-			
-		if status == LOADING_CERT:
-			buffer += line
+	fd = BIO.openfile(file, 'rb')
+	cert = X509.load_cert_bio(fd)
+	try:
+		while True:
+			x509List.append(cert)
+			logger.debug("Loaded " + cert.get_subject().as_text())
+			cert = X509.load_cert_bio(fd)
+	except X509.X509Error:
+		pass # When there are no more certs, this is what we get, so it is fine
 				
-	del fd
-	
+	del fd	
 	return x509List
 
 
