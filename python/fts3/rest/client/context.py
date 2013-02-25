@@ -106,8 +106,12 @@ class Context(object):
 	
 	
 	def get(self, path):
-		return self._requester.get("%s/%s" % (self.endpoint, path))
+		return self._requester.method('GET', "%s/%s" % (self.endpoint, path))
 	
 	
 	def put(self, path, body):
-		return self._requester.put("%s/%s" % (self.endpoint, path), body)
+		return self._requester.method('PUT', "%s/%s" % (self.endpoint, path), body)
+	
+	
+	def delete(self, path):
+		return self._requester.method('DELETE', "%s/%s" % (self.endpoint, path))

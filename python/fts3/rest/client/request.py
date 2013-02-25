@@ -37,7 +37,7 @@ class RequestFactory(object):
 			self.capath = '/etc/grid-security/certificates'
 
 
-	def _handleException(self, e):		
+	def _handleException(self, url, e):		
 		if e.code == 400:
 			raise ClientError(e.reason)
 		elif e.code >= 401 and e.code <= 403:
@@ -50,24 +50,13 @@ class RequestFactory(object):
 			raise ServerError(e.reason)
 
 
-	def get(self, url, headers = {}):
+	def method(self, method, url, body = None, headers = {}):
 		opener = urllib2.build_opener(HTTPSWithCertHandler(self.ucert, self.ukey))
 		
 		try:
-			request = urllib2.Request(url, headers = headers)
+			request = urllib2.Request(url, headers = headers, data = body)
+			request.get_method = lambda: method
 			response = opener.open(request)
 			return response.read()
 		except urllib2.HTTPError, e:
-			self._handleException(e)
-			
-	def put(self, url, body, headers = {}):
-		opener = urllib2.build_opener(HTTPSWithCertHandler(self.ucert, self.ukey))
-		
-		try:
-			request = urllib2.Request(url, data = body, headers = headers)
-			request.get_method = lambda: 'PUT'
-			response = opener.open(request)
-			return response.read()
-		except urllib2.HTTPError, e:
-			self._handleException(e)
-
+			self._handleException(url, e)
