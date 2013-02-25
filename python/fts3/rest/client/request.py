@@ -37,6 +37,18 @@ class RequestFactory(object):
 			self.capath = '/etc/grid-security/certificates'
 
 
+	def _handleException(self, e):		
+		if e.code == 400:
+			raise ClientError(e.reason)
+		elif e.code >= 401 and e.code <= 403:
+			raise Unauthorized()
+		elif e.code == 404:
+			raise NotFound(url)
+		elif e.code > 404 and e.code < 500:
+			raise ClientError(e.reason)
+		elif e.code >= 500:
+			raise ServerError(e.reason)
+
 
 	def get(self, url, headers = {}):
 		opener = urllib2.build_opener(HTTPSWithCertHandler(self.ucert, self.ukey))
@@ -46,16 +58,7 @@ class RequestFactory(object):
 			response = opener.open(request)
 			return response.read()
 		except urllib2.HTTPError, e:
-			if e.code == 400:
-				raise ClientError(e.reason)
-			elif e.code >= 401 and e.code <= 403:
-				raise Unauthorized()
-			elif e.code == 404:
-				raise NotFound(url)
-			elif e.code > 404 and e.code < 500:
-				raise ClientError(e.reason)
-			elif e.code >= 500:
-				raise ServerError(e.reason)
+			self._handleException(e)
 			
 	def put(self, url, body, headers = {}):
 		opener = urllib2.build_opener(HTTPSWithCertHandler(self.ucert, self.ukey))
@@ -66,14 +69,5 @@ class RequestFactory(object):
 			response = opener.open(request)
 			return response.read()
 		except urllib2.HTTPError, e:
-			if e.code == 400:
-				raise ClientError(e.reason)
-			elif e.code >= 401 and e.code <= 403:
-				raise Unauthorized()
-			elif e.code == 404:
-				raise NotFound(url)
-			elif e.code > 404 and e.code < 500:
-				raise ClientError(e.reason)
-			elif e.code >= 500:
-				raise ServerError(e.reason)
+			self._handleException(e)
 
