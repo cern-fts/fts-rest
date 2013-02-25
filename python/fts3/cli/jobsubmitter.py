@@ -37,7 +37,7 @@ class JobSubmitter(Base):
 								  help = 'the source space token or its description.')
 		self.optParser.add_option('-K', '--compare-checksum', dest = 'compare_checksum',
 								  help = 'compare checksums between source and destination.')
-		self.optParser.add_option('--copy-pin-lifetime', dest = 'pin_lifetime', type = 'long', default = 28800,
+		self.optParser.add_option('--copy-pin-lifetime', dest = 'pin_lifetime', type = 'long', default = -1,
 								  help = 'pin lifetime of the copy in seconds.')
 		self.optParser.add_option('--bring-online',  dest = 'bring_online', type = 'long', default = None,
 								  help = 'bring online timeout in seconds.')

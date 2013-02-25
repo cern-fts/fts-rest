@@ -23,7 +23,7 @@ DEFAULT_PARAMS = {
 	'job_metadata'     : '',
 	'lan_connection'   : 'N',
 	'overwrite'        : 'N',
-	'reuse'            : 'N',
+	'reuse'            : '',
 	'source_spacetoken': '',
 	'spacetoken'       : ''
 }
