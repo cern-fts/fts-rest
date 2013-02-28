@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import common
 from fts3rest.lib.middleware import fts3auth
 import unittest
 
@@ -67,6 +66,3 @@ class TestUserCredentials(unittest.TestCase):
 		self.assertEqual(fts3auth.ALL, creds.getGrantedLevelFor(fts3auth.CONFIG))
 		self.assertEqual(fts3auth.ALL, creds.getGrantedLevelFor(fts3auth.TRANSFER))
 		self.assertEqual(fts3auth.ALL, creds.getGrantedLevelFor(fts3auth.DELEGATION))
-
-if __name__ == '__main__':
-    unittest.main()

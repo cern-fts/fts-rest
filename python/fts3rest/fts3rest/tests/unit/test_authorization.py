@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-import common
 import unittest
 from fts3rest.lib.middleware import fts3auth
 from webob.exc import HTTPForbidden
@@ -71,8 +69,3 @@ class TestAuthorization(unittest.TestCase):
 		self.assertTrue(func_allowed(1, 1))
 		
 		self.assertRaises(HTTPForbidden, func_forbidden, 0, 1)
-
-
-
-if __name__ == '__main__':
-    unittest.main()
