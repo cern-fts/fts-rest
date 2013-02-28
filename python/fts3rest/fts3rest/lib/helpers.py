@@ -5,6 +5,7 @@ from fts3.orm.base import Base
 from pylons.decorators.util import get_pylons
 from StringIO import StringIO
 import json
+import os
 
 
 class ClassEncoder(json.JSONEncoder):
@@ -62,6 +63,10 @@ def fts3_config_load(path = '/etc/fts3/fts3config'):
 	
 	if dbType.lower() == 'mysql':
 		fts3cfg['sqlalchemy.url'] = "mysql://%s:%s@%s" % (dbUser, dbPass, dbConn)
+	elif dbType.lower() == 'sqlite':
+		if not dbConn.startswith('/'):
+			dbConn = os.path.abspath(dbConn)
+		fts3cfg['sqlalchemy.url'] = "sqlite:///%s" % (dbConn)
 	else:
 		raise ValueError("Database type '%s' is not recognized" % dbType)
 	

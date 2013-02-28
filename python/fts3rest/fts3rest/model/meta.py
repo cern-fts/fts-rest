@@ -8,4 +8,4 @@ __all__ = ['Base', 'Session']
 Session = scoped_session(sessionmaker())
 
 # The declarative Base
-Base = declarative_base()
+from fts3.orm.base import Base

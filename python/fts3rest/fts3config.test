@@ -1,0 +1,20 @@
+Port=8443
+IP=0.0.0.0
+
+DbType=sqlite
+DbUserName=
+DbPassword=
+DbConnectString=/tmp/fts3.db
+
+Alias=Testing
+#TransferLogDirectory=/var/log/fts3/
+Infosys=lcg-bdii.cern.ch:2170
+Optimizer=true
+HttpKeepAlive=true
+AuthorizedVO=testers.eu-emi.eu;*
+CleanRecordsHost=false
+
+
+[roles]
+#Public = :deleg;vo:transfer;all:config
+Public = all:*
