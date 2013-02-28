@@ -96,15 +96,18 @@ class JobsController(BaseController):
 		"""PUT /jobs: Submits a new job"""
 		# First, the request has to be valid JSON
 		try:
-			if request.method == 'PUI':
+			if request.method == 'PUT':
 				unencodedBody = request.body
 			elif request.method == 'POST':
-				unencodedBody = urllib.unquote_plus(request.body)
+				if request.content_type == 'application/json':
+					unencodedBody = request.body
+				else:
+					unencodedBody = urllib.unquote_plus(request.body)
 			else:
 				abort(400, 'Unsupported method %s' % request.method)
 				
-			print str(unencodedBody)
 			submittedDict = json.loads(unencodedBody)
+						
 		except ValueError, e:
 			abort(400, 'Badly formatted JSON request')
 
@@ -219,7 +222,7 @@ class JobsController(BaseController):
 		except ValueError:
 			abort(400, 'Invalid value within the request')
 		except TypeError, e:
-			abort(400, 'Malformed request: %s' % str(e))
+			raise Exception(json)#abort(400, 'Malformed request: %s' % str(e))
 		except KeyError, e:
 			abort(400, 'Missing parameter: %s' % str(e))
 

@@ -36,6 +36,7 @@ class UserCredentials(object):
 		self.dn        = []
 		self.voms_cred = []
 		self.vos       = []
+		self.delegation_id = None
 		
 		# Try first GRST_ variables
 		grstIndex = 0
