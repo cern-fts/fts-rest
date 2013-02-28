@@ -11,6 +11,7 @@ import json
 import re
 import socket
 import types
+import urllib
 import uuid
 
 
@@ -95,7 +96,15 @@ class JobsController(BaseController):
 		"""PUT /jobs: Submits a new job"""
 		# First, the request has to be valid JSON
 		try:
-			submittedDict = json.loads(request.body)
+			if request.method == 'PUI':
+				unencodedBody = request.body
+			elif request.method == 'POST':
+				unencodedBody = urllib.unquote_plus(request.body)
+			else:
+				abort(400, 'Unsupported method %s' % request.method)
+				
+			print str(unencodedBody)
+			submittedDict = json.loads(unencodedBody)
 		except ValueError, e:
 			abort(400, 'Badly formatted JSON request')
 

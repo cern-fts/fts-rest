@@ -37,7 +37,10 @@ class RequestFactory(object):
 			self.capath = '/etc/grid-security/certificates'
 
 
-	def _handleException(self, url, e):		
+	def _handleException(self, url, e):
+		f = open('/tmp/request-error.html', 'w')
+		print >>f, e.read()
+		del f
 		if e.code == 400:
 			raise ClientError(e.reason)
 		elif e.code >= 401 and e.code <= 403:

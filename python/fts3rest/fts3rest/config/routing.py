@@ -31,12 +31,14 @@ def make_map(config):
 	# Jobs
 	map.connect('/jobs', controller='jobs', action='index',
 				conditions = dict(method = ['GET']))
+	map.connect('/jobs/', controller='jobs', action='index',
+				conditions = dict(method = ['GET']))
 	map.connect('/jobs/{id}', controller='jobs', action='show',
 				conditions = dict(method = ['GET']))
 	map.connect('/jobs/{id}', controller='jobs', action='cancel',
 				conditions = dict(method = ['DELETE']))
 	map.connect('/jobs', controller='jobs', action='submit',
-			    conditions = dict(method = ['PUT']))
+			    conditions = dict(method = ['PUT', 'POST']))
 	
 	# Configuration audit
 	map.connect('/config/audit', controller='config', action='audit')

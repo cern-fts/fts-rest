@@ -7,6 +7,7 @@ class File(Base):
 	__tablename__ = 't_file'
 	
 	file_id      	     = Column(Integer, primary_key = True)
+	file_index           = Column(Integer)
 	job_id         	     = Column(String(36), ForeignKey('t_job.job_id'))
 	symbolicName 	     = Column(String(255))
 	file_state   	     = Column(String(32))
@@ -35,8 +36,9 @@ class File(Base):
 	retry       	     = Column(Integer)
 	user_filesize        = Column(Integer)
 	file_metadata        = Column(String(255))
-	staging_start        = Column(DateTime)  
-	staging_finished     = Column(DateTime)   
+	staging_start        = Column(DateTime)
+	staging_finished     = Column(DateTime)
+	selection_strategy   = Column(String(255))
 	
 	def isFinished(self):
 		return self.job_state in ['SUBMITTED', 'READY', 'ACTIVE']

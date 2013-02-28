@@ -115,3 +115,6 @@ class Context(object):
 	
 	def delete(self, path):
 		return self._requester.method('DELETE', "%s/%s" % (self.endpoint, path))
+	
+	def post(self, path, body):
+		return self._requester.method('POST', "%s/%s" % (self.endpoint, path), body)
