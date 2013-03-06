@@ -37,7 +37,7 @@ class Submitter(object):
 
 	def submit(self, source, destination, **kwargs):
 		job = self.buildSubmission(source, destination, **kwargs)
-		r = json.loads(self.context.post('/jobs', job))
+		r = json.loads(self.context.post_json('/jobs', job))
 		return r['job_id']
 	
 	
