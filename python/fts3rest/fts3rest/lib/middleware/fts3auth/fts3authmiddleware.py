@@ -1,5 +1,5 @@
 from fts3rest.lib.base import Session
-from fts3.orm import BannedDN
+from fts3.model import BannedDN
 from credentials import UserCredentials
 from webob.exc import HTTPForbidden
 

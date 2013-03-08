@@ -8,4 +8,4 @@ __all__ = ['Base', 'Session']
 Session = scoped_session(sessionmaker())
 
 # The declarative Base
-from fts3.orm.base import Base
+from fts3.model.base import Base

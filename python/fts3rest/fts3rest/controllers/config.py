@@ -1,4 +1,4 @@
-from fts3.orm import ConfigAudit
+from fts3.model import ConfigAudit
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.middleware.fts3auth import authorize, authorized

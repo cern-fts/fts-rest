@@ -1,7 +1,7 @@
 from ConfigParser import SafeConfigParser
 from datetime import datetime
 from decorator import decorator
-from fts3.orm.base import Base
+from fts3.model.base import Base
 from pylons.decorators.util import get_pylons
 from StringIO import StringIO
 import json

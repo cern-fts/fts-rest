@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-from fts3.orm import Job, File, JobActiveStates
-from fts3.orm import Credential, BannedSE
+from fts3.model import Job, File, JobActiveStates
+from fts3.model import Credential, BannedSE
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.middleware.fts3auth import authorize, authorized

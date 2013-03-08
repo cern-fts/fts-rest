@@ -1,6 +1,6 @@
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
-from fts3.orm import CredentialVersion, SchemaVersion
+from fts3.model import CredentialVersion, SchemaVersion
 from pylons import request
 
 class MiscController(BaseController):

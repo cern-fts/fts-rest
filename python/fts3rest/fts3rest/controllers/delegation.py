@@ -1,4 +1,4 @@
-from fts3.orm import CredentialCache, Credential
+from fts3.model import CredentialCache, Credential
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from M2Crypto import X509, RSA, EVP, BIO
