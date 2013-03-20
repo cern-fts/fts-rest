@@ -67,6 +67,8 @@ def fts3_config_load(path = '/etc/fts3/fts3config'):
 		if not dbConn.startswith('/'):
 			dbConn = os.path.abspath(dbConn)
 		fts3cfg['sqlalchemy.url'] = "sqlite:///%s" % (dbConn)
+	elif dbType.lower() == 'oracle':
+		fts3cfg['sqlalchemy.url'] = "oracle://%s:%s@%s" % (dbUser, dbPass, dbConn)
 	else:
 		raise ValueError("Database type '%s' is not recognized" % dbType)
 	
