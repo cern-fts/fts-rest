@@ -41,6 +41,7 @@ class File(Base):
 	staging_start        = Column(DateTime)
 	staging_finished     = Column(DateTime)
 	selection_strategy   = Column(String(255))
+	bringonline_token    = Column(String(255))
 	
 	def isFinished(self):
 		return self.job_state in ['SUBMITTED', 'READY', 'ACTIVE']
