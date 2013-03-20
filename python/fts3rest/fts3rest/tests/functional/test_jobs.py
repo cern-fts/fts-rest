@@ -40,13 +40,13 @@ class TestJobs(TestController):
 		
 		assert job.user_dn   == '/DC=ch/DC=cern/OU=Test User'
 		assert job.job_state == 'SUBMITTED'
-		assert job.source_se == 'source.es'
-		assert job.dest_se   == 'dest.ch'
 
 		assert len(files) == 1
 		assert files[0].file_state  == 'SUBMITTED'
 		assert files[0].source_surl == 'root://source.es/file'
-		assert files[0].dest_surl   ==  'root://dest.ch/file'
+		assert files[0].dest_surl   == 'root://dest.ch/file'
+		assert files[0].source_se   == 'root://source.es'
+		assert files[0].dest_se     == 'root://dest.ch'
 
 	def test_submit(self):
 		self.setupGridsiteEnvironment()

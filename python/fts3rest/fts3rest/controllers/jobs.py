@@ -124,12 +124,6 @@ class JobsController(BaseController):
 		# Populate the job and file
 		job = self._setupJobFromDict(submittedDict, user)
 		
-		# Banned?
-		if self._isSeBanned(job.source_se):
-			abort(403, 'Source storage element is banned')
-		if self._isSeBanned(job.dest_se):
-			abort(403, 'Destination storage element is banned')
-		
 		# Return it
 		Session.merge(job)
 		Session.commit()
@@ -140,16 +134,6 @@ class JobsController(BaseController):
 		try:
 			if len(json['transfers']) == 0:
 				abort(400, 'No transfers specified')
-				
-			# Get source and destination se, and validate
-			source_se = self._getSE(json['transfers'][0]['source'])
-			dest_se   = self._getSE(json['transfers'][0]['destination'])
-			
-			for t in json['transfers']:
-				if self._getSE(t['source']) != source_se:
-					abort(400, 'Not all source files belong to the same storage elements')
-				if self._getSE(t['destination']) != dest_se:
-					abort(400, 'Not all destination files belong to the same storage elements')
 								
 			# Initialize defaults
 			# If the client is giving a NULL for a parameter with a default,
@@ -171,8 +155,6 @@ class JobsController(BaseController):
 			job.reuse_job                = self._yesOrNo(params['reuse'])
 			job.job_params               = params['gridftp']
 			job.submit_host              = socket.getfqdn() 
-			job.source_se                = source_se
-			job.dest_se                  = dest_se
 			job.user_dn                  = user.user_dn
 			
 			if 'credential' in json:
@@ -204,6 +186,8 @@ class JobsController(BaseController):
 				file.file_state    = 'SUBMITTED'
 				file.source_surl   = t['source']
 				file.dest_surl     = t['destination']
+				file.source_se     = self._getSE(file.source_surl)
+				file.dest_se       = self._getSE(file.dest_surl)
 				
 				if 'checksum' in t and t['checksum']:
 					file.checksum = t['checksum']
@@ -228,15 +212,15 @@ class JobsController(BaseController):
 
 			
 	def _getSE(self, uri):
-		match = re.match('.+://([a-zA-Z0-9\\.-]+)(:\\d+)?/.+', uri)
+		match = re.match('(.+://[a-zA-Z0-9\\.-]+)(:\\d+)?/.+', uri)
 		if not match:
 			raise ValueError('"%s" is an invalid SURL' % uri)
 		return match.group(1)
 
 	
-	def _isSeBanned(self, se):
-		banned = Session.query(BannedSE).get(se)
-		return banned is not None
+	#def _isSeBanned(self, se):
+	#	banned = Session.query(BannedSE).get(se)
+	#	return banned is not None
 	
 	
 	def _yesOrNo(self, value):
