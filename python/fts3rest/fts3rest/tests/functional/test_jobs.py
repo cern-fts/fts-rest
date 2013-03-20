@@ -1,6 +1,6 @@
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.orm import Job, File
+from fts3.model import Job, File
 from routes import url_for
 import json
 

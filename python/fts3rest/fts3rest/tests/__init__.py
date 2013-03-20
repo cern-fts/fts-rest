@@ -20,7 +20,7 @@ import pylons.test
 
 from fts3rest.lib.middleware import fts3auth
 from fts3rest.lib.base import Session
-from fts3.orm import Credential
+from fts3.model import Credential
 
 __all__ = ['environ', 'url', 'TestController']
 
