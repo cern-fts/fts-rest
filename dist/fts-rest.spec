@@ -41,6 +41,15 @@ Requires:		python-fts
 %description
 This package provides the FTS3 REST interface
 
+%package cli
+Summary:		FTS3 Rest Interface CLI
+Group:			Applications/Internet
+
+Requires:		python-fts
+
+%description cli
+Command line utilities for the FTS3 REST interface
+
 %prep
 %setup -q -n %{name}-%{version}
 
@@ -62,6 +71,9 @@ rm -rf %{buildroot}
 %{_libexecdir}/fts3
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.ini
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/fts3rest.conf
+
+%files cli
+%{_bindir}/fts-rest-*
 
 %changelog
 * Thu Mar 21 2013 Alejandro Álvarez <aalvarez@cern.ch> - 0.0.1-1
