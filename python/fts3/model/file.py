@@ -3,6 +3,8 @@ from sqlalchemy import ForeignKey, Integer, String
 
 from base import Base
 
+FileActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING']
+
 class File(Base):
 	__tablename__ = 't_file'
 	
@@ -14,7 +16,6 @@ class File(Base):
 	symbolicname 	     = Column(String(255))
 	file_state   	     = Column(String(32))
 	transferhost 	     = Column(String(255))
-	logical_name 	     = Column(String(1100))
 	source_surl          = Column(String(1100))
 	dest_surl            = Column(String(1100))
 	agent_dn             = Column(String(1024))
@@ -24,8 +25,6 @@ class File(Base):
 	reason               = Column(String(2048))
 	num_failures         = Column(Integer)
 	current_failures     = Column(Integer)
-	catalog_failures     = Column(Integer)
-	prestage_failures    = Column(Integer)
 	filesize             = Column(Float)
 	checksum             = Column(String(100))
 	finish_time          = Column(DateTime)
@@ -44,7 +43,7 @@ class File(Base):
 	bringonline_token    = Column(String(255))
 	
 	def isFinished(self):
-		return self.job_state in ['SUBMITTED', 'READY', 'ACTIVE']
+		return self.job_state not in FileActiveStates
 	
 	def __str__(self):
 		return str(self.file_id)
