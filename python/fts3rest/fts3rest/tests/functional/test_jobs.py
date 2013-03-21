@@ -40,6 +40,9 @@ class TestJobs(TestController):
 		
 		assert job.user_dn   == '/DC=ch/DC=cern/OU=Test User'
 		assert job.job_state == 'SUBMITTED'
+		
+		assert job.source_se == 'root://source.es'
+		assert job.dest_se   == 'root://dest.ch'
 
 		assert len(files) == 1
 		assert files[0].file_state  == 'SUBMITTED'
@@ -47,6 +50,7 @@ class TestJobs(TestController):
 		assert files[0].dest_surl   == 'root://dest.ch/file'
 		assert files[0].source_se   == 'root://source.es'
 		assert files[0].dest_se     == 'root://dest.ch'
+
 
 	def test_submit(self):
 		self.setupGridsiteEnvironment()
@@ -77,7 +81,7 @@ class TestJobs(TestController):
 							        params = job,
 							        status = 200)
 		
-		# Make sure it was commited to the DB
+		# Make sure it was committed to the DB
 		jobId = json.loads(answer.body)['job_id']
 		assert len(jobId) > 0
 		
@@ -110,6 +114,48 @@ class TestJobs(TestController):
 		answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
 							  params = json.dumps(job),
 							  status = 400)
+
+
+	def test_submit_multiple_sources(self):
+		self.setupGridsiteEnvironment()
+		self.pushDelegation()
+		job = {'transfers': [{'source': 'root://source.es/file', 'destination': 'root://dest.ch/file'},
+							 {'source': 'root://source.fr/file', 'destination': 'root://dest.ch/file'}]}
+		
+		answer = self.app.post_json(url = url_for(controller = 'jobs', action = 'submit'),
+							        params = job,
+							        status = 200)
+		
+		# Make sure it was committed to the DB properly
+		jobId = json.loads(answer.body)['job_id']
+		assert len(jobId) > 0
+		
+		dbJob = Session.query(Job).get(jobId)
+		
+		assert not dbJob.source_se
+		assert dbJob.dest_se == 'root://dest.ch'
+		assert len(dbJob.files) == 2
+
+
+	def test_submit_multiple_destinations(self):
+		self.setupGridsiteEnvironment()
+		self.pushDelegation()
+		job = {'transfers': [{'source': 'root://source.es/file', 'destination': 'root://dest.ch/file'},
+							 {'source': 'root://source.es/file', 'destination': 'http://dest.ch/file'}]}
+		
+		answer = self.app.post_json(url = url_for(controller = 'jobs', action = 'submit'),
+							        params = job,
+							        status = 200)
+		
+		# Make sure it was committed to the DB properly
+		jobId = json.loads(answer.body)['job_id']
+		assert len(jobId) > 0
+		
+		dbJob = Session.query(Job).get(jobId)
+		
+		assert not dbJob.dest_se
+		assert dbJob.source_se == 'root://source.es'
+		assert len(dbJob.files) == 2
 
 
 	def test_cancel(self):

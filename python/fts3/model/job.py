@@ -9,6 +9,8 @@ class Job(Base):
 	__tablename__ = 't_job'
     
 	job_id                   = Column(String(36), primary_key = True)
+	source_se                = Column(String(255))
+	dest_se                  = Column(String(255))
 	job_state                = Column(String(32))
 	reuse_job                = Column(String(3))
 	cancel_job               = Column(String(1))

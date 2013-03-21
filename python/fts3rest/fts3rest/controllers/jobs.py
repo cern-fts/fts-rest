@@ -124,10 +124,22 @@ class JobsController(BaseController):
 		# Populate the job and file
 		job = self._setupJobFromDict(submittedDict, user)
 		
+		# Set job source and dest se depending on the transfers
+		self._setJobSourceAndDestination(job)
+		
 		# Return it
 		Session.merge(job)
 		Session.commit()
 		return job
+
+	def _setJobSourceAndDestination(self, job):
+		job.source_se = job.files[0].source_se
+		job.dest_se   = job.files[0].dest_se
+		for file in job.files:
+			if file.source_se != job.source_se:
+				job.source_se = None
+			if file.dest_se != job.dest_se:
+				job.dest_se = None
 
 
 	def _setupJobFromDict(self, json, user):
