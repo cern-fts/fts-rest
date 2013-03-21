@@ -137,6 +137,32 @@ class TestJobs(TestController):
 		assert len(dbJob.files) == 2
 
 
+	def test_submit_with_port(self):
+		self.setupGridsiteEnvironment()
+		self.pushDelegation()
+		
+		job = {'transfers': [{'source': 'srm://source.es:8446/srm/managerv2?SFN=/file',
+							  'destination': 'root://dest.ch/file'}]}
+		
+		answer = self.app.post_json(url = url_for(controller = 'jobs', action = 'submit'),
+							        params = job,
+							        status = 200)
+		
+		# Make sure it was committed to the DB
+		jobId = json.loads(answer.body)['job_id']
+		assert len(jobId) > 0
+		
+		dbJob = Session.query(Job).get(jobId)
+		
+		assert dbJob.source_se == 'srm://source.es:8446'
+		assert dbJob.dest_se   == 'root://dest.ch'
+		
+		assert dbJob.files[0].source_se == 'srm://source.es:8446'
+		assert dbJob.files[0].dest_se   == 'root://dest.ch'
+		
+		return jobId
+
+
 	def test_submit_multiple_destinations(self):
 		self.setupGridsiteEnvironment()
 		self.pushDelegation()

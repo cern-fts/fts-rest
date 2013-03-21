@@ -12,6 +12,7 @@ import re
 import socket
 import types
 import urllib
+import urlparse
 import uuid
 
 
@@ -224,10 +225,8 @@ class JobsController(BaseController):
 
 			
 	def _getSE(self, uri):
-		match = re.match('(.+://[a-zA-Z0-9\\.-]+)(:\\d+)?/.+', uri)
-		if not match:
-			raise ValueError('"%s" is an invalid SURL' % uri)
-		return match.group(1)
+		parsed = urlparse.urlparse(uri)
+		return "%s://%s" % (parsed.scheme, parsed.netloc)		
 
 	
 	#def _isSeBanned(self, se):
