@@ -17,7 +17,7 @@
 
 Name:			fts-rest
 Version:		0.0.1
-Release:		1%{?dist}
+Release:		1.dev%(date +%Y%m%d%H%M)%{?dist}
 BuildArch:		noarch
 Summary:		FTS3 Rest Interface
 Group:			Applications/Internet
@@ -37,6 +37,8 @@ Requires:		gridsite%{?_isa} >= 1.7
 Requires:		httpd%{?_isa}
 Requires:		mod_wsgi
 Requires:		python-fts
+Requires:		python-paste-deploy
+Requires:		python-pylons
 
 %description
 This package provides the FTS3 REST interface
