@@ -16,8 +16,6 @@ class Job(Base):
 	cancel_job               = Column(String(1))
 	job_params               = Column(String(255))
 	submit_host              = Column(String(255))
-	source                   = Column(String(255))
-	dest                     = Column(String(255))
 	user_dn                  = Column(String(1024))
 	agent_dn                 = Column(String(1024))
 	user_cred                = Column(String(255))
