@@ -2,7 +2,7 @@
 import os
 
 from mako.lookup import TemplateLookup
-from pylons.configuration import PylonsConfig
+from pylons import config
 from pylons.error import handle_mako_error
 from sqlalchemy import engine_from_config
 
@@ -15,7 +15,6 @@ def load_environment(global_conf, app_conf):
     """Configure the Pylons environment via the ``pylons.config``
     object
     """
-    config = PylonsConfig()
     
     # Pylons paths
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

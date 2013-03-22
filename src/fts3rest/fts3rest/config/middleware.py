@@ -41,7 +41,7 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     app = PylonsApp(config=config)
 
     # Routing/Session Middleware
-    app = RoutesMiddleware(app, config['routes.map'], singleton=False)
+    app = RoutesMiddleware(app, config['routes.map'])
     app = SessionMiddleware(app, config)
 
     # FTS3 authentication/authorization middleware
