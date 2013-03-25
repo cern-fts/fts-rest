@@ -100,12 +100,17 @@ class JobSubmitter(Base):
 			self.logger.info("Job id: %s" % jobId)
 	
 		if jobId and self.options.blocking:
-			inquirer = Inquirer(self.options.endpoint)
+			inquirer = Inquirer(self.context)
 			while True:
 				time.sleep(self.options.poll_interval)
 				job = inquirer.getJobStatus(jobId)
 				if job['job_state'] not in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE']:
-					break;
+					break
+				self.logger.info("Job in state %s" % job['job_state'])
+			
+			self.logger.info("Job finished with state %s" % job['job_state'])
+			if job['reason']:
+				self.logger.info("Reason: %s" % job['reason'])
 				
 		return jobId
 
