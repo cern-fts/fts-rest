@@ -193,6 +193,35 @@ class TestJobs(TestController):
 							   status = 400)
 
 
+	def test_submit_to_staging(self):
+		self.setupGridsiteEnvironment()
+		self.pushDelegation()
+		
+		job = {'files': [{'sources':      ['root://source.es/file'],
+						  'destinations': ['root://dest.ch/file'],
+						  'selection_strategy': 'orderly',
+						  'checksums':   ['adler32:1234'],
+						  'filesize':    1024,
+						  'metadata':    {'mykey': 'myvalue'},
+						  }],
+			  'params': {'overwrite': True, 'copy_pin_lifetime': 3600, 'bring_online': 60}}
+		
+		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+							   content_type = 'application/json',
+							   params = json.dumps(job),
+							   status = 200)
+		
+		# Make sure it was committed to the DB
+		jobId = json.loads(answer.body)['job_id']
+		assert len(jobId) > 0
+		
+		dbJob = Session.query(Job).get(jobId)
+		assert dbJob.job_state == 'STAGING'
+		assert dbJob.files[0].file_state == 'STAGING'
+		
+		return jobId
+
+
 	def test_cancel(self):
 		jobId = self.test_submit()
 		answer = self.app.delete(url = url_for(controller = 'jobs', action = 'cancel', id = jobId),
