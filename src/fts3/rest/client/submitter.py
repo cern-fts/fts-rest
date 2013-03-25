@@ -13,9 +13,9 @@ class Submitter(object):
 	def buildSubmission(self, source, destination, **kwargs):
 		job = dict()
 
-		job['transfers'] = []
+		job['files'] = []
 		
-		transfer = {'source': source, 'destination': destination}
+		transfer = {'sources': [source], 'destinations': [destination]}
 		if 'checksum' in kwargs:
 			transfer['checksum'] = kwargs['checksum']
 		if 'filesize' in kwargs:
@@ -23,7 +23,7 @@ class Submitter(object):
 		if 'file_metadata' in kwargs:
 			transfer['metadata'] = kwargs['file_metadata']
 		
-		job['transfers'].append(transfer)		
+		job['files'].append(transfer)		
 		
 		
 		job['params'] = dict()
