@@ -13,15 +13,15 @@ class TestUserCredentials(unittest.TestCase):
     
     ROLES = {
              'public': {'transfer': 'vo', 'deleg': ''},
-             'admin': {'*', 'all'}
+             'admin': {'*': 'all'}
             }
     
     def test_basic_ssl(self):
         creds = fts3auth.UserCredentials({'SSL_CLIENT_S_DN': TestUserCredentials.DN})
         
         self.assertEqual(TestUserCredentials.DN, creds.user_dn)
-        self.assertListEqual([], creds.voms_cred)
-        self.assertListEqual([], creds.vos)
+        self.assertEqual([], creds.voms_cred)
+        self.assertEqual([], creds.vos)
 
 
     def test_gridsite(self):
@@ -35,10 +35,10 @@ class TestUserCredentials(unittest.TestCase):
         creds = fts3auth.UserCredentials(env)
         
         self.assertEqual(TestUserCredentials.DN, creds.user_dn)
-        self.assertListEqual(['testvo', 'testvo/group'], creds.vos)
-        self.assertListEqual(TestUserCredentials.FQANS, creds.voms_cred)
+        self.assertEqual(['testvo', 'testvo/group'], creds.vos)
+        self.assertEqual(TestUserCredentials.FQANS, creds.voms_cred)
         
-        self.assertListEqual(['myrole', 'admin'], creds.roles)
+        self.assertEqual(['myrole', 'admin'], creds.roles)
 
 
     def test_default_roles(self):

@@ -77,9 +77,10 @@ class TestJobs(TestController):
 		
 		job = {'transfers': [{'source': 'root://source.es/file', 'destination': 'root://dest.ch/file'}]}
 		
-		answer = self.app.post_json(url = url_for(controller = 'jobs', action = 'submit'),
-							        params = job,
-							        status = 200)
+		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+							   content_type = 'application/json',
+							   params = json.dumps(job),
+							   status = 200)
 		
 		# Make sure it was committed to the DB
 		jobId = json.loads(answer.body)['job_id']
@@ -122,9 +123,10 @@ class TestJobs(TestController):
 		job = {'transfers': [{'source': 'root://source.es/file', 'destination': 'root://dest.ch/file'},
 							 {'source': 'root://source.fr/file', 'destination': 'root://dest.ch/file'}]}
 		
-		answer = self.app.post_json(url = url_for(controller = 'jobs', action = 'submit'),
-							        params = job,
-							        status = 200)
+		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+							   content_type = 'application/json',
+							   params = json.dumps(job),
+							   status = 200)
 		
 		# Make sure it was committed to the DB properly
 		jobId = json.loads(answer.body)['job_id']
@@ -144,9 +146,10 @@ class TestJobs(TestController):
 		job = {'transfers': [{'source': 'srm://source.es:8446/srm/managerv2?SFN=/file',
 							  'destination': 'root://dest.ch/file'}]}
 		
-		answer = self.app.post_json(url = url_for(controller = 'jobs', action = 'submit'),
-							        params = job,
-							        status = 200)
+		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+							   content_type = 'application/json',
+							   params = json.dumps(job),
+							   status = 200)
 		
 		# Make sure it was committed to the DB
 		jobId = json.loads(answer.body)['job_id']
@@ -169,9 +172,10 @@ class TestJobs(TestController):
 		job = {'transfers': [{'source': 'root://source.es/file', 'destination': 'root://dest.ch/file'},
 							 {'source': 'root://source.es/file', 'destination': 'http://dest.ch/file'}]}
 		
-		answer = self.app.post_json(url = url_for(controller = 'jobs', action = 'submit'),
-							        params = job,
-							        status = 200)
+		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+							   content_type = 'application/json',
+							   params = json.dumps(job),
+							   status = 200)
 		
 		# Make sure it was committed to the DB properly
 		jobId = json.loads(answer.body)['job_id']
