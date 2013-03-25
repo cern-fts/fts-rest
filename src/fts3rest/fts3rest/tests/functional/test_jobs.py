@@ -157,10 +157,10 @@ class TestJobs(TestController):
 		
 		dbJob = Session.query(Job).get(jobId)
 		
-		assert dbJob.source_se == 'srm://source.es:8446'
+		assert dbJob.source_se == 'srm://source.es'
 		assert dbJob.dest_se   == 'root://dest.ch'
 		
-		assert dbJob.files[0].source_se == 'srm://source.es:8446'
+		assert dbJob.files[0].source_se == 'srm://source.es'
 		assert dbJob.files[0].dest_se   == 'root://dest.ch'
 		
 		return jobId

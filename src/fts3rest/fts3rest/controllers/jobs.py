@@ -226,7 +226,7 @@ class JobsController(BaseController):
 			
 	def _getSE(self, uri):
 		parsed = urlparse.urlparse(uri)
-		return "%s://%s" % (parsed.scheme, parsed.netloc)		
+		return "%s://%s" % (parsed.scheme, parsed.hostname)
 
 	
 	#def _isSeBanned(self, se):
