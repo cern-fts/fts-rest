@@ -143,9 +143,9 @@ class JobsController(BaseController):
 				job.dest_se = None
 
 
-	def _setupJobFromDict(self, json, user):
+	def _setupJobFromDict(self, serialized, user):
 		try:
-			if len(json['transfers']) == 0:
+			if len(serialized['files']) == 0:
 				abort(400, 'No transfers specified')
 								
 			# Initialize defaults
@@ -153,8 +153,8 @@ class JobsController(BaseController):
 			# use the default
 			params = dict()
 			params.update(DEFAULT_PARAMS)
-			if 'params' in json:
-				params.update(json['params'])
+			if 'params' in serialized:
+				params.update(serialized['params'])
 				for (k, v) in params.iteritems():
 					if v is None and k in DEFAULT_PARAMS:
 						params[k] = DEFAULT_PARAMS[k]
@@ -170,8 +170,8 @@ class JobsController(BaseController):
 			job.submit_host              = socket.getfqdn() 
 			job.user_dn                  = user.user_dn
 			
-			if 'credential' in json:
-				job.user_cred  = json['credential']
+			if 'credential' in serialized:
+				job.user_cred  = serialized['credential']
 				job.cred_id    = str()
 			else:
 				job.user_cred  = str()
@@ -193,45 +193,64 @@ class JobsController(BaseController):
 			job.job_params               = str()
 			
 			# Files
-			for t in json['transfers']:
-				file = File()
+			findex = 0
+			for t in serialized['files']:
+				job.files.extend(self._populateFiles(t, findex))
+				findex += 1
 				
-				file.file_state    = 'SUBMITTED'
-				file.source_surl   = t['source']
-				file.dest_surl     = t['destination']
-				file.source_se     = self._getSE(file.source_surl)
-				file.dest_se       = self._getSE(file.dest_surl)
+			if len(job.files) == 0:
+				abort(400, 'No pair with matching protocols')
 				
-				if 'checksum' in t and t['checksum']:
-					file.checksum = t['checksum']
-				else:
-					file.checksum = str()
-					
-				if 'filesize' in t:
-					file.user_filesize = t['filesize']
-				if 'metadata' in t:
-					file.file_metadata = t['metadata']
-				
-				job.files.append(file)
-			
 			return job
 		
 		except ValueError:
 			abort(400, 'Invalid value within the request')
 		except TypeError, e:
-			raise Exception(json)#abort(400, 'Malformed request: %s' % str(e))
+			abort(400, 'Malformed request: %s' % str(e))
 		except KeyError, e:
 			abort(400, 'Missing parameter: %s' % str(e))
 
+
+	def _populateFiles(self, serialized, findex):
+		files = []
+		
+		# Extract matching pairs
+		pairs = []
+		for s in serialized['sources']:
+			for d in serialized['destinations']:
+				source_url = urlparse.urlparse(s)
+				dest_url   = urlparse.urlparse(d)
+				if source_url.scheme == dest_url.scheme:
+					pairs.append((s, d))
+					
+		# Create one File entry per matching pair
+		for (s, d) in pairs:
+			file = File()
+			
+			file.file_index  = findex
+			file.file_state  = 'SUBMITTED'
+			file.source_surl = s
+			file.dest_surl   = d
+			file.source_se   = self._getSE(s)
+			file.dest_se     = self._getSE(d)
+			
+			file.user_filesize = serialized.get('filesize', None)
+			file.selection_strategy = serialized.get('selection_strategy', None)
+			
+			if 'checksums' in serialized:
+				file.checksum = serialized['checksums'][0]
+			
+			if 'metadata' in serialized:
+				file.file_metadata = json.dumps(serialized['metadata'])
+			
+			files.append(file)
+		
+		return files
 			
 	def _getSE(self, uri):
 		parsed = urlparse.urlparse(uri)
 		return "%s://%s" % (parsed.scheme, parsed.hostname)
 
-	
-	#def _isSeBanned(self, se):
-	#	banned = Session.query(BannedSE).get(se)
-	#	return banned is not None
 	
 	
 	def _yesOrNo(self, value):

@@ -26,7 +26,9 @@ class TestJobs(TestController):
 	def test_submit_no_delegation(self):
 		self.setupGridsiteEnvironment()
 		
-		job = {'transfers': [{'source': 'root://source/file', 'destination': 'root://dest/file'}]}
+		job = {'Files': [{'sources': ['root://source/file'],
+						  'destinations': ['root://dest/file'],
+						 }]}
 		
 		self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
 					 params = json.dumps(job),
@@ -43,6 +45,7 @@ class TestJobs(TestController):
 		
 		assert job.source_se == 'root://source.es'
 		assert job.dest_se   == 'root://dest.ch'
+		assert job.overwrite_flag == 'Y'
 
 		assert len(files) == 1
 		assert files[0].file_state  == 'SUBMITTED'
@@ -50,13 +53,26 @@ class TestJobs(TestController):
 		assert files[0].dest_surl   == 'root://dest.ch/file'
 		assert files[0].source_se   == 'root://source.es'
 		assert files[0].dest_se     == 'root://dest.ch'
+		assert files[0].file_index  == 0
+		assert files[0].selection_strategy == 'orderly'
+		assert files[0].user_filesize == 1024
+		assert files[0].checksum      == 'adler32:1234'
+		metadata = json.loads(files[0].file_metadata)
+		assert metadata['mykey'] == 'myvalue'
 
 
 	def test_submit(self):
 		self.setupGridsiteEnvironment()
 		self.pushDelegation()
 		
-		job = {'transfers': [{'source': 'root://source.es/file', 'destination': 'root://dest.ch/file'}]}
+		job = {'files': [{'sources':      ['root://source.es/file'],
+						  'destinations': ['root://dest.ch/file'],
+						  'selection_strategy': 'orderly',
+						  'checksums':   ['adler32:1234'],
+						  'filesize':    1024,
+						  'metadata':    {'mykey': 'myvalue'},
+						  }],
+			  'params': {'overwrite': True}}
 		
 		answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
 							  params = json.dumps(job),
@@ -75,7 +91,14 @@ class TestJobs(TestController):
 		self.setupGridsiteEnvironment()
 		self.pushDelegation()
 		
-		job = {'transfers': [{'source': 'root://source.es/file', 'destination': 'root://dest.ch/file'}]}
+		job = {'files': [{'sources':      ['root://source.es/file'],
+						  'destinations': ['root://dest.ch/file'],
+						  'selection_strategy': 'orderly',
+						  'checksums':   ['adler32:1234'],
+						  'filesize':    1024,
+						  'metadata':    {'mykey': 'myvalue'},
+						  }],
+			  'params': {'overwrite': True}}
 		
 		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
 							   content_type = 'application/json',
@@ -104,7 +127,7 @@ class TestJobs(TestController):
 	def test_submit_missing_surl(self):
 		self.setupGridsiteEnvironment()
 		self.pushDelegation()
-		job = {'transfers': [{'destination': 'root://dest.ch/file'}]}
+		job = {'transfers': [{'destinations': ['root://dest.ch/file']}]}
 		
 		answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
 							  params = json.dumps(job),
@@ -117,34 +140,19 @@ class TestJobs(TestController):
 							  status = 400)
 
 
-	def test_submit_multiple_sources(self):
-		self.setupGridsiteEnvironment()
-		self.pushDelegation()
-		job = {'transfers': [{'source': 'root://source.es/file', 'destination': 'root://dest.ch/file'},
-							 {'source': 'root://source.fr/file', 'destination': 'root://dest.ch/file'}]}
-		
-		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
-							   content_type = 'application/json',
-							   params = json.dumps(job),
-							   status = 200)
-		
-		# Make sure it was committed to the DB properly
-		jobId = json.loads(answer.body)['job_id']
-		assert len(jobId) > 0
-		
-		dbJob = Session.query(Job).get(jobId)
-		
-		assert not dbJob.source_se
-		assert dbJob.dest_se == 'root://dest.ch'
-		assert len(dbJob.files) == 2
-
 
 	def test_submit_with_port(self):
 		self.setupGridsiteEnvironment()
 		self.pushDelegation()
 		
-		job = {'transfers': [{'source': 'srm://source.es:8446/srm/managerv2?SFN=/file',
-							  'destination': 'root://dest.ch/file'}]}
+		job = {'files': [{'sources':      ['srm://source.es:8446/file'],
+						  'destinations': ['srm://dest.ch:8447/file'],
+						  'selection_strategy': 'orderly',
+						  'checksums':   ['adler32:1234'],
+						  'filesize':    1024,
+						  'metadata':    {'mykey': 'myvalue'},
+						  }],
+			  'params': {'overwrite': True}}
 		
 		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
 							   content_type = 'application/json',
@@ -158,34 +166,31 @@ class TestJobs(TestController):
 		dbJob = Session.query(Job).get(jobId)
 		
 		assert dbJob.source_se == 'srm://source.es'
-		assert dbJob.dest_se   == 'root://dest.ch'
+		assert dbJob.dest_se   == 'srm://dest.ch'
 		
 		assert dbJob.files[0].source_se == 'srm://source.es'
-		assert dbJob.files[0].dest_se   == 'root://dest.ch'
+		assert dbJob.files[0].dest_se   == 'srm://dest.ch'
 		
 		return jobId
 
 
-	def test_submit_multiple_destinations(self):
+	def test_submit_different_protocols(self):
 		self.setupGridsiteEnvironment()
 		self.pushDelegation()
-		job = {'transfers': [{'source': 'root://source.es/file', 'destination': 'root://dest.ch/file'},
-							 {'source': 'root://source.es/file', 'destination': 'http://dest.ch/file'}]}
+		
+		job = {'files': [{'sources':      ['srm://source.es:8446/file'],
+						  'destinations': ['root://dest.ch:8447/file'],
+						  'selection_strategy': 'orderly',
+						  'checksums':   ['adler32:1234'],
+						  'filesize':    1024,
+						  'metadata':    {'mykey': 'myvalue'},
+						  }],
+			  'params': {'overwrite': True}}
 		
 		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
 							   content_type = 'application/json',
 							   params = json.dumps(job),
-							   status = 200)
-		
-		# Make sure it was committed to the DB properly
-		jobId = json.loads(answer.body)['job_id']
-		assert len(jobId) > 0
-		
-		dbJob = Session.query(Job).get(jobId)
-		
-		assert not dbJob.dest_se
-		assert dbJob.source_se == 'root://source.es'
-		assert len(dbJob.files) == 2
+							   status = 400)
 
 
 	def test_cancel(self):
@@ -229,6 +234,4 @@ class TestJobs(TestController):
 		jobList = json.loads(answer.body)
 		
 		assert jobId in map(lambda j: j['job_id'], jobList)
-	
-	
-		
+
