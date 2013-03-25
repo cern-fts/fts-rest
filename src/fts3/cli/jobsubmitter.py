@@ -41,8 +41,6 @@ class JobSubmitter(Base):
 								  help = 'pin lifetime of the copy in seconds.')
 		self.optParser.add_option('--bring-online',  dest = 'bring_online', type = 'long', default = None,
 								  help = 'bring online timeout in seconds.')
-		self.optParser.add_option('--lan-connection', dest = 'lan_connection', default = False, action = 'store_true',
-								  help = 'use LAN as the connection type.')
 		self.optParser.add_option('--fail-nearline', dest = 'fail_nearline', default = False, action = 'store_true',
 								  help = 'fail the transfer is the file is nearline.')
 		self.optParser.add_option('--dry-run', dest = 'dry_run', default = False, action = 'store_true',
@@ -90,7 +88,6 @@ class JobSubmitter(Base):
 								 filesize          = self.options.file_size,
 								 gridftp           = self.options.gridftp_params,
 								 job_metadata      = self.options.job_metadata,
-								 lan_connection    = self.options.lan_connection,
 								 overwrite         = self.options.overwrite,
 								 copy_pin_lifetime = self.options.pin_lifetime,
 								 reuse             = self.options.reuse
@@ -130,7 +127,6 @@ class JobSubmitter(Base):
 								 filesize          = self.options.file_size,
 								 gridftp           = self.options.gridftp_params,
 								 job_metadata      = self.options.job_metadata,
-								 lan_connection    = self.options.lan_connection,
 								 overwrite         = self.options.overwrite,
 								 copy_pin_lifetime = self.options.pin_lifetime,
 								 reuse             = self.options.reuse
