@@ -59,6 +59,9 @@ def fts3_config_load(path = '/etc/fts3/fts3config'):
 	dbPass = parser.get('fts3', 'DbPassword')
 	dbConn = parser.get('fts3', 'DbConnectString')
 	
+	if dbConn[0] == '"' and dbConn[-1] == '"':
+		dbConn = dbConn[1:-1]
+	
 	fts3cfg = {}
 	
 	if dbType.lower() == 'mysql':
