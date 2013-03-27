@@ -33,7 +33,7 @@ class Job(Base):
 	source_space_token       = Column(String(255))
 	source_token_description = Column(String(255)) 
 	copy_pin_lifetime        = Column(Integer)
-	checksum_method          = Column(String(1))
+	verify_checksum          = Column(String(1), name = 'checksum_method')
 	bring_online             = Column(Integer)
 	job_metadata             = Column(String(255))
 	

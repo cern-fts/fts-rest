@@ -69,9 +69,9 @@ class JobSubmitter(Base):
 
 
 	def _doSubmit(self):	
-		checksum_method = None
+		verify_checksum = None
 		if self.options.compare_checksum:
-			self.options.compare_checksum = 'compare'
+			verify_checksum = True
 		
 		delegator = Delegator(self.context)
 		delegationId = delegator.delegate(timedelta(minutes = self.options.proxy_lifetime))
@@ -80,7 +80,7 @@ class JobSubmitter(Base):
 		jobId = submitter.submit(self.source, self.destination,
 								 checksum          = self.checksum,
 								 bring_online      = self.options.bring_online,
-								 checksum_method   = checksum_method,
+								 verify_checksum   = verify_checksum,
 								 spacetoken        = self.options.destination_token,
 								 source_spacetoken = self.options.source_token,
 								 fail_nearline     = self.options.fail_nearline,
@@ -116,15 +116,15 @@ class JobSubmitter(Base):
 
 
 	def _doDryRun(self):
-		checksum_method = None
+		verify_checksum = None
 		if self.options.compare_checksum:
-			self.options.compare_checksum = 'compare'
+			verify_checksum = True
 			
 		submitter = Submitter(self.context)
 		print submitter.buildSubmission(self.source, self.destination,
 								 checksum          = self.checksum,
 								 bring_online      = self.options.bring_online,
-								 checksum_method   = checksum_method,
+								 verify_checksum   = verify_checksum,
 								 spacetoken        = self.options.destination_token,
 								 source_spacetoken = self.options.source_token,
 								 fail_nearline     = self.options.fail_nearline,

@@ -9,7 +9,7 @@ class MiscController(BaseController):
 	def apiVersion(self):
 		credV   = Session.query(CredentialVersion)[0]
 		schemaV = Session.query(SchemaVersion)[0]
-		return {'api': '0.0.1',
+		return {'api': '0.0.2',
 			    'schema': credV,
 			    'delegation': schemaV}
 

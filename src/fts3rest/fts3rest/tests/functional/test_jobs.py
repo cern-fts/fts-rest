@@ -46,7 +46,7 @@ class TestJobs(TestController):
 		assert job.source_se == 'root://source.es'
 		assert job.dest_se   == 'root://dest.ch'
 		assert job.overwrite_flag == 'Y'
-		assert job.checksum_method == 'adler32'
+		assert job.verify_checksum == 'Y'
 
 		assert len(files) == 1
 		assert files[0].file_state  == 'SUBMITTED'
@@ -57,7 +57,7 @@ class TestJobs(TestController):
 		assert files[0].file_index  == 0
 		assert files[0].selection_strategy == 'orderly'
 		assert files[0].user_filesize == 1024
-		assert files[0].checksum      == '1234'
+		assert files[0].checksum      == 'adler32:1234'
 		metadata = json.loads(files[0].file_metadata)
 		assert metadata['mykey'] == 'myvalue'
 
@@ -69,11 +69,11 @@ class TestJobs(TestController):
 		job = {'files': [{'sources':      ['root://source.es/file'],
 						  'destinations': ['root://dest.ch/file'],
 						  'selection_strategy': 'orderly',
-						  'checksum':   '1234',
+						  'checksum':   'adler32:1234',
 						  'filesize':    1024,
 						  'metadata':    {'mykey': 'myvalue'},
 						  }],
-			  'params': {'overwrite': True, 'checksum_method': 'adler32'}}
+			  'params': {'overwrite': True, 'verify_checksum': True}}
 		
 		answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
 							  params = json.dumps(job),
@@ -95,11 +95,11 @@ class TestJobs(TestController):
 		job = {'files': [{'sources':      ['root://source.es/file'],
 						  'destinations': ['root://dest.ch/file'],
 						  'selection_strategy': 'orderly',
-						  'checksum':   '1234',
+						  'checksum':   'adler32:1234',
 						  'filesize':    1024,
 						  'metadata':    {'mykey': 'myvalue'},
 						  }],
-			  'params': {'overwrite': True, 'checksum_method': 'adler32'}}
+			  'params': {'overwrite': True, 'verify_checksum': True}}
 		
 		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
 							   content_type = 'application/json',
@@ -149,11 +149,11 @@ class TestJobs(TestController):
 		job = {'files': [{'sources':      ['srm://source.es:8446/file'],
 						  'destinations': ['srm://dest.ch:8447/file'],
 						  'selection_strategy': 'orderly',
-						  'checksums':   ['adler32:1234'],
+						  'checksums':   'adler32:1234',
 						  'filesize':    1024,
 						  'metadata':    {'mykey': 'myvalue'},
 						  }],
-			  'params': {'overwrite': True}}
+			  'params': {'overwrite': True, 'verify_checksum': True}}
 		
 		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
 							   content_type = 'application/json',
@@ -182,11 +182,11 @@ class TestJobs(TestController):
 		job = {'files': [{'sources':      ['srm://source.es:8446/file'],
 						  'destinations': ['root://dest.ch:8447/file'],
 						  'selection_strategy': 'orderly',
-						  'checksums':   ['adler32:1234'],
+						  'checksums':   'adler32:1234',
 						  'filesize':    1024,
 						  'metadata':    {'mykey': 'myvalue'},
 						  }],
-			  'params': {'overwrite': True}}
+			  'params': {'overwrite': True, 'verify_checksum': True}}
 		
 		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
 							   content_type = 'application/json',
@@ -201,11 +201,12 @@ class TestJobs(TestController):
 		job = {'files': [{'sources':      ['root://source.es/file'],
 						  'destinations': ['root://dest.ch/file'],
 						  'selection_strategy': 'orderly',
-						  'checksums':   ['adler32:1234'],
+						  'checksums':   'adler32:1234',
 						  'filesize':    1024,
 						  'metadata':    {'mykey': 'myvalue'},
 						  }],
-			  'params': {'overwrite': True, 'copy_pin_lifetime': 3600, 'bring_online': 60}}
+			  'params': {'overwrite': True, 'copy_pin_lifetime': 3600, 'bring_online': 60,
+						 'verify_checksum': True}}
 		
 		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
 							   content_type = 'application/json',

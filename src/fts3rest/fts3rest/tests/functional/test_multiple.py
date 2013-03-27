@@ -16,7 +16,7 @@ class TestMultiple(TestController):
                           'destinations': ['srm://dest.ch:8447/file',
                                            'root://dest.ch/file'],
                           'selection_strategy': 'orderly',
-                          'checksums':   '1234',
+                          'checksum':   'adler32:1234',
                           'filesize':    1024,
                           'metadata':    {'mykey': 'myvalue'},
                           }],
@@ -54,18 +54,18 @@ class TestMultiple(TestController):
         job = {'files': [{'sources':      ['srm://source.es:8446/file'],
                           'destinations': ['srm://dest.ch:8447/file'],
                           'selection_strategy': 'orderly',
-                          'checksum':     '1234',
+                          'checksum':     'adler32:1234',
                           'filesize':     1024,
                           'metadata':     {'mykey': 'myvalue'},
                           },
                          {'sources':      ['https://host.com/another/file'],
                           'destinations': ['https://dest.net/another/destination'],
                           'selection_strategy': 'whatever',
-                          'checksum':     '56789',
+                          'checksum':     'adler32:56789',
                           'filesize':     512,
                           'metadata':     {'flag': True}
                           }],
-              'params': {'overwrite': True, 'checksum_method': 'adler32'}}
+              'params': {'overwrite': True, 'verify_checksum': True}}
         
         answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
                                content_type = 'application/json',
@@ -78,12 +78,12 @@ class TestMultiple(TestController):
         
         assert len(dbJob.files) == 2
         
-        assert dbJob.checksum_method == 'adler32'
+        assert dbJob.verify_checksum == 'Y'
         
         assert dbJob.files[0].file_index    == 0
         assert dbJob.files[0].source_surl   == 'srm://source.es:8446/file'
         assert dbJob.files[0].dest_surl     == 'srm://dest.ch:8447/file'
-        assert dbJob.files[0].checksum      == '1234'
+        assert dbJob.files[0].checksum      == 'adler32:1234'
         assert dbJob.files[0].user_filesize == 1024
         metadata = json.loads(dbJob.files[0].file_metadata)
         assert metadata['mykey'] == 'myvalue'
@@ -91,7 +91,7 @@ class TestMultiple(TestController):
         assert dbJob.files[1].file_index    == 1
         assert dbJob.files[1].source_surl   == 'https://host.com/another/file'
         assert dbJob.files[1].dest_surl     == 'https://dest.net/another/destination'
-        assert dbJob.files[1].checksum      == '56789'
+        assert dbJob.files[1].checksum      == 'adler32:56789'
         assert dbJob.files[1].user_filesize == 512
         metadata = json.loads(dbJob.files[1].file_metadata)
         assert metadata['flag'] == True
@@ -105,18 +105,18 @@ class TestMultiple(TestController):
                                            'srm://source.fr:8443/file'],
                           'destinations': ['srm://dest.ch:8447/file'],
                           'selection_strategy': 'orderly',
-                          'checksum':     '1234',
+                          'checksum':     'adler32:1234',
                           'filesize':     1024,
                           'metadata':     {'mykey': 'myvalue'},
                           },
                          {'sources':      ['https://host.com/another/file'],
                           'destinations': ['https://dest.net/another/destination'],
                           'selection_strategy': 'whatever',
-                          'checksum':    '56789',
+                          'checksum':    'adler32:56789',
                           'filesize':     512,
                           'metadata':     {'flag': True}
                           }],
-              'params': {'overwrite': True}}
+              'params': {'overwrite': True, 'verify_checksum': True}}
         
         answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
                                content_type = 'application/json',
@@ -132,7 +132,7 @@ class TestMultiple(TestController):
         assert dbJob.files[0].file_index    == 0
         assert dbJob.files[0].source_surl   == 'srm://source.es:8446/file'
         assert dbJob.files[0].dest_surl     == 'srm://dest.ch:8447/file'
-        assert dbJob.files[0].checksum      == '1234'
+        assert dbJob.files[0].checksum      == 'adler32:1234'
         assert dbJob.files[0].user_filesize == 1024
         metadata = json.loads(dbJob.files[0].file_metadata)
         assert metadata['mykey'] == 'myvalue'
@@ -140,7 +140,7 @@ class TestMultiple(TestController):
         assert dbJob.files[1].file_index    == 0
         assert dbJob.files[1].source_surl   == 'srm://source.fr:8443/file'
         assert dbJob.files[1].dest_surl     == 'srm://dest.ch:8447/file'
-        assert dbJob.files[1].checksum      == '1234'
+        assert dbJob.files[1].checksum      == 'adler32:1234'
         assert dbJob.files[1].user_filesize == 1024
         metadata = json.loads(dbJob.files[0].file_metadata)
         assert metadata['mykey'] == 'myvalue'
@@ -148,7 +148,7 @@ class TestMultiple(TestController):
         assert dbJob.files[2].file_index    == 1
         assert dbJob.files[2].source_surl   == 'https://host.com/another/file'
         assert dbJob.files[2].dest_surl     == 'https://dest.net/another/destination'
-        assert dbJob.files[2].checksum      == '56789'
+        assert dbJob.files[2].checksum      == 'adler32:56789'
         assert dbJob.files[2].user_filesize == 512
         metadata = json.loads(dbJob.files[2].file_metadata)
         assert metadata['flag'] == True

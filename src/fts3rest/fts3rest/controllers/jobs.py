@@ -18,7 +18,7 @@ import uuid
 
 DEFAULT_PARAMS = {
 	'bring_online'     : -1,
-	'checksum_method'  : '',
+	'verify_checksum'  : '',
 	'copy_pin_lifetime': -1,
 	'fail_nearline'    : 'N',
 	'gridftp'          : '',
@@ -187,7 +187,7 @@ class JobsController(BaseController):
 			job.copy_pin_lifetime        = int(params['copy_pin_lifetime'])
 			job.lan_connection           = self._yesOrNo(params['lan_connection'])
 			job.fail_nearline            = self._yesOrNo(params['fail_nearline'])
-			job.checksum_method          = params['checksum_method']
+			job.verify_checksum          = self._yesOrNo(params['verify_checksum'])
 			job.bring_online             = int(params['bring_online'])
 			job.job_metadata             = params['job_metadata']
 			job.job_params               = str()
