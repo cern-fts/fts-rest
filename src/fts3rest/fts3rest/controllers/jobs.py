@@ -243,8 +243,8 @@ class JobsController(BaseController):
 			file.user_filesize = serialized.get('filesize', None)
 			file.selection_strategy = serialized.get('selection_strategy', None)
 			
-			if 'checksums' in serialized:
-				file.checksum = serialized['checksums'][0]
+			if 'checksum' in serialized:
+				file.checksum = str(serialized['checksum'])
 			
 			if 'metadata' in serialized:
 				file.file_metadata = json.dumps(serialized['metadata'])
