@@ -110,7 +110,7 @@ class JobsController(BaseController):
 			submittedDict = json.loads(unencodedBody)
 						
 		except ValueError, e:
-			abort(400, 'Badly formatted JSON request')
+			abort(400, 'Badly formatted JSON request (%s)' % str(e))
 
 		# The auto-generated delegation id must be valid
 		user = request.environ['fts3.User.Credentials']
@@ -131,6 +131,7 @@ class JobsController(BaseController):
 		# Return it
 		Session.merge(job)
 		Session.commit()
+			
 		return job
 
 	def _setJobSourceAndDestination(self, job):
@@ -189,7 +190,7 @@ class JobsController(BaseController):
 			job.fail_nearline            = self._yesOrNo(params['fail_nearline'])
 			job.verify_checksum          = self._yesOrNo(params['verify_checksum'])
 			job.bring_online             = int(params['bring_online'])
-			job.job_metadata             = params['job_metadata']
+			job.job_metadata             = json.dumps(params['job_metadata'])
 			job.job_params               = str()
 			
 			# Files
