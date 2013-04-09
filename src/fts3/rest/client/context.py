@@ -74,11 +74,7 @@ class Context(object):
 	def _validateEndpoint(self):
 		try:
 			endpointInfo = json.loads(self.get('/'))
-			endpointInfo['url'] = self.endpoint
-			
-			if endpointInfo['api'] != 'Mk.1':
-				raise ValueError("Wrong API version")
-		
+			endpointInfo['url'] = self.endpoint		
 		except FTS3ClientException:
 			raise
 		except Exception, e:
@@ -96,7 +92,7 @@ class Context(object):
 		
 		# Log obtained information
 		self.logger.debug("Using endpoint: %s" % self.endpointInfo['url'])
-		self.logger.debug("REST API version: %s" % self.endpointInfo['api'])
+		self.logger.debug("REST API version: %(major)d.%(minor)d.%(patch)d" % self.endpointInfo['api'])
 		self.logger.debug("Schema version: %(major)d.%(minor)d.%(patch)d" % self.endpointInfo['schema'])
 		self.logger.debug("Delegation version: %(major)d.%(minor)d.%(patch)d" % self.endpointInfo['delegation'])
 
