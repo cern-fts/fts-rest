@@ -17,7 +17,7 @@
 
 Name:			fts-rest
 Version:		0.0.1
-Release:		4
+Release:		5
 BuildArch:		noarch
 Summary:		FTS3 Rest Interface
 Group:			Applications/Internet
