@@ -45,8 +45,8 @@ class TestJobs(TestController):
 		
 		assert job.source_se == 'root://source.es'
 		assert job.dest_se   == 'root://dest.ch'
-		assert job.overwrite_flag == 'Y'
-		assert job.verify_checksum == 'Y'
+		assert job.overwrite_flag == True
+		assert job.verify_checksum == True
 
 		assert len(files) == 1
 		assert files[0].file_state  == 'SUBMITTED'
@@ -58,8 +58,7 @@ class TestJobs(TestController):
 		assert files[0].selection_strategy == 'orderly'
 		assert files[0].user_filesize == 1024
 		assert files[0].checksum      == 'adler32:1234'
-		metadata = json.loads(files[0].file_metadata)
-		assert metadata['mykey'] == 'myvalue'
+		assert files[0].file_metadata['mykey'] == 'myvalue'
 
 
 	def test_submit(self):

@@ -36,14 +36,12 @@ class TestMultiple(TestController):
         assert dbJob.files[0].file_index  == 0
         assert dbJob.files[0].source_surl == 'http://source.es:8446/file'
         assert dbJob.files[0].dest_surl   == 'http://dest.ch:8447/file'
-        metadata = json.loads(dbJob.files[0].file_metadata)
-        assert metadata['mykey'] == 'myvalue'
+        assert dbJob.files[0].file_metadata['mykey'] == 'myvalue'
         
         assert dbJob.files[1].file_index  == 0
         assert dbJob.files[1].source_surl == 'root://source.es/file'
         assert dbJob.files[1].dest_surl   == 'root://dest.ch/file'
-        metadata = json.loads(dbJob.files[1].file_metadata)
-        assert metadata['mykey'] == 'myvalue'
+        assert dbJob.files[1].file_metadata['mykey'] == 'myvalue'
         
 
 
@@ -78,23 +76,21 @@ class TestMultiple(TestController):
         
         assert len(dbJob.files) == 2
         
-        assert dbJob.verify_checksum == 'Y'
+        assert dbJob.verify_checksum == True
         
         assert dbJob.files[0].file_index    == 0
         assert dbJob.files[0].source_surl   == 'srm://source.es:8446/file'
         assert dbJob.files[0].dest_surl     == 'srm://dest.ch:8447/file'
         assert dbJob.files[0].checksum      == 'adler32:1234'
         assert dbJob.files[0].user_filesize == 1024
-        metadata = json.loads(dbJob.files[0].file_metadata)
-        assert metadata['mykey'] == 'myvalue'
+        assert dbJob.files[0].file_metadata['mykey'] == 'myvalue'
         
         assert dbJob.files[1].file_index    == 1
         assert dbJob.files[1].source_surl   == 'https://host.com/another/file'
         assert dbJob.files[1].dest_surl     == 'https://dest.net/another/destination'
         assert dbJob.files[1].checksum      == 'adler32:56789'
         assert dbJob.files[1].user_filesize == 512
-        metadata = json.loads(dbJob.files[1].file_metadata)
-        assert metadata['flag'] == True
+        assert dbJob.files[1].file_metadata['flag'] == True
 
 
     def test_submit_combination(self):
@@ -134,21 +130,18 @@ class TestMultiple(TestController):
         assert dbJob.files[0].dest_surl     == 'srm://dest.ch:8447/file'
         assert dbJob.files[0].checksum      == 'adler32:1234'
         assert dbJob.files[0].user_filesize == 1024
-        metadata = json.loads(dbJob.files[0].file_metadata)
-        assert metadata['mykey'] == 'myvalue'
+        assert dbJob.files[0].file_metadata['mykey'] == 'myvalue'
         
         assert dbJob.files[1].file_index    == 0
         assert dbJob.files[1].source_surl   == 'srm://source.fr:8443/file'
         assert dbJob.files[1].dest_surl     == 'srm://dest.ch:8447/file'
         assert dbJob.files[1].checksum      == 'adler32:1234'
         assert dbJob.files[1].user_filesize == 1024
-        metadata = json.loads(dbJob.files[0].file_metadata)
-        assert metadata['mykey'] == 'myvalue'
+        assert dbJob.files[0].file_metadata['mykey'] == 'myvalue'
         
         assert dbJob.files[2].file_index    == 1
         assert dbJob.files[2].source_surl   == 'https://host.com/another/file'
         assert dbJob.files[2].dest_surl     == 'https://dest.net/another/destination'
         assert dbJob.files[2].checksum      == 'adler32:56789'
         assert dbJob.files[2].user_filesize == 512
-        metadata = json.loads(dbJob.files[2].file_metadata)
-        assert metadata['flag'] == True
+        assert dbJob.files[2].file_metadata['flag'] == True
