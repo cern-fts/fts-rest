@@ -40,6 +40,9 @@ def make_map(config):
 	map.connect('/jobs', controller='jobs', action='submit',
 			    conditions = dict(method = ['PUT', 'POST']))
 	
+	# Schema definition
+	map.connect('/schema/{action}', controller='schema')
+	
 	# Configuration audit
 	map.connect('/config/audit', controller='config', action='audit')
 
