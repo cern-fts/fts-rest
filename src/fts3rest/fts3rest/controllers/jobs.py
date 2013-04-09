@@ -18,14 +18,12 @@ import uuid
 
 DEFAULT_PARAMS = {
 	'bring_online'     : -1,
-	'verify_checksum'  : '',
+	'verify_checksum'  : False,
 	'copy_pin_lifetime': -1,
-	'fail_nearline'    : 'N',
 	'gridftp'          : '',
 	'job_metadata'     : None,
-	'lan_connection'   : 'N',
-	'overwrite'        : 'N',
-	'reuse'            : '',
+	'overwrite'        : False,
+	'reuse'            : False,
 	'source_spacetoken': '',
 	'spacetoken'       : ''
 }
@@ -166,7 +164,7 @@ class JobsController(BaseController):
 			# Job
 			job.job_id                   = str(uuid.uuid1())
 			job.job_state                = 'SUBMITTED'
-			job.reuse_job                = self._yesOrNo(params['reuse'], negative = 'N')
+			job.reuse_job                = self._yesOrNo(params['reuse'])
 			job.job_params               = params['gridftp']
 			job.submit_host              = socket.getfqdn() 
 			job.user_dn                  = user.user_dn
@@ -186,11 +184,9 @@ class JobsController(BaseController):
 			job.overwrite_flag           = self._yesOrNo(params['overwrite'])
 			job.source_space_token       = params['source_spacetoken'] 
 			job.copy_pin_lifetime        = int(params['copy_pin_lifetime'])
-			job.lan_connection           = self._yesOrNo(params['lan_connection'])
-			job.fail_nearline            = self._yesOrNo(params['fail_nearline'])
 			job.verify_checksum          = self._yesOrNo(params['verify_checksum'])
 			job.bring_online             = int(params['bring_online'])
-			job.job_metadata             = json.dumps(params['job_metadata'])
+			job.job_metadata             = params['job_metadata']
 			job.job_params               = str()
 			
 			# Files
@@ -249,7 +245,7 @@ class JobsController(BaseController):
 				file.checksum = str(serialized['checksum'])
 			
 			if 'metadata' in serialized:
-				file.file_metadata = json.dumps(serialized['metadata'])
+				file.file_metadata = serialized['metadata']
 			
 			files.append(file)
 		
@@ -261,13 +257,10 @@ class JobsController(BaseController):
 
 	
 	
-	def _yesOrNo(self, value, positive = 'Y', negative = ''):
+	def _yesOrNo(self, value):
 		if type(value) is types.StringType:
-			if len(value) > 0 and value[0].upper() == 'Y':
-				return positive
-			else:
-				return negative
+			return len(value) > 0 and value[0].upper() == 'Y'
 		elif value:
-			return positive
+			return True
 		else:
-			return negative
+			return False

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, DateTime, Float
 from sqlalchemy import ForeignKey, Integer, String
 
-from base import Base
+from base import Base, Json
 
 FileActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING']
 
@@ -36,7 +36,7 @@ class File(Base):
 	throughput   	     = Column(Float)
 	retry       	     = Column(Integer)
 	user_filesize        = Column(Float)
-	file_metadata        = Column(String(255))
+	file_metadata        = Column(Json(255))
 	staging_start        = Column(DateTime)
 	staging_finished     = Column(DateTime)
 	selection_strategy   = Column(String(255))

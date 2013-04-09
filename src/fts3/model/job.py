@@ -1,7 +1,7 @@
 from sqlalchemy import Column, DateTime, Integer, String 
 from sqlalchemy.orm import relation, backref
 
-from base import Base
+from base import Base, Flag, Json
 
 JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING']
 
@@ -12,8 +12,8 @@ class Job(Base):
 	source_se                = Column(String(255))
 	dest_se                  = Column(String(255))
 	job_state                = Column(String(32))
-	reuse_job                = Column(String(3))
-	cancel_job               = Column(String(1))
+	reuse_job                = Column(Flag(3, negative = 'N'))
+	cancel_job               = Column(Flag(negative = None))
 	job_params               = Column(String(255))
 	submit_host              = Column(String(255))
 	user_dn                  = Column(String(1024))
@@ -28,14 +28,14 @@ class Job(Base):
 	max_time_in_queue        = Column(Integer)
 	space_token              = Column(String(255))
 	internal_job_params      = Column(String(255))
-	overwrite_flag           = Column(String(1))
+	overwrite_flag           = Column(Flag)
 	job_finished             = Column(DateTime)
 	source_space_token       = Column(String(255))
 	source_token_description = Column(String(255)) 
 	copy_pin_lifetime        = Column(Integer)
-	verify_checksum          = Column(String(1), name = 'checksum_method')
+	verify_checksum          = Column(Flag(positive = 'c'), name = 'checksum_method')
 	bring_online             = Column(Integer)
-	job_metadata             = Column(String(255))
+	job_metadata             = Column(Json(255))
 	
 	
 	files = relation("File", uselist = True, lazy = True,
