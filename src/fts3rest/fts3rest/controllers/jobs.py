@@ -166,7 +166,7 @@ class JobsController(BaseController):
 			# Job
 			job.job_id                   = str(uuid.uuid1())
 			job.job_state                = 'SUBMITTED'
-			job.reuse_job                = self._yesOrNo(params['reuse'])
+			job.reuse_job                = self._yesOrNo(params['reuse'], negative = 'N')
 			job.job_params               = params['gridftp']
 			job.submit_host              = socket.getfqdn() 
 			job.user_dn                  = user.user_dn
@@ -261,13 +261,13 @@ class JobsController(BaseController):
 
 	
 	
-	def _yesOrNo(self, value):
+	def _yesOrNo(self, value, positive = 'Y', negative = ''):
 		if type(value) is types.StringType:
-			if len(value) == 0:
-				return 'N'
+			if len(value) > 0 and value[0].upper() == 'Y':
+				return positive
 			else:
-				return value[0] 
+				return negative
 		elif value:
-			return 'Y'
+			return positive
 		else:
-			return 'N'
+			return negative
