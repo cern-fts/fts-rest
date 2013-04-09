@@ -179,7 +179,7 @@ class TestJobs(TestController):
 		self.setupGridsiteEnvironment()
 		self.pushDelegation()
 		
-		job = {'files': [{'sources':      ['srm://source.es:8446/file'],
+		job = {'files': [{'sources':      ['http://source.es:8446/file'],
 						  'destinations': ['root://dest.ch:8447/file'],
 						  'selection_strategy': 'orderly',
 						  'checksums':   'adler32:1234',

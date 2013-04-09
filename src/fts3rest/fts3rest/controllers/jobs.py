@@ -227,7 +227,8 @@ class JobsController(BaseController):
 			for d in serialized['destinations']:
 				source_url = urlparse.urlparse(s)
 				dest_url   = urlparse.urlparse(d)
-				if source_url.scheme == dest_url.scheme:
+				if source_url.scheme == dest_url.scheme or \
+					source_url.scheme == 'srm' or dest_url.scheme == 'srm':
 					pairs.append((s, d))
 					
 		# Create one File entry per matching pair

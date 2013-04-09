@@ -11,9 +11,9 @@ class TestMultiple(TestController):
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
-        job = {'files': [{'sources':      ['srm://source.es:8446/file',
+        job = {'files': [{'sources':      ['http://source.es:8446/file',
                                            'root://source.es/file'],
-                          'destinations': ['srm://dest.ch:8447/file',
+                          'destinations': ['http://dest.ch:8447/file',
                                            'root://dest.ch/file'],
                           'selection_strategy': 'orderly',
                           'checksum':   'adler32:1234',
@@ -34,8 +34,8 @@ class TestMultiple(TestController):
         assert len(dbJob.files) == 2
         
         assert dbJob.files[0].file_index  == 0
-        assert dbJob.files[0].source_surl == 'srm://source.es:8446/file'
-        assert dbJob.files[0].dest_surl   == 'srm://dest.ch:8447/file'
+        assert dbJob.files[0].source_surl == 'http://source.es:8446/file'
+        assert dbJob.files[0].dest_surl   == 'http://dest.ch:8447/file'
         metadata = json.loads(dbJob.files[0].file_metadata)
         assert metadata['mykey'] == 'myvalue'
         
