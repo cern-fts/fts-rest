@@ -4,6 +4,8 @@ from decorator import decorator
 from fts3.model.base import Base
 from pylons.decorators.util import get_pylons
 from StringIO import StringIO
+from webob.exc import HTTPException
+from webob import Response
 import json
 import os
 
@@ -39,9 +41,15 @@ def jsonify(f, *args, **kwargs):
 	pylons = get_pylons(args)
 	pylons.response.headers['Content-Type'] = 'application/json'
 	
-	data = f(*args, **kwargs)
-	
-	return json.dumps(data, cls = ClassEncoder, indent = 2, sort_keys = True)
+	try:
+		data = f(*args, **kwargs)
+		return json.dumps(data, cls = ClassEncoder, indent = 2, sort_keys = True)
+	except HTTPException, e:
+		jsonError = {'status': e.status, 'message': e.detail}
+		resp = Response(json.dumps(jsonError),
+						status = e.status,
+						content_type='application/json')
+		return resp(kwargs['environ'], kwargs['start_response'])
 
 
 def fts3_config_load(path = '/etc/fts3/fts3config'):
