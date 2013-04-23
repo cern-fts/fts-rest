@@ -12,7 +12,12 @@ class Json(TypeDecorator):
         return json.dumps(value)
     
     def process_result_value(self, value, dialect):
-        return json.loads(str(value))
+        if value is None:
+            return None
+        try:
+            return json.loads(str(value))
+        except ValueError:
+            return str(value)
 
 
 class Flag(TypeDecorator):
