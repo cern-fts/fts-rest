@@ -46,9 +46,9 @@ class JobsController(BaseController):
 		jobs = Session.query(Job).filter(Job.job_state.in_(JobActiveStates))
 		
 		# Filtering
-		if 'user_dn' in request.params:
+		if 'user_dn' in request.params and request.params['user_dn']:
 			jobs = jobs.filter(Job.user_dn == request.params['user_dn'])
-		if 'vo_name' in request.params:
+		if 'vo_name' in request.params and request.params['vo_name']:
 			jobs = jobs.filter(Job.vo_name == request.params['vo_name'])
 		
 		# Return

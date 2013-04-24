@@ -12,4 +12,5 @@ class ConfigController(BaseController):
 	def audit(self, **kwargs):
 		auditList = Session.query(ConfigAudit)
 		return list(auditList)
+
 	
