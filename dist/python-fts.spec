@@ -17,7 +17,7 @@
 
 Name:			python-fts
 Version:		0.0.1
-Release:		3
+Release:		4
 BuildArch:		noarch
 Summary:		FTS3 database model
 Group:			Applications/Internet
