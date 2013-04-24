@@ -265,3 +265,31 @@ class TestJobs(TestController):
 		
 		assert jobId in map(lambda j: j['job_id'], jobList)
 
+
+	def test_no_file(self):
+		self.setupGridsiteEnvironment()
+		self.pushDelegation()
+		
+		job = {'files': [{'sources':      ['file:///etc/passwd'],
+						  'destinations': ['file:///srv/pub'],
+						  }]}
+		
+		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+							   content_type = 'application/json',
+							   params = json.dumps(job),
+							   status = 400)
+
+	def test_no_protocol(self):
+		self.setupGridsiteEnvironment()
+		self.pushDelegation()
+		
+		job = {'files': [{'sources':      ['/etc/passwd'],
+						  'destinations': ['/srv/pub'],
+						  }]}
+		
+		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+							   content_type = 'application/json',
+							   params = json.dumps(job),
+							   status = 400)
+		
+		

@@ -214,6 +214,13 @@ class JobsController(BaseController):
 			abort(400, 'Missing parameter: %s' % str(e))
 
 
+	def _protocolMatchAndValid(self, src, dst):
+		forbiddenSchemes = ['', 'file']
+		return src.scheme not in forbiddenSchemes and\
+				dst.scheme not in forbiddenSchemes and\
+				(src.scheme == dst.scheme or src.scheme == 'srm' or dst.scheme == 'srm') 
+
+
 	def _populateFiles(self, serialized, findex):
 		files = []
 		
@@ -223,8 +230,7 @@ class JobsController(BaseController):
 			for d in serialized['destinations']:
 				source_url = urlparse.urlparse(s)
 				dest_url   = urlparse.urlparse(d)
-				if source_url.scheme == dest_url.scheme or \
-					source_url.scheme == 'srm' or dest_url.scheme == 'srm':
+				if self._protocolMatchAndValid(source_url, dest_url):
 					pairs.append((s, d))
 					
 		# Create one File entry per matching pair
@@ -250,6 +256,7 @@ class JobsController(BaseController):
 			files.append(file)
 		
 		return files
+	
 			
 	def _getSE(self, uri):
 		parsed = urlparse.urlparse(uri)
