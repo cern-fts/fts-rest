@@ -26,7 +26,14 @@ class MiscController(BaseController):
 					'fts:whoami': {'href': '/whoami', 'title': 'Check user certificate'},
 					
 					'fts:joblist': {'href': '/jobs{?vo_name,user_dn}', 'title': 'List of active jobs', 'templated': True},
-					'fts:job': {'href': '/jobs/{id}', 'title': 'Job information', 'templated': True},
+					'fts:job': {
+						'href': '/jobs/{id}',
+						'title': 'Job information',
+						'templated': True,
+						'hints': {
+							'allow': ['GET', 'DELETE']
+						}
+					},
 					
 					
 					'fts:configaudit': {'href': '/config/audit', 'title': 'Configuration'},
@@ -35,8 +42,8 @@ class MiscController(BaseController):
 					'fts:jobsubmit': {
 						'href': '/jobs',
 						'hints': {
-								'allow': ['POST'],
-								'representations': ['fts:submitschema']
+							'allow': ['POST'],
+							'representations': ['fts:submitschema']
 						}
 					},
 				}
