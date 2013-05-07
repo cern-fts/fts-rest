@@ -42,15 +42,15 @@ class RequestFactory(object):
 		print >>f, e.read()
 		del f
 		if e.code == 400:
-			raise ClientError(e.reason)
+			raise ClientError(str(e))
 		elif e.code >= 401 and e.code <= 403:
 			raise Unauthorized()
 		elif e.code == 404:
 			raise NotFound(url)
 		elif e.code > 404 and e.code < 500:
-			raise ClientError(e.reason)
+			raise ClientError(str(e))
 		elif e.code >= 500:
-			raise ServerError(e.reason)
+			raise ServerError(str(e))
 
 
 	def method(self, method, url, body = None, headers = {}):

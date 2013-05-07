@@ -1,3 +1,4 @@
+from delegator import Delegator
 from jobcanceller import JobCanceller
 from joblister import JobLister
 from jobshower import JobShower
@@ -16,7 +17,7 @@ class FTS3CliFormatter(logging.Formatter):
 		else:
 			self._fmt = '%(msg)s'
 		
-		return super(FTS3CliFormatter, self).format(record)
+		return logging.Formatter.format(self, record)
 
 fmt = FTS3CliFormatter()
 handler = logging.StreamHandler(sys.stdout)

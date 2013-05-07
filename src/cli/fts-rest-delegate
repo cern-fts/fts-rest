@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+from fts3.cli import Delegator
+import logging
+import sys
+import traceback
+
+
+try:
+	delegator = Delegator(sys.argv[1:])
+	delegator()
+except Exception, e:
+	logging.critical(str(e))
+	if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+		traceback.print_exc()
+	sys.exit(1)
+
