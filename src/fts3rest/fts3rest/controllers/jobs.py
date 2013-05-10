@@ -116,7 +116,9 @@ class JobsController(BaseController):
 		if credential is None:
 			abort(403, 'No delegation id found for "%s"' % user.user_dn)
 		if credential.expired():
-			abort(403, 'The delegated credentials expired %d seconds ago' % credential.remaining().total_seconds())
+			remaining = credential.remaining()
+			seconds = abs(remaining.seconds + remaining.days * 24 * 3600)
+			abort(403, 'The delegated credentials expired %d seconds ago' % seconds)
 		if credential.remaining() < timedelta(hours = 1):
 			abort(403, 'The delegated credentials has less than one hour left')
 		
