@@ -89,6 +89,15 @@ class JobsController(BaseController):
 		files = job.files # Trigger the query, so it is serialized
 		return job
 	
+	@jsonify
+	def showField(self, id, field, **kwargs):
+		"""GET /jobs/id/field: Show a specific field from an item"""
+		job = self._getJob(id)
+		if hasattr(job, field):
+			return getattr(job, field)
+		else:
+			abort(404, 'No such field')
+	
 	@authorize(TRANSFER)
 	@jsonify
 	def submit(self, **kwargs):

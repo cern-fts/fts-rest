@@ -39,7 +39,7 @@ class Job(Base):
 	
 	
 	files = relation("File", uselist = True, lazy = True,
-					 backref = backref("job", lazy = False))
+					 backref = backref("job", lazy = True))
 	
 	def isFinished(self):
 		return self.job_state not in JobActiveStates

@@ -35,6 +35,8 @@ def make_map(config):
 				conditions = dict(method = ['GET']))
 	map.connect('/jobs/{id}', controller='jobs', action='show',
 				conditions = dict(method = ['GET']))
+	map.connect('/jobs/{id}/{field}', controller='jobs', action='showField',
+				conditions = dict(method = ['GET']))
 	map.connect('/jobs/{id}', controller='jobs', action='cancel',
 				conditions = dict(method = ['DELETE']))
 	map.connect('/jobs', controller='jobs', action='submit',
