@@ -28,9 +28,12 @@ class Submitter(object):
 		
 		job['params'] = dict()
 		job['params'].update(kwargs)
-		del job['params']['checksum']
-		del job['params']['filesize']
-		del job['params']['file_metadata']		
+		if 'checksum' in kwargs:
+			del job['params']['checksum']
+		if 'filesize' in kwargs:
+			del job['params']['filesize']
+		if 'file_metadata' in kwargs:
+			del job['params']['file_metadata']
 		
 		return json.dumps(job, indent = 2)
 
