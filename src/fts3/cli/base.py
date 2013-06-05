@@ -16,7 +16,7 @@ class Base(object):
 		if extra_args:
 			usage = "usage: %prog [options] " + extra_args
 
-		config = ConfigParser(allow_no_value=True, defaults=
+		config = ConfigParser(defaults=
 				{
 					'verbose': 'false',
 					'endpoint': None,
