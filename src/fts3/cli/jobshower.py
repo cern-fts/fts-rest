@@ -28,11 +28,11 @@ class JobShower(Base):
 
 
 	def __call__(self):
-		self.context = Context(self.options.endpoint,
+		context = Context(self.options.endpoint,
 													 ukey=self.options.ukey,
 													 ucert=self.options.ucert)
 		
-		inquirer = Inquirer(self.context)
+		inquirer = Inquirer(context)
 		job      = inquirer.getJobStatus(self.jobId)
 		
 		if not self.options.json:
