@@ -76,6 +76,7 @@ rm -rf %{buildroot}
 
 %files cli
 %{_bindir}/fts-rest-*
+%config(noreplace) %{_sysconfdir}/fts3/fts3client.cfg
 
 %changelog
 * Thu Mar 21 2013 Alejandro Álvarez <aalvarez@cern.ch> - 0.0.1-1
