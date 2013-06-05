@@ -42,7 +42,7 @@ class Base(object):
 								  help = 'FTS3 REST endpoint.', default=config.get(section, 'endpoint'))
 		self.optParser.add_option('-j', dest = 'json', action = 'store_true',
 								  help = 'print the output in JSON format.',
-									default=config.get(section, 'json'))
+									default=config.getboolean(section, 'json'))
 		self.optParser.add_option('--key', dest = 'ukey',
 								  help = 'the user certificate private key.',
 									default=config.get(section, 'ukey'))
