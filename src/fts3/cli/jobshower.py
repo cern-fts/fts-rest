@@ -32,7 +32,7 @@ class JobShower(Base):
 													 ukey=self.options.ukey,
 													 ucert=self.options.ucert)
 		
-		inquirer = Inquirer(context)
+		inquirer = Inquirer(self.context)
 		job      = inquirer.getJobStatus(self.jobId)
 		
 		if not self.options.json:
