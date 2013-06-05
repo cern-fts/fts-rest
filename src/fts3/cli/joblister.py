@@ -28,7 +28,10 @@ class JobLister(Base):
 			
 	
 	def __call__(self):
-		context = Context(self.options.endpoint)
+		self.context = Context(self.options.endpoint,
+													 ukey=self.options.ukey,
+													 ucert=self.options.ucert)
+		
 		inquirer = Inquirer(context)
 		
 		jobList  = inquirer.getJobList(self.options.user_dn, self.options.vo_name)

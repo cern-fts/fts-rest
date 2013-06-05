@@ -6,7 +6,6 @@ import sys
 import time
 
 
-
 class JobSubmitter(Base):
 	
 	def __init__(self, argv = sys.argv[1:]):
@@ -140,7 +139,9 @@ class JobSubmitter(Base):
 
 
 	def __call__(self):
-		self.context = Context(self.options.endpoint)
+		self.context = Context(self.options.endpoint,
+													 ukey=self.options.ukey,
+													 ucert=self.options.ucert)
 		
 		if not self.options.dry_run:
 			return self._doSubmit()
