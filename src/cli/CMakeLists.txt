@@ -7,3 +7,8 @@ install(PROGRAMS      fts-rest-transfer-cancel
                       fts-rest-delegate
         DESTINATION   usr/bin
 )
+
+# Configuration file
+install (FILES          fts3client.cfg
+         DESTINATION    etc/fts3
+)
