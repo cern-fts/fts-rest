@@ -153,9 +153,9 @@ class JobsController(BaseController):
 				job.dest_se = None
 
 
-	def _setupJobFromDict(self, serialized, user):
+	def _setupJobFromDict(self, jobDict, user):
 		try:
-			if len(serialized['files']) == 0:
+			if len(jobDict['files']) == 0:
 				abort(400, 'No transfers specified')
 								
 			# Initialize defaults
@@ -163,8 +163,8 @@ class JobsController(BaseController):
 			# use the default
 			params = dict()
 			params.update(DEFAULT_PARAMS)
-			if 'params' in serialized:
-				params.update(serialized['params'])
+			if 'params' in jobDict:
+				params.update(jobDict['params'])
 				for (k, v) in params.iteritems():
 					if v is None and k in DEFAULT_PARAMS:
 						params[k] = DEFAULT_PARAMS[k]
@@ -180,8 +180,8 @@ class JobsController(BaseController):
 			job.submit_host              = socket.getfqdn() 
 			job.user_dn                  = user.user_dn
 			
-			if 'credential' in serialized:
-				job.user_cred  = serialized['credential']
+			if 'credential' in jobDict:
+				job.user_cred  = jobDict['credential']
 				job.cred_id    = str()
 			else:
 				job.user_cred  = str()
@@ -202,7 +202,7 @@ class JobsController(BaseController):
 			
 			# Files
 			findex = 0
-			for t in serialized['files']:
+			for t in jobDict['files']:
 				job.files.extend(self._populateFiles(t, findex))
 				findex += 1
 				
@@ -239,15 +239,15 @@ class JobsController(BaseController):
 			raise ValueError('Missing path (%s)' % url)
 
 
-	def _populateFiles(self, serialized, findex):
+	def _populateFiles(self, filesDict, findex):
 		files = []
 		
 		# Extract matching pairs
 		pairs = []
-		for s in serialized['sources']:
+		for s in filesDict['sources']:
 			source_url = urlparse.urlparse(s)
 			self._validateUrl(source_url)
-			for d in serialized['destinations']:
+			for d in filesDict['destinations']:
 				dest_url   = urlparse.urlparse(d)
 				self._validateUrl(dest_url)
 				
@@ -265,14 +265,11 @@ class JobsController(BaseController):
 			file.source_se   = self._getSE(s)
 			file.dest_se     = self._getSE(d)
 			
-			file.user_filesize = serialized.get('filesize', None)
-			file.selection_strategy = serialized.get('selection_strategy', None)
-			
-			if 'checksum' in serialized:
-				file.checksum = str(serialized['checksum'])
-			
-			if 'metadata' in serialized:
-				file.file_metadata = serialized['metadata']
+			file.user_filesize = filesDict.get('filesize', None)
+			file.selection_strategy = filesDict.get('selection_strategy', None)
+
+			file.checksum = filesDict.get('checksum', None)			
+			file.file_metadata = filesDict.get('metadata', None)
 			
 			files.append(file)
 		

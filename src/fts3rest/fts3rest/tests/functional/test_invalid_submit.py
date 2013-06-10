@@ -33,7 +33,7 @@ class TestInvalidSubmits(TestController):
         job = {'files': [{'sources':      ['http://source.es:8446/file'],
                           'destinations': ['root://dest.ch:8447/file'],
                           'selection_strategy': 'orderly',
-                          'checksums':   'adler32:1234',
+                          'checksum':    'adler32:1234',
                           'filesize':    1024,
                           'metadata':    {'mykey': 'myvalue'},
                           }],
@@ -85,7 +85,7 @@ class TestInvalidSubmits(TestController):
         job = {'files': [{'sources':      ['gsiftp:/source.es:8446/file'],
                           'destinations': ['gsiftp://dest.ch:8446/file'],
                           'selection_strategy': 'orderly',
-                          'checksums':   'adler32:1234',
+                          'checksum':    'adler32:1234',
                           'filesize':    1024,
                           'metadata':    {'mykey': 'myvalue'},
                           }],
@@ -103,7 +103,7 @@ class TestInvalidSubmits(TestController):
         job = {'files': [{'sources':      ['gsiftp://source.es:8446/'],
                           'destinations': ['gsiftp://dest.ch:8446/file'],
                           'selection_strategy': 'orderly',
-                          'checksums':   'adler32:1234',
+                          'checksum':    'adler32:1234',
                           'filesize':    1024,
                           'metadata':    {'mykey': 'myvalue'},
                           }],
@@ -113,3 +113,19 @@ class TestInvalidSubmits(TestController):
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 400)
+
+
+    def test_submit_missing_surl(self):
+        self.setupGridsiteEnvironment()
+        self.pushDelegation()
+        job = {'transfers': [{'destinations': ['root://dest.ch/file']}]}
+        
+        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+                              params = json.dumps(job),
+                              status = 400)
+        
+        job = {'transfers': [{'source': 'root://source.es/file'}]}
+        
+        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+                              params = json.dumps(job),
+                              status = 400)

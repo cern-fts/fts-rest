@@ -104,22 +104,6 @@ class TestJobs(TestController):
 		return jobId
 
 
-	def test_submit_missing_surl(self):
-		self.setupGridsiteEnvironment()
-		self.pushDelegation()
-		job = {'transfers': [{'destinations': ['root://dest.ch/file']}]}
-		
-		answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
-							  params = json.dumps(job),
-							  status = 400)
-		
-		job = {'transfers': [{'source': 'root://source.es/file'}]}
-		
-		answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
-							  params = json.dumps(job),
-							  status = 400)
-
-
 	def test_submit_with_port(self):
 		self.setupGridsiteEnvironment()
 		self.pushDelegation()
@@ -127,7 +111,7 @@ class TestJobs(TestController):
 		job = {'files': [{'sources':      ['srm://source.es:8446/file'],
 						  'destinations': ['srm://dest.ch:8447/file'],
 						  'selection_strategy': 'orderly',
-						  'checksums':   'adler32:1234',
+						  'checksum':    'adler32:1234',
 						  'filesize':    1024,
 						  'metadata':    {'mykey': 'myvalue'},
 						  }],
@@ -160,7 +144,7 @@ class TestJobs(TestController):
 		job = {'files': [{'sources':      ['root://source.es/file'],
 						  'destinations': ['root://dest.ch/file'],
 						  'selection_strategy': 'orderly',
-						  'checksums':   'adler32:1234',
+						  'checksum':    'adler32:1234',
 						  'filesize':    1024,
 						  'metadata':    {'mykey': 'myvalue'},
 						  }],
@@ -190,7 +174,7 @@ class TestJobs(TestController):
 		job = {'files': [{'sources':      ['http://source.es/?SFN=/path/'],
 						  'destinations': ['http://dest.ch/file'],
 						  'selection_strategy': 'orderly',
-						  'checksums':   'adler32:1234',
+						  'checksum':    'adler32:1234',
 						  'filesize':    1024,
 						  'metadata':    {'mykey': 'myvalue'},
 						  }],
@@ -248,5 +232,33 @@ class TestJobs(TestController):
 		jobList = json.loads(answer.body)
 		
 		assert jobId in map(lambda j: j['job_id'], jobList)
+
+
+	def test_null_checksum(self):
+		self.setupGridsiteEnvironment()
+		self.pushDelegation()
+		
+		job = {'files': [{'sources':      ['root://source.es/file'],
+						  'destinations': ['root://dest.ch/file'],
+						  'selection_strategy': 'orderly',
+						  'checksum':   None,
+						  'filesize':    1024,
+						  'metadata':    {'mykey': 'myvalue'},
+						  }],
+			  'params': {'overwrite': True, 'verify_checksum': True}}
+		
+		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+							   content_type = 'application/json',
+							   params = json.dumps(job),
+							   status = 200)
+		
+		# Make sure it was committed to the DB
+		jobId = json.loads(answer.body)['job_id']
+		assert len(jobId) > 0
+		
+		job = Session.query(Job).get(jobId)
+		assert job.files[0].checksum  == None
+		
+		return jobId
 		
 		
