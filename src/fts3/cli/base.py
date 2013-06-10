@@ -20,3 +20,7 @@ class Base(object):
 								  help = 'FTS3 REST endpoint.')
 		self.optParser.add_option('-j', dest = 'json', default = False, action = 'store_true',
 								  help = 'print the output in JSON format.')
+		self.optParser.add_option('--key', dest = 'ukey', default = None,
+								  help = 'the user certificate private key.')
+		self.optParser.add_option('--cert', dest = 'ucert', default = None,
+								  help = 'the user certificate.')

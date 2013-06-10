@@ -27,7 +27,10 @@ class JobCanceller(Base):
 			
 			
 	def __call__(self):
-		context = Context(self.options.endpoint)
+		context = Context(self.options.endpoint,
+													 ukey=self.options.ukey,
+													 ucert=self.options.ucert)
+
 		submitter = Submitter(context)
 		
 		job = submitter.cancel(self.jobId)

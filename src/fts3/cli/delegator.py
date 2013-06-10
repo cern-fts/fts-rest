@@ -23,7 +23,10 @@ class Delegator(Base):
 
 
 	def __call__(self):
-		self.context = Context(self.options.endpoint)
+		self.context = Context(self.options.endpoint,
+													 ukey=self.options.ukey,
+													 ucert=self.options.ucert)
+
 		delegator = Deleg(self.context)
 		delegationId = delegator.delegate()
 		self.logger.info("Delegation id: %s" % delegationId)
