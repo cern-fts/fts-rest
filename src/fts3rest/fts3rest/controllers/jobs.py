@@ -217,19 +217,26 @@ class JobsController(BaseController):
 				
 			return job
 		
-		except ValueError:
-			abort(400, 'Invalid value within the request')
+		except ValueError, e:
+			abort(400, 'Invalid value within the request: %s' % str(e))
 		except TypeError, e:
 			abort(400, 'Malformed request: %s' % str(e))
 		except KeyError, e:
 			abort(400, 'Missing parameter: %s' % str(e))
 
 
-	def _protocolMatchAndValid(self, src, dst):
+	def _protocolMatchAndValid(self, srcScheme, dstScheme):
 		forbiddenSchemes = ['', 'file']
-		return src.scheme not in forbiddenSchemes and\
-				dst.scheme not in forbiddenSchemes and\
-				(src.scheme == dst.scheme or src.scheme == 'srm' or dst.scheme == 'srm') 
+		return srcScheme not in forbiddenSchemes and\
+				dstScheme not in forbiddenSchemes and\
+				(srcScheme == dstScheme or srcScheme == 'srm' or dstScheme == 'srm') 
+
+
+	def _validateUrl(self, url):
+		if re.match('^\w+://', url.geturl()) == None:
+			raise ValueError('Malformed URL (%s)' % url)
+		if not url.path or (url.path == '/' and not url.query):
+			raise ValueError('Missing path (%s)' % url)
 
 
 	def _populateFiles(self, serialized, findex):
@@ -238,10 +245,13 @@ class JobsController(BaseController):
 		# Extract matching pairs
 		pairs = []
 		for s in serialized['sources']:
+			source_url = urlparse.urlparse(s)
+			self._validateUrl(source_url)
 			for d in serialized['destinations']:
-				source_url = urlparse.urlparse(s)
 				dest_url   = urlparse.urlparse(d)
-				if self._protocolMatchAndValid(source_url, dest_url):
+				self._validateUrl(dest_url)
+				
+				if self._protocolMatchAndValid(source_url.scheme, dest_url.scheme):
 					pairs.append((s, d))
 					
 		# Create one File entry per matching pair
