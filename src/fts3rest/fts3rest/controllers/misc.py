@@ -46,6 +46,8 @@ class MiscController(BaseController):
 							'representations': ['fts:submitschema']
 						}
 					},
+						
+					'fts:optimizer': {'href': '/optimizer/', 'title': 'Optimizer'}
 				}
 			}
 

@@ -97,5 +97,7 @@ def fts3_config_load(path = '/etc/fts3/fts3config'):
 			if role not in fts3cfg['fts3.Roles']: 
 				fts3cfg['fts3.Roles'][role] = {}
 			fts3cfg['fts3.Roles'][role][operation] = level
+			
+	fts3cfg['fts3.Optimizer'] = parser.getboolean('fts3', 'Optimizer')
 	
 	return fts3cfg

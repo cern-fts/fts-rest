@@ -5,6 +5,7 @@ from config      import *
 from credentials import *
 from file        import *
 from job         import *
+from optimizer   import *
 from version     import *
 
 # Convenience method

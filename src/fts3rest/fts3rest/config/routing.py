@@ -47,5 +47,10 @@ def make_map(config):
 	
 	# Configuration audit
 	map.connect('/config/audit', controller='config', action='audit')
+	
+	# Optimizer
+	map.connect('/optimizer/', controller='optimizer', action='isEnabled')
+	map.connect('/optimizer/evolution', controller='optimizer', action='evolution')
+	map.connect('/optimizer/snapshot', controller='optimizer', action='snapshot')
 
 	return map
