@@ -17,7 +17,7 @@
 
 Name:			fts-rest
 Version:		0.0.1
-Release:		8
+Release:		9
 BuildArch:		noarch
 Summary:		FTS3 Rest Interface
 Group:			Applications/Internet
@@ -52,6 +52,26 @@ Requires:		python-fts
 %description cli
 Command line utilities for the FTS3 REST interface
 
+%package selinux
+Summary:		SELinux support for fts-rest
+Group:			Applications/Internet
+
+Requires:		fts-rest
+
+%description selinux
+This package labels port 8446, used by fts-rest, as http_port_t,
+so Apache can bind to it.
+
+%post selinux
+if [ "$1" -le "1" ] ; then # First install
+semanage port -a -t http_port_t -p tcp 8446
+fi
+
+%preun selinux
+if [ "$1" -lt "1" ] ; then # Final removal
+semanage port -d -t http_port_t -p tcp 8446
+fi
+
 %prep
 %setup -q -n %{name}-%{version}
 
@@ -75,10 +95,16 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/fts3rest.conf
 
 %files cli
+%defattr(-,root,root,-)
 %{_bindir}/fts-rest-*
 %config(noreplace) %{_sysconfdir}/fts3/fts3client.cfg
 
+%files selinux
+
 %changelog
+* Tue Jul 02 2013 Alejandro Álvarez <aalvarez@cern.ch> - 0.0.1-9
+- Introduced -selinux package
+
 * Thu Mar 21 2013 Alejandro Álvarez <aalvarez@cern.ch> - 0.0.1-1
 - Initial build
 
