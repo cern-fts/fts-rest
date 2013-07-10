@@ -47,7 +47,9 @@ class MiscController(BaseController):
 						}
 					},
 						
-					'fts:optimizer': {'href': '/optimizer/', 'title': 'Optimizer'}
+					'fts:optimizer': {'href': '/optimizer/', 'title': 'Optimizer'},
+                    
+                    'fts:archive':  {'href': '/archive/', 'title': 'Archive'}
 				}
 			}
 

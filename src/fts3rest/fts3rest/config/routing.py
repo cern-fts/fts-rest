@@ -41,6 +41,16 @@ def make_map(config):
 				conditions = dict(method = ['DELETE']))
 	map.connect('/jobs', controller='jobs', action='submit',
 			    conditions = dict(method = ['PUT', 'POST']))
+
+	# Archive
+	map.connect('/archive', controller='archive', action='index',
+				conditions = dict(method = ['GET']))
+	map.connect('/archive/', controller='archive', action='index',
+				conditions = dict(method = ['GET']))
+	map.connect('/archive/{id}', controller='archive', action='show',
+				conditions = dict(method = ['GET']))
+	map.connect('/archive/{id}/{field}', controller='archive', action='showField',
+				conditions = dict(method = ['GET']))
 	
 	# Schema definition
 	map.connect('/schema/{action}', controller='schema')
