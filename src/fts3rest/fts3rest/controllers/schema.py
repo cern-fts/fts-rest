@@ -8,8 +8,9 @@ def _schema():
         
     fileSchema = {'title': 'Transfer',
                   'type':  'object',
-                  'properties': {'sources':      {'type': 'array', 'items': urlSchema, 'minItems': 1, 'required': True},
-                                 'destinations': {'type': 'array', 'items': urlSchema, 'minItems': 1, 'required': True},
+                  'required': ['sources', 'destinations'],
+                  'properties': {'sources':      {'type': 'array', 'items': urlSchema, 'minItems': 1},
+                                 'destinations': {'type': 'array', 'items': urlSchema, 'minItems': 1},
                                  'metadata':     {'type': ['object', 'null']},
                                  'filesize':     {'type': ['integer','null'], 'minimum': 0},
                                  'checksum':     {'type': ['string', 'null'], 'title': 'User defined checksum in the form algorithm:value'}
@@ -32,9 +33,9 @@ def _schema():
         
     schema = {'title':      'Job submission',
               'type':       'object',
+              'required':   ['files'],
               'properties': {'params': paramSchema,
                              'files': {'type': 'array',
-                                       'required': True,
                                        'items': fileSchema}
                             }
               }
