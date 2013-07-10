@@ -4,7 +4,7 @@ import jsonschema
 
 
 
-class TestAuthorization(unittest.TestCase):
+class TestJsonSchema(unittest.TestCase):
     def setUp(self):
         self.data = {"files": [
                         {
