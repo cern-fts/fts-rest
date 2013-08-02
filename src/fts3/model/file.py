@@ -41,6 +41,8 @@ class File(Base):
 	staging_finished     = Column(DateTime)
 	selection_strategy   = Column(String(255))
 	bringonline_token    = Column(String(255))
+	log_file			 = Column('t_log_file', String(2048))
+	log_debug			= Column('t_log_file_debug', Integer)
 	
 	def isFinished(self):
 		return self.job_state not in FileActiveStates
