@@ -39,11 +39,14 @@ class TestController(TestCase):
 		TestCase.__init__(self, *args, **kwargs)
 
 
-	def setupGridsiteEnvironment(self):
-		env = {'GRST_CRED_AURI_0': 'dn:/DC=ch/DC=cern/OU=Test User',
+	def setupGridsiteEnvironment(self, noVo = False):
+		env = {'GRST_CRED_AURI_0': 'dn:/DC=ch/DC=cern/OU=Test User'}
+		
+		if not noVo:
+			env.update({
 			   'GRST_CRED_AURI_1': 'fqan:/testvo/Role=NULL/Capability=NULL',
 			   'GRST_CRED_AURI_2': 'fqan:/testvo/Role=myrole/Capability=NULL'
-			  }
+			  })
 		self.app.extra_environ.update(env)
 
 
