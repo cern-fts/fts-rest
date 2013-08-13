@@ -98,6 +98,9 @@ class DelegationController(BaseController):
 	def credential(self, id, start_response):
 		user = request.environ['fts3.User.Credentials']
 		credentialCache = Session.query(CredentialCache).get((id, user.user_dn))
+		if credentialCache is None:
+			start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
+			return ['No credential cache found']
 		
 		x509ProxyPEM        = request.body
 		x509Proxy           = X509.load_cert_string(x509ProxyPEM)
