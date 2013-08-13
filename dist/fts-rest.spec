@@ -17,7 +17,7 @@
 
 Name:			fts-rest
 Version:		0.0.2
-Release:		1
+Release:		2
 BuildArch:		noarch
 Summary:		FTS3 Rest Interface
 Group:			Applications/Internet
@@ -86,6 +86,8 @@ rm -rf %{buildroot}
 mkdir -p %{buildroot}
 make install DESTDIR=%{buildroot}
 
+mkdir -p %{buildroot}/%{_var}/cache/fts3rest/
+
 %clean
 rm -rf %{buildroot}
 
@@ -95,6 +97,7 @@ rm -rf %{buildroot}
 %{_libexecdir}/fts3
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.ini
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/fts3rest.conf
+%dir %attr(0775,apache,apache) %{_var}/cache/fts3rest
 
 %files cli
 %defattr(-,root,root,-)
@@ -104,6 +107,9 @@ rm -rf %{buildroot}
 %files selinux
 
 %changelog
+* Tue Aug 13 2013 Alejandro Álvarez <aalvarez@cern.ch> - 0.0.2-2
+- Packaging /var/cache/fts3rest
+
 * Tue Jul 02 2013 Alejandro Álvarez <aalvarez@cern.ch> - 0.0.1-9
 - Introduced -selinux package
 
