@@ -25,7 +25,8 @@ DEFAULT_PARAMS = {
 	'overwrite'        : False,
 	'reuse'            : False,
 	'source_spacetoken': '',
-	'spacetoken'       : ''
+	'spacetoken'       : '',
+	'retry'            : 0
 }
 
 
@@ -176,6 +177,7 @@ class JobsController(BaseController):
 			job.job_id                   = str(uuid.uuid1())
 			job.job_state                = 'SUBMITTED'
 			job.reuse_job                = self._yesOrNo(params['reuse'])
+			job.retry                    = int(params['retry'])
 			job.job_params               = params['gridftp']
 			job.submit_host              = socket.getfqdn() 
 			job.user_dn                  = user.user_dn

@@ -37,6 +37,7 @@ class Job(Base):
 	verify_checksum          = Column(Flag(positive = 'c'), name = 'checksum_method')
 	bring_online             = Column(Integer)
 	job_metadata             = Column(Json(255))
+	retry                    = Column(Integer)
 	
 	
 	files = relation("File", uselist = True, lazy = True,
@@ -80,6 +81,7 @@ class ArchivedJob(Base):
 	verify_checksum          = Column(Flag(positive = 'c'), name = 'checksum_method')
 	bring_online             = Column(Integer)
 	job_metadata             = Column(Json(255))
+	retry                    = Column(Integer)
 	
 	files = relation("ArchivedFile", uselist = True, lazy = True,
 					 backref = backref("job", lazy = True),

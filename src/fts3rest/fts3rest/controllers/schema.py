@@ -27,7 +27,8 @@ def _schema():
                                   'job_metadata':      {'type': ['object', 'null']},
                                   'source_spacetoken': {'type': ['string', 'null']},
                                   'overwrite':         {'type': ['boolean', 'null']},
-                                  'gridftp':           {'type': ['string', 'null'], 'title': 'Reserved for future usage'}
+                                  'gridftp':           {'type': ['string', 'null'], 'title': 'Reserved for future usage'},
+                                  'retry':             {'type': ['integer', 'null']}
                                   },
                    }
         

@@ -60,7 +60,6 @@ class UserCredentials(object):
 		if len(self.dn) == 0 and 'SSL_CLIENT_S_DN' in env:
 			self.dn.append(urllib.unquote_plus(env['SSL_CLIENT_S_DN']))
 			
-			
 		# Pick first one
 		if len(self.dn) > 0:
 			self.user_dn = self.dn[0]
