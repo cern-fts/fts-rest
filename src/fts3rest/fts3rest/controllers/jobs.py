@@ -138,6 +138,10 @@ class JobsController(BaseController):
 		# Set job source and dest se depending on the transfers
 		self._setJobSourceAndDestination(job)
 		
+		# Validate that there are no bad combinations
+		if job.reuse_job and self._hasMultipleOptions(job.files):
+			abort(400, 'Can not specify reuse and multiple replicas at the same time')
+		
 		# Return it
 		Session.merge(job)
 		Session.commit()
@@ -291,3 +295,11 @@ class JobsController(BaseController):
 			return True
 		else:
 			return False
+
+	def _hasMultipleOptions(self, files):		
+		ids = map(lambda f: f.file_index, files)
+		idCount = len(ids)
+		uniqueIdCount = len(set(ids))
+		return uniqueIdCount != idCount
+
+		
