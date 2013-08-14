@@ -25,12 +25,16 @@ class TestJobs(TestController):
 					 status = 403)
 
 
-	def _validateSubmitted(self, job):
+	def _validateSubmitted(self, job, noVo = False):
 		assert job is not None
 		files = job.files
 		assert files is not None
 		
 		assert job.user_dn   == '/DC=ch/DC=cern/OU=Test User'
+		if noVo:
+			assert job.vo_name   == ''
+		else:
+			assert job.vo_name   == 'testvo'
 		assert job.job_state == 'SUBMITTED'
 		
 		assert job.source_se == 'root://source.es'
@@ -311,4 +315,4 @@ class TestJobs(TestController):
 		jobId = json.loads(answer.body)['job_id']
 		assert len(jobId) > 0
 		
-		self._validateSubmitted(Session.query(Job).get(jobId))
+		self._validateSubmitted(Session.query(Job).get(jobId), noVo = True)
