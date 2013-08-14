@@ -34,9 +34,9 @@ class TestJsonSchema(unittest.TestCase):
         jsonschema.validate(self.data, self.schema)
 
 
-    def test_missing_files(self):
-        del self.data['files']
-        self.assertRaises(jsonschema.ValidationError, jsonschema.validate, self.data, self.schema)
+    #def test_missing_files(self):
+    #    del self.data['files']
+    #    self.assertRaises(jsonschema.ValidationError, jsonschema.validate, self.data, self.schema)
 
 
     def test_missing_params(self):
