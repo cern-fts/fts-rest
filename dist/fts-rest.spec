@@ -11,7 +11,7 @@
 %{!?python26_sitelib: %global python26_sitelib %(%{__python26} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 %{!?python26_sitearch: %global python26_sitearch %(%{__python26} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
 # Update rpm byte compilation script so that we get the modules compiled by the
-# correct inerpreter
+# correct interpreter
 %global __os_install_post %__multiple_python_os_install_post
 %endif
 
@@ -27,18 +27,24 @@ Source0:		%{name}-%{version}.tar.gz
 Buildroot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	cmake
+BuildRequires:  m2crypto
+BuildRequires:  python-fts
+BuildRequires:  python-jsonschema
+BuildRequires:  python-nose
+BuildRequires:  python-pylons
 %if 0%{?with_python26}
 BuildRequires:	python26-devel
 %else
 BuildRequires:	python-devel
 %endif
 
-Requires:		gridsite%{?_isa} >= 1.7
-Requires:		httpd%{?_isa}
-Requires:		mod_wsgi
-Requires:		python-fts
-Requires:		python-paste-deploy
-Requires:		python-pylons
+Requires:	  gridsite%{?_isa} >= 1.7
+Requires:	  httpd%{?_isa}
+Requires:   m2crypto
+Requires:   mod_wsgi
+Requires:	  python-fts
+Requires:	  python-paste-deploy
+Requires:	  python-pylons
 
 %description
 This package provides the FTS3 REST interface
@@ -80,6 +86,11 @@ fi
 %build
 %cmake . -DCMAKE_INSTALL_PREFIX=/
 make %{?_smp_mflags}
+
+%check
+pushd src/fts3rest
+nosetests -x
+popd
 
 %install
 rm -rf %{buildroot}
