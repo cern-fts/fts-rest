@@ -50,7 +50,7 @@ class UserCredentials(object):
 				fqan = urllib.unquote_plus(cred[5:])
 				vo   = voFromFqan(fqan)
 				self.voms_cred.append(fqan)
-				if vo not in self.vos:
+				if vo not in self.vos and vo:
 					self.vos.append(vo)
 			
 			grstIndex += 1
