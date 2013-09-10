@@ -129,3 +129,20 @@ class TestInvalidSubmits(TestController):
         answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
                               params = json.dumps(job),
                               status = 400)
+
+
+    def test_invalid_surl(self):
+        self.setupGridsiteEnvironment()
+        self.pushDelegation()
+        job = {'files': [{'sources':      ['http: //source.es/file'], # Note the space!
+                          'destinations': ['http: //dest.ch/file'],
+                          'selection_strategy': 'orderly',
+                          'checksum':   'adler32:1234',
+                          'filesize':    1024,
+                          'metadata':    {'mykey': 'myvalue'},
+              }]}
+        
+        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+                              params = json.dumps(job),
+                              status = 400)
+

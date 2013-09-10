@@ -233,9 +233,9 @@ class JobsController(BaseController):
 
 	def _protocolMatchAndValid(self, srcScheme, dstScheme):
 		forbiddenSchemes = ['', 'file']
-		return srcScheme not in forbiddenSchemes and\
-				dstScheme not in forbiddenSchemes and\
-				(srcScheme == dstScheme or srcScheme == 'srm' or dstScheme == 'srm') 
+		return srcScheme not in forbiddenSchemes and \
+				dstScheme not in forbiddenSchemes and \
+				(srcScheme == dstScheme or srcScheme == 'srm' or dstScheme == 'srm')
 
 
 	def _validateUrl(self, url):
@@ -243,6 +243,8 @@ class JobsController(BaseController):
 			raise ValueError('Malformed URL (%s)' % url)
 		if not url.path or (url.path == '/' and not url.query):
 			raise ValueError('Missing path (%s)' % url)
+		if not url.hostname or url.hostname == '':
+			raise ValueError('Missing host (%s)' % url)
 
 
 	def _populateFiles(self, filesDict, findex):
