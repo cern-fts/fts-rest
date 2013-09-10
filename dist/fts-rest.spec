@@ -40,8 +40,8 @@ BuildRequires:	python-devel
 
 Requires:	  gridsite%{?_isa} >= 1.7
 Requires:	  httpd%{?_isa}
-Requires:   m2crypto
-Requires:   mod_wsgi
+Requires:	  m2crypto
+Requires:	  mod_wsgi
 Requires:	  python-fts
 Requires:	  python-paste-deploy
 Requires:	  python-pylons
