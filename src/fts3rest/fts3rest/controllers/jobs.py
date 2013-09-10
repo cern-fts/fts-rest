@@ -274,6 +274,8 @@ class JobsController(BaseController):
 			file.dest_se     = self._getSE(d)
 			
 			file.user_filesize = filesDict.get('filesize', None)
+			if file.user_filesize is None:
+				file.user_filesize = 0
 			file.selection_strategy = filesDict.get('selection_strategy', None)
 
 			file.checksum = filesDict.get('checksum', None)			

@@ -292,6 +292,33 @@ class TestJobs(TestController):
 		assert job.files[0].checksum  == None
 		
 		return jobId
+	
+	
+	def test_null_user_filesize(self):
+		self.setupGridsiteEnvironment()
+		self.pushDelegation()
+		
+		job = {'files': [{'sources':      ['root://source.es/file'],
+						  'destinations': ['root://dest.ch/file'],
+						  'selection_strategy': 'orderly',
+						  'filesize':    None,
+						  'metadata':    {'mykey': 'myvalue'},
+						  }],
+			  'params': {'overwrite': True, 'verify_checksum': True}}
+		
+		answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+							   content_type = 'application/json',
+							   params = json.dumps(job),
+							   status = 200)
+		
+		# Make sure it was committed to the DB
+		jobId = json.loads(answer.body)['job_id']
+		assert len(jobId) > 0
+		
+		job = Session.query(Job).get(jobId)
+		assert job.files[0].user_filesize == 0
+		
+		return jobId
 		
 		
 	def test_no_vo(self):
