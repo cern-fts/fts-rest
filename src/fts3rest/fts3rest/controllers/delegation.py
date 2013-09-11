@@ -72,7 +72,8 @@ class DelegationController(BaseController):
 			Session.commit()	
 		
 		
-		start_response('200 OK', [('X-Delegation-ID', credentialCache.dlg_id)])
+		start_response('200 OK', [('X-Delegation-ID', credentialCache.dlg_id),
+								  ('Content-Type', 'text/plain')])
 		return credentialCache.cert_request
 
 
@@ -103,9 +104,14 @@ class DelegationController(BaseController):
 			return ['No credential cache found']
 		
 		x509ProxyPEM        = request.body
-		x509Proxy           = X509.load_cert_string(x509ProxyPEM)
-		proxyExpirationTime = x509Proxy.get_not_after().get_datetime().replace(tzinfo = None)
-		x509FullProxyPEM    = self._buildFullProxyPEM(x509ProxyPEM, credentialCache.priv_key)
+		
+		try:
+			x509Proxy           = X509.load_cert_string(x509ProxyPEM)
+			proxyExpirationTime = x509Proxy.get_not_after().get_datetime().replace(tzinfo = None)
+			x509FullProxyPEM    = self._buildFullProxyPEM(x509ProxyPEM, credentialCache.priv_key)
+		except Exception, e:
+			start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
+			return ['Could not process the proxy: ' + str(e)]
 		
 		credential = Credential(dlg_id           = id,
 								dn               = user.user_dn,

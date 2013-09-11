@@ -78,13 +78,15 @@ class TestController(TestCase):
 			if delegated:
 				Session.delete(delegated)
 				Session.commit()
-	
+
+
 	def _populatedName(self, components):
 		x509Name = X509.X509_Name()
 		for (field, value) in components:
 			x509Name.add_entry_by_txt(field, 0x1000, value, len = -1, loc = -1, set = 0)
 		return x509Name
-	
+
+
 	def _generateX509Proxy(self):
 		# Public key
 		key = RSA.gen_key(512, 65537)
