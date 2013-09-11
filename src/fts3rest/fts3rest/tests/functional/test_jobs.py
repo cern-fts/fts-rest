@@ -32,7 +32,7 @@ class TestJobs(TestController):
 		
 		assert job.user_dn   == '/DC=ch/DC=cern/OU=Test User'
 		if noVo:
-			assert job.vo_name   == ''
+			assert job.vo_name   == 'nil'
 		else:
 			assert job.vo_name   == 'testvo'
 		assert job.job_state == 'SUBMITTED'

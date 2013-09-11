@@ -194,7 +194,7 @@ class JobsController(BaseController):
 				job.cred_id    = user.delegation_id
 			
 			job.voms_cred                = ' '.join(user.voms_cred)
-			job.vo_name                  = user.vos[0] if len(user.vos) > 0 else ''
+			job.vo_name                  = user.vos[0] if len(user.vos) > 0 and user.vos[0] else 'nil'
 			job.submit_time              = datetime.now()
 			job.priority                 = 3
 			job.space_token              = params['spacetoken']
