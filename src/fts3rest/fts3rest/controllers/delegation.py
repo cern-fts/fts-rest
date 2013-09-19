@@ -109,6 +109,11 @@ class DelegationController(BaseController):
 			x509Proxy           = X509.load_cert_string(x509ProxyPEM)
 			proxyExpirationTime = x509Proxy.get_not_after().get_datetime().replace(tzinfo = None)
 			x509FullProxyPEM    = self._buildFullProxyPEM(x509ProxyPEM, credentialCache.priv_key)
+			
+			# Validate the subject
+			proxySubject = '/' + '/'.join(x509Proxy.get_subject().as_text().split(', '))
+			if proxySubject != user.user_dn + '/CN=proxy':
+				raise Exception("The subject of the proxy does not match the user dn")
 		except Exception, e:
 			start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
 			return ['Could not process the proxy: ' + str(e)]
@@ -124,5 +129,5 @@ class DelegationController(BaseController):
 		
 		start_response('201 CREATED', [])
 		
-		return ''
+		return ['']
 	

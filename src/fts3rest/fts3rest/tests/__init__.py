@@ -87,7 +87,7 @@ class TestController(TestCase):
 		return x509Name
 
 
-	def _generateX509Proxy(self):
+	def _generateX509Proxy(self, subject):
 		# Public key
 		key = RSA.gen_key(512, 65537)
 		pkey = EVP.PKey()
@@ -100,7 +100,7 @@ class TestController(TestCase):
 		# Certificate
 		cert = X509.X509()
 		cert.set_pubkey(pkey)
-		name = self._populatedName([('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User')])
+		name = self._populatedName(subject)
 		cert.set_subject(name)
 		cert.set_issuer_name(name)
 		cert.set_not_before(start)
@@ -113,9 +113,10 @@ class TestController(TestCase):
 		return proxy
 				
 	
-	def getX509Proxy(self):
+	def getX509Proxy(self, subject =
+					[('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User'), ('CN', 'proxy')]):
 		if not self.x509_proxy:
-			self.x509_proxy = self._generateX509Proxy()
+			self.x509_proxy = self._generateX509Proxy(subject)
 		return self.x509_proxy
 	
 	
