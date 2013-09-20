@@ -8,16 +8,16 @@ import sys
 
 
 class FTS3CliFormatter(logging.Formatter):
-	def format(self, record):
-		
-		if record.levelno == logging.CRITICAL:
-			self._fmt = 'Error: %(msg)s'
-		elif record.levelno == logging.DEBUG:
-			self._fmt = '# %(msg)s'
-		else:
-			self._fmt = '%(msg)s'
-		
-		return logging.Formatter.format(self, record)
+    def format(self, record):
+        
+        if record.levelno == logging.CRITICAL:
+            self._fmt = 'Error: %(msg)s'
+        elif record.levelno == logging.DEBUG:
+            self._fmt = '# %(msg)s'
+        else:
+            self._fmt = '%(msg)s'
+        
+        return logging.Formatter.format(self, record)
 
 fmt = FTS3CliFormatter()
 handler = logging.StreamHandler(sys.stdout)

@@ -11,11 +11,11 @@ import fts3rest.lib.helpers
 from fts3rest.config.routing import make_map
 from fts3rest.model import init_model
 
+
 def load_environment(global_conf, app_conf):
     """Configure the Pylons environment via the ``pylons.config``
     object
     """
-    
     # Pylons paths
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     paths = dict(root=root,
@@ -29,15 +29,16 @@ def load_environment(global_conf, app_conf):
     config['routes.map'] = make_map(config)
     config['pylons.app_globals'] = app_globals.Globals(config)
     config['pylons.h'] = fts3rest.lib.helpers
-    
+
     # Setup cache object as early as possible
     import pylons
     pylons.cache._push_object(config['pylons.app_globals'].cache)
-    
+
     # If fts3.config is set, load configuration from there
+    fts3_config_file = config.get('fts3.config')
     if config.get('fts3.config'):
-        fts3cfg = fts3rest.lib.helpers.fts3_config_load(config.get('fts3.config'))
-        config.update(fts3cfg)            
+        fts3cfg = fts3rest.lib.helpers.fts3_config_load(fts3_config_file)
+        config.update(fts3cfg)
 
     # Create the Mako TemplateLookup, with the default auto-escaping
     config['pylons.app_globals'].mako_lookup = TemplateLookup(
@@ -53,5 +54,4 @@ def load_environment(global_conf, app_conf):
 
     # CONFIGURATION OPTIONS HERE (note: all config options will override
     # any Pylons config options)
-    
     return config

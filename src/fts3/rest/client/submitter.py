@@ -3,46 +3,40 @@ import json
 import urllib
 
 
-
 class Submitter(object):
-	
-	def __init__(self, context):
-		self.context = context
 
+    def __init__(self, context):
+        self.context = context
 
-	def buildSubmission(self, source, destination, **kwargs):
-		job = dict()
+    def buildSubmission(self, source, destination, **kwargs):
+        job = dict()
 
-		job['files'] = []
-		
-		transfer = {'sources': [source], 'destinations': [destination]}
-		if 'checksum' in kwargs:
-			transfer['checksum'] = kwargs['checksum']
-		if 'filesize' in kwargs:
-			transfer['filesize'] = kwargs['filesize']
-		if 'file_metadata' in kwargs:
-			transfer['metadata'] = kwargs['file_metadata']
-		
-		job['files'].append(transfer)		
-		
-		
-		job['params'] = dict()
-		job['params'].update(kwargs)
-		if 'checksum' in kwargs:
-			del job['params']['checksum']
-		if 'filesize' in kwargs:
-			del job['params']['filesize']
-		if 'file_metadata' in kwargs:
-			del job['params']['file_metadata']
-		
-		return json.dumps(job, indent = 2)
+        job['files'] = []
 
+        transfer = {'sources': [source], 'destinations': [destination]}
+        if 'checksum' in kwargs:
+            transfer['checksum'] = kwargs['checksum']
+        if 'filesize' in kwargs:
+            transfer['filesize'] = kwargs['filesize']
+        if 'file_metadata' in kwargs:
+            transfer['metadata'] = kwargs['file_metadata']
 
-	def submit(self, source, destination, **kwargs):
-		job = self.buildSubmission(source, destination, **kwargs)
-		r = json.loads(self.context.post_json('/jobs', job))
-		return r['job_id']
-	
-	
-	def cancel(self, jobId):
-		return json.loads(self.context.delete('/jobs/%s' % jobId))
+        job['files'].append(transfer)
+        job['params'] = dict()
+        job['params'].update(kwargs)
+        if 'checksum' in kwargs:
+            del job['params']['checksum']
+        if 'filesize' in kwargs:
+            del job['params']['filesize']
+        if 'file_metadata' in kwargs:
+            del job['params']['file_metadata']
+
+        return json.dumps(job, indent=2)
+
+    def submit(self, source, destination, **kwargs):
+        job = self.buildSubmission(source, destination, **kwargs)
+        r = json.loads(self.context.post_json('/jobs', job))
+        return r['job_id']
+
+    def cancel(self, jobId):
+        return json.loads(self.context.delete('/jobs/%s' % jobId))

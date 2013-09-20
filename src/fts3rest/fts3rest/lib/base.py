@@ -7,6 +7,7 @@ from pylons.templating import render_mako as render
 
 from fts3rest.model.meta import Session
 
+
 class BaseController(WSGIController):
 
     def __call__(self, environ, start_response):

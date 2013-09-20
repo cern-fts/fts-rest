@@ -8,27 +8,27 @@ import time
 
 
 class Delegator(Base):
-	
-	def __init__(self, argv = sys.argv[1:]):
-		super(Delegator, self).__init__()
+    
+    def __init__(self, argv = sys.argv[1:]):
+        super(Delegator, self).__init__()
 
-		(self.options, self.args) = self.optParser.parse_args(argv)
+        (self.options, self.args) = self.optParser.parse_args(argv)
 
-		if self.options.verbose:
-			self.logger.setLevel(logging.DEBUG)
+        if self.options.verbose:
+            self.logger.setLevel(logging.DEBUG)
 
-		if self.options.endpoint is None:
-			self.logger.critical('Need an endpoint')
-			sys.exit(1)
+        if self.options.endpoint is None:
+            self.logger.critical('Need an endpoint')
+            sys.exit(1)
 
 
-	def __call__(self):
-		self.context = Context(self.options.endpoint,
-													 ukey=self.options.ukey,
-													 ucert=self.options.ucert)
+    def __call__(self):
+        self.context = Context(self.options.endpoint,
+                                                     ukey=self.options.ukey,
+                                                     ucert=self.options.ucert)
 
-		delegator = Deleg(self.context)
-		delegationId = delegator.delegate()
-		self.logger.info("Delegation id: %s" % delegationId)
-		return delegationId
+        delegator = Deleg(self.context)
+        delegationId = delegator.delegate()
+        self.logger.info("Delegation id: %s" % delegationId)
+        return delegationId
 
