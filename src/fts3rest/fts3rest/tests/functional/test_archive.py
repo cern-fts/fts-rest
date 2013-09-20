@@ -34,12 +34,12 @@ class TestArchive(TestController):
                               status = 200)
         job = json.loads(answer.body)
         
-        assert job['job_id']    == job_id
-        assert job['job_state'] == 'CANCELED'
+        self.assertEqual(job['job_id'], job_id)
+        self.assertEqual(job['job_state'], 'CANCELED')
         
-        assert len(job['files']) == 1
+        self.assertEqual(len(job['files']), 1)
         
-        assert job['files'][0]['file_state'] == 'CANCELED'
-        assert job['files'][0]['source_se']  == 'srm://source'
-        assert job['files'][0]['dest_se']  == 'srm://dest'
-        assert job['files'][0]['file_id']  == 1234
+        self.assertEqual(job['files'][0]['file_state'], 'CANCELED')
+        self.assertEqual(job['files'][0]['source_se'], 'srm://source')
+        self.assertEqual(job['files'][0]['dest_se'], 'srm://dest')
+        self.assertEqual(job['files'][0]['file_id'], 1234)

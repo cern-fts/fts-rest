@@ -31,17 +31,17 @@ class TestMultiple(TestController):
         jobId = json.loads(answer.body)['job_id']
         dbJob = Session.query(Job).get(jobId)
         
-        assert len(dbJob.files) == 2
+        self.assertEqual(len(dbJob.files), 2)
         
-        assert dbJob.files[0].file_index  == 0
-        assert dbJob.files[0].source_surl == 'http://source.es:8446/file'
-        assert dbJob.files[0].dest_surl   == 'http://dest.ch:8447/file'
-        assert dbJob.files[0].file_metadata['mykey'] == 'myvalue'
+        self.assertEqual(dbJob.files[0].file_index, 0)
+        self.assertEqual(dbJob.files[0].source_surl, 'http://source.es:8446/file')
+        self.assertEqual(dbJob.files[0].dest_surl, 'http://dest.ch:8447/file')
+        self.assertEqual(dbJob.files[0].file_metadata['mykey'], 'myvalue')
         
-        assert dbJob.files[1].file_index  == 0
-        assert dbJob.files[1].source_surl == 'root://source.es/file'
-        assert dbJob.files[1].dest_surl   == 'root://dest.ch/file'
-        assert dbJob.files[1].file_metadata['mykey'] == 'myvalue'
+        self.assertEqual(dbJob.files[1].file_index, 0)
+        self.assertEqual(dbJob.files[1].source_surl, 'root://source.es/file')
+        self.assertEqual(dbJob.files[1].dest_surl, 'root://dest.ch/file')
+        self.assertEqual(dbJob.files[1].file_metadata['mykey'], 'myvalue')
         
 
 
@@ -74,23 +74,23 @@ class TestMultiple(TestController):
         jobId = json.loads(answer.body)['job_id']
         dbJob = Session.query(Job).get(jobId)
         
-        assert len(dbJob.files) == 2
+        self.assertEqual(len(dbJob.files), 2)
         
-        assert dbJob.verify_checksum == True
+        self.assertEqual(dbJob.verify_checksum, True)
         
-        assert dbJob.files[0].file_index    == 0
-        assert dbJob.files[0].source_surl   == 'srm://source.es:8446/file'
-        assert dbJob.files[0].dest_surl     == 'srm://dest.ch:8447/file'
-        assert dbJob.files[0].checksum      == 'adler32:1234'
-        assert dbJob.files[0].user_filesize == 1024
-        assert dbJob.files[0].file_metadata['mykey'] == 'myvalue'
+        self.assertEqual(dbJob.files[0].file_index, 0)
+        self.assertEqual(dbJob.files[0].source_surl, 'srm://source.es:8446/file')
+        self.assertEqual(dbJob.files[0].dest_surl, 'srm://dest.ch:8447/file')
+        self.assertEqual(dbJob.files[0].checksum, 'adler32:1234')
+        self.assertEqual(dbJob.files[0].user_filesize, 1024)
+        self.assertEqual(dbJob.files[0].file_metadata['mykey'], 'myvalue')
         
-        assert dbJob.files[1].file_index    == 1
-        assert dbJob.files[1].source_surl   == 'https://host.com/another/file'
-        assert dbJob.files[1].dest_surl     == 'https://dest.net/another/destination'
-        assert dbJob.files[1].checksum      == 'adler32:56789'
-        assert dbJob.files[1].user_filesize == 512
-        assert dbJob.files[1].file_metadata['flag'] == True
+        self.assertEqual(dbJob.files[1].file_index, 1)
+        self.assertEqual(dbJob.files[1].source_surl, 'https://host.com/another/file')
+        self.assertEqual(dbJob.files[1].dest_surl, 'https://dest.net/another/destination')
+        self.assertEqual(dbJob.files[1].checksum, 'adler32:56789')
+        self.assertEqual(dbJob.files[1].user_filesize, 512)
+        self.assertEqual(dbJob.files[1].file_metadata['flag'], True)
 
 
     def test_submit_combination(self):
@@ -123,28 +123,28 @@ class TestMultiple(TestController):
         jobId = json.loads(answer.body)['job_id']
         dbJob = Session.query(Job).get(jobId)
         
-        assert len(dbJob.files) == 3
+        self.assertEqual(len(dbJob.files), 3)
         
-        assert dbJob.files[0].file_index    == 0
-        assert dbJob.files[0].source_surl   == 'srm://source.es:8446/file'
-        assert dbJob.files[0].dest_surl     == 'srm://dest.ch:8447/file'
-        assert dbJob.files[0].checksum      == 'adler32:1234'
-        assert dbJob.files[0].user_filesize == 1024
-        assert dbJob.files[0].file_metadata['mykey'] == 'myvalue'
+        self.assertEqual(dbJob.files[0].file_index, 0)
+        self.assertEqual(dbJob.files[0].source_surl, 'srm://source.es:8446/file')
+        self.assertEqual(dbJob.files[0].dest_surl, 'srm://dest.ch:8447/file')
+        self.assertEqual(dbJob.files[0].checksum, 'adler32:1234')
+        self.assertEqual(dbJob.files[0].user_filesize, 1024)
+        self.assertEqual(dbJob.files[0].file_metadata['mykey'], 'myvalue')
         
-        assert dbJob.files[1].file_index    == 0
-        assert dbJob.files[1].source_surl   == 'srm://source.fr:8443/file'
-        assert dbJob.files[1].dest_surl     == 'srm://dest.ch:8447/file'
-        assert dbJob.files[1].checksum      == 'adler32:1234'
-        assert dbJob.files[1].user_filesize == 1024
-        assert dbJob.files[0].file_metadata['mykey'] == 'myvalue'
+        self.assertEqual(dbJob.files[1].file_index, 0)
+        self.assertEqual(dbJob.files[1].source_surl, 'srm://source.fr:8443/file')
+        self.assertEqual(dbJob.files[1].dest_surl, 'srm://dest.ch:8447/file')
+        self.assertEqual(dbJob.files[1].checksum, 'adler32:1234')
+        self.assertEqual(dbJob.files[1].user_filesize, 1024)
+        self.assertEqual(dbJob.files[0].file_metadata['mykey'], 'myvalue')
         
-        assert dbJob.files[2].file_index    == 1
-        assert dbJob.files[2].source_surl   == 'https://host.com/another/file'
-        assert dbJob.files[2].dest_surl     == 'https://dest.net/another/destination'
-        assert dbJob.files[2].checksum      == 'adler32:56789'
-        assert dbJob.files[2].user_filesize == 512
-        assert dbJob.files[2].file_metadata['flag'] == True
+        self.assertEqual(dbJob.files[2].file_index, 1)
+        self.assertEqual(dbJob.files[2].source_surl, 'https://host.com/another/file')
+        self.assertEqual(dbJob.files[2].dest_surl, 'https://dest.net/another/destination')
+        self.assertEqual(dbJob.files[2].checksum, 'adler32:56789')
+        self.assertEqual(dbJob.files[2].user_filesize, 512)
+        self.assertEqual(dbJob.files[2].file_metadata['flag'], True)
 
     
     def test_submit_multiple_sources_with_reuse(self):

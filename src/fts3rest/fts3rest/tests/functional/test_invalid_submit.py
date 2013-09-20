@@ -8,9 +8,9 @@ import json
 class TestInvalidSubmits(TestController):
     
     def test_submit_malformed(self):
-        assert 'GRST_CRED_AURI_0' not in self.app.extra_environ
+        self.assertFalse('GRST_CRED_AURI_0' in self.app.extra_environ)
         self.setupGridsiteEnvironment()
-        assert 'GRST_CRED_AURI_0' in self.app.extra_environ
+        self.assertTrue('GRST_CRED_AURI_0' in self.app.extra_environ)
         self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
                      params = 'thisXisXnotXjson',
                      status = 400)
