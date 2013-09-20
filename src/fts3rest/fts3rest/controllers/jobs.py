@@ -37,10 +37,9 @@ def _hexdump(bytes):
 
 def _hashed_id(id):
     assert id is not None
-    m = hashlib.md5()
-    m.update(str(id))
-    full_hash = _hexdump(m.digest())
-    return int(full_hash[:4], 16)
+    digest = hashlib.md5(str(id)).digest()
+    b16digest = digest.encode('hex')
+    return int(b16digest[:4], 16)
 
 
 class JobsController(BaseController):

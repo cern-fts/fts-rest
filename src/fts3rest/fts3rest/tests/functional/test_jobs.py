@@ -29,7 +29,7 @@ class TestJobs(TestController):
 
     def _hashedId(self, id):
         digest = hashlib.md5(str(id)).digest()
-        b16digest = ''.join(map(lambda c: "%02x" % ord(c), digest))
+        b16digest = digest.encode('hex')
         return int(b16digest[:4], 16)
 
 
