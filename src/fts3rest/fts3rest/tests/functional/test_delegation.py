@@ -49,7 +49,7 @@ class TestDelegation(TestController):
     def test_dn_mismatch(self):
         self.setupGridsiteEnvironment()
         creds = self.getUserCredentials()
-        proxy = self.getX509Proxy([('DC', 'dummy')])
+        proxy = self.getX509Proxy(subject = [('DC', 'dummy')])
         
         request = self.app.get(url = url_for(controller = 'delegation', action = 'request', id = creds.delegation_id),
                                status = 200)

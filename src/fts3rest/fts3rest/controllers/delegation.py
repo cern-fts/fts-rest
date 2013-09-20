@@ -106,8 +106,9 @@ class DelegationController(BaseController):
 
             # Validate the subject
             proxySubject = '/' + '/'.join(x509Proxy.get_subject().as_text().split(', '))
-            if proxySubject != user.user_dn + '/CN=proxy':
-                raise Exception("The subject of the proxy does not match the user dn")
+            proxyIssuer = '/' + '/'.join(x509Proxy.get_issuer().as_text().split(', '))
+            if proxySubject != proxyIssuer + '/CN=proxy':
+                raise Exception("The subject and the issuer of the proxy do not match")
         except Exception, e:
             start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
             return ['Could not process the proxy: ' + str(e)]

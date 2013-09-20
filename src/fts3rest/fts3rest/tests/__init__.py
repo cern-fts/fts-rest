@@ -84,7 +84,7 @@ class TestController(TestCase):
                                       len=-1, loc=-1, set=0)
         return x509Name
 
-    def _generateX509Proxy(self, subject):
+    def _generateX509Proxy(self, issuer, subject):
         # Public key
         key = RSA.gen_key(512, 65537)
         pkey = EVP.PKey()
@@ -97,9 +97,8 @@ class TestController(TestCase):
         # Certificate
         cert = X509.X509()
         cert.set_pubkey(pkey)
-        name = self._populatedName(subject)
-        cert.set_subject(name)
-        cert.set_issuer_name(name)
+        cert.set_subject(self._populatedName(subject))
+        cert.set_issuer_name(self._populatedName(issuer))
         cert.set_not_before(start)
         cert.set_not_after(expire)
         # Sign
@@ -109,10 +108,14 @@ class TestController(TestCase):
         proxy += pkey.as_pem(None)
         return proxy
 
-    def getX509Proxy(self, subject=
-                    [('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User'), ('CN', 'proxy')]):
+    def getX509Proxy(self,
+                     issuer = [('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User')],
+                     subject = None):
         if not self.x509_proxy:
-            self.x509_proxy = self._generateX509Proxy(subject)
+            if subject is None:
+                subject = issuer + [('CN', 'proxy')]
+            
+            self.x509_proxy = self._generateX509Proxy(issuer, subject)
         return self.x509_proxy
 
     def tearDown(self):
