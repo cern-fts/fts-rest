@@ -7,6 +7,7 @@ from fts3rest.lib.middleware.fts3auth import authorize, authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
 from pylons import request
 from pylons.controllers.util import abort
+import hashlib
 import json
 import re
 import socket
@@ -28,6 +29,18 @@ DEFAULT_PARAMS = {
 	'spacetoken'       : '',
 	'retry'            : 0
 }
+
+
+def _hexdump(bytes):
+	return ''.join(map(lambda b: "%02x" % ord(b), bytes))
+
+
+def _hashed_id(id):
+	assert id is not None
+	m = hashlib.md5()
+	m.update(str(id))
+	full_hash = _hexdump(m.digest())
+	return int(full_hash[:4], 16)
 
 
 class JobsController(BaseController):
@@ -142,10 +155,17 @@ class JobsController(BaseController):
 		if job.reuse_job and self._hasMultipleOptions(job.files):
 			abort(400, 'Can not specify reuse and multiple replicas at the same time')
 		
-		# Return it
+		# Update the database
 		Session.merge(job)
-		Session.commit()
-			
+		Session.flush()
+		
+		# Update hashed_id
+		for file in Session.query(File).filter(File.job_id == job.job_id):
+			file.hashed_id = _hashed_id(file.file_id)
+			Session.merge(file)
+		
+		# Commit and return
+		Session.commit()			
 		return job
 
 	def _setJobSourceAndDestination(self, job):

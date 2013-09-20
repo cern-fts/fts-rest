@@ -1,6 +1,7 @@
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Job, File
+import hashlib
 from routes import url_for
 import json
 
@@ -24,6 +25,12 @@ class TestJobs(TestController):
 		self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
 					 params = json.dumps(job),
 					 status = 403)
+
+
+	def _hashedId(self, id):
+		digest = hashlib.md5(str(id)).digest()
+		b16digest = ''.join(map(lambda c: "%02x" % ord(c), digest))
+		return int(b16digest[:4], 16)
 
 
 	def _validateSubmitted(self, job, noVo = False):
@@ -55,6 +62,8 @@ class TestJobs(TestController):
 		self.assertEqual(files[0].user_filesize, 1024) 
 		self.assertEqual(files[0].checksum, 'adler32:1234') 
 		self.assertEqual(files[0].file_metadata['mykey'], 'myvalue') 
+
+		self.assertEquals(self._hashedId(files[0].file_id), files[0].hashed_id) 
 
 
 	def test_submit(self):

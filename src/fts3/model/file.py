@@ -10,6 +10,7 @@ class File(Base):
 	__tablename__ = 't_file'
 	
 	file_id      	     = Column(Integer, primary_key = True)
+	hashed_id            = Column(Integer)
 	file_index           = Column(Integer)
 	job_id         	     = Column(String(36), ForeignKey('t_job.job_id'))
 	source_se            = Column(String(255))
