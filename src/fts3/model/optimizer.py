@@ -29,3 +29,11 @@ class Optimizer(Base):
     #filesize   = Column(Integer(), primary_key = True)
     datetime   = Column(DateTime())
     throughput = Column(Float())
+
+
+class OptimizerActive(Base):
+    __tablename__ = 't_optimize_active'
+    
+    source_se = Column(String(255), primary_key=True)
+    dest_se   = Column(String(255), primary_key=True)
+    active    = Column(Integer(), default = 5)

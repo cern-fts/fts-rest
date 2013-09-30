@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from fts3.model import Job, File, JobActiveStates
-from fts3.model import Credential, BannedSE
+from fts3.model import Credential, BannedSE, OptimizerActive
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.middleware.fts3auth import authorize, authorized
@@ -29,10 +29,6 @@ DEFAULT_PARAMS = {
     'spacetoken'       : '',
     'retry'            : 0
 }
-
-
-def _hexdump(bytes):
-    return ''.join(map(lambda b: "%02x" % ord(b), bytes))
 
 
 def _hashed_id(id):
@@ -161,11 +157,16 @@ class JobsController(BaseController):
         Session.merge(job)
         Session.flush()
 
-        # Update hashed_id and vo_name
+        # Update hashed_id and vo_name, while updating OptimizerActive
         for file in Session.query(File).filter(File.job_id == job.job_id):
             file.hashed_id = _hashed_id(file.file_id)
             file.vo_name   = job.vo_name
             Session.merge(file)
+            
+            optimizer_active = OptimizerActive()
+            optimizer_active.source_se = file.source_se
+            optimizer_active.dest_se = file.dest_se
+            Session.merge(optimizer_active)
 
         # Commit and return
         Session.commit()
@@ -251,7 +252,6 @@ class JobsController(BaseController):
             abort(400, 'Malformed request: %s' % str(e))
         except KeyError, e:
             abort(400, 'Missing parameter: %s' % str(e))
-
 
     def _protocolMatchAndValid(self, srcScheme, dstScheme):
         forbiddenSchemes = ['', 'file']

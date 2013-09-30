@@ -1,6 +1,6 @@
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import Job, File
+from fts3.model import Job, File, OptimizerActive
 import hashlib
 from routes import url_for
 import json
@@ -67,7 +67,12 @@ class TestJobs(TestController):
         else:
             self.assertEqual(files[0].vo_name, 'testvo')
 
-        self.assertEquals(self._hashedId(files[0].file_id), files[0].hashed_id) 
+        self.assertEquals(self._hashedId(files[0].file_id), files[0].hashed_id)
+        
+        # Validate optimizer too
+        oa = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
+        self.assertTrue(oa is not None)
+        self.assertTrue(oa.active > 0) 
 
 
     def test_submit(self):
@@ -383,4 +388,16 @@ class TestJobs(TestController):
         job = Session.query(Job).get(jobId)
         self._validateSubmitted(job)
         self.assertEqual(job.retry, 42)
-        
+
+    def test_optimizer_respected(self):
+        # Set active to 20
+        oa = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
+        oa.active = 20
+        Session.merge(oa)
+        Session.flush()
+        Session.commit()
+        # Submit a job
+        jobId = self.test_submit()
+        # Make sure it is still 20!
+        oa2 = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
+        self.assertEqual(20, oa2.active)
