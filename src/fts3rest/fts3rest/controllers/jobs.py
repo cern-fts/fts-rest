@@ -161,9 +161,10 @@ class JobsController(BaseController):
         Session.merge(job)
         Session.flush()
 
-        # Update hashed_id
+        # Update hashed_id and vo_name
         for file in Session.query(File).filter(File.job_id == job.job_id):
             file.hashed_id = _hashed_id(file.file_id)
+            file.vo_name   = job.vo_name
             Session.merge(file)
 
         # Commit and return

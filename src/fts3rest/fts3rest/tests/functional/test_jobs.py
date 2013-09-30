@@ -61,7 +61,11 @@ class TestJobs(TestController):
         self.assertEqual(files[0].selection_strategy, 'orderly') 
         self.assertEqual(files[0].user_filesize, 1024) 
         self.assertEqual(files[0].checksum, 'adler32:1234') 
-        self.assertEqual(files[0].file_metadata['mykey'], 'myvalue') 
+        self.assertEqual(files[0].file_metadata['mykey'], 'myvalue')
+        if noVo:
+            self.assertEqual(files[0].vo_name, 'nil')
+        else:
+            self.assertEqual(files[0].vo_name, 'testvo')
 
         self.assertEquals(self._hashedId(files[0].file_id), files[0].hashed_id) 
 

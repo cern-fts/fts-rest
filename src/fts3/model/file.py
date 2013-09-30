@@ -15,6 +15,7 @@ class File(Base):
     hashed_id            = Column(Integer)
     file_index           = Column(Integer)
     job_id               = Column(String(36), ForeignKey('t_job.job_id'))
+    vo_name              = Column(String(50))
     source_se            = Column(String(255))
     dest_se              = Column(String(255))
     symbolicname         = Column(String(255))
