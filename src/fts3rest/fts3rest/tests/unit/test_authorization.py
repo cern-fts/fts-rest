@@ -4,11 +4,19 @@ from webob.exc import HTTPForbidden
 
 
 class TestAuthorization(unittest.TestCase):
+    """
+    Tests for the authorization code.
+    The environment is initialized with the DN and FQANS bellow,
+    and uses the configuration specified by ROLES.
+    """
     DN = '/DC=ch/DC=cern/OU=Test User'
     FQANS = ['/testvo/Role=NULL/Capability=NULL',
              '/testvo/group/Role=NULL/Capability=NULL',
              '/testvo/Role=myrole/Capability=NULL']
     
+    # Any user can handle his/her own transfers, and vo transfers
+    # Any user can delegate
+    # No user can run configuration actions
     ROLES = {
              'public': {'transfer': 'vo', 'deleg': 'all'}
             }
@@ -27,23 +35,39 @@ class TestAuthorization(unittest.TestCase):
 
 
     def test_authorized_base(self):
+        """
+        Try to perform an action that is not configured (must be denied), and another
+        one that is allowed for everyone
+        """
         self.assertFalse(fts3auth.authorized(fts3auth.CONFIG, env = self.env))
         self.assertTrue(fts3auth.authorized(fts3auth.DELEGATION, env = self.env))
 
 
     def test_authorized_vo(self):
+        """
+        Try to perform an action that is allowed only for users belonging to the same
+        vo as the resource
+        """
+        # The user is the owner, so it must be allowed
         self.assertTrue(fts3auth.authorized(fts3auth.TRANSFER,
                                             resource_owner = TestAuthorization.DN, env = self.env))
         
+        # The user belongs to the same vo, and transfer is set to vo, so it
+        # must be allowed
         self.assertTrue(fts3auth.authorized(fts3auth.TRANSFER,
                                             resource_owner = 'someone', resource_vo = 'testvo',
                                             env = self.env))
         
+        # The resource belongs to a different user and vo, so it must
+        # be forbidden
         self.assertFalse(fts3auth.authorized(fts3auth.TRANSFER,
                                              resource_owner = 'someone', resource_vo = 'othervo',
                                              env = self.env))
         
     def test_authorized_all(self):
+        """
+        Try to perform an action that is configured to be executed by anyone (all)
+        """ 
         self.assertTrue(fts3auth.authorized(fts3auth.DELEGATION,
                                             resource_owner = TestAuthorization.DN, env = self.env))
         
@@ -58,6 +82,9 @@ class TestAuthorization(unittest.TestCase):
 
 
     def test_authorize_decorator(self):
+        """
+        Make sure the decorators work
+        """
         @fts3auth.authorize(fts3auth.TRANSFER, env = self.env)
         def func_allowed(a, b):
             return a == b

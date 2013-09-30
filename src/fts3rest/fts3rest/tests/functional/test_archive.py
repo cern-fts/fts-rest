@@ -6,6 +6,9 @@ import json
 
 
 class TestArchive(TestController):
+    """
+    Archived jobs
+    """
     
     def _insertJob(self):
         job = ArchivedJob()
@@ -27,6 +30,9 @@ class TestArchive(TestController):
         
         
     def testGetFromArchive(self):
+        """
+        Query an archived job must succeed
+        """
         self.setupGridsiteEnvironment()
         
         job_id = self._insertJob()

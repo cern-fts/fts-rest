@@ -6,8 +6,15 @@ import json
 
 
 class TestInvalidSubmits(TestController):
+    """
+    Collection of invalid submissions. Intended to check if the
+    job controller filters properly malformed and/or invalid requests.
+    """
     
     def test_submit_malformed(self):
+        """
+        Submit a piece of data that is not well-formed json
+        """
         self.assertFalse('GRST_CRED_AURI_0' in self.app.extra_environ)
         self.setupGridsiteEnvironment()
         self.assertTrue('GRST_CRED_AURI_0' in self.app.extra_environ)
@@ -17,6 +24,9 @@ class TestInvalidSubmits(TestController):
 
 
     def test_submit_no_transfers(self):
+        """
+        Submit valid json data, but without actual transfers
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         job = {'parameters': {}}
@@ -27,6 +37,9 @@ class TestInvalidSubmits(TestController):
 
 
     def test_submit_different_protocols(self):
+        """
+        Source and destination protocol mismatch
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -46,12 +59,18 @@ class TestInvalidSubmits(TestController):
 
 
     def test_missing_job(self):
+        """
+        Request an invalid job
+        """
         self.setupGridsiteEnvironment()
         self.app.get(url = url_for(controller = 'jobs', action = 'show', id = '1234x'),
                       status = 404)
 
 
     def test_no_protocol(self):
+        """
+        Submit a valid transfer, but with urls with no protocol
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -65,6 +84,9 @@ class TestInvalidSubmits(TestController):
                                status = 400)
         
     def test_no_file(self):
+        """
+        Submit a valid transfer, but using file://
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -79,6 +101,9 @@ class TestInvalidSubmits(TestController):
 
 
     def test_one_single_slash(self):
+        """
+        Well-formed json, but source url is malformed
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -97,6 +122,9 @@ class TestInvalidSubmits(TestController):
                                status = 400)
         
     def test_empty_path(self):
+        """
+        Well-formed json, but source path is missing
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -116,6 +144,9 @@ class TestInvalidSubmits(TestController):
 
 
     def test_submit_missing_surl(self):
+        """
+        Well-formed json, but source url is missing
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         job = {'transfers': [{'destinations': ['root://dest.ch/file']}]}
@@ -132,6 +163,9 @@ class TestInvalidSubmits(TestController):
 
 
     def test_invalid_surl(self):
+        """
+        Well-formed json, but the urls are malformed
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         job = {'files': [{'sources':      ['http: //source.es/file'], # Note the space!

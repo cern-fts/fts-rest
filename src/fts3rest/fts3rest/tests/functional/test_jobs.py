@@ -7,8 +7,15 @@ import json
 
 
 class TestJobs(TestController):
+    """
+    Tests for the job controller
+    The focus is in submissions, since it is the one that modifies the database
+    """
     
     def test_submit_no_creds(self):
+        """
+        Submission without valid credentials is forbidden
+        """
         self.assertFalse('GRST_CRED_AURI_0' in self.app.extra_environ)
         self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
                      params = 'thisXisXnotXjson',
@@ -16,6 +23,10 @@ class TestJobs(TestController):
 
 
     def test_submit_no_delegation(self):
+        """
+        Submission with valid credentials, but without a delegated proxy
+        is forbidden
+        """
         self.setupGridsiteEnvironment()
         
         job = {'Files': [{'sources': ['root://source/file'],
@@ -76,6 +87,9 @@ class TestJobs(TestController):
 
 
     def test_submit(self):
+        """
+        Submit a valid job
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -102,6 +116,9 @@ class TestJobs(TestController):
 
     
     def test_submit_reuse(self):
+        """
+        Submit a valid reuse job
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -129,6 +146,9 @@ class TestJobs(TestController):
     
     
     def test_submit_post(self):
+        """
+        Submit a valid job using POST instead of PUT
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -156,6 +176,10 @@ class TestJobs(TestController):
 
 
     def test_submit_with_port(self):
+        """
+        Submit a valid job where the port is explicit in the url.
+        source_se and dest_se must exclude this port
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -189,6 +213,9 @@ class TestJobs(TestController):
 
 
     def test_submit_to_staging(self):
+        """
+        Submit a job into staging
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -219,6 +246,10 @@ class TestJobs(TestController):
     
     
     def test_submit_only_query(self):
+        """
+        Submit a valid job, without a path, but with a query in the url.
+        This is valid for some protocols (i.e. srm)
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -249,6 +280,9 @@ class TestJobs(TestController):
 
 
     def test_cancel(self):
+        """
+        Cancel a job
+        """
         jobId = self.test_submit()
         answer = self.app.delete(url = url_for(controller = 'jobs', action = 'cancel', id = jobId),
                                  status = 200)
@@ -267,6 +301,9 @@ class TestJobs(TestController):
 
 
     def test_show_job(self):
+        """
+        Get information about a job
+        """
         jobId = self.test_submit()
         answer = self.app.get(url = url_for(controller = 'jobs', action = 'show', id = jobId),
                               status = 200)
@@ -277,6 +314,9 @@ class TestJobs(TestController):
 
 
     def test_list_job(self):
+        """
+        List active jobs
+        """
         jobId = self.test_submit()
         answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
                               status = 200)
@@ -286,6 +326,9 @@ class TestJobs(TestController):
 
 
     def test_null_checksum(self):
+        """
+        Valid job, with checksum explicitly set to null
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -314,6 +357,9 @@ class TestJobs(TestController):
     
     
     def test_null_user_filesize(self):
+        """
+        Valid job, with filesize explicitly set to null
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -341,6 +387,10 @@ class TestJobs(TestController):
         
         
     def test_no_vo(self):
+        """
+        Submit a valid job with no VO data in the credentials (could happen with plain SSL!)
+        The job must be accepted, but assigned to the 'nil' vo.
+        """
         self.setupGridsiteEnvironment(noVo = True)
         self.pushDelegation()
         
@@ -365,6 +415,9 @@ class TestJobs(TestController):
 
 
     def test_retry(self):
+        """
+        Submit with a specific retry value
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -390,6 +443,10 @@ class TestJobs(TestController):
         self.assertEqual(job.retry, 42)
 
     def test_optimizer_respected(self):
+        """
+        Submitting a job with an existing OptimizerActive entry must respect
+        the existing value
+        """
         # Set active to 20
         oa = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
         oa.active = 20

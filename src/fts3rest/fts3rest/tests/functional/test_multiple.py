@@ -6,8 +6,15 @@ import json
 
 
 class TestMultiple(TestController):
+    """
+    Test the submission of jobs with multiple files
+    """
     
-    def test_submit_multiple_sources(self):
+    def test_submit_with_alternatives(self):
+        """
+        Submit one transfer with multiple sources and multiple destinations.
+        It must be treated as a transfer with alternatives
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -44,8 +51,10 @@ class TestMultiple(TestController):
         self.assertEqual(dbJob.files[1].file_metadata['mykey'], 'myvalue')
         
 
-
     def test_submit_multiple_transfers(self):
+        """
+        Submit one job with multiple independent transfers
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -94,6 +103,10 @@ class TestMultiple(TestController):
 
 
     def test_submit_combination(self):
+        """
+        Submit a job with two related transfers (alternatives) and
+        a third independent one 
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         
@@ -147,7 +160,11 @@ class TestMultiple(TestController):
         self.assertEqual(dbJob.files[2].file_metadata['flag'], True)
 
     
-    def test_submit_multiple_sources_with_reuse(self):
+    def test_submit_alternatives_with_reuse(self):
+        """
+        One job with alternatives, and reuse set.
+        This combination must be denied!
+        """
         self.setupGridsiteEnvironment()
         self.pushDelegation()
         

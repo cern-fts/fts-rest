@@ -3,8 +3,12 @@ import unittest
 import jsonschema
 
 
-
 class TestJsonSchema(unittest.TestCase):
+    """
+    Use jsonschema to check that the JSON-Schema provided by the API
+    is correct.
+    """
+    
     def setUp(self):
         self.data = {"files": [
                         {
@@ -31,6 +35,9 @@ class TestJsonSchema(unittest.TestCase):
 
 
     def test_validation(self):
+        """
+        Regular job must validate
+        """
         jsonschema.validate(self.data, self.schema)
 
 
@@ -40,21 +47,33 @@ class TestJsonSchema(unittest.TestCase):
 
 
     def test_missing_params(self):
+        """
+        A job without extra parameters is valid
+        """
         del self.data['params']
         jsonschema.validate(self.data, self.schema)
         
         
     def test_bad_reuse(self):
+        """
+        reuse parameter expects a boolean
+        """
         self.data['params']['reuse'] = 'A string'
         self.assertRaises(jsonschema.ValidationError, jsonschema.validate, self.data, self.schema)
 
 
     def test_files_not_array(self):
+        """
+        files expect an array
+        """
         self.data['files'] = self.data['files'][0]
         self.assertRaises(jsonschema.ValidationError, jsonschema.validate, self.data, self.schema)
 
 
     def test_source_not_array(self):
+        """
+        sources expecteds an array of urls
+        """
         self.data['files'][0]['sources'] = 'srm://srm.grid.sara.nl:8443/pnfs/grid.sara.nl/data/dteam/test.rand'
         self.assertRaises(jsonschema.ValidationError, jsonschema.validate, self.data, self.schema)
 

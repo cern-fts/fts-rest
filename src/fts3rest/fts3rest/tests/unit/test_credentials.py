@@ -3,8 +3,11 @@ from fts3rest.lib.middleware import fts3auth
 import unittest
 
 
-
 class TestUserCredentials(unittest.TestCase):
+    """
+    Given a set of Gridsite environment variables, check the user
+    credentials are being set correctly.
+    """
     DN = '/DC=ch/DC=cern/OU=Test User'
     FQANS = ['/testvo/Role=NULL/Capability=NULL',
              '/testvo/group/Role=NULL/Capability=NULL',
@@ -17,6 +20,9 @@ class TestUserCredentials(unittest.TestCase):
             }
     
     def test_basic_ssl(self):
+        """
+        Plain mod_ssl must work. No VO, though.
+        """
         creds = fts3auth.UserCredentials({'SSL_CLIENT_S_DN': TestUserCredentials.DN})
         
         self.assertEqual(TestUserCredentials.DN, creds.user_dn)
@@ -25,6 +31,10 @@ class TestUserCredentials(unittest.TestCase):
 
 
     def test_gridsite(self):
+        """
+        Set environment as mod_gridsite would do, and check the vos,
+        roles and so on are set up properly.
+        """
         env = {}
         env['GRST_CRED_AURI_0'] = 'dn:' + TestUserCredentials.DN
         env['GRST_CRED_AURI_1'] = 'fqan:' + TestUserCredentials.FQANS[0]
@@ -42,6 +52,10 @@ class TestUserCredentials(unittest.TestCase):
 
 
     def test_default_roles(self):
+        """
+        Set environment as mod_gridsite would do, but with no roles
+        present.
+        """
         env = {}
         env['GRST_CRED_AURI_0'] = 'dn:' + TestUserCredentials.DN
         env['GRST_CRED_AURI_1'] = 'fqan:' + TestUserCredentials.FQANS[0]
@@ -54,6 +68,10 @@ class TestUserCredentials(unittest.TestCase):
 
 
     def test_roles(self):
+        """
+        Set environment as mod_gridsite would do, and then check that
+        the granted levels are set up properly.
+        """
         env = {}
         env['GRST_CRED_AURI_0'] = 'dn:' + TestUserCredentials.DN
         env['GRST_CRED_AURI_1'] = 'fqan:' + TestUserCredentials.FQANS[0]

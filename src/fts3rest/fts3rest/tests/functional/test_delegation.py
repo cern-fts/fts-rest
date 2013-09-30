@@ -8,9 +8,11 @@ import json
 class TestDelegation(TestController):
     
     def test_put_cred_without_cache(self):
-        # This is a regression test. It tries to PUT directly
-        # credentials without the previous negotiation, so there is no
-        # CredentialCache in the database
+        """
+        This is a regression test. It tries to PUT directly
+        credentials without the previous negotiation, so there is no
+        CredentialCache in the database. This attempt must fail.
+        """
         Session.query(CredentialCache).delete()
         self.setupGridsiteEnvironment()
         
@@ -22,6 +24,9 @@ class TestDelegation(TestController):
 
 
     def test_put_malformed_pem(self):
+        """
+        Putting a malformed proxy must fail
+        """
         self.setupGridsiteEnvironment()       
         creds = self.getUserCredentials()
         
@@ -34,6 +39,9 @@ class TestDelegation(TestController):
         
         
     def test_valid_proxy(self):
+        """
+        Putting a well-formed proxy with all the right steps must succeed
+        """
         self.setupGridsiteEnvironment()
         creds = self.getUserCredentials()
         proxy = self.getX509Proxy()
@@ -47,6 +55,9 @@ class TestDelegation(TestController):
     
         
     def test_dn_mismatch(self):
+        """
+        A well-formed proxy with mismatching issuer and subject must fail
+        """
         self.setupGridsiteEnvironment()
         creds = self.getUserCredentials()
         proxy = self.getX509Proxy(subject = [('DC', 'dummy')])
