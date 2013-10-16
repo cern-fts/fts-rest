@@ -16,7 +16,7 @@
 %endif
 
 Name:			fts-rest
-Version:		0.0.6
+Version:		0.0.7
 Release:		1
 BuildArch:		noarch
 Summary:		FTS3 Rest Interface
