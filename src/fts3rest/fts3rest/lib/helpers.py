@@ -1,9 +1,10 @@
-from ConfigParser import SafeConfigParser
+from ConfigParser import ConfigParser
 from datetime import datetime
 from decorator import decorator
 from fts3.model.base import Base
 from pylons.decorators.util import get_pylons
 from StringIO import StringIO
+from urllib import quote_plus
 from webob.exc import HTTPException
 from webob import Response
 import json
@@ -57,7 +58,7 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
     content = "[fts3]\n" + open(path).read()
     io = StringIO(content)
 
-    parser = SafeConfigParser()
+    parser = ConfigParser()
     parser.readfp(io)
 
     dbType = parser.get('fts3', 'DbType')
@@ -71,14 +72,14 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
     fts3cfg = {}
 
     if dbType.lower() == 'mysql':
-        fts3cfg['sqlalchemy.url'] = "mysql://%s:%s@%s" % (dbUser, dbPass,
+        fts3cfg['sqlalchemy.url'] = "mysql://%s:%s@%s" % (dbUser, quote_plus(dbPass),
                                                           dbConn)
     elif dbType.lower() == 'sqlite':
         if not dbConn.startswith('/'):
             dbConn = os.path.abspath(dbConn)
         fts3cfg['sqlalchemy.url'] = "sqlite:///%s" % (dbConn)
     elif dbType.lower() == 'oracle':
-        fts3cfg['sqlalchemy.url'] = "oracle://%s:%s@%s" % (dbUser, dbPass,
+        fts3cfg['sqlalchemy.url'] = "oracle://%s:%s@%s" % (dbUser, quote_plus(dbPass),
                                                            dbConn)
     else:
         raise ValueError("Database type '%s' is not recognized" % dbType)
