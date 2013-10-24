@@ -44,9 +44,14 @@ def generateProxyRequest(dnList):
 class DelegationController(BaseController):
 
     @jsonify
-    def view(self, id):
+    def view(self, id, start_response):
         user = request.environ['fts3.User.Credentials']
-        cred = Session.query(Credential).get((id, user.user_dn))
+
+        if id != user.delegation_id:
+            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
+            return 'The resquested ID and the credentials ID do not match'
+
+        cred = Session.query(Credential).get((user.delegation_id, user.user_dn))
         if not cred:
             return None
         else:
@@ -55,8 +60,12 @@ class DelegationController(BaseController):
     def request(self, id, start_response):
         user = request.environ['fts3.User.Credentials']
 
+        if id != user.delegation_id:
+            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
+            return ['The resquested ID and the credentials ID do not match']
+
         credentialCache = Session.query(CredentialCache)\
-            .get((id, user.user_dn))
+            .get((user.delegation_id, user.user_dn))
 
         if credentialCache is None:
             (proxyRequest, proxyKey) = generateProxyRequest(user.dn)
@@ -91,8 +100,13 @@ class DelegationController(BaseController):
     @rest.restrict('PUT')
     def credential(self, id, start_response):
         user = request.environ['fts3.User.Credentials']
+
+        if id != user.delegation_id:
+            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
+            return ['The resquested ID and the credentials ID do not match']
+
         credentialCache = Session.query(CredentialCache)\
-            .get((id, user.user_dn))
+            .get((user.delegation_id, user.user_dn))
         if credentialCache is None:
             start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
             return ['No credential cache found']
@@ -113,7 +127,7 @@ class DelegationController(BaseController):
             start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
             return ['Could not process the proxy: ' + str(e)]
 
-        credential = Credential(dlg_id           = id,
+        credential = Credential(dlg_id           = user.delegation_id,
                                 dn               = user.user_dn,
                                 proxy            = x509FullProxyPEM,
                                 voms_attrs       = credentialCache.voms_attrs,

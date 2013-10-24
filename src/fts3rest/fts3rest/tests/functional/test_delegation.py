@@ -68,3 +68,25 @@ class TestDelegation(TestController):
         answer = self.app.put(url = url_for(controller = 'delegation', action = 'credential', id = creds.delegation_id),
                               params = proxy,
                               status = 400)
+
+
+    def test_get_request_different_dlg_id(self):
+        """
+        A user should be able only to get his/her own proxy request,
+        and be denied any other.
+        """
+        self.setupGridsiteEnvironment()
+        creds = self.getUserCredentials()
+
+        request = self.app.get(url = url_for(controller = 'delegation', action = 'request', id = '12345xx'),
+                               status = 403)
+
+    def test_view_different_dlg_id(self):
+        """
+        A user should be able only to get his/her own delegation information.
+        """
+        self.setupGridsiteEnvironment()
+        creds = self.getUserCredentials()
+
+        request = self.app.get(url = url_for(controller = 'delegation', action = 'view', id = '12345xx'),
+                               status = 403)
