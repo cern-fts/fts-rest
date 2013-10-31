@@ -97,7 +97,7 @@ class DelegationController(BaseController):
         x509Chain = ''.join(map(lambda x: x.as_pem(), x509List[1:]))
         return x509List[0].as_pem() + privKey + x509Chain
 
-    @rest.restrict('PUT')
+    @rest.restrict('PUT', 'POST')
     def credential(self, id, start_response):
         user = request.environ['fts3.User.Credentials']
 
