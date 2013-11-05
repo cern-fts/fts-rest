@@ -66,5 +66,9 @@ def make_map(config):
                 action='evolution')
     map.connect('/optimizer/snapshot', controller='optimizer',
                 action='snapshot')
+    
+    # GFAL2 bindings
+    map.connect('/dm/', controller='datamanagement', action='index')
+    map.connect('/dm/{action}', controller='datamanagement')
 
     return map
