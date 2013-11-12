@@ -15,54 +15,55 @@
 %global __os_install_post %__multiple_python_os_install_post
 %endif
 
-Name:			fts-rest
-Version:		0.1.0
-Release:		1
-BuildArch:		noarch
-Summary:		FTS3 Rest Interface
-Group:			Applications/Internet
-License:		ASL 2.0
-URL:			https://svnweb.cern.ch/trac/fts3
-Source0:		%{name}-%{version}.tar.gz
-Buildroot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Name:           fts-rest
+Version:        0.1.0
+Release:        2
+BuildArch:      noarch
+Summary:        FTS3 Rest Interface
+Group:          Applications/Internet
+License:        ASL 2.0
+URL:            https://svnweb.cern.ch/trac/fts3
+Source0:        %{name}-%{version}.tar.gz
+Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:	cmake
+BuildRequires:  cmake
 BuildRequires:  m2crypto
 BuildRequires:  python-fts
 BuildRequires:  python-jsonschema
 BuildRequires:  python-nose
 BuildRequires:  python-pylons
 %if 0%{?with_python26}
-BuildRequires:	python26-devel
+BuildRequires:  python26-devel
 %else
-BuildRequires:	python-devel
+BuildRequires:  python-devel
 %endif
 
-Requires:	  gridsite%{?_isa} >= 1.7
-Requires:	  httpd%{?_isa}
-Requires:	  m2crypto
-Requires:	  mod_wsgi
-Requires:	  python-fts
-Requires:	  python-paste-deploy
-Requires:	  python-pylons
+Requires:     gridsite%{?_isa} >= 1.7
+Requires:     httpd%{?_isa}
+Requires:     m2crypto
+Requires:     mod_wsgi
+Requires:     python-fts
+Requires:     python-paste-deploy
+Requires:     python-pylons
+Requires:     gfal2-python
 
 %description
 This package provides the FTS3 REST interface
 
 %package cli
-Summary:		FTS3 Rest Interface CLI
-Group:			Applications/Internet
+Summary:        FTS3 Rest Interface CLI
+Group:          Applications/Internet
 
-Requires:		python-fts
+Requires:       python-fts
 
 %description cli
 Command line utilities for the FTS3 REST interface
 
 %package selinux
-Summary:		SELinux support for fts-rest
-Group:			Applications/Internet
+Summary:        SELinux support for fts-rest
+Group:          Applications/Internet
 
-Requires:		fts-rest
+Requires:       fts-rest
 
 %description selinux
 This package labels port 8446, used by fts-rest, as http_port_t,
