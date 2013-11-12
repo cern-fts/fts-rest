@@ -79,6 +79,7 @@ class TestJobs(TestController):
             self.assertEqual(files[0].vo_name, 'testvo')
 
         self.assertEquals(self._hashedId(files[0].file_id), files[0].hashed_id)
+        self.assertEquals(files[0].activity, 'default')
         
         # Validate optimizer too
         oa = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
@@ -458,3 +459,33 @@ class TestJobs(TestController):
         # Make sure it is still 20!
         oa2 = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
         self.assertEqual(20, oa2.active)
+        
+    def test_with_activity(self):
+        """
+        Submit a job specifiying activities for the files
+        """
+        self.setupGridsiteEnvironment()
+        self.pushDelegation()
+        
+        job = {'files': [{'sources':      ['root://source.es/file'],
+                          'destinations': ['root://dest.ch/file'],
+                          'activity':    'my-activity'
+                          },
+                         {'sources':      ['https://source.es/file2'],
+                          'destinations': ['https://dest.ch/file2'],
+                          'activity':     'my-second-activity'
+                          }]
+               }
+        
+        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+                              params = json.dumps(job),
+                              status = 200)
+        
+        # Make sure it was commited to the DB
+        jobId = json.loads(answer.body)['job_id']
+        self.assertTrue(len(jobId) > 0)
+        
+        job = Session.query(Job).get(jobId)
+        self.assertEqual(job.files[0].activity, 'my-activity')
+        self.assertEqual(job.files[1].activity, 'my-second-activity')
+

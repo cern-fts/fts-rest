@@ -299,6 +299,7 @@ class JobsController(BaseController):
 
             file.checksum = filesDict.get('checksum', None)
             file.file_metadata = filesDict.get('metadata', None)
+            file.activity = filesDict.get('activity', None)
 
             files.append(file)
         return files
