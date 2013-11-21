@@ -62,6 +62,8 @@ class Context(object):
 
             self.ucert = ucert
             self.ukey = ukey
+        else:
+            self.ucert = self.ukey = None
 
     def _setEndpoint(self, endpoint):
         self.endpoint = endpoint
@@ -75,7 +77,7 @@ class Context(object):
         except FTS3ClientException:
             raise
         except Exception, e:
-            raise BadEndpoint("%s (%s)"), None, sys.exc_info()[2]
+            raise BadEndpoint("%s (%s)" % (self.endpoint, str(e))), None, sys.exc_info()[2]
         return endpointInfo
 
     def __init__(self, endpoint, ucert=None, ukey=None, logger=None, **kwargs):

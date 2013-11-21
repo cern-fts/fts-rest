@@ -5,11 +5,11 @@ class FTS3ClientException(Exception):
 
 
 class BadEndpoint(FTS3ClientException):
-    def __init__(self, endpoint):
-        self.endpoint = endpoint
+    def __init__(self, reason):
+        self.reason = reason
 
     def __str__(self):
-        return "Bad endpoint: %s" % self.endpoint
+        return "Bad endpoint: %s" % self.reason
 
 
 class Unauthorized(FTS3ClientException):
