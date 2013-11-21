@@ -26,7 +26,10 @@ def make_map(config):
     map.connect('/whoami', controller='misc', action='whoami')
 
     # Delegation
-    map.connect('/delegation/{id}', controller='delegation', action='view')
+    map.connect('/delegation/{id}', controller='delegation', action='view',
+                conditions=dict(method=['GET']))
+    map.connect('/delegation/{id}', controller='delegation', action='delete',
+                conditions=dict(method=['DELETE']))
     map.connect('/delegation/{id}/{action}', controller='delegation')
 
     # Jobs

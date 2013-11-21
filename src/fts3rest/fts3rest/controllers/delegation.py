@@ -56,6 +56,23 @@ class DelegationController(BaseController):
             return None
         else:
             return {'termination_time': cred.termination_time}
+        
+    def delete(self, id, start_response):
+        user = request.environ['fts3.User.Credentials']
+        
+        if id != user.delegation_id:
+            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
+            return ['The resquested ID and the credentials ID do not match']
+        
+        cred = Session.query(Credential).get((user.delegation_id, user.user_dn))
+        if not cred:
+            start_response('404 NOT FOUND', [('Content-Type', 'text/plain')])
+            return ['Delegated credentials not found']
+        else:
+            Session.delete(cred)
+            Session.commit()
+            start_response('204 NO CONTENT', [])
+            return ['']
 
     def request(self, id, start_response):
         user = request.environ['fts3.User.Credentials']

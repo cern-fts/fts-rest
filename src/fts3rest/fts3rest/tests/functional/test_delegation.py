@@ -1,6 +1,6 @@
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import CredentialCache
+from fts3.model import Credential, CredentialCache
 from routes import url_for
 import json
 
@@ -52,6 +52,9 @@ class TestDelegation(TestController):
         answer = self.app.put(url = url_for(controller = 'delegation', action = 'credential', id = creds.delegation_id),
                               params = proxy,
                               status = 201)
+        
+        cred = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
+        self.assertNotEqual(None, cred)
     
         
     def test_dn_mismatch(self):
@@ -90,3 +93,22 @@ class TestDelegation(TestController):
 
         request = self.app.get(url = url_for(controller = 'delegation', action = 'view', id = '12345xx'),
                                status = 403)
+    
+    def test_remove_delegation(self):
+        """
+        A user should be able to remove his/her proxy
+        """
+        self.setupGridsiteEnvironment()
+        creds = self.getUserCredentials()
+        
+        self.test_valid_proxy()
+        
+        request = self.app.delete(url = url_for(controller = 'delegation', action = 'delete', id = creds.delegation_id),
+                                  status = 204)
+        
+        request = self.app.delete(url = url_for(controller = 'delegation', action = 'delete', id = creds.delegation_id),
+                                  status = 404)
+        
+        cred = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
+        self.assertEqual(None, cred)
+
