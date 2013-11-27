@@ -79,14 +79,20 @@ class DatamanagementController(BaseController):
         ctx = gfal2.creat_context()
         try:
             dir = ctx.opendir(surl)
-            listing = []
-            entry = dir.read()
+            listing = {}
+            (entry, st_stat) = dir.readpp()
             while entry:
                 d_name = entry.d_name
-                if entry.d_type == 4:
+                if stat.S_ISDIR(st_stat.st_mode):
                     d_name += '/'
-                listing.append(d_name)
-                entry = dir.read()
+
+                listing[d_name] = {
+                   'size': st_stat.st_size,
+                   'mode': st_stat.st_mode,
+                   'mtime': st_stat.st_mtime
+                }
+
+                (entry, st_stat) = dir.readpp()
             return listing
         except gfal2.GError, e:
             self._httpErrorFromGerror(e)
@@ -97,7 +103,7 @@ class DatamanagementController(BaseController):
         surl = self._getValidSurl()
         try:
             self._setX509(proxy)
-            return list(self._dirListing(surl))
+            return self._dirListing(surl)
         finally:
             self._clearX509(proxy)
     
