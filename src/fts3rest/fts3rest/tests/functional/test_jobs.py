@@ -314,18 +314,6 @@ class TestJobs(TestController):
         self.assertEqual(job['job_state'], 'SUBMITTED') 
 
 
-    def test_list_job(self):
-        """
-        List active jobs
-        """
-        jobId = self.test_submit()
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
-                              status = 200)
-        jobList = json.loads(answer.body)
-        
-        self.assertTrue(jobId in map(lambda j: j['job_id'], jobList))
-
-
     def test_null_checksum(self):
         """
         Valid job, with checksum explicitly set to null

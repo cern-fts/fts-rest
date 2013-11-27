@@ -53,16 +53,37 @@ class JobsController(BaseController):
     @jsonify
     def index(self, **kwargs):
         """GET /jobs: All jobs in the collection"""
-        jobs = Session.query(Job).filter(Job.job_state.in_(JobActiveStates))
+        user = request.environ['fts3.User.Credentials']
 
-        # Filtering
-        if 'user_dn' in request.params and request.params['user_dn']:
-            jobs = jobs.filter(Job.user_dn == request.params['user_dn'])
-        if 'vo_name' in request.params and request.params['vo_name']:
-            jobs = jobs.filter(Job.vo_name == request.params['vo_name'])
+        jobs = Session.query(Job)
 
-        # Return
-        return jobs.all()
+        filter_dn = request.params.get('user_dn', None)
+        filter_vo = request.params.get('vo_name', None)
+        filter_dlg_id = request.params.get('dlg_id', None)
+        filter_state = request.params.get('state_in', None)
+        
+        if filter_dlg_id and filter_dlg_id != user.delegation_id:
+            abort(403, 'The provided delegation id does not match your delegation id')
+        if filter_dlg_id and filter_dn and filter_dn != user.user_dn:
+            abort(400, 'The provided DN and delegation id do not correspond to the same user')
+        if not filter_dlg_id and filter_state:
+            abort(403, 'To filter by state, you need to provide dlg_id')
+            
+        if filter_state:
+            filter_state = filter_state.split(',')
+        else:
+            filter_state = JobActiveStates
+        
+        jobs = jobs.filter(Job.job_state.in_(filter_state))
+        if filter_dn:
+            jobs = jobs.filter(Job.user_dn == filter_dn)
+        if filter_vo:
+            jobs = jobs.filter(Job.vo_name == filter_vo)
+        if filter_dlg_id:
+            jobs = jobs.filter(Job.cred_id == filter_dlg_id)
+
+        # Return list, limiting the size
+        return jobs.limit(100).all()
 
     @jsonify
     def cancel(self, id, **kwargs):

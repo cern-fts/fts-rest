@@ -25,7 +25,7 @@ class MiscController(BaseController):
                     
                     'fts:whoami': {'href': '/whoami', 'title': 'Check user certificate'},
                     
-                    'fts:joblist': {'href': '/jobs{?vo_name,user_dn}', 'title': 'List of active jobs', 'templated': True},
+                    'fts:joblist': {'href': '/jobs{?vo_name,user_dn,dlg_id,state_in}', 'title': 'List of active jobs', 'templated': True},
                     'fts:job': {
                         'href': '/jobs/{id}',
                         'title': 'Job information',
