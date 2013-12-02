@@ -16,5 +16,4 @@ CleanRecordsHost=false
 
 
 [roles]
-#Public = :deleg;vo:transfer;all:config
-Public = all:*
+Public = vo:transfer;all:config;:deleg

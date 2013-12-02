@@ -27,7 +27,7 @@ class TestUserCredentials(unittest.TestCase):
         
         self.assertEqual(TestUserCredentials.DN, creds.user_dn)
         self.assertEqual([], creds.voms_cred)
-        self.assertEqual([], creds.vos)
+        self.assertEqual(['nil'], creds.vos)
 
 
     def test_gridsite(self):

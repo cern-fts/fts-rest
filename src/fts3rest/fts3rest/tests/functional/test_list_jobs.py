@@ -11,9 +11,6 @@ class TestListJobs(TestController):
     """
     
     def _submit(self):
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
-        
         job = {'files': [{'sources':      ['root://source.es/file'],
                           'destinations': ['root://dest.ch/file'],
                           'selection_strategy': 'orderly',
@@ -37,6 +34,9 @@ class TestListJobs(TestController):
         """
         List active jobs
         """
+        self.setupGridsiteEnvironment()
+        self.pushDelegation()
+        
         jobId = self._submit()
 
         answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
@@ -135,5 +135,38 @@ class TestListJobs(TestController):
         answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
                               params = {'state_in': 'SUBMITTED,ACTIVE'},
                               status = 403)
+
+
+    def test_list_no_vo(self):
+        """
+        Submit a valid job with no VO data in the credentials. Listing it should be possible
+        afterwards (regression test for FTS-18)
+        """
+        self.setupGridsiteEnvironment(noVo = True)
+        self.pushDelegation()
         
-    
+        jobId = self._submit()
+        
+        # Must be in the listings!
+        answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
+                              status = 200)
+        jobList = json.loads(answer.body)
+        self.assertTrue(jobId in map(lambda j: j['job_id'], jobList))
+
+
+    def test_get_no_vo(self):
+        """
+        Submit a valid job with no VO data in the credentials. Stating it should be possible
+        afterwards (regression test for FTS-18)
+        """
+        self.setupGridsiteEnvironment(noVo = True)
+        self.pushDelegation()
+        
+        jobId = self._submit()
+        
+        # Must be in the listings!
+        answer = self.app.get(url = url_for(controller = 'jobs', action = 'show', id = jobId),
+                              status = 200)
+        jobInfo = json.loads(answer.body)
+        self.assertEqual(jobId, jobInfo['job_id'])
+        self.assertEqual('nil', jobInfo['vo_name'])

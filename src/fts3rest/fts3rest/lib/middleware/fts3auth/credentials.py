@@ -67,6 +67,10 @@ class UserCredentials(object):
             self.delegation_id = generateDelegationId(self.user_dn,
                                                       self.voms_cred)
 
+        # If no vo information is available, assume nil
+        if not self.vos:
+            self.vos.append('nil')
+
         # Populate roles
         self.roles = self._populate_roles()
 
