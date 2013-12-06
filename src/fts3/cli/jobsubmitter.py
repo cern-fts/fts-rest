@@ -1,6 +1,7 @@
 from base import Base
 from datetime import timedelta
 from fts3.rest.client import Submitter, Delegator, Inquirer, Context
+import json
 import logging
 import sys
 import time
@@ -44,24 +45,28 @@ class JobSubmitter(Base):
                                   help = 'fail the transfer is the file is nearline.')
         self.optParser.add_option('--dry-run', dest = 'dry_run', default = False, action = 'store_true',
                                   help = 'do not send anything, just print the JSON message.')
-        
+        ##################################################
+        self.optParser.add_option('-f', '--file', dest = 'bulk_file', type = 'string',
+                                  help = 'Name of configuration file')
+        ##################################################
         (self.options, self.args) = self.optParser.parse_args(argv)
         
         if self.options.endpoint is None:
             self.logger.critical('Need an endpoint')
             sys.exit(1)
-            
-        if len(self.args) < 2:
-            self.logger.critical("Need a source and a destination")
-            sys.exit(1)
-        elif len(self.args) == 2:
-            (self.source, self.destination) = self.args
-            self.checksum = None
-        elif len(self.args) == 3:
-            (self.source, self.destination, self.checksum) = self.args
-        else:
-            self.logger.critical("Too many parameters")
-            sys.exit(1)
+        
+        if not self.options.bulk_file:
+            if len(self.args) < 2:
+                self.logger.critical("Need a source and a destination")
+                sys.exit(1)
+            elif len(self.args) == 2:
+                (self.source, self.destination) = self.args
+                self.checksum = None
+            elif len(self.args) == 3:
+                (self.source, self.destination, self.checksum) = self.args
+            else:
+                self.logger.critical("Too many parameters")
+                sys.exit(1)
                 
         if self.options.verbose:
             self.logger.setLevel(logging.DEBUG)
@@ -75,9 +80,15 @@ class JobSubmitter(Base):
         delegator = Delegator(self.context)
         delegationId = delegator.delegate(timedelta(minutes = self.options.proxy_lifetime))
         
+        if self.options.bulk_file:
+            filecontent = open(self.options.bulk_file).read()
+            bulk = json.loads(filecontent)
+            transfers = bulk["Files"]
+        else:
+            transfers = [{"sources": [self.source], "destinations": [self.destination]}]
+
         submitter = Submitter(self.context) 
-        jobId = submitter.submit(self.source, self.destination,
-                                 checksum          = self.checksum,
+        jobId = submitter.submit(transfers,
                                  bring_online      = self.options.bring_online,
                                  verify_checksum   = verify_checksum,
                                  spacetoken        = self.options.destination_token,

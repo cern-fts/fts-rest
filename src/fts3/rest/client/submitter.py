@@ -8,20 +8,10 @@ class Submitter(object):
     def __init__(self, context):
         self.context = context
 
-    def buildSubmission(self, source, destination, **kwargs):
+    def buildSubmission(self, transfers, **kwargs):
         job = dict()
 
-        job['files'] = []
-
-        transfer = {'sources': [source], 'destinations': [destination]}
-        if 'checksum' in kwargs:
-            transfer['checksum'] = kwargs['checksum']
-        if 'filesize' in kwargs:
-            transfer['filesize'] = kwargs['filesize']
-        if 'file_metadata' in kwargs:
-            transfer['metadata'] = kwargs['file_metadata']
-
-        job['files'].append(transfer)
+        job['files'] = transfers
         job['params'] = dict()
         job['params'].update(kwargs)
         if 'checksum' in kwargs:
@@ -31,10 +21,12 @@ class Submitter(object):
         if 'file_metadata' in kwargs:
             del job['params']['file_metadata']
 
+        print job
+
         return json.dumps(job, indent=2)
 
-    def submit(self, source, destination, **kwargs):
-        job = self.buildSubmission(source, destination, **kwargs)
+    def submit(self, transfers, **kwargs):
+        job = self.buildSubmission(transfers, **kwargs)
         r = json.loads(self.context.post_json('/jobs', job))
         return r['job_id']
 
