@@ -36,7 +36,7 @@ class OptimizerController(BaseController):
 
     @jsonify
     def snapshot(self):
-        notBefore = datetime.now() - timedelta(hours = 48)
+        notBefore = datetime.utcnow() - timedelta(hours = 48)
         snapshot = Session.query(Optimizer)
         snapshot = snapshot.filter(Optimizer.datetime >= notBefore)
         snapshot = snapshot.filter(Optimizer.throughput is not None)

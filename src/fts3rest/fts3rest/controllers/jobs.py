@@ -91,7 +91,7 @@ class JobsController(BaseController):
         job = self._getJob(id)
 
         if job.job_state in JobActiveStates:
-            now = datetime.now()
+            now = datetime.utcnow()
 
             job.job_state    = 'CANCELED'
             job.finish_time  = now
@@ -239,7 +239,7 @@ class JobsController(BaseController):
 
             job.voms_cred                = ' '.join(user.voms_cred)
             job.vo_name                  = user.vos[0] if len(user.vos) > 0 and user.vos[0] else 'nil'
-            job.submit_time              = datetime.now()
+            job.submit_time              = datetime.utcnow()
             job.priority                 = 3
             job.space_token              = params['spacetoken']
             job.overwrite_flag           = self._yesOrNo(params['overwrite'])

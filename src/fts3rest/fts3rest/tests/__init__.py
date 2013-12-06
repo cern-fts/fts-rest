@@ -64,7 +64,7 @@ class TestController(TestCase):
         delegated.dn         = creds.user_dn
         delegated.proxy      = '-NOT USED-'
         delegated.voms_attrs = None
-        delegated.termination_time = datetime.now() + lifetime
+        delegated.termination_time = datetime.utcnow() + lifetime
 
         Session.merge(delegated)
         Session.commit()
