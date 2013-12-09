@@ -24,7 +24,7 @@ class Delegator(object):
         else:
             expirationTime = datetime.strptime(r['termination_time'],
                                                '%Y-%m-%dT%H:%M:%S')
-            return expirationTime - datetime.now()
+            return expirationTime - datetime.utcnow()
 
     def _getProxyRequest(self, delegationId):
         request_url = '/delegation/' + delegationId + '/request'
