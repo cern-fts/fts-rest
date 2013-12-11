@@ -179,8 +179,13 @@ class JobsController(BaseController):
         Session.flush()
 
         # Update hashed_id and vo_name, while updating OptimizerActive
+        # Mind that, for reuse jobs, we hash the job_id!
+        hashed_job_id = _hashed_id(job.job_id)
         for file in Session.query(File).filter(File.job_id == job.job_id):
-            file.hashed_id = _hashed_id(file.file_id)
+            if job.reuse_job:
+                file.hashed_id = hashed_job_id
+            else:
+                file.hashed_id = _hashed_id(file.file_id)
             file.vo_name   = job.vo_name
             Session.merge(file)
             

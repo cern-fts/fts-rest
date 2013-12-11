@@ -183,3 +183,33 @@ class TestMultiple(TestController):
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 400)
+
+
+    def test_submit_reuse(self):
+        """
+        Submit a reuse job
+        """
+        self.setupGridsiteEnvironment()
+        self.pushDelegation()
+
+        job = {'files': [{'sources':      ['http://source.es:8446/file'],
+                          'destinations': ['http://dest.ch:8447/file'],
+                          },
+                         {'sources':      ['http://source.es:8446/otherfile'],
+                          'destinations': ['http://dest.ch:8447/otherfile']
+                         }],
+              'params': {'overwrite': True, 'reuse': True}}
+
+        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+                               content_type = 'application/json',
+                               params = json.dumps(job),
+                               status = 200)
+
+        jobId = json.loads(answer.body)['job_id']
+
+        # In a reuse job, the hashed ID must be the same for all files!
+        # Regression for FTS-20
+        files = Session.query(File).filter(File.job_id == jobId)
+        hashed = files[0].hashed_id
+        for f in files:
+            self.assertEqual(hashed, f.hashed_id)
