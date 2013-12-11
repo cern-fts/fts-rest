@@ -45,10 +45,10 @@ class JobSubmitter(Base):
                                   help = 'fail the transfer is the file is nearline.')
         self.optParser.add_option('--dry-run', dest = 'dry_run', default = False, action = 'store_true',
                                   help = 'do not send anything, just print the JSON message.')
-        ##################################################
         self.optParser.add_option('-f', '--file', dest = 'bulk_file', type = 'string',
                                   help = 'Name of configuration file')
-        ##################################################
+        self.optParser.add_option('--retry', dest = 'retry', type = 'int', default = 0,
+                                  help = 'Number of retries. If 0, the server default will be used. If negative, there will be no retries.')
         (self.options, self.args) = self.optParser.parse_args(argv)
         
         if self.options.endpoint is None:
@@ -86,6 +86,9 @@ class JobSubmitter(Base):
             transfers = bulk["Files"]
         else:
             transfers = [{"sources": [self.source], "destinations": [self.destination]}]
+        
+        if self.options.retry <= -2:
+            self.options.retry = 0
 
         submitter = Submitter(self.context) 
         jobId = submitter.submit(transfers,
@@ -100,7 +103,8 @@ class JobSubmitter(Base):
                                  job_metadata      = self.options.job_metadata,
                                  overwrite         = self.options.overwrite,
                                  copy_pin_lifetime = self.options.pin_lifetime,
-                                 reuse             = self.options.reuse
+                                 reuse             = self.options.reuse,
+                                 retry             = self.options.retry
                                 )
         
         if self.options.json:
