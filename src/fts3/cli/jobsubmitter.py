@@ -91,6 +91,7 @@ class JobSubmitter(Base):
             self.options.retry = 0
 
         submitter = Submitter(self.context) 
+        self.options.job_metadata = self.options.job_metadata.replace("\"","'")
         jobId = submitter.submit(transfers,
                                  bring_online      = self.options.bring_online,
                                  verify_checksum   = verify_checksum,
