@@ -11,7 +11,7 @@ import time
 
 from datetime import datetime, timedelta
 from unittest import TestCase
-from M2Crypto import ASN1, X509, RSA, EVP, BIO
+from M2Crypto import ASN1, X509, RSA, EVP, BIO, m2
 
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
@@ -20,6 +20,7 @@ from routes.util import URLGenerator
 from webtest import TestApp
 
 import pylons.test
+import pytz
 
 from fts3rest.lib.middleware import fts3auth
 from fts3rest.lib.base import Session
@@ -42,7 +43,11 @@ class TestController(TestCase):
         self.app = TestApp(wsgiapp)
         url._push_object(URLGenerator(config['routes.map'], environ))
         TestCase.__init__(self, *args, **kwargs)
-        self.x509_proxy = None
+        
+        key = RSA.gen_key(512, 65537)
+        self.pkey = EVP.PKey()
+        self.pkey.assign_rsa(key)
+
 
     def setupGridsiteEnvironment(self, noVo=False):
         env = {'GRST_CRED_AURI_0': 'dn:/DC=ch/DC=cern/OU=Test User'}
@@ -84,39 +89,41 @@ class TestController(TestCase):
                                       len=-1, loc=-1, set=0)
         return x509Name
 
-    def _generateX509Proxy(self, issuer, subject):
-        # Public key
-        key = RSA.gen_key(512, 65537)
-        pkey = EVP.PKey()
-        pkey.assign_rsa(key)
-        # Expiration
-        start = ASN1.ASN1_UTCTIME()
-        start.set_time(int(time.time()))
-        expire = ASN1.ASN1_UTCTIME()
-        expire.set_time(int(time.time()) + 60 * 60)
-        # Certificate
-        cert = X509.X509()
-        cert.set_pubkey(pkey)
-        cert.set_subject(self._populatedName(subject))
-        cert.set_issuer_name(self._populatedName(issuer))
-        cert.set_not_before(start)
-        cert.set_not_after(expire)
-        # Sign
-        cert.sign(pkey, md='md5')
-        # Create a string concatenating both
-        proxy = cert.as_pem()
-        proxy += pkey.as_pem(None)
-        return proxy
-
-    def getX509Proxy(self,
+    def getX509Proxy(self, requestPEM,
                      issuer = [('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User')],
                      subject = None):
-        if not self.x509_proxy:
-            if subject is None:
-                subject = issuer + [('CN', 'proxy')]
+        if subject is None:
+            subject = issuer + [('CN', 'proxy')]
             
-            self.x509_proxy = self._generateX509Proxy(issuer, subject)
-        return self.x509_proxy
+        x509Request = X509.load_request_string(str(requestPEM))
+        
+        notBefore = ASN1.ASN1_UTCTIME()
+        notBefore.set_datetime(datetime.now(pytz.UTC))
+        notAfter = ASN1.ASN1_UTCTIME()
+        notAfter.set_datetime(datetime.now(pytz.UTC) + timedelta(hours = 3))
+
+        issuerSubject = X509.X509_Name()
+        for c in issuer:
+            issuerSubject.add_entry_by_txt(c[0], 0x1000, c[1], -1, -1, 0)
+        
+        proxySubject = X509.X509_Name()
+        for c in subject:
+            proxySubject.add_entry_by_txt(c[0], 0x1000, c[1], -1, -1, 0)
+
+        proxy = X509.X509()
+        proxy.set_version(2)
+        proxy.set_subject(proxySubject)
+        proxy.set_serial_number(long(time.time()))
+        proxy.set_version(x509Request.get_version())
+        proxy.set_issuer(issuerSubject)
+        proxy.set_pubkey(x509Request.get_pubkey())
+
+        proxy.set_not_after(notAfter)
+        proxy.set_not_before(notBefore)
+
+        proxy.sign(self.pkey, 'sha1')
+
+        return proxy.as_pem()
 
     def tearDown(self):
         self.popDelegation()

@@ -128,7 +128,7 @@ class DelegationController(BaseController):
             start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
             return ['No credential cache found']
 
-        x509ProxyPEM        = request.body
+        x509ProxyPEM = request.body
 
         try:
             x509Proxy           = X509.load_cert_string(x509ProxyPEM)
@@ -140,6 +140,12 @@ class DelegationController(BaseController):
             proxyIssuer = '/' + '/'.join(x509Proxy.get_issuer().as_text().split(', '))
             if proxySubject != proxyIssuer + '/CN=proxy':
                 raise Exception("The subject and the issuer of the proxy do not match")
+            
+            # Make sure the certificate corresponds to the private key
+            pkey = EVP.load_key_string(str(credentialCache.priv_key),
+                                       callback = lambda v, p1, p2: None)
+            if x509Proxy.get_pubkey().get_modulus() != pkey.get_modulus():
+                raise Exception("The delegated proxy do not correspond the stored private key")
         except Exception, e:
             start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
             return ['Could not process the proxy: ' + str(e)]
