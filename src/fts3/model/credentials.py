@@ -20,10 +20,10 @@ class Credential(Base):
     dn               = Column(String(255), primary_key=True)
     proxy            = Column(CLOB)
     voms_attrs       = Column(CLOB)
-    termination_time = Column(DateTime)
+    termination_time = Column(DateTime(timezone = True))
 
     def expired(self):
-        return self.termination_time <= datetime.now()
+        return self.termination_time <= datetime.utcnow()
 
     def remaining(self):
-        return self.termination_time - datetime.now()
+        return self.termination_time - datetime.utcnow()
