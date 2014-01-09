@@ -17,8 +17,7 @@ class Delegator(object):
         return r['delegation_id']
 
     def _getRemainingLife(self, delegationId):
-        r = json.loads(self.context.get('/delegation/' + delegationId))
-
+        r = self.getInfo(delegationId)
         if r is None:
             return None
         else:
@@ -84,8 +83,13 @@ class Delegator(object):
         for cert in self.context.x509List:
             chain += cert.as_pem()
         return chain
+    
+    def getInfo(self, delegationId = None):
+        if delegationId is None:
+            delegationId = self._getDelegationId()
+        return json.loads(self.context.get('/delegation/' + delegationId))
 
-    def delegate(self, lifetime=timedelta(hours=7)):
+    def delegate(self, lifetime=timedelta(hours=7), force = False):
         try:
             delegationId = self._getDelegationId()
             self.context.logger.debug("Delegation ID: " + delegationId)
@@ -97,8 +101,11 @@ class Delegator(object):
             elif remainingLife <= timedelta(0):
                 self.context.logger.debug("The delegated credentials expired")
             elif remainingLife >= timedelta(hours=1):
-                self.context.logger.debug("Not bothering doing the delegation")
-                return delegationId
+                if not force:
+                    self.context.logger.debug("Not bothering doing the delegation")
+                    return delegationId
+                else:
+                    self.context.logger.debug("Delegation not expired, but this is a forced delegation")
 
             # Ask for the request
             self.context.logger.debug("Delegating")
