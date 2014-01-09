@@ -56,7 +56,7 @@ class Delegator(object):
         # Make sure the proxy is not longer than any other inside the chain
         any_rfc_proxies = False
         for cert in self.context.x509List:
-            if cert.get_not_after() < notAfter:
+            if cert.get_not_after().get_datetime() < notAfter.get_datetime():
                 notAfter = cert.get_not_after()
             try:
                 cert.get_ext('1.3.6.1.5.5.7.1.14')
