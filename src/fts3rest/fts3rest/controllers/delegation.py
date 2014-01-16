@@ -29,7 +29,7 @@ def generateProxyRequest(dnList):
     # By convention, use the longer representation
     userDN = dnList[-1]
 
-    requestKeyPair = RSA.gen_key(512, 65537, callback=_muteCallback)
+    requestKeyPair = RSA.gen_key(1024, 65537, callback=_muteCallback)
     requestPKey = EVP.PKey()
     requestPKey.assign_rsa(requestKeyPair)
     request = X509.Request()
