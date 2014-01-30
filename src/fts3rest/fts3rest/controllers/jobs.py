@@ -264,8 +264,8 @@ class JobsController(BaseController):
             if len(job.files) == 0:
                 abort(400, 'No pair with matching protocols')
 
-            # If copy_pin_lifetime is specified, go to staging directly
-            if job.copy_pin_lifetime > -1:
+            # If copy_pin_lifetime OR bring_online are specified, go to staging directly
+            if job.copy_pin_lifetime > 0 or job.bring_online > 0:
                 job.job_state = 'STAGING'
                 for t in job.files:
                     t.file_state = 'STAGING'

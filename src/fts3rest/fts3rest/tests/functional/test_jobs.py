@@ -245,6 +245,71 @@ class TestJobs(TestController):
         
         return jobId
     
+    def test_submit_to_staging_no_lifetime(self):
+        """
+        Submit a job into staging, with pin lifetime not set
+        """
+        self.setupGridsiteEnvironment()
+        self.pushDelegation()
+        
+        job = {'files': [{'sources':      ['root://source.es/file'],
+                          'destinations': ['root://dest.ch/file'],
+                          'selection_strategy': 'orderly',
+                          'checksum':    'adler32:1234',
+                          'filesize':    1024,
+                          'metadata':    {'mykey': 'myvalue'},
+                          }],
+              'params': {'overwrite': True, 'bring_online': 60,
+                         'verify_checksum': True}}
+        
+        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+                               content_type = 'application/json',
+                               params = json.dumps(job),
+                               status = 200)
+        
+        # Make sure it was committed to the DB
+        jobId = json.loads(answer.body)['job_id']
+        self.assertTrue(len(jobId) > 0)
+        
+        dbJob = Session.query(Job).get(jobId)
+        self.assertEqual(dbJob.job_state, 'STAGING') 
+        self.assertEqual(dbJob.files[0].file_state, 'STAGING') 
+        
+        return jobId
+
+
+    def test_submit_to_staging_no_bring_online(self):
+        """
+        Submit a job into staging, with bring_online not set
+        """
+        self.setupGridsiteEnvironment()
+        self.pushDelegation()
+        
+        job = {'files': [{'sources':      ['root://source.es/file'],
+                          'destinations': ['root://dest.ch/file'],
+                          'selection_strategy': 'orderly',
+                          'checksum':    'adler32:1234',
+                          'filesize':    1024,
+                          'metadata':    {'mykey': 'myvalue'},
+                          }],
+              'params': {'overwrite': True, 'copy_pin_lifetime': 60,
+                         'verify_checksum': True}}
+        
+        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+                               content_type = 'application/json',
+                               params = json.dumps(job),
+                               status = 200)
+        
+        # Make sure it was committed to the DB
+        jobId = json.loads(answer.body)['job_id']
+        self.assertTrue(len(jobId) > 0)
+        
+        dbJob = Session.query(Job).get(jobId)
+        self.assertEqual(dbJob.job_state, 'STAGING') 
+        self.assertEqual(dbJob.files[0].file_state, 'STAGING') 
+        
+        return jobId
+    
     
     def test_submit_only_query(self):
         """
@@ -431,6 +496,7 @@ class TestJobs(TestController):
         self._validateSubmitted(job)
         self.assertEqual(job.retry, 42)
 
+
     def test_optimizer_respected(self):
         """
         Submitting a job with an existing OptimizerActive entry must respect
@@ -447,7 +513,8 @@ class TestJobs(TestController):
         # Make sure it is still 20!
         oa2 = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
         self.assertEqual(20, oa2.active)
-        
+
+
     def test_with_activity(self):
         """
         Submit a job specifiying activities for the files
