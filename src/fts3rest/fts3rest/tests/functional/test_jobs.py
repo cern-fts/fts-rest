@@ -71,7 +71,7 @@ class TestJobs(TestController):
         self.assertEqual(files[0].file_index, 0)
         self.assertEqual(files[0].selection_strategy, 'orderly') 
         self.assertEqual(files[0].user_filesize, 1024) 
-        self.assertEqual(files[0].checksum, 'adler32:1234') 
+        self.assertEqual(files[0].checksum, 'adler32:1234')
         self.assertEqual(files[0].file_metadata['mykey'], 'myvalue')
         if noVo:
             self.assertEqual(files[0].vo_name, 'nil')
@@ -309,6 +309,39 @@ class TestJobs(TestController):
         job = Session.query(Job).get(jobId)
         self.assertEqual(job.files[0].checksum, None)
         
+        return jobId
+
+
+    def test_checksum_no_verify(self):
+        """
+        Valid job, with checksum, but verify_checksum is not set
+        In the DB, it must end as 'r' (compatibility with FTS3 behaviour)
+        """
+        self.setupGridsiteEnvironment()
+        self.pushDelegation()
+
+        job = {'files': [{'sources':      ['root://source.es/file'],
+                          'destinations': ['root://dest.ch/file'],
+                          'selection_strategy': 'orderly',
+                          'checksum':   '1234F',
+                          'filesize':    1024,
+                          'metadata':    {'mykey': 'myvalue'},
+                          }],
+              'params': {'overwrite': True}}
+
+        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+                               content_type = 'application/json',
+                               params = json.dumps(job),
+                               status = 200)
+
+        # Make sure it was committed to the DB
+        jobId = json.loads(answer.body)['job_id']
+        self.assertTrue(len(jobId) > 0)
+
+        job = Session.query(Job).get(jobId)
+        self.assertEqual(job.files[0].checksum, '1234F')
+        self.assertEqual(job.verify_checksum, 'r')
+
         return jobId
     
     

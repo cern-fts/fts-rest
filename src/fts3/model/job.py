@@ -2,7 +2,7 @@ from file import ArchivedFile
 from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.orm import relation, backref
 
-from base import Base, Flag, Json
+from base import Base, Flag, TernaryFlag, Json
 
 
 JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING']
@@ -36,7 +36,7 @@ class Job(Base):
     source_space_token       = Column(String(255))
     source_token_description = Column(String(255))
     copy_pin_lifetime        = Column(Integer)
-    verify_checksum          = Column(Flag(positive='c'),
+    verify_checksum          = Column(TernaryFlag(positive='c'),
                                       name='checksum_method')
     bring_online             = Column(Integer)
     job_metadata             = Column(Json(255))

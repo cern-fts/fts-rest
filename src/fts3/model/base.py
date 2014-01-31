@@ -46,3 +46,37 @@ class Flag(TypeDecorator):
             return False
         else:
             return len(value) > 0 and value.upper() != self.negative
+
+
+# This is used for the verify_checksum flag, which actually can be
+# True, False and 'Relaxed' (r)
+class TernaryFlag(TypeDecorator):
+    impl = String
+
+    def __init__(self, positive='Y', negative='', *args, **kwargs):
+        super(TernaryFlag, self).__init__(1, *args, **kwargs)
+        self.positive = positive
+        self.negative = negative
+
+    def process_bind_param(self, value, dialect):
+        if isinstance(value, types.StringType) and len(value):
+            if value[0].upper() == 'Y':
+                return self.positive
+            elif value[0].upper() == 'N':
+                return self.negative
+            else:
+                return value[0]
+        elif value:
+            return self.positive
+        else:
+            return self.negative
+
+    def process_result_value(self, value, dialect):
+        if value is None or len(value) == 0:
+            return False
+        elif value == self.negative:
+            return False
+        elif value == self.positive:
+            return True
+        else:
+            return value

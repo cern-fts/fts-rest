@@ -250,7 +250,7 @@ class JobsController(BaseController):
             job.overwrite_flag           = self._yesOrNo(params['overwrite'])
             job.source_space_token       = params['source_spacetoken'] 
             job.copy_pin_lifetime        = int(params['copy_pin_lifetime'])
-            job.verify_checksum          = self._yesOrNo(params['verify_checksum'])
+            job.verify_checksum          = params['verify_checksum']
             job.bring_online             = int(params['bring_online'])
             job.job_metadata             = params['job_metadata']
             job.job_params               = str()
@@ -269,6 +269,16 @@ class JobsController(BaseController):
                 job.job_state = 'STAGING'
                 for t in job.files:
                     t.file_state = 'STAGING'
+
+            # If a checksum is provided, but no checksum is available, 'relaxed' comparison
+            # (Not nice, but need to keep functionality!)
+            has_checksum = False
+            for f in job.files:
+                if f.checksum is not None and len(f.checksum) > 0:
+                    has_checksum = True
+                    break
+            if not job.verify_checksum and has_checksum:
+                job.verify_checksum = 'r'
 
             return job
 
