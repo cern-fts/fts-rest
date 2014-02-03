@@ -16,7 +16,7 @@
 %endif
 
 Name:			python-fts
-Version:		0.1.0
+Version:		3.1.0
 Release:		1
 BuildArch:		noarch
 Summary:		FTS3 database model
@@ -56,6 +56,9 @@ rm -rf %{buildroot}
 %{python_sitearch}/*
 
 %changelog
+* Mon Jan 03 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.1.0-1
+- Major and minor versions follow FTS3
+
 * Thu Mar 21 2013 Alejandro Álvarez <aalvarez@cern.ch> - 0.0.1-1
 - Initial build
 
