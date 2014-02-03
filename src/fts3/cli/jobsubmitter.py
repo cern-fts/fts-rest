@@ -71,6 +71,13 @@ class JobSubmitter(Base):
         if self.options.verbose:
             self.logger.setLevel(logging.DEBUG)
 
+    def _buildTransfers(self):
+        if self.options.bulk_file:
+            filecontent = open(self.options.bulk_file).read()
+            bulk = json.loads(filecontent)
+            return bulk["Files"]
+        else:
+            return [{"sources": [self.source], "destinations": [self.destination]}]
 
     def _doSubmit(self):    
         verify_checksum = None
@@ -80,12 +87,7 @@ class JobSubmitter(Base):
         delegator = Delegator(self.context)
         delegationId = delegator.delegate(timedelta(minutes = self.options.proxy_lifetime))
         
-        if self.options.bulk_file:
-            filecontent = open(self.options.bulk_file).read()
-            bulk = json.loads(filecontent)
-            transfers = bulk["Files"]
-        else:
-            transfers = [{"sources": [self.source], "destinations": [self.destination]}]
+        transfers = self._buildTransfers()
         
         if self.options.retry <= -2:
             self.options.retry = 0
@@ -136,7 +138,7 @@ class JobSubmitter(Base):
             verify_checksum = True
             
         submitter = Submitter(self.context)
-        print submitter.buildSubmission(self.source, self.destination,
+        print submitter.buildSubmission(self._buildTransfers(),
                                  checksum          = self.checksum,
                                  bring_online      = self.options.bring_online,
                                  verify_checksum   = verify_checksum,
