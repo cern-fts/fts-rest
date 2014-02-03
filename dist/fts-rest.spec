@@ -16,8 +16,8 @@
 %endif
 
 Name:           fts-rest
-Version:        0.1.0
-Release:        2
+Version:        3.1.0
+Release:        1
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
@@ -119,6 +119,9 @@ rm -rf %{buildroot}
 %files selinux
 
 %changelog
+* Mon Jan 03 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.1.0-1
+- Major and minor versions follow FTS3
+
 * Tue Aug 13 2013 Alejandro Álvarez <aalvarez@cern.ch> - 0.0.2-2
 - Packaging /var/cache/fts3rest
 
