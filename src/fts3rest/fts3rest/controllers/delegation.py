@@ -48,6 +48,9 @@ class DelegationController(BaseController):
 
     @jsonify
     def view(self, id, start_response):
+        """
+        Get the termination time of the current delegated credential, if any
+        """
         user = request.environ['fts3.User.Credentials']
 
         if id != user.delegation_id:
@@ -61,6 +64,9 @@ class DelegationController(BaseController):
             return {'termination_time': cred.termination_time}
         
     def delete(self, id, start_response):
+        """
+        Delete the delegated credentials from the database
+        """
         user = request.environ['fts3.User.Credentials']
         
         if id != user.delegation_id:
@@ -78,6 +84,9 @@ class DelegationController(BaseController):
             return ['']
 
     def request(self, id, start_response):
+        """
+        Returns a certificate request. First step of the delegation process.
+        """
         user = request.environ['fts3.User.Credentials']
 
         if id != user.delegation_id:
@@ -119,6 +128,9 @@ class DelegationController(BaseController):
 
     @rest.restrict('PUT', 'POST')
     def credential(self, id, start_response):
+        """
+        Put a proxy generated signing the request sent previously with 'request'
+        """
         user = request.environ['fts3.User.Credentials']
 
         if id != user.delegation_id:
@@ -167,6 +179,9 @@ class DelegationController(BaseController):
 
     @rest.restrict('POST')
     def voms(self, id, start_response):
+        """
+        Generate VOMS extensions for the delegated proxy
+        """
         user = request.environ['fts3.User.Credentials']
         
         if id != user.delegation_id:

@@ -99,6 +99,9 @@ class DatamanagementController(BaseController):
     
     @jsonify
     def list(self, **kwargs):
+        """
+        List the content of a directory
+        """
         proxy = self._getProxy()
         surl = self._getValidSurl()
         try:
@@ -109,6 +112,9 @@ class DatamanagementController(BaseController):
     
     @jsonify
     def stat(self, **kwargs):
+        """
+        Stat a file
+        """
         proxy = self._getProxy()
         surl = self._getValidSurl()
         try:
