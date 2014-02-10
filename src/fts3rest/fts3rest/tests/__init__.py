@@ -37,6 +37,9 @@ environ = {}
 
 
 class TestController(TestCase):
+    """
+    Base class for the tests
+    """
 
     def __init__(self, *args, **kwargs):
         wsgiapp = pylons.test.pylonsapp
@@ -51,6 +54,13 @@ class TestController(TestCase):
 
 
     def setupGridsiteEnvironment(self, noVo=False):
+        """
+        Add to the test environment mock values of the variables
+        set by mod_gridsite.
+        
+        Args:
+            noVo: If True, no VO attributes will be set
+        """
         env = {'GRST_CRED_AURI_0': 'dn:/DC=ch/DC=cern/OU=Test User'}
 
         if not noVo:
@@ -61,9 +71,18 @@ class TestController(TestCase):
         self.app.extra_environ.update(env)
 
     def getUserCredentials(self):
+        """
+        Get the user credentials from the environment
+        """
         return fts3auth.UserCredentials(self.app.extra_environ, {'public': {'*': 'all'}})
 
     def pushDelegation(self, lifetime=timedelta(hours=7)):
+        """
+        Push into the database a mock delegated credential
+        
+        Args:
+            lifetime: The mock credential lifetime
+        """
         creds = self.getUserCredentials()
         delegated = Credential()
         delegated.dlg_id     = creds.delegation_id
@@ -76,6 +95,9 @@ class TestController(TestCase):
         Session.commit()
 
     def popDelegation(self):
+        """
+        Remove the mock proxy from the database
+        """
         cred = self.getUserCredentials()
         if cred and cred.delegation_id:
             delegated = Session.query(Credential).get((cred.delegation_id, cred.user_dn))
@@ -83,16 +105,20 @@ class TestController(TestCase):
                 Session.delete(delegated)
                 Session.commit()
 
-    def _populatedName(self, components):
-        x509Name = X509.X509_Name()
-        for (field, value) in components:
-            x509Name.add_entry_by_txt(field, 0x1000, value,
-                                      len=-1, loc=-1, set=0)
-        return x509Name
-
     def getX509Proxy(self, requestPEM,
                      issuer = [('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User')],
                      subject = None):
+        """
+        Generate a X509 proxy based on the request
+
+        Args:
+            requestPEM: The request PEM encoded
+            issuer:     The issuer user
+            subject:    The subject of the proxy. If None, issuer/CN=proxy will be  used
+
+        Returns:
+            A X509 proxy PEM encoded
+        """
         if subject is None:
             subject = issuer + [('CN', 'proxy')]
             
@@ -127,10 +153,20 @@ class TestController(TestCase):
         return proxy.as_pem()
 
     def getRealX509Proxy(self):
+        """
+        Get a real X509 proxy
+
+        Returns:
+            The content of the file pointed by X509_USER_PROXY,
+            None otherwise
+        """
         proxy_path = os.environ.get('X509_USER_PROXY', None)
         if not proxy_path:
             return None
         return open(proxy_path).read()
 
     def tearDown(self):
+        """
+        Called by the test framework at the end of each test
+        """
         self.popDelegation()

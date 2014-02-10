@@ -44,7 +44,7 @@ class TestJobs(TestController):
         return int(b16digest[:4], 16)
 
 
-    def _validateSubmitted(self, job, noVo = False):
+    def _validateSubmitted(self, job, noVo=False):
         self.assertNotEqual(job, None)
         files = job.files
         self.assertNotEqual(files, None)
