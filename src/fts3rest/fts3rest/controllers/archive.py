@@ -1,12 +1,14 @@
 from fts3.model import ArchivedJob
-from fts3rest.lib.base import Session
+from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.middleware.fts3auth import authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
-from jobs import JobsController
 
 
-class ArchiveController(JobsController):
+class ArchiveController(BaseController):
+    """
+    Controller for the archived tables
+    """
 
     def _getJob(self, id):
         job = Session.query(ArchivedJob).get(id)
@@ -21,6 +23,9 @@ class ArchiveController(JobsController):
 
     @jsonify
     def index(self, **kwargs):
+        """
+        Just give the operations that can be performed
+        """
         return {
             '_links': {
                 'curies': [{
@@ -34,3 +39,20 @@ class ArchiveController(JobsController):
                 }
             }
         }
+
+    @jsonify
+    def show(self, id, **kwargs):
+        """GET /jobs/id: Show a specific item"""
+        job = self._getJob(id)
+        # Trigger the query, so it is serialized
+        files = job.files
+        return job
+
+    @jsonify
+    def showField(self, id, field, **kwargs):
+        """GET /jobs/id/field: Show a specific field from an item"""
+        job = self._getJob(id)
+        if hasattr(job, field):
+            return getattr(job, field)
+        else:
+            abort(404, 'No such field')
