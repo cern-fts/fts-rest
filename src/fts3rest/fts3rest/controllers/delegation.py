@@ -174,8 +174,6 @@ class DelegationController(BaseController):
             return ['The resquested ID and the credentials ID do not match']
 
         try:
-            if request.content_type != 'application/json':            
-                raise Exception('Content-Type must be application/json')
             voms_list = json.loads(request.body)
             if type(voms_list) != types.ListType:
                 raise Exception('Expecting a list of strings')
