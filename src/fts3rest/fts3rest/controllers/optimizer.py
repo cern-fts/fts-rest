@@ -48,7 +48,7 @@ class OptimizerController(BaseController):
         notBefore = datetime.utcnow() - timedelta(hours = 48)
         snapshot = Session.query(Optimizer)
         snapshot = snapshot.filter(Optimizer.datetime >= notBefore)
-        snapshot = snapshot.filter(Optimizer.throughput is not None)
+        snapshot = snapshot.filter(Optimizer.throughput != None)
 
         if 'source_se' in request.params and request.params['source_se']:
             snapshot = snapshot.filter(Optimizer.source_se == request.params['source_se'])
