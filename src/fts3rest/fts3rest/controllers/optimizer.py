@@ -6,9 +6,15 @@ from pylons import config, request
 
 
 class OptimizerController(BaseController):
+    """
+    Controller for the optimizer logging tables
+    """
 
     @jsonify
     def isEnabled(self):
+        """
+        Indicates if the optimizer is enabled in the server
+        """
         return  {
                 'enabled': config['fts3.Optimizer'],
                 '_links':  {
@@ -24,6 +30,9 @@ class OptimizerController(BaseController):
 
     @jsonify
     def evolution(self):
+        """
+        Returns the optimizer evolution
+        """
         evolution = Session.query(OptimizerEvolution)
         if 'source_se' in request.params and request.params['source_se']:
             evolution = evolution.filter(OptimizerEvolution.source_se == request.params['source_se'])

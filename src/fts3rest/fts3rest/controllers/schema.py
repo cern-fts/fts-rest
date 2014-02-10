@@ -52,7 +52,11 @@ def _schema():
     return schema
 
 class SchemaController(BaseController):
-    
+     
     @jsonify
     def submit(self):
+        """
+        Return the json-schema for the submission operation, so it can
+        be used to validate
+        """
         return _schema()
