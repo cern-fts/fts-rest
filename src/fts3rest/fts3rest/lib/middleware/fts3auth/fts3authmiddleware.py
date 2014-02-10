@@ -5,6 +5,10 @@ from webob.exc import HTTPForbidden
 
 
 class FTS3AuthMiddleware(object):
+    """
+    Pylons middleware to wrap the authentication as part of the request
+    process.
+    """
 
     def __init__(self, wrap_app, config):
         self.app    = wrap_app

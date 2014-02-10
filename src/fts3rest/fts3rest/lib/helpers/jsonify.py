@@ -34,6 +34,18 @@ class ClassEncoder(json.JSONEncoder):
 
 @decorator
 def jsonify(f, *args, **kwargs):
+    """
+    Decorates methods in the controllers, and converts the output to a JSON
+    serialization
+    
+    Args:
+        f:      The method to be called
+        args:   Parameters for f
+        kwargs: Named parameters for f
+    
+    Returns:
+        A string with the JSON representation of the value returned by f()
+    """
     pylons = get_pylons(args)
     pylons.response.headers['Content-Type'] = 'application/json'
 

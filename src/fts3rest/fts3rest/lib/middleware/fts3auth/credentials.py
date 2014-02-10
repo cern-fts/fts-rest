@@ -4,6 +4,14 @@ import urllib
 
 
 def voFromFqan(fqan):
+    """
+    Get the VO from a full FQAN
+    
+    Args:
+        fqan: A single fqans (i.e. /dteam/cern/Role=lcgadmin)
+    Returns:
+        The vo + group (i.e. dteam/cern)
+    """
     components = fqan.split('/')[1:]
     groups = []
     for c in components:
@@ -14,6 +22,17 @@ def voFromFqan(fqan):
 
 
 def generateDelegationId(dn, fqans):
+    """
+    Generate a delegation ID from the user DN and FQANS
+    Adapted from FTS3
+    See https://svnweb.cern.ch/trac/fts3/browser/trunk/src/server/ws/delegation/GSoapDelegationHandler.cpp
+    
+    Args:
+        dn:    The user DN
+        fqans: A list of fqans
+    Returns:
+        The associated delegation id
+    """
     d = EVP.MessageDigest('sha1')
     d.update(dn)
 
@@ -23,12 +42,22 @@ def generateDelegationId(dn, fqans):
 
     digestFull = d.digest().encode('hex')
     # Original implementation only takes into account first 16 characters
-    # See https://svnweb.cern.ch/trac/fts3/browser/trunk/src/server/ws/delegation/GSoapDelegationHandler.cpp
     return digestFull[:16]
 
 
 class UserCredentials(object):
+    """
+    Handles the user credentials and privileges
+    """
+    
     def __init__(self, env, rolePermissions=None):
+        """
+        Constructor
+        
+        Args:
+            env:             Environment (i.e. os.environ)
+            rolePermissions: The role permissions as configured in the FTS3 config file
+        """
         # Default
         self.user_dn   = None
         self.dn        = []
@@ -36,7 +65,7 @@ class UserCredentials(object):
         self.vos       = []
         self.delegation_id = None
 
-        # Try first GRST_ variables
+        # Try first GRST_ variables as set by mod_gridsite
         grstIndex = 0
         grstEnv = 'GRST_CRED_AURI_%d' % grstIndex
         while grstEnv in env:
@@ -54,7 +83,7 @@ class UserCredentials(object):
             grstIndex += 1
             grstEnv = 'GRST_CRED_AURI_%d' % grstIndex
 
-        # If not, try with regular SSL_
+        # If not, try with regular SSL_ as set by mod_ssl
         if len(self.dn) == 0 and 'SSL_CLIENT_S_DN' in env:
             self.dn.append(urllib.unquote_plus(env['SSL_CLIENT_S_DN']))
 
@@ -78,6 +107,9 @@ class UserCredentials(object):
         self.level = self._granted_level(rolePermissions)
 
     def _populate_roles(self):
+        """
+        Get roles out of the FQANS
+        """
         roles = []
         for fqan in self.voms_cred:
             match = re.match('(/.+)*/Role=(\\w+)(/.*)?', fqan, re.IGNORECASE)
@@ -87,6 +119,10 @@ class UserCredentials(object):
         return roles
 
     def _granted_level(self, rolePermissions):
+        """
+        Get all granted levels for this user out of the configuration
+        (all levels authorized for public, plus those for the given Roles)
+        """
         if rolePermissions is None:
             return {}
 
@@ -101,6 +137,18 @@ class UserCredentials(object):
         return grantedLevel
 
     def getGrantedLevelFor(self, operation):
+        """
+        Check if the user can perform the operation 'operation'
+
+        Args:
+            operation: The operation to check (see constants.py)
+            
+        Returns:
+            None if the user can not perform the operation
+            constants.VO if only can perform it on same VO resources
+            constants.ALL if can perform on any resource
+            constants.PRIVATE if can perform only on his/her own resources
+        """
         if operation in self.level:
             return self.level[operation]
         elif '*' in self.level:
@@ -109,4 +157,13 @@ class UserCredentials(object):
             return None
 
     def hasVo(self, vo):
+        """
+        Check if the user belongs to the given VO
+        
+        Args:
+            vo: The VO name (i.e. dteam)
+
+        Returns:
+            True if the user credentials include the given VO
+        """
         return vo in self.vos

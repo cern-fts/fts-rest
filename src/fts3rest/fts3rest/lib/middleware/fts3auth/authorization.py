@@ -5,9 +5,20 @@ from pylons.controllers.util import abort
 import functools
 
 
-# Returns True if the logged user has enough rights to perform the
-# operation 'op' over a resource whose owner is resource_owner:resource_vo
 def authorized(op, resource_owner=None, resource_vo=None, env=None):
+    """
+    Check if the user has enough privileges for a given operation
+    
+    Args:
+        op:             The operation to perform
+        resource_owner: Who owns the resource
+        resource_vo:    VO of the owner of the resource
+        env:            Environment (i.e. os.environ)
+    
+    Returns:
+        True if the logged user has enough rights to perform the
+        operation 'op' over a resource whose owner is resource_owner:resource_vo
+    """
     if env is None:
         env = request.environ
 
@@ -27,8 +38,16 @@ def authorized(op, resource_owner=None, resource_vo=None, env=None):
         return False
 
 
-# The same as before, but it can be used as a decorator instead
 def authorize(op, env=None):
+    """
+    Decorator to check if the user has enough privileges to perform a given operation
+    
+    Args:
+        op: The required operation level
+    
+    Returns:
+        A method that can be used to decorate the resource/method
+    """
     def authorize_inner(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):

@@ -4,7 +4,12 @@ from urllib import quote_plus
 
 
 def fts3_config_load(path='/etc/fts3/fts3config'):
-    # Dirty workaroundpython o: ConfigParser doesn't like files without
+    """
+    Read the configuration from the FTS3 configuration file and
+    pass it to the Pylons configuration
+    """
+    
+    # Dirty workaround: ConfigParser doesn't like files without
     # headers, so fake one (since FTS3 config file doesn't have a
     # default one)
     content = "[fts3]\n" + open(path).read()
