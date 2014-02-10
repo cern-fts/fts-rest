@@ -21,14 +21,16 @@ class ArchiveController(JobsController):
 
     @jsonify
     def index(self, **kwargs):
-        return {'_links':
-                {
-                    'curies': [{'name': 'fts',
-                                'href': 'https://svnweb.cern.ch/trac/fts3'}],
-                    'fts:archivedJob': {
-                        'href': '/archive/{id}',
-                        'title': 'Archived job information',
-                        'templated': True
-                    }
+        return {
+            '_links': {
+                'curies': [{
+                    'name': 'fts',
+                    'href': 'https://svnweb.cern.ch/trac/fts3'
+                }],
+                'fts:archivedJob': {
+                    'href': '/archive/{id}',
+                    'title': 'Archived job information',
+                    'templated': True
                 }
-                }
+            }
+        }

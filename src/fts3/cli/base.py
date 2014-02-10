@@ -3,17 +3,19 @@ from optparse import OptionParser
 import logging
 import os
 
-CONFIG_FILENAMES = ['/etc/fts3/fts3client.cfg',
-                                        os.path.expanduser('~/.fts3client.cfg')]
+CONFIG_FILENAMES = [
+    '/etc/fts3/fts3client.cfg',
+    os.path.expanduser('~/.fts3client.cfg')
+]
 
 CONFIG_DEFAULTSECTION = 'Main'
 CONFIG_DEFAULTS = {
-                                        'verbose': 'false',
-                                        'endpoint': 'None',
-                                        'json': 'false',
-                                        'ukey': 'None',
-                                        'ucert': 'None'
-                                    }
+    'verbose': 'false',
+    'endpoint': 'None',
+    'json': 'false',
+    'ukey': 'None',
+    'ucert': 'None'
+}
 
 class Base(object):
     
