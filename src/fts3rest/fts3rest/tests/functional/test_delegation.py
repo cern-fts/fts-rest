@@ -1,8 +1,9 @@
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Credential, CredentialCache
+from nose.plugins.skip import SkipTest
 from routes import url_for
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import pytz
 import time
@@ -66,9 +67,9 @@ class TestDelegation(TestController):
                               params = proxy,
                               status = 201)
         
-        cred = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
-        self.assertNotEqual(None, cred)
-        return cred
+        proxy = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
+        self.assertNotEqual(None, proxy)
+        return proxy
 
         
     def test_dn_mismatch(self):
@@ -124,5 +125,38 @@ class TestDelegation(TestController):
         request = self.app.delete(url = url_for(controller = 'delegation', action = 'delete', id = creds.delegation_id),
                                   status = 404)
         
-        cred = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
-        self.assertEqual(None, cred)
+        proxy = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
+        self.assertEqual(None, proxy)
+
+
+    def test_set_voms(self):
+        """
+        The server must regenerate a proxy with VOMS extensions
+        Need a real proxy for this one
+        """
+        self.setupGridsiteEnvironment()
+        creds = self.getUserCredentials()
+        
+        # Need to push a real proxy :/
+        proxy_pem = self.getRealX509Proxy()
+        if proxy_pem is None:
+            raise SkipTest('Could not get a valid real proxy for test_set_voms')
+        
+        proxy = Credential()
+        proxy.dn = creds.user_dn
+        proxy.dlg_id = creds.delegation_id
+        proxy.termination_time = datetime.utcnow() + timedelta(hours = 1)
+        proxy.proxy = proxy_pem;
+        Session.merge(proxy)
+        Session.commit()
+        
+        # Now, request the voms extensions
+        request = self.app.post(url = url_for(controller = 'delegation', action = 'voms', id = creds.delegation_id),
+                                content_type = 'application/json',
+                                params = json.dumps(['dteam:/dteam/Role=lcgadmin']),
+                                status = 203)
+
+        # And validate
+        proxy2 = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
+        self.assertNotEqual(proxy.proxy, proxy2.proxy)
+        self.assertEqual('dteam:/dteam/Role=lcgadmin', proxy2.voms_attrs)

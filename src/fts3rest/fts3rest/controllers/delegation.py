@@ -1,13 +1,16 @@
+from datetime import datetime
 from fts3.model import CredentialCache, Credential
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
+from fts3rest.lib.helpers import voms
 from M2Crypto import X509, RSA, EVP, BIO
 from pylons.controllers.util import abort
 from pylons.decorators import rest
 from pylons import request
+import json
 import pytz
+import types
 import uuid
-
 
 def getDNComponents(dn):
     return map(lambda x: tuple(x.split('=')), dn.split('/')[1:])
@@ -160,5 +163,49 @@ class DelegationController(BaseController):
         Session.commit()
 
         start_response('201 CREATED', [])
-
         return ['']
+
+    @rest.restrict('POST')
+    def voms(self, id, start_response):
+        user = request.environ['fts3.User.Credentials']
+        
+        if id != user.delegation_id:
+            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
+            return ['The resquested ID and the credentials ID do not match']
+
+        try:
+            if request.content_type != 'application/json':            
+                raise Exception('Content-Type must be application/json')
+            voms_list = json.loads(request.body)
+            if type(voms_list) != types.ListType:
+                raise Exception('Expecting a list of strings')
+        except Exception, e:
+            start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
+            return [str(e)]
+
+        credential = Session.query(Credential)\
+            .get((user.delegation_id, user.user_dn))
+
+        if credential.termination_time <= datetime.utcnow():
+            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
+            return ['Delegated proxy already expired']
+
+        try:
+            voms_client = voms.VomsClient(credential.proxy)
+            (new_proxy, new_termination_time) = voms_client.init(voms_list)
+        except voms.VomsException, e:
+            # Error generating the proxy because of the request itself
+            start_response('424 METHOD FAILURE', [('Content-Type', 'text/plain')])
+            return [str(e)] 
+        except Exception, e:
+            # Internal error, re-raise it and let it fail
+            raise
+        
+        credential.proxy = new_proxy
+        credential.termination_time = new_termination_time
+        credential.voms_attrs = ' '.join(voms_list)
+        Session.merge(credential)
+        Session.commit()
+        
+        start_response('203 NON-AUTHORITATIVE INFORMATION', [('Content-Type', 'text/plain')])
+        return [str(new_termination_time)]

@@ -12,6 +12,7 @@ import time
 from datetime import datetime, timedelta
 from unittest import TestCase
 from M2Crypto import ASN1, X509, RSA, EVP, BIO, m2
+import os
 
 from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
@@ -124,6 +125,12 @@ class TestController(TestCase):
         proxy.sign(self.pkey, 'sha1')
 
         return proxy.as_pem()
+
+    def getRealX509Proxy(self):
+        proxy_path = os.environ.get('X509_USER_PROXY', None)
+        if not proxy_path:
+            return None
+        return open(proxy_path).read()
 
     def tearDown(self):
         self.popDelegation()
