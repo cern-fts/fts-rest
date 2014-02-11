@@ -30,7 +30,12 @@ def make_map(config):
                 conditions=dict(method=['GET']))
     map.connect('/delegation/{id}', controller='delegation', action='delete',
                 conditions=dict(method=['DELETE']))
-    map.connect('/delegation/{id}/{action}', controller='delegation')
+    map.connect('/delegation/{id}/request', controller='delegation', action='request',
+                conditions=dict(method=['GET']))
+    map.connect('/delegation/{id}/credential', controller='delegation', action='credential',
+                conditions=dict(method=['PUT', 'POST']))
+    map.connect('/delegation/{id}/voms', controller='delegation', action='voms',
+                conditions=dict(method=['POST']))
 
     # Jobs
     map.connect('/jobs', controller='jobs', action='index',
@@ -58,7 +63,7 @@ def make_map(config):
                 conditions=dict(method=['GET']))
 
     # Schema definition
-    map.connect('/schema/{action}', controller='schema')
+    map.connect('/schema/submit', controller='schema', action='submit')
 
     # Configuration audit
     map.connect('/config/audit', controller='config', action='audit')
@@ -72,6 +77,7 @@ def make_map(config):
     
     # GFAL2 bindings
     map.connect('/dm/', controller='datamanagement', action='index')
-    map.connect('/dm/{action}', controller='datamanagement')
+    map.connect('/dm/list', controller='datamanagement', action='list')
+    map.connect('/dm/stat', controller='datamanagement', action='stat')
 
     return map

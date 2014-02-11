@@ -126,7 +126,6 @@ class DelegationController(BaseController):
         x509Chain = ''.join(map(lambda x: x.as_pem(), x509List[1:]))
         return x509List[0].as_pem() + privKey + x509Chain
 
-    @rest.restrict('PUT', 'POST')
     def credential(self, id, start_response):
         """
         Put a proxy generated signing the request sent previously with 'request'
@@ -177,7 +176,6 @@ class DelegationController(BaseController):
         start_response('201 CREATED', [])
         return ['']
 
-    @rest.restrict('POST')
     def voms(self, id, start_response):
         """
         Generate VOMS extensions for the delegated proxy
