@@ -1,4 +1,4 @@
-from fts3rest.controllers.schema import _schema
+from fts3rest.controllers.api import _schema
 import unittest
 import jsonschema
 
