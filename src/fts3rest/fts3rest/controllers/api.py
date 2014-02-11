@@ -90,6 +90,7 @@ class ApiController(BaseController):
         if resource_path not in self.apis:
             abort(404, 'API not found: ' + resource) 
         return {
+           'basePath': '/',
            'swaggerVersion': '1.2',
            'produces': 'application/json',
            'resourcePath': '/' + resource,

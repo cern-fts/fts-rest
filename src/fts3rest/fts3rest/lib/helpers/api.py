@@ -97,7 +97,7 @@ def route2parameters(routelist):
         if isinstance(c, dict):
             params.append({
                 'type': 'string',
-                'paramType': c['name'],
+                'paramType': 'path',
                 'name': c['name'],
                 'required': True
             })
