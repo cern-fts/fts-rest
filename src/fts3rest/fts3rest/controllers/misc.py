@@ -38,7 +38,8 @@ class MiscController(BaseController):
                     
                     'fts:configaudit': {'href': '/config/audit', 'title': 'Configuration'},
                     
-                    'fts:submitschema': {'href': '/schema/submit', 'title': 'JSON schema of messages'},
+                    'fts:submitschema': {'href': '/api-docs/schema/submit', 'title': 'JSON schema of messages'},
+                    'fts:apidocs': {'href': '/api-docs/', 'title': 'API Documentation'},
                     'fts:jobsubmit': {
                         'href': '/jobs',
                         'hints': {

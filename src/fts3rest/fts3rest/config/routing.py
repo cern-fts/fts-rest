@@ -63,7 +63,9 @@ def make_map(config):
                 conditions=dict(method=['GET']))
 
     # Schema definition
-    map.connect('/schema/submit', controller='schema', action='submit')
+    map.connect('/api-docs/schema/submit', controller='api', action='submit_schema')
+    map.connect('/api-docs', controller='api', action='api_docs')
+    map.connect('/api-docs/{resource}', controller='api', action='resource_doc')
 
     # Configuration audit
     map.connect('/config/audit', controller='config', action='audit')

@@ -1,6 +1,8 @@
 from fts3rest.lib.base import BaseController, Session
-from fts3rest.lib.helpers import jsonify
+from fts3rest.lib.helpers import api, jsonify
 from pylons import request
+from pylons.controllers.util import abort
+
 
 def _schema():
     urlSchema = {
@@ -51,7 +53,14 @@ def _schema():
     
     return schema
 
-class SchemaController(BaseController):
+class ApiController(BaseController):
+    
+    def __init__(self):
+        self.mapper = api.get_mapper()
+        self.controllers = api.get_controllers()
+        self.routes = api.get_routes(self.mapper)
+        self.resources = api.generate_resources(self.routes, self.controllers)
+        self.apis, self.models = api.generate_apis_and_models(self.routes, self.controllers)
      
     @jsonify
     def submit(self):
@@ -60,3 +69,33 @@ class SchemaController(BaseController):
         be used to validate
         """
         return _schema()
+
+    @jsonify
+    def api_docs(self):
+        return {
+            'swaggerVersion': '1.2',
+            'apis': self.resources,
+            'info': {
+                'title': 'FTS3 RESTful API',
+                'description': 'FTS3 RESTful API documentation',
+                'contact': 'fts-devel@cern.ch',
+                'license': 'Apache 2.0',
+                'licenseUrl': 'http://www.apache.org/licenses/LICENSE-2.0.html'
+            }
+        }
+
+    @jsonify
+    def resource_doc(self, resource):
+        resource_path = '/' + resource
+        if resource_path not in self.apis:
+            abort(404, 'API not found: ' + resource) 
+        return {
+           'swaggerVersion': '1.2',
+           'produces': 'application/json',
+           'resourcePath': '/' + resource,
+           'authorizations': {},
+           'apis': self.apis.get(resource_path, []),
+           'models': self.models.get(resource_path, []),
+           'models': []
+        }
+

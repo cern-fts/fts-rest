@@ -53,8 +53,13 @@ def jsonify(f, *args, **kwargs):
         data = f(*args, **kwargs)
         return [json.dumps(data, cls=ClassEncoder, indent=2, sort_keys=True)]
     except HTTPException, e:
+        environ = kwargs.get('environ', None)
+        start_response = kwargs.get('start_response', None)
+        if not environ or not start_response:
+            raise
+        
         jsonError = {'status': e.status, 'message': e.detail}
         resp = Response(json.dumps(jsonError),
                         status=e.status,
                         content_type='application/json')
-        return resp(kwargs['environ'], kwargs['start_response'])
+        return resp(environ, start_response)
