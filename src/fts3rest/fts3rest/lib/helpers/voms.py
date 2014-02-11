@@ -77,7 +77,7 @@ class VomsClient(object):
                 '--cert', self.proxy_path,
                 '--key', self.proxy_path,
                 '--out', new_proxy,
-                '--noregen', '--ignorewarn', '--quiet']
+                '--noregen', '--ignorewarn']
         for v in voms_list:
             args.extend(('--voms', v))
         if lifetime:
