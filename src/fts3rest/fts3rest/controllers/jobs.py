@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from fts3.model import Job, File, JobActiveStates
 from fts3.model import Credential, BannedSE, OptimizerActive
+from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.middleware.fts3auth import authorize, authorized
@@ -39,6 +40,9 @@ def _hashed_id(id):
 
 
 class JobsController(BaseController):
+    """
+    Operations about jobs and transfers
+    """
 
     def _getJob(self, id):
         job = Session.query(Job).get(id)
@@ -49,10 +53,21 @@ class JobsController(BaseController):
             abort(403, 'Not enough permissions to check the job "%s"' % id)
         return job
 
+
+    @doc.query_arg('user_dn', 'Filter by user DN')
+    @doc.query_arg('vo_name', 'Filter by VO')
+    @doc.query_arg('dlg_id', 'Filter by delegation ID')
+    @doc.query_arg('state_in', 'Comma separated list of job states to filter. ACTIVE only by default')
+    @doc.response(403, 'Operation forbidden')
+    @doc.response(400, 'DN and delegation ID do not match')
+    @doc.return_type(array_of = Job)
+    
     @authorize(TRANSFER)
     @jsonify
     def index(self, **kwargs):
-        """GET /jobs: All jobs in the collection"""
+        """
+        Get a list of active jobs, or those that match the filter requirements
+        """
         user = request.environ['fts3.User.Credentials']
 
         jobs = Session.query(Job)
@@ -87,7 +102,9 @@ class JobsController(BaseController):
 
     @jsonify
     def cancel(self, id, **kwargs):
-        """DELETE /jobs/id: Delete an existing item"""
+        """
+        DELETE /jobs/id: Delete an existing item
+        """
         job = self._getJob(id)
 
         if job.job_state in JobActiveStates:
@@ -113,17 +130,24 @@ class JobsController(BaseController):
         files = job.files
         return job
 
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.return_type(Job)
     @jsonify
     def show(self, id, **kwargs):
-        """GET /jobs/id: Show a specific item"""
+        """
+        Get the job with the given ID
+        """
         job = self._getJob(id)
         # Trigger the query, so it is serialized
         files = job.files
         return job
 
+    @doc.response(404, 'The job or the field doesn\'t exist')
     @jsonify
     def showField(self, id, field, **kwargs):
-        """GET /jobs/id/field: Show a specific field from an item"""
+        """
+        Get a specific field from the job identified by id
+        """
         job = self._getJob(id)
         if hasattr(job, field):
             return getattr(job, field)
@@ -133,7 +157,9 @@ class JobsController(BaseController):
     @authorize(TRANSFER)
     @jsonify
     def submit(self, **kwargs):
-        """PUT /jobs: Submits a new job"""
+        """
+        PUT /jobs: Submits a new job
+        """
         # First, the request has to be valid JSON
         try:
             if request.method == 'PUT':

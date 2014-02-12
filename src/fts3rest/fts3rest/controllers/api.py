@@ -89,11 +89,9 @@ class ApiController(BaseController):
         return {
            'basePath': '/',
            'swaggerVersion': '1.2',
-           'produces': 'application/json',
+           'produces': ['application/json'],
            'resourcePath': '/' + resource,
            'authorizations': {},
            'apis': self.apis.get(resource_path, []),
            'models': self.models.get(resource_path, []),
-           'models': []
         }
-
