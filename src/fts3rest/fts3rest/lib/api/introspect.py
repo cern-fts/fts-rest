@@ -19,7 +19,6 @@ def get_sqlalchemy_type_description(sql_type):
     """
     Infers the type from the SQLAlchemy type
     """
-    print sql_type
     if isinstance(sql_type, types.String) or \
        isinstance(sql_type, Json) or \
        isinstance(sql_type, TernaryFlag) or \
