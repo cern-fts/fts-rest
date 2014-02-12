@@ -1,5 +1,6 @@
 from fts3rest.lib.base import BaseController, Session
-from fts3rest.lib.helpers import api, jsonify
+from fts3rest.lib.helpers import jsonify
+from fts3rest.lib import api
 from pylons import request
 from pylons.controllers.util import abort
 
@@ -56,11 +57,7 @@ def _schema():
 class ApiController(BaseController):
     
     def __init__(self):
-        self.mapper = api.get_mapper()
-        self.controllers = api.get_controllers()
-        self.routes = api.get_routes(self.mapper)
-        self.resources = api.generate_resources(self.routes, self.controllers)
-        self.apis, self.models = api.generate_apis_and_models(self.routes, self.controllers)
+        self.resources, self.apis, self.models = api.introspect() 
      
     @jsonify
     def submit(self):

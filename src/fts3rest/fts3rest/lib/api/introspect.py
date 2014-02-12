@@ -62,6 +62,10 @@ def get_root_from_route(route):
 
 
 def generate_resources(routes, controllers):
+    """
+    Generate the dictionary documenting the resources.
+    One resource per controller
+    """
     resources = {}
     for r in routes:
         cname = r.defaults.get('controller', None)
@@ -82,6 +86,9 @@ def generate_resources(routes, controllers):
 
 
 def route2path(routelist):
+    """
+    Convert a routelist to a regular path
+    """
     path = []
     for c in routelist:
         if isinstance(c, dict):
@@ -92,6 +99,9 @@ def route2path(routelist):
 
 
 def route2parameters(routelist):
+    """
+    Return a list of parameters found in the given routelist
+    """
     params = []
     for c in routelist:
         if isinstance(c, dict):
@@ -104,7 +114,11 @@ def route2parameters(routelist):
     return params
 
 
-def get_operations_for_method(route, function):
+def get_operations_for_function(route, function):
+    """
+    Populate the operations allowed for a given function
+    (that belongs to a controller)
+    """
     methods = None
     if route.conditions:
         methods = route.conditions.get('method', None)
@@ -140,6 +154,10 @@ def get_operations_for_method(route, function):
     return operations
 
 def actions_from_controller(controller):
+    """
+    Returns the actions that belong to a controller, this is,
+    methods that do not start with _
+    """
     actions = []
     for (name, value) in controller.__dict__.iteritems():
         if isinstance(value, types.FunctionType) and not name.startswith('_'):
@@ -148,6 +166,10 @@ def actions_from_controller(controller):
 
     
 def generate_apis_and_models(routes, controllers):
+    """
+    Generate the dictionary documenting the different APIS (methods)
+    and Models provided by the application
+    """
     apis = {}
     models = {}
     for route in routes:
@@ -180,7 +202,7 @@ def generate_apis_and_models(routes, controllers):
 
                 api = {
                    'path': path,
-                   'operations': get_operations_for_method(route, function)
+                   'operations': get_operations_for_function(route, function)
                 }
                 
                 if path in apis[resource_root]:
@@ -194,3 +216,17 @@ def generate_apis_and_models(routes, controllers):
     for api in apis:
         apis[api] = apis[api].values()
     return (apis, models)
+
+
+def introspect():
+    """
+    Returns a tuple (resources, apis, models) populated instrospecting the API
+    """
+    mapper = get_mapper()
+    controllers = get_controllers()
+    routes = get_routes(mapper)
+    resources = generate_resources(routes, controllers)
+    apis, models = generate_apis_and_models(routes, controllers)
+    return (resources, apis, models)
+
+    

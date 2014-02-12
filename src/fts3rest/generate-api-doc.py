@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import json
 import os
-from fts3rest.lib.helpers import api
+from fts3rest.lib import api
 from optparse import OptionParser
 
 
@@ -51,13 +51,8 @@ if __name__ == '__main__':
     if options.output_directory is None:
         parser.print_help()
         parser.exit(1)
-    
-    mapper = api.get_mapper()
-    controllers = api.get_controllers()
-    routes = api.get_routes(mapper)
 
-    resources = api.generate_resources(routes, controllers)
-    apis, models = api.generate_apis_and_models(routes, controllers)
+    resources, apis, models = api.introspect()
     
     write_resources(options, resources)
     write_apis(options, resources, apis, models)
