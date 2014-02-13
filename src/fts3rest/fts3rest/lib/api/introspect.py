@@ -63,11 +63,12 @@ def get_model_definitions(model_list):
     for model in model_list:
         if model != 'array':
             fields = get_model_fields(model)
-            definitions[model] = {
-                'id': model,
-                'properties': fields,
-                'required': fields.keys()
-            }
+            if fields:
+                definitions[model] = {
+                    'id': model,
+                    'properties': fields,
+                    'required': fields.keys()
+                }
     return definitions
 
 
@@ -259,7 +260,7 @@ def get_operations_for_function(route, function):
                            map(lambda l: l.strip(), function.__doc__.split('\n')))
         summary = doc_lines[0]
         if len(doc_lines) > 1:
-            notes = ' '.join(doc_lines[1:])
+            notes = "<br/>".join(doc_lines[1:])
     
     required_models = []
     operations = []

@@ -78,7 +78,6 @@ def make_map(config):
                 action='snapshot')
     
     # GFAL2 bindings
-    map.connect('/dm/', controller='datamanagement', action='index')
     map.connect('/dm/list', controller='datamanagement', action='list')
     map.connect('/dm/stat', controller='datamanagement', action='stat')
 

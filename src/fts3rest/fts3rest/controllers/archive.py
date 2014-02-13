@@ -1,4 +1,5 @@
 from fts3.model import ArchivedJob
+from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.middleware.fts3auth import authorized
@@ -7,7 +8,7 @@ from fts3rest.lib.middleware.fts3auth.constants import *
 
 class ArchiveController(BaseController):
     """
-    Controller for the archived tables
+    Operations on archived jobs and transfers
     """
 
     def _getJob(self, id):
@@ -40,17 +41,24 @@ class ArchiveController(BaseController):
             }
         }
 
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.return_type(ArchivedJob)
     @jsonify
     def show(self, id, **kwargs):
-        """GET /jobs/id: Show a specific item"""
+        """
+        Get the job with the given ID
+        """
         job = self._getJob(id)
         # Trigger the query, so it is serialized
         files = job.files
         return job
 
+    @doc.response(404, 'The job or the field doesn\'t exist')
     @jsonify
     def showField(self, id, field, **kwargs):
-        """GET /jobs/id/field: Show a specific field from an item"""
+        """
+        Get a specific field from the job identified by id
+        """
         job = self._getJob(id)
         if hasattr(job, field):
             return getattr(job, field)

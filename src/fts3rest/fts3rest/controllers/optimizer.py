@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3.model import OptimizerEvolution, Optimizer
@@ -7,7 +8,7 @@ from pylons import config, request
 
 class OptimizerController(BaseController):
     """
-    Controller for the optimizer logging tables
+    Optimizer logging tables
     """
 
     @jsonify

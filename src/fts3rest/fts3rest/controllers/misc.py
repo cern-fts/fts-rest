@@ -17,7 +17,7 @@ class MiscController(BaseController):
     def apiVersion(self):
         credV   = Session.query(CredentialVersion)[0]
         schemaV = Session.query(SchemaVersion)[0]
-        return {'api': _Version(0, 2, 1),
+        return {'api': _Version(3, 2, 0),
                 'schema': credV,
                 'delegation': schemaV,
                 '_links': {
@@ -56,4 +56,7 @@ class MiscController(BaseController):
 
     @jsonify
     def whoami(self):
+        """
+        Returns the active credentials of the user
+        """
         return request.environ['fts3.User.Credentials']

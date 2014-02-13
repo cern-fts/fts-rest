@@ -1,5 +1,6 @@
 from datetime import datetime
 from fts3.model import CredentialCache, Credential
+from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.helpers import voms
@@ -45,7 +46,11 @@ def generateProxyRequest(dnList):
 
 
 class DelegationController(BaseController):
+    """
+    Operations to perform the delegation of credentials
+    """
 
+    @doc.return_type('dateTime')
     @jsonify
     def view(self, id, start_response):
         """
@@ -62,7 +67,11 @@ class DelegationController(BaseController):
             return None
         else:
             return {'termination_time': cred.termination_time}
-        
+
+
+    @doc.response(403, 'The requested delegation ID does not belong to the user')
+    @doc.response(404, 'The credentials do not exist')
+    @doc.response(204, 'The credentials were deleted successfully')
     def delete(self, id, start_response):
         """
         Delete the delegated credentials from the database
@@ -83,9 +92,16 @@ class DelegationController(BaseController):
             start_response('204 NO CONTENT', [])
             return ['']
 
+
+    @doc.response(403, 'The requested delegation ID does not belong to the user')
+    @doc.response(200, 'The request was generated succesfully')
+    @doc.return_type('PEM encoded certificate request')
     def request(self, id, start_response):
         """
-        Returns a certificate request. First step of the delegation process.
+        First step of the delegation process: get a certificate request
+        
+        The returned certificate request must be signed with the user's original
+        credentials.
         """
         user = request.environ['fts3.User.Credentials']
 
@@ -126,9 +142,19 @@ class DelegationController(BaseController):
         x509Chain = ''.join(map(lambda x: x.as_pem(), x509List[1:]))
         return x509List[0].as_pem() + privKey + x509Chain
 
+
+    @doc.input('Signed certificate', 'PEM encoded certificate')
+    @doc.response(403, 'The requested delegation ID does not belong to the user')
+    @doc.response(400, 'The proxy failed the validation process')
+    @doc.response(201, 'The proxy was stored successfully')
     def credential(self, id, start_response):
         """
-        Put a proxy generated signing the request sent previously with 'request'
+        Second step of the delegation process: put the generated certificate
+        
+        The certificate being PUT will have to pass the following validation:
+            - There is a previous certificate request done
+            - The certificate subject matches the certificate issuer + '/CN=Proxy'
+            - The certificate modulus matches the stored private key modulus
         """
         user = request.environ['fts3.User.Credentials']
 
@@ -176,9 +202,17 @@ class DelegationController(BaseController):
         start_response('201 CREATED', [])
         return ['']
 
+    @doc.input('List of voms commands', 'array')
+    @doc.response(403, 'The requested delegation ID does not belong to the user')
+    @doc.response(400, 'Could not understand the request')
+    @doc.response(424, 'The obtention of the VOMS extensions failed')
+    @doc.response(203, 'The obtention of the VOMS extensions succeeded')
     def voms(self, id, start_response):
         """
         Generate VOMS extensions for the delegated proxy
+        
+        The input must be a json-serialized list of strings, where each strings
+        is a voms command (i.e. ["dteam", "dteam:/dteam/Role=lcgadmin"])
         """
         user = request.environ['fts3.User.Credentials']
         

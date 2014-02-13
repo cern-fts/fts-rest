@@ -41,7 +41,7 @@ def _hashed_id(id):
 
 class JobsController(BaseController):
     """
-    Operations about jobs and transfers
+    Operations on jobs and transfers
     """
 
     def _getJob(self, id):
