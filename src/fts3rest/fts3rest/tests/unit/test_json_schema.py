@@ -1,4 +1,4 @@
-from fts3rest.controllers.api import _schema
+from fts3rest.lib.api import SubmitSchema
 import unittest
 import jsonschema
 
@@ -31,7 +31,7 @@ class TestJsonSchema(unittest.TestCase):
                         "gridftp": None
                       }
                     }
-        self.schema = _schema()
+        self.schema = SubmitSchema
 
 
     def test_validation(self):
