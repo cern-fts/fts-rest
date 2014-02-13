@@ -1,3 +1,4 @@
+from datetime import timedelta
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Job, File
@@ -180,3 +181,43 @@ class TestInvalidSubmits(TestController):
                               params = json.dumps(job),
                               status = 400)
 
+
+    def test_submit_no_creds(self):
+        """
+        Submission without valid credentials is forbidden
+        """
+        self.assertFalse('GRST_CRED_AURI_0' in self.app.extra_environ)
+        self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+                     params = 'thisXisXnotXjson',
+                     status = 403)
+
+
+    def test_submit_no_delegation(self):
+        """
+        Submission with valid credentials, but without a delegated proxy,
+        must request a delegation
+        """
+        self.setupGridsiteEnvironment()
+        
+        job = {'Files': [{'sources': ['root://source/file'],
+                          'destinations': ['root://dest/file'],
+                         }]}
+        
+        self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+                     params = json.dumps(job),
+                     status = 419)
+
+    def test_submit_expired_credentials(self):
+        """
+        Submission with an expired proxy must request a delegation
+        """
+        self.setupGridsiteEnvironment()
+        self.pushDelegation(lifetime = timedelta(hours=-1))
+
+        job = {'Files': [{'sources': ['root://source/file'],
+                  'destinations': ['root://dest/file'],
+                 }]}
+        
+        self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+                     params = json.dumps(job),
+                     status = 419)

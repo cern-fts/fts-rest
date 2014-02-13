@@ -11,32 +11,6 @@ class TestJobs(TestController):
     Tests for the job controller
     The focus is in submissions, since it is the one that modifies the database
     """
-    
-    def test_submit_no_creds(self):
-        """
-        Submission without valid credentials is forbidden
-        """
-        self.assertFalse('GRST_CRED_AURI_0' in self.app.extra_environ)
-        self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
-                     params = 'thisXisXnotXjson',
-                     status = 403)
-
-
-    def test_submit_no_delegation(self):
-        """
-        Submission with valid credentials, but without a delegated proxy
-        is forbidden
-        """
-        self.setupGridsiteEnvironment()
-        
-        job = {'Files': [{'sources': ['root://source/file'],
-                          'destinations': ['root://dest/file'],
-                         }]}
-        
-        self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
-                     params = json.dumps(job),
-                     status = 403)
-
 
     def _hashedId(self, id):
         digest = hashlib.md5(str(id)).digest()

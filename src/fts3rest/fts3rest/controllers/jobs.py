@@ -4,6 +4,7 @@ from fts3.model import Credential, BannedSE, OptimizerActive
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
+from fts3rest.lib.http_exceptions import HTTPAuthenticationTimeout
 from fts3rest.lib.middleware.fts3auth import authorize, authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
 from pylons import request
@@ -165,6 +166,7 @@ class JobsController(BaseController):
     @doc.input('Submission description', 'SubmitSchema')
     @doc.response(400, 'The submission request could not be understood')
     @doc.response(403, 'The user doesn\'t have enough permissions to submit')
+    @doc.response(419, 'The credentials need to be re-delegated')
     @doc.return_type(Job)
     @authorize(TRANSFER)
     @jsonify
@@ -197,13 +199,13 @@ class JobsController(BaseController):
         user = request.environ['fts3.User.Credentials']
         credential = Session.query(Credential).get((user.delegation_id, user.user_dn))
         if credential is None:
-            abort(403, 'No delegation id found for "%s"' % user.user_dn)
+            abort(419, 'No delegation id found for "%s"' % user.user_dn)
         if credential.expired():
             remaining = credential.remaining()
             seconds = abs(remaining.seconds + remaining.days * 24 * 3600)
-            abort(403, 'The delegated credentials expired %d seconds ago' % seconds)
+            abort(419, 'The delegated credentials expired %d seconds ago' % seconds)
         if credential.remaining() < timedelta(hours=1):
-            abort(403, 'The delegated credentials has less than one hour left')
+            abort(419, 'The delegated credentials has less than one hour left')
 
         # Populate the job and file
         job = self._setupJobFromDict(submittedDict, user)
