@@ -3,13 +3,14 @@ import imp
 import itertools
 import os
 import types
-import fts3.model 
+import fts3.model
+from fts3.model.base import Flag, TernaryFlag, Json
 from fts3rest.config import routing
 from fts3rest.lib.base import BaseController
 from sqlalchemy import types
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.properties import ColumnProperty
-from fts3.model.base import Flag, TernaryFlag, Json
+from submit_schema import SubmitSchema
 
 root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 controllers_path = os.path.join(root_path, 'controllers')
@@ -61,9 +62,11 @@ def get_model_definitions(model_list):
     definitions = {}
     for model in model_list:
         if model != 'array':
+            fields = get_model_fields(model)
             definitions[model] = {
                 'id': model,
-                'properties': get_model_fields(model)
+                'properties': fields,
+                'required': fields.keys()
             }
     return definitions
 
@@ -189,6 +192,24 @@ def get_function_parameters(function):
     return parameters
 
 
+def get_function_input(function):
+    """
+    Return a  with the single input that is documented using
+    api.decoratos.input
+    """
+    parameters = []
+    if hasattr(function, 'doc_input'):
+        (description, type, required) = function.doc_input
+        parameters.append({
+            'name': 'body',
+            'description': description,
+            'type': type,
+            'paramType': 'body',
+            'required': bool(required)
+        })
+    return parameters
+
+
 def get_function_responses(function):
     """
     Return a list of responses that are documented using
@@ -238,17 +259,20 @@ def get_operations_for_function(route, function):
                            map(lambda l: l.strip(), function.__doc__.split('\n')))
         summary = doc_lines[0]
         if len(doc_lines) > 1:
-            notes = ''.join(doc_lines[1:])
+            notes = ' '.join(doc_lines[1:])
     
     required_models = []
     operations = []
     for m in methods:
+        input = get_function_input(function)
         operation = {
             'method': m,
             'nickname': function.__name__,
             'summary': summary,
             'notes': notes,
-            'parameters': route2parameters(route.routelist) + get_function_parameters(function),
+            'parameters': route2parameters(route.routelist) +
+                          get_function_parameters(function) +
+                          input,
             'responseMessages': get_function_responses(function)
         }
         return_type, return_item_type = get_function_return(function)
@@ -258,6 +282,10 @@ def get_operations_for_function(route, function):
         if return_item_type:
             operation['items'] = {'$ref': return_item_type}
             required_models.append(return_item_type)
+        if len(input) > 0:
+            input_type = input[0].get('type', None)
+            if input_type:
+                required_models.append(input_type)
             
         operations.append(operation)
 

@@ -61,7 +61,6 @@ class JobsController(BaseController):
     @doc.response(403, 'Operation forbidden')
     @doc.response(400, 'DN and delegation ID do not match')
     @doc.return_type(array_of = Job)
-    
     @authorize(TRANSFER)
     @jsonify
     def index(self, **kwargs):
@@ -100,10 +99,16 @@ class JobsController(BaseController):
         # Return list, limiting the size
         return jobs.limit(100).all()
 
+
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.return_type(Job)
     @jsonify
     def cancel(self, id, **kwargs):
         """
-        DELETE /jobs/id: Delete an existing item
+        Cancel the given job
+        
+        Returns the canceled job with its current status. CANCELED if it was canceled,
+        its final status otherwise
         """
         job = self._getJob(id)
 
@@ -130,6 +135,7 @@ class JobsController(BaseController):
         files = job.files
         return job
 
+
     @doc.response(404, 'The job doesn\'t exist')
     @doc.return_type(Job)
     @jsonify
@@ -141,6 +147,7 @@ class JobsController(BaseController):
         # Trigger the query, so it is serialized
         files = job.files
         return job
+
 
     @doc.response(404, 'The job or the field doesn\'t exist')
     @jsonify
@@ -154,11 +161,20 @@ class JobsController(BaseController):
         else:
             abort(404, 'No such field')
 
+
+    @doc.input('Submission description', 'SubmitSchema')
+    @doc.response(400, 'The submission request could not be understood')
+    @doc.response(403, 'The user doesn\'t have enough permissions to submit')
+    @doc.return_type(Job)
     @authorize(TRANSFER)
     @jsonify
     def submit(self, **kwargs):
         """
-        PUT /jobs: Submits a new job
+        Submits a new job
+        
+        It returns the information about the new submitted job. To know the format for the
+        submission, /api-docs/schema/submit gives the expected format encoded as a JSON-schema.
+        It can be used to validate (i.e in Python, jsonschema.validate)
         """
         # First, the request has to be valid JSON
         try:
@@ -223,6 +239,7 @@ class JobsController(BaseController):
         # Commit and return
         Session.commit()
         return job
+
 
     def _setJobSourceAndDestination(self, job):
         job.source_se = job.files[0].source_se
