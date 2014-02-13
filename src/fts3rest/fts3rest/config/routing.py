@@ -71,11 +71,9 @@ def make_map(config):
     map.connect('/config/audit', controller='config', action='audit')
 
     # Optimizer
-    map.connect('/optimizer/', controller='optimizer', action='isEnabled')
+    map.connect('/optimizer', controller='optimizer', action='isEnabled')
     map.connect('/optimizer/evolution', controller='optimizer',
                 action='evolution')
-    map.connect('/optimizer/snapshot', controller='optimizer',
-                action='snapshot')
     
     # GFAL2 bindings
     map.connect('/dm/list', controller='datamanagement', action='list')

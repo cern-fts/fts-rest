@@ -8,6 +8,8 @@ def _json_type_name(type):
         name = type.__name__
         if name == 'str':
             name = 'string'
+        elif name == 'bool':
+            name = 'boolean'
         return name
 
 
