@@ -1,6 +1,8 @@
 
 def _json_type_name(type):
-    if isinstance(type, str):
+    if not type:
+        return None
+    elif isinstance(type, str):
         return type
     else:
         name = type.__name__
@@ -26,6 +28,22 @@ def query_arg(arg_name, description, type=str, required=False):
         function.doc_query.append((arg_name, description, _json_type_name(type), required))
         return function
     return query_arg_inner
+
+
+def input(description, type=None, required=True):
+    """
+    Decorates a function with its accepted input parameter
+    (i.e. the body of a PUT)
+    
+    Args:
+        description: A human readable description
+        type: The type of the body
+        required: A boolean spec
+    """ 
+    def input_body_inner(function):
+        function.doc_input = (description, _json_type_name(type), required)
+        return function
+    return input_body_inner
 
 
 def response(code, description):
