@@ -8,15 +8,16 @@ from fts3.model.base import Flag, TernaryFlag, Json
 from fts3rest.config import routing
 from fts3rest.lib.base import BaseController
 from sqlalchemy import types
+from sqlalchemy.orm import Mapper
 from sqlalchemy.orm.attributes import InstrumentedAttribute
-from sqlalchemy.orm.properties import ColumnProperty
+from sqlalchemy.orm.properties import ColumnProperty, RelationProperty
 from submit_schema import SubmitSchema
 
 root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 controllers_path = os.path.join(root_path, 'controllers')
 
 
-def get_sqlalchemy_type_description(sql_type):
+def get_column_type_description(sql_type):
     """
     Infers the type from the SQLAlchemy type
     """
@@ -36,9 +37,27 @@ def get_sqlalchemy_type_description(sql_type):
     return {'type': 'string'}
 
 
-def get_model_fields(model_name):
+def get_relation_type_description(property, model_list):
+    """
+    Injects into model_list the additional types that may be needed
+    """
+    if isinstance(property.argument, Mapper):
+        return None
+    ref_type = property.argument().__name__
+    model_list.append(ref_type)
+    if property.uselist:
+        return {
+            'type': 'array',
+            'items': {'$ref': ref_type}
+        }
+    else:
+        return {'type': ref_type}
+
+
+def get_model_fields(model_name, model_list = []):
     """
     Get a description of the fields of the model 'model_name'
+    Injects into model_list the additional types that may be needed
     """
     model = getattr(fts3.model, model_name, None)
     if not model:
@@ -46,11 +65,15 @@ def get_model_fields(model_name):
     fields = {}
     for field in model.__dict__.values():
         if isinstance(field, InstrumentedAttribute):
+            name = field.key
             property = field.property
             if isinstance(property, ColumnProperty):
                 column = property.columns[0]
-                name = column.name
-                fields[name] = get_sqlalchemy_type_description(column.type)
+                fields[name] = get_column_type_description(column.type)
+            elif isinstance(property, RelationProperty):
+                relation_description = get_relation_type_description(property, model_list)
+                if relation_description:
+                    fields[name] = relation_description
     return fields
 
 
@@ -62,7 +85,7 @@ def get_model_definitions(model_list):
     definitions = {}
     for model in model_list:
         if model != 'array':
-            fields = get_model_fields(model)
+            fields = get_model_fields(model, model_list)
             if fields:
                 definitions[model] = {
                     'id': model,
