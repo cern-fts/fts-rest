@@ -53,6 +53,9 @@ if __name__ == '__main__':
         parser.exit(1)
 
     resources, apis, models = api.introspect()
+    resources.sort(key=lambda r:r['path'])
+    for api in apis.values():
+        api.sort(key=lambda a:a['path'])
     
     write_resources(options, resources)
     write_apis(options, resources, apis, models)
