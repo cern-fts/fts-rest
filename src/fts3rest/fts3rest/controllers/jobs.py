@@ -354,13 +354,13 @@ class JobsController(BaseController):
         # Extract matching pairs
         pairs = []
         for s in filesDict['sources']:
-            source_url = urlparse.urlparse(s)
+            source_url = urlparse.urlparse(s.strip())
             self._validateUrl(source_url)
             for d in filesDict['destinations']:
-                dest_url   = urlparse.urlparse(d)
+                dest_url   = urlparse.urlparse(d.strip())
                 self._validateUrl(dest_url)
                 if self._protocolMatchAndValid(source_url.scheme, dest_url.scheme):
-                    pairs.append((s, d))
+                    pairs.append((source_url.geturl(), dest_url.geturl()))
 
         # Create one File entry per matching pair
         for (s, d) in pairs:

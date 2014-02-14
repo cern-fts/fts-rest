@@ -453,3 +453,30 @@ class TestJobs(TestController):
         self.assertEqual(job.files[0].activity, 'my-activity')
         self.assertEqual(job.files[1].activity, 'my-second-activity')
 
+
+    def test_surl_with_spaces(self):
+        """
+        Submit a job where the surl has spaces at the beginning and at the end
+        """
+        self.setupGridsiteEnvironment()
+        self.pushDelegation()
+
+        job = {'files': [{'sources':      ['root://source.es/file\n \r '],
+                          'destinations': ['\r\n root://dest.ch/file\n\n \n'],
+                          'selection_strategy': 'orderly',
+                          'checksum':   'adler32:1234',
+                          'filesize':    1024,
+                          'metadata':    {'mykey': 'myvalue'},
+                          }],
+              'params': {'overwrite': True, 'verify_checksum': True}}
+
+        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+                              params = json.dumps(job),
+                              status = 200)
+
+        # Make sure it was commited to the DB
+        jobId = json.loads(answer.body)['job_id']
+        self.assertTrue(len(jobId) > 0)
+
+        job = Session.query(Job).get(jobId)
+        self._validateSubmitted(job)
