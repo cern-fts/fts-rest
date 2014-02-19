@@ -72,13 +72,15 @@ so Apache can bind to it.
 %post selinux
 if [ "$1" -le "1" ] ; then # First install
 semanage port -a -t http_port_t -p tcp 8446
-setsebool -P httpd_can_network_connect=1 
+setsebool -P httpd_can_network_connect=1
+setsebool -P httpd_setrlimit=1
 fi
 
 %preun selinux
 if [ "$1" -lt "1" ] ; then # Final removal
 semanage port -d -t http_port_t -p tcp 8446
 setsebool -P httpd_can_network_connect=0
+setsebool -P httpd_setrlimit=0
 fi
 
 %prep
