@@ -47,6 +47,7 @@ class VomsClient(object):
         new_termination_time = self._get_termination_time(new_proxy)
         
         new_proxy_pem = open(new_proxy).read()
+        os.unlink(new_proxy)
         
         return (new_proxy_pem, new_termination_time)
 
