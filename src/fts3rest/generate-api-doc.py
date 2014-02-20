@@ -28,7 +28,7 @@ def write_apis(options, resources, apis, models):
         resource_path = resource['path']
         swagger_api = {
            'swaggerVersion': '1.2',
-           'produces': 'application/json',
+           'produces': ['application/json'],
            'resourcePath': resource_path,
            'authorizations': {},
            'apis': apis.get(resource_path, []),
