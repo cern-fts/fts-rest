@@ -33,7 +33,6 @@ def write_apis(options, resources, apis, models):
            'authorizations': {},
            'apis': apis.get(resource_path, []),
            'models': models.get(resource_path, []),
-           'models': []
         }
         
         api_path = os.path.join(options.output_directory, resource_path.strip('/'))
@@ -53,6 +52,7 @@ if __name__ == '__main__':
         parser.exit(1)
 
     resources, apis, models = api.introspect()
+
     resources.sort(key=lambda r:r['path'])
     for api in apis.values():
         api.sort(key=lambda a:a['path'])
