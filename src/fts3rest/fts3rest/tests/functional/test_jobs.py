@@ -3,6 +3,7 @@ from fts3rest.lib.base import Session
 from fts3.model import Job, File, OptimizerActive
 import hashlib
 import json
+import scipy.stats
 
 
 class TestJobs(TestController):
@@ -10,12 +11,6 @@ class TestJobs(TestController):
     Tests for the job controller
     The focus is in submissions, since it is the one that modifies the database
     """
-
-    def _hashedId(self, id):
-        digest = hashlib.md5(str(id)).digest()
-        b16digest = digest.encode('hex')
-        return int(b16digest[:4], 16)
-
 
     def _validateSubmitted(self, job, noVo=False):
         self.assertNotEqual(job, None)
@@ -51,7 +46,6 @@ class TestJobs(TestController):
         else:
             self.assertEqual(files[0].vo_name, 'testvo')
 
-        self.assertEquals(self._hashedId(files[0].file_id), files[0].hashed_id)
         self.assertEquals(files[0].activity, 'default')
         
         # Validate optimizer too
@@ -479,3 +473,37 @@ class TestJobs(TestController):
 
         job = Session.query(Job).get(jobId)
         self._validateSubmitted(job)
+
+
+    def test_files_balanced(self):
+        """
+        Checks the distribution of the file 'hashed ids' is reasonably uniformely distributed.
+        hashed_id is a legacy name, its purpose is balance the transfers between hosts
+        regardless of the number running in a giving moment
+        """
+        self.setupGridsiteEnvironment()
+        self.pushDelegation()
+        
+        files = []
+        for r in xrange(1000):
+            files.append({
+                'sources': ["root://source.es/file%d" % r],
+                'destinations': ["root://dest.ch/file%d" % r]
+            })
+
+        job = {'files': files}
+        
+        answer = self.app.put(url = "/jobs",
+                              params = json.dumps(job),
+                              status = 200)
+        
+        submitted = json.loads(answer.body)
+        hashed_ids = map(lambda f: f['hashed_id'], submitted['files'])
+
+        # Null hypothesis: the distribution of hashed_ids is uniform
+        histogram, min, binsize, outsiders = scipy.stats.histogram(hashed_ids, defaultlimits = (0, 2**16 - 1))
+        chisq, pvalue = scipy.stats.chisquare(histogram)
+
+        self.assertTrue(min >= 0)
+        self.assertEqual(outsiders, 0)
+        self.assertTrue(pvalue > 0.1)

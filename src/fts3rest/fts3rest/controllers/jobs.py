@@ -9,8 +9,8 @@ from fts3rest.lib.middleware.fts3auth import authorize, authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
 from pylons import request
 from pylons.controllers.util import abort
-import hashlib
 import json
+import random
 import re
 import socket
 import types
@@ -31,14 +31,6 @@ DEFAULT_PARAMS = {
     'spacetoken'       : '',
     'retry'            : 0
 }
-
-
-def _hashed_id(id):
-    assert id is not None
-    digest = hashlib.md5(str(id)).digest()
-    b16digest = digest.encode('hex')
-    return int(b16digest[:4], 16)
-
 
 def _set_job_source_and_destination(job):
     """
@@ -105,7 +97,7 @@ def _validate_url(url):
         raise ValueError('Missing host (%s)' % url)
 
 
-def _populate_files(files_dict, findex):
+def _populate_files(files_dict, findex, vo_name, shared_hashed_id = None):
     """
     From the dictionary files_dict, generate a list of transfers for a job
     """
@@ -132,6 +124,7 @@ def _populate_files(files_dict, findex):
         file.dest_surl   = d
         file.source_se   = _get_storage_element(s)
         file.dest_se     = _get_storage_element(d)
+        file.vo_name     = vo_name
 
         file.user_filesize = files_dict.get('filesize', None)
         if file.user_filesize is None:
@@ -141,6 +134,11 @@ def _populate_files(files_dict, findex):
         file.checksum = files_dict.get('checksum', None)
         file.file_metadata = files_dict.get('metadata', None)
         file.activity = files_dict.get('activity', None)
+
+        if shared_hashed_id:
+            file.hashed_id = shared_hashed_id
+        else:
+            file.hashed_id = random.randint(0, 2**16 - 1)
 
         files.append(file)
     return files
@@ -197,10 +195,16 @@ def _setup_job_from_dict(job_dict, user):
         job.job_metadata             = params['job_metadata']
         job.job_params               = str()
 
+        # If reuse is enabled, generate one single "hash" for all files
+        if job.reuse_job:
+            shared_hashed_id = random.randint(0, 2**16 - 1)
+        else:
+            shared_hashed_id = None
+
         # Files
         findex = 0
         for t in job_dict['files']:
-            job.files.extend(_populate_files(t, findex))
+            job.files.extend(_populate_files(t, findex, job.vo_name, shared_hashed_id))
             findex += 1
 
         if len(job.files) == 0:
@@ -405,26 +409,15 @@ class JobsController(BaseController):
             abort(400,
                   'Can not specify reuse and multiple replicas at the same time')
 
+        # Update the optimizer
+        for file in job.files:
+             optimizer_active = OptimizerActive()
+             optimizer_active.source_se = file.source_se
+             optimizer_active.dest_se = file.dest_se
+             Session.merge(optimizer_active)
+
         # Update the database
         Session.merge(job)
-        Session.flush()
-
-        # Update hashed_id and vo_name, while updating OptimizerActive
-        # Mind that, for reuse jobs, we hash the job_id!
-        hashed_job_id = _hashed_id(job.job_id)
-        for file in Session.query(File).filter(File.job_id == job.job_id):
-            if job.reuse_job:
-                file.hashed_id = hashed_job_id
-            else:
-                file.hashed_id = _hashed_id(file.file_id)
-            file.vo_name   = job.vo_name
-            Session.merge(file)
-            
-            optimizer_active = OptimizerActive()
-            optimizer_active.source_se = file.source_se
-            optimizer_active.dest_se = file.dest_se
-            Session.merge(optimizer_active)
-
-        # Commit and return
         Session.commit()
+
         return job

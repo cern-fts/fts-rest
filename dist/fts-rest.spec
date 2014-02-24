@@ -37,6 +37,7 @@ BuildRequires:  python26-devel
 %else
 BuildRequires:  python-devel
 %endif
+BuildRequires:  scipy
 
 Requires:     gridsite%{?_isa} >= 1.7
 Requires:     httpd%{?_isa}
