@@ -5,61 +5,115 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.helpers import voms
 from M2Crypto import X509, RSA, EVP, BIO
-from pylons.controllers.util import abort
 from pylons.decorators import rest
 from pylons import request
 import json
-import pytz
 import types
-import uuid
-
-def getDNComponents(dn):
-    return map(lambda x: tuple(x.split('=')), dn.split('/')[1:])
 
 
-def populatedName(components):
-    x509Name = X509.X509_Name()
-    for (field, value) in components:
-        x509Name.add_entry_by_txt(field, 0x1000, value,
-                                  len=-1, loc=-1, set=0)
-    return x509Name
-
-
-def _muteCallback(*args, **kwargs):
+class ProxyException(Exception):
     pass
 
 
-def generateProxyRequest(dnList):
-    # By convention, use the longer representation
-    userDN = dnList[-1]
-
-    requestKeyPair = RSA.gen_key(1024, 65537, callback=_muteCallback)
-    requestPKey = EVP.PKey()
-    requestPKey.assign_rsa(requestKeyPair)
-    request = X509.Request()
-    request.set_pubkey(requestPKey)
-    request.set_subject(populatedName([('O', 'Dummy')]))
-    request.set_version(0)
-    request.sign(requestPKey, 'md5')
-
-    return (request, requestPKey)
+def _mute_callback(*args, **kwargs):
+    """
+    Does nothing. Used as a callback for gen_key
+    """
+    pass
 
 
-def _validateProxy(proxy_str, private_key_str):
-    x509Proxy           = X509.load_cert_string(proxy_str)
-    proxyExpirationTime = x509Proxy.get_not_after().get_datetime().replace(tzinfo = None)
-    private_key = EVP.load_key_string(str(private_key_str), callback = _muteCallback)
+def _populated_x509_name(components):
+    """
+    Generates a populated X509_Name with the entries passed in components
+    """
+    x509_name = X509.X509_Name()
+    for (field, value) in components:
+        x509_name.add_entry_by_txt(field, 0x1000, value,
+                                   len=-1, loc=-1, set=0)
+    return x509_name
+
+
+def _generate_proxy_request():
+    """
+    Generates a X509 proxy request.
     
-    if x509Proxy.verify(private_key):
-        raise Exception("Invalid proxy")
+    Returns:
+        A tuple (X509 request, generated private key)
+    """
+    key_pair = RSA.gen_key(1024, 65537, callback=_mute_callback)
+    pkey = EVP.PKey()
+    pkey.assign_rsa(key_pair)
+    x509_request = X509.Request()
+    x509_request.set_pubkey(pkey)
+    x509_request.set_subject(_populated_x509_name([('O', 'Dummy')]))
+    x509_request.set_version(0)
+    x509_request.sign(pkey, 'md5')
+
+    return (x509_request, pkey)
+
+
+def _validate_proxy(proxy_pem, private_key_pem):
+    """
+    Validates a proxy being put by the client
+    
+    Args:
+        proxy_pem: The PEM representation of the proxy
+        private_key_pem: The PEM representation of the private key
+    
+    Returns:
+        The proxy expiration time
+    
+    Raises:
+        ProxyException: If the validation fails
+    """
+    try:
+        x509_proxy      = X509.load_cert_string(proxy_pem)
+    except X509.X509Error:
+        raise ProxyException("Malformed proxy")
+
+    expiration_time = x509_proxy.get_not_after().get_datetime().replace(tzinfo = None)
+    private_key     = EVP.load_key_string(str(private_key_pem), callback = _mute_callback)
+
+    if x509_proxy.verify(private_key):
+        raise ProxyException("Invalid proxy")
 
     # Validate the subject
-    proxySubject = '/' + '/'.join(x509Proxy.get_subject().as_text().split(', '))
-    proxyIssuer = '/' + '/'.join(x509Proxy.get_issuer().as_text().split(', '))
-    if proxySubject != proxyIssuer + '/CN=proxy':
-        raise Exception("The subject and the issuer of the proxy do not match")
+    subject = '/' + '/'.join(x509_proxy.get_subject().as_text().split(', '))
+    issuer = '/' + '/'.join(x509_proxy.get_issuer().as_text().split(', '))
+    if subject != issuer + '/CN=proxy':
+        raise ProxyException("The subject and the issuer of the proxy do not match")
 
-    return proxyExpirationTime
+    return expiration_time
+
+
+def _read_X509_list(x509_pem):
+    """
+    Loads the list of certificates contained in x509_pem
+    """
+    x509_list = []
+    bio = BIO.MemoryBuffer(x509_pem)
+    try:
+        while True:
+            cert = X509.load_cert_bio(bio)
+            x509_list.append(cert)
+    except X509.X509Error:
+        pass
+    return x509_list
+
+
+def _build_full_proxy(x509_pem, privkey_pem):
+    """
+    Generates a full proxy from the input parameters.
+    A valid full proxy has this format: proxy, private key, certificate chain
+    Args:
+        proxy_pem: The certificate chain
+        privkey_pem: The private key
+    Returns:
+        A full proxy
+    """
+    x509_list = _read_X509_list(x509_pem)
+    x509_chain = ''.join(map(lambda x: x.as_pem(), x509_list[1:]))
+    return x509_list[0].as_pem() + privkey_pem + x509_chain
 
 
 class DelegationController(BaseController):
@@ -126,39 +180,22 @@ class DelegationController(BaseController):
             start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
             return ['The resquested ID and the credentials ID do not match']
 
-        credentialCache = Session.query(CredentialCache)\
+        credential_cache = Session.query(CredentialCache)\
             .get((user.delegation_id, user.user_dn))
 
-        if credentialCache is None:
-            (proxyRequest, proxyKey) = generateProxyRequest(user.dn)
-            credentialCache = CredentialCache(dlg_id = user.delegation_id,
-                                              dn = user.user_dn,
-                                              cert_request = proxyRequest.as_pem(),
-                                              priv_key     = proxyKey.as_pem(cipher = None),
-                                              voms_attrs   = ' '.join(user.voms_cred))
-            Session.add(credentialCache)
+        if credential_cache is None:
+            (x509_request, private_key) = _generate_proxy_request()
+            credential_cache = CredentialCache(dlg_id = user.delegation_id,
+                                               dn = user.user_dn,
+                                               cert_request = x509_request.as_pem(),
+                                               priv_key     = private_key.as_pem(cipher = None),
+                                               voms_attrs   = ' '.join(user.voms_cred))
+            Session.add(credential_cache)
             Session.commit()
 
-        start_response('200 OK', [('X-Delegation-ID', credentialCache.dlg_id),
+        start_response('200 OK', [('X-Delegation-ID', credential_cache.dlg_id),
                                   ('Content-Type', 'text/plain')])
-        return credentialCache.cert_request
-
-    def _readX509List(self, pemString):
-        x509List = []
-        bio = BIO.MemoryBuffer(pemString)
-        try:
-            while True:
-                cert = X509.load_cert_bio(bio)
-                x509List.append(cert)
-        except X509.X509Error:
-            pass
-        return x509List
-
-    def _buildFullProxyPEM(self, proxyPEM, privKey):
-        x509List = self._readX509List(proxyPEM)
-        x509Chain = ''.join(map(lambda x: x.as_pem(), x509List[1:]))
-        return x509List[0].as_pem() + privKey + x509Chain
-
+        return credential_cache.cert_request
 
     @doc.input('Signed certificate', 'PEM encoded certificate')
     @doc.response(403, 'The requested delegation ID does not belong to the user')
@@ -179,26 +216,26 @@ class DelegationController(BaseController):
             start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
             return ['The resquested ID and the credentials ID do not match']
 
-        credentialCache = Session.query(CredentialCache)\
+        credential_cache = Session.query(CredentialCache)\
             .get((user.delegation_id, user.user_dn))
-        if credentialCache is None:
+        if credential_cache is None:
             start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
             return ['No credential cache found']
 
-        x509ProxyPEM = request.body
+        x509_proxy_pem = request.body
 
         try:
-            proxyExpirationTime = _validateProxy(x509ProxyPEM, credentialCache.priv_key)
-            x509FullProxyPEM    = self._buildFullProxyPEM(x509ProxyPEM, credentialCache.priv_key)
-        except Exception, e:
+            expiration_time = _validate_proxy(x509_proxy_pem, credential_cache.priv_key)
+            x509_full_proxy_pem = _build_full_proxy(x509_proxy_pem, credential_cache.priv_key)
+        except ProxyException, e:
             start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
             return ['Could not process the proxy: ' + str(e)]
 
         credential = Credential(dlg_id           = user.delegation_id,
                                 dn               = user.user_dn,
-                                proxy            = x509FullProxyPEM,
-                                voms_attrs       = credentialCache.voms_attrs,
-                                termination_time = proxyExpirationTime)
+                                proxy            = x509_full_proxy_pem,
+                                voms_attrs       = credential_cache.voms_attrs,
+                                termination_time = expiration_time)
 
         Session.merge(credential)
         Session.commit()
