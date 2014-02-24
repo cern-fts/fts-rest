@@ -42,9 +42,9 @@ def make_map(config):
                 conditions=dict(method=['GET']))
     map.connect('/jobs/', controller='jobs', action='index',
                 conditions=dict(method=['GET']))
-    map.connect('/jobs/{id}', controller='jobs', action='show',
+    map.connect('/jobs/{id}', controller='jobs', action='get',
                 conditions=dict(method=['GET']))
-    map.connect('/jobs/{id}/{field}', controller='jobs', action='showField',
+    map.connect('/jobs/{id}/{field}', controller='jobs', action='get_field',
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{id}', controller='jobs', action='cancel',
                 conditions=dict(method=['DELETE']))
@@ -56,10 +56,10 @@ def make_map(config):
                 conditions=dict(method=['GET']))
     map.connect('/archive/', controller='archive', action='index',
                 conditions=dict(method=['GET']))
-    map.connect('/archive/{id}', controller='archive', action='show',
+    map.connect('/archive/{id}', controller='archive', action='get',
                 conditions=dict(method=['GET']))
     map.connect('/archive/{id}/{field}', controller='archive',
-                action='showField',
+                action='get_field',
                 conditions=dict(method=['GET']))
 
     # Schema definition

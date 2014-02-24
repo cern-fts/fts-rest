@@ -297,7 +297,7 @@ class JobsController(BaseController):
     @doc.response(404, 'The job doesn\'t exist')
     @doc.return_type(Job)
     @jsonify
-    def show(self, id, **kwargs):
+    def get(self, id, **kwargs):
         """
         Get the job with the given ID
         """
@@ -308,7 +308,7 @@ class JobsController(BaseController):
 
     @doc.response(404, 'The job or the field doesn\'t exist')
     @jsonify
-    def showField(self, id, field, **kwargs):
+    def get_field(self, id, field, **kwargs):
         """
         Get a specific field from the job identified by id
         """

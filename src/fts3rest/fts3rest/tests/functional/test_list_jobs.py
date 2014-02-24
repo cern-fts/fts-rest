@@ -169,3 +169,18 @@ class TestListJobs(TestController):
         jobInfo = json.loads(answer.body)
         self.assertEqual(jobId, jobInfo['job_id'])
         self.assertEqual('nil', jobInfo['vo_name'])
+
+
+    def test_get_field(self):
+        """
+        Request a field from a job  
+        """
+        self.setupGridsiteEnvironment(noVo = True)
+        self.pushDelegation()
+
+        jobId = self._submit()
+        
+        answer = self.app.get(url = "/jobs/%s/job_state" % (jobId),
+                              status = 200)
+        state = json.loads(answer.body)
+        self.assertEqual(state, 'SUBMITTED')
