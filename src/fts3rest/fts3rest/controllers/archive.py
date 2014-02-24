@@ -11,7 +11,7 @@ class ArchiveController(BaseController):
     Operations on archived jobs and transfers
     """
 
-    def _getJob(self, id):
+    def _get_job(self, id):
         job = Session.query(ArchivedJob).get(id)
         if job is None:
             abort(404,
@@ -48,7 +48,7 @@ class ArchiveController(BaseController):
         """
         Get the job with the given ID
         """
-        job = self._getJob(id)
+        job = self._get_job(id)
         # Trigger the query, so it is serialized
         files = job.files
         return job
@@ -59,7 +59,7 @@ class ArchiveController(BaseController):
         """
         Get a specific field from the job identified by id
         """
-        job = self._getJob(id)
+        job = self._get_job(id)
         if hasattr(job, field):
             return getattr(job, field)
         else:
