@@ -44,22 +44,21 @@ def generateProxyRequest(dnList):
 
     return (request, requestPKey)
 
-def _validateProxy(proxy_str, priv_key_str):
+
+def _validateProxy(proxy_str, private_key_str):
     x509Proxy           = X509.load_cert_string(proxy_str)
     proxyExpirationTime = x509Proxy.get_not_after().get_datetime().replace(tzinfo = None)
+    private_key = EVP.load_key_string(str(private_key_str), callback = _muteCallback)
     
+    if x509Proxy.verify(private_key):
+        raise Exception("Invalid proxy")
 
     # Validate the subject
     proxySubject = '/' + '/'.join(x509Proxy.get_subject().as_text().split(', '))
     proxyIssuer = '/' + '/'.join(x509Proxy.get_issuer().as_text().split(', '))
     if proxySubject != proxyIssuer + '/CN=proxy':
         raise Exception("The subject and the issuer of the proxy do not match")
-    
-    # Make sure the certificate corresponds to the private key
-    pkey = EVP.load_key_string(str(priv_key_str), callback = _muteCallback)
-    if x509Proxy.get_pubkey().get_modulus() != pkey.get_modulus():
-        raise Exception("The delegated proxy do not correspond the stored private key")
-    
+
     return proxyExpirationTime
 
 

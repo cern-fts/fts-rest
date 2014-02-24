@@ -107,7 +107,8 @@ class TestController(TestCase):
 
     def getX509Proxy(self, requestPEM,
                      issuer = [('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User')],
-                     subject = None):
+                     subject = None,
+                     private_key = None):
         """
         Generate a X509 proxy based on the request
 
@@ -148,7 +149,10 @@ class TestController(TestCase):
         proxy.set_not_after(notAfter)
         proxy.set_not_before(notBefore)
 
-        proxy.sign(self.pkey, 'sha1')
+        if not private_key:
+            proxy.sign(self.pkey, 'sha1')
+        else:
+            proxy.sign(private_key, 'sha1')
 
         return proxy.as_pem()
 

@@ -1,9 +1,10 @@
+from datetime import datetime, timedelta
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Credential, CredentialCache
+from M2Crypto import EVP
 from nose.plugins.skip import SkipTest
 from routes import url_for
-from datetime import datetime, timedelta
 import json
 import pytz
 import time
@@ -89,6 +90,24 @@ class TestDelegation(TestController):
                               status = 400)
 
 
+    def test_signed_wrong_priv_key(self):
+        """
+        Regression for FTS-30
+        If a proxy is signed with an invalid private key, reject it
+        """
+        self.setupGridsiteEnvironment()
+        creds = self.getUserCredentials()
+        
+        request = self.app.get(url = url_for(controller = 'delegation', action = 'request', id = creds.delegation_id),
+                               status = 200)
+        
+        proxy = self.getX509Proxy(request.body, private_key = EVP.PKey())
+        
+        answer = self.app.put(url = url_for(controller = 'delegation', action = 'credential', id = creds.delegation_id),
+                              params = proxy,
+                              status = 400)
+
+
     def test_get_request_different_dlg_id(self):
         """
         A user should be able only to get his/her own proxy request,
@@ -100,6 +119,7 @@ class TestDelegation(TestController):
         request = self.app.get(url = url_for(controller = 'delegation', action = 'request', id = '12345xx'),
                                status = 403)
 
+
     def test_view_different_dlg_id(self):
         """
         A user should be able only to get his/her own delegation information.
@@ -109,6 +129,7 @@ class TestDelegation(TestController):
 
         request = self.app.get(url = url_for(controller = 'delegation', action = 'view', id = '12345xx'),
                                status = 403)
+
 
     def test_remove_delegation(self):
         """
