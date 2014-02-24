@@ -4,6 +4,7 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.middleware.fts3auth import authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
+from pylons.controllers.util import abort
 
 
 class ArchiveController(BaseController):
@@ -44,7 +45,7 @@ class ArchiveController(BaseController):
     @doc.response(404, 'The job doesn\'t exist')
     @doc.return_type(ArchivedJob)
     @jsonify
-    def show(self, id, **kwargs):
+    def get(self, id, **kwargs):
         """
         Get the job with the given ID
         """
@@ -55,7 +56,7 @@ class ArchiveController(BaseController):
 
     @doc.response(404, 'The job or the field doesn\'t exist')
     @jsonify
-    def showField(self, id, field, **kwargs):
+    def get_field(self, id, field, **kwargs):
         """
         Get a specific field from the job identified by id
         """
