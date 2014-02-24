@@ -2,7 +2,6 @@ from datetime import timedelta
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Job, File
-from routes import url_for
 import json
 
 
@@ -19,7 +18,7 @@ class TestInvalidSubmits(TestController):
         self.assertFalse('GRST_CRED_AURI_0' in self.app.extra_environ)
         self.setupGridsiteEnvironment()
         self.assertTrue('GRST_CRED_AURI_0' in self.app.extra_environ)
-        self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        self.app.put(url = "/jobs",
                      params = 'thisXisXnotXjson',
                      status = 400)
 
@@ -32,7 +31,7 @@ class TestInvalidSubmits(TestController):
         self.pushDelegation()
         job = {'parameters': {}}
         
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 400)
 
@@ -53,7 +52,7 @@ class TestInvalidSubmits(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 400)
@@ -64,8 +63,8 @@ class TestInvalidSubmits(TestController):
         Request an invalid job
         """
         self.setupGridsiteEnvironment()
-        self.app.get(url = url_for(controller = 'jobs', action = 'show', id = '1234x'),
-                      status = 404)
+        self.app.get(url = "/jobs/1234x",
+                     status = 404)
 
 
     def test_no_protocol(self):
@@ -79,7 +78,7 @@ class TestInvalidSubmits(TestController):
                           'destinations': ['/srv/pub'],
                           }]}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 400)
@@ -95,7 +94,7 @@ class TestInvalidSubmits(TestController):
                           'destinations': ['file:///srv/pub'],
                           }]}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 400)
@@ -117,7 +116,7 @@ class TestInvalidSubmits(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
 
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 400)
@@ -138,7 +137,7 @@ class TestInvalidSubmits(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
 
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 400)
@@ -152,13 +151,13 @@ class TestInvalidSubmits(TestController):
         self.pushDelegation()
         job = {'transfers': [{'destinations': ['root://dest.ch/file']}]}
         
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 400)
         
         job = {'transfers': [{'source': 'root://source.es/file'}]}
         
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 400)
 
@@ -177,7 +176,7 @@ class TestInvalidSubmits(TestController):
                           'metadata':    {'mykey': 'myvalue'},
               }]}
         
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 400)
 
@@ -187,7 +186,7 @@ class TestInvalidSubmits(TestController):
         Submission without valid credentials is forbidden
         """
         self.assertFalse('GRST_CRED_AURI_0' in self.app.extra_environ)
-        self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        self.app.put(url = "/jobs",
                      params = 'thisXisXnotXjson',
                      status = 403)
 
@@ -203,7 +202,7 @@ class TestInvalidSubmits(TestController):
                           'destinations': ['root://dest/file'],
                          }]}
         
-        self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        self.app.put(url = "/jobs",
                      params = json.dumps(job),
                      status = 419)
 
@@ -218,6 +217,6 @@ class TestInvalidSubmits(TestController):
                   'destinations': ['root://dest/file'],
                  }]}
         
-        self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        self.app.put(url = "/jobs",
                      params = json.dumps(job),
                      status = 419)

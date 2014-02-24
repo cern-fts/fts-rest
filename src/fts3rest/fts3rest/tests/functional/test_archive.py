@@ -1,7 +1,6 @@
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import ArchivedJob, ArchivedFile
-from routes import url_for
 import json
 
 
@@ -36,8 +35,7 @@ class TestArchive(TestController):
         self.setupGridsiteEnvironment()
         
         job_id = self._insertJob()
-        answer = self.app.get(url = url_for(controller = 'archive', action = 'show', id = job_id),
-                              status = 200)
+        answer = self.app.get(url = "/archive/%s" % job_id, status = 200)
         job = json.loads(answer.body)
         
         self.assertEqual(job['job_id'], job_id)

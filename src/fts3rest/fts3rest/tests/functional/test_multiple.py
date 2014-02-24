@@ -1,7 +1,6 @@
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Job, File
-from routes import url_for
 import json
 
 
@@ -29,7 +28,7 @@ class TestMultiple(TestController):
                           }],
               'params': {'overwrite': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -74,7 +73,7 @@ class TestMultiple(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -127,7 +126,7 @@ class TestMultiple(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -179,7 +178,7 @@ class TestMultiple(TestController):
                           }],
               'params': {'overwrite': True, 'reuse': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 400)
@@ -200,7 +199,7 @@ class TestMultiple(TestController):
                          }],
               'params': {'overwrite': True, 'reuse': True}}
 
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)

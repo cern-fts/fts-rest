@@ -2,7 +2,6 @@ from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Job, File, OptimizerActive
 import hashlib
-from routes import url_for
 import json
 
 
@@ -77,7 +76,7 @@ class TestJobs(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
         
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 200)
         
@@ -87,7 +86,7 @@ class TestJobs(TestController):
         
         self._validateSubmitted(Session.query(Job).get(jobId))
         
-        return jobId
+        return str(jobId)
 
     
     def test_submit_reuse(self):
@@ -106,7 +105,7 @@ class TestJobs(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True, 'reuse': True}}
         
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 200)
         
@@ -136,7 +135,7 @@ class TestJobs(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -167,7 +166,7 @@ class TestJobs(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -205,7 +204,7 @@ class TestJobs(TestController):
               'params': {'overwrite': True, 'copy_pin_lifetime': 3600, 'bring_online': 60,
                          'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -226,7 +225,7 @@ class TestJobs(TestController):
         Cancel a job
         """
         jobId = self.test_submit()
-        answer = self.app.delete(url = url_for(controller = 'jobs', action = 'cancel', id = jobId),
+        answer = self.app.delete(url = "/jobs/%s" % (jobId),
                                  status = 200)
         job = json.loads(answer.body)
         
@@ -247,7 +246,7 @@ class TestJobs(TestController):
         Get information about a job
         """
         jobId = self.test_submit()
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'show', id = jobId),
+        answer = self.app.get(url = "/jobs/%s" % (jobId),
                               status = 200)
         job = json.loads(answer.body)
         
@@ -271,7 +270,7 @@ class TestJobs(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -303,7 +302,7 @@ class TestJobs(TestController):
                           }],
               'params': {'overwrite': True}}
 
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -334,7 +333,7 @@ class TestJobs(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -366,7 +365,7 @@ class TestJobs(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
         
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 200)
         
@@ -393,7 +392,7 @@ class TestJobs(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True, 'retry': 42}}
         
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 200)
         
@@ -441,7 +440,7 @@ class TestJobs(TestController):
                           }]
                }
         
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 200)
         
@@ -470,7 +469,7 @@ class TestJobs(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
 
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 200)
 

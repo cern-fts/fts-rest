@@ -4,7 +4,6 @@ from fts3rest.lib.base import Session
 from fts3.model import Credential, CredentialCache
 from M2Crypto import EVP
 from nose.plugins.skip import SkipTest
-from routes import url_for
 import json
 import pytz
 import time
@@ -13,7 +12,7 @@ import time
 class TestDelegation(TestController):
     
     def _get_termination_time(self, dlg_id):
-        answer = self.app.get(url = url_for(controller = 'delegation', action = 'view', id = dlg_id))
+        answer = self.app.get(url = "/delegation/%s" % (dlg_id))
         tt = datetime.strptime(str(json.loads(answer.body)['termination_time']), '%Y-%m-%dT%H:%M:%S')
         return tt.replace(tzinfo = pytz.UTC)
 
@@ -27,13 +26,13 @@ class TestDelegation(TestController):
         self.setupGridsiteEnvironment()
         creds = self.getUserCredentials()
         
-        request = self.app.get(url = url_for(controller = 'delegation', action = 'request', id = creds.delegation_id),
+        request = self.app.get(url = "/delegation/%s/request" % (creds.delegation_id),
                                status = 200)
         proxy = self.getX509Proxy(request.body)
         
         Session.delete(Session.query(CredentialCache).get((creds.delegation_id, creds.user_dn)))
         
-        answer = self.app.put(url = url_for(controller = 'delegation', action = 'credential', id = creds.delegation_id),
+        answer = self.app.put(url = "/delegation/%s/credential" % (creds.delegation_id),
                               params = proxy,
                               status = 400)
 
@@ -45,10 +44,10 @@ class TestDelegation(TestController):
         self.setupGridsiteEnvironment()       
         creds = self.getUserCredentials()
         
-        request = self.app.get(url = url_for(controller = 'delegation', action = 'request', id = creds.delegation_id),
+        request = self.app.get(url = "/delegation/%s/request" % (creds.delegation_id),
                                status = 200)
                 
-        answer = self.app.put(url = url_for(controller = 'delegation', action = 'credential', id = creds.delegation_id),
+        answer = self.app.put(url = "/delegation/%s/credential" % (creds.delegation_id),
                               params = 'MALFORMED!!!1',
                               status = 400)
         
@@ -60,11 +59,11 @@ class TestDelegation(TestController):
         self.setupGridsiteEnvironment()
         creds = self.getUserCredentials()
         
-        request = self.app.get(url = url_for(controller = 'delegation', action = 'request', id = creds.delegation_id),
+        request = self.app.get(url = "/delegation/%s/request" % (creds.delegation_id),
                                status = 200)
         proxy = self.getX509Proxy(request.body)
         
-        answer = self.app.put(url = url_for(controller = 'delegation', action = 'credential', id = creds.delegation_id),
+        answer = self.app.put(url = "/delegation/%s/credential" % (creds.delegation_id),
                               params = proxy,
                               status = 201)
         
@@ -80,12 +79,12 @@ class TestDelegation(TestController):
         self.setupGridsiteEnvironment()
         creds = self.getUserCredentials()
         
-        request = self.app.get(url = url_for(controller = 'delegation', action = 'request', id = creds.delegation_id),
+        request = self.app.get(url = "/delegation/%s/request" % (creds.delegation_id),
                                status = 200)
         
         proxy = self.getX509Proxy(request.body, subject = [('DC', 'dummy')])
         
-        answer = self.app.put(url = url_for(controller = 'delegation', action = 'credential', id = creds.delegation_id),
+        answer = self.app.put(url = "/delegation/%s/credential" % (creds.delegation_id),
                               params = proxy,
                               status = 400)
 
@@ -98,12 +97,12 @@ class TestDelegation(TestController):
         self.setupGridsiteEnvironment()
         creds = self.getUserCredentials()
         
-        request = self.app.get(url = url_for(controller = 'delegation', action = 'request', id = creds.delegation_id),
+        request = self.app.get(url = "/delegation/%s/request" % (creds.delegation_id),
                                status = 200)
         
         proxy = self.getX509Proxy(request.body, private_key = EVP.PKey())
         
-        answer = self.app.put(url = url_for(controller = 'delegation', action = 'credential', id = creds.delegation_id),
+        answer = self.app.put(url = "/delegation/%s/credential" % (creds.delegation_id),
                               params = proxy,
                               status = 400)
 
@@ -116,7 +115,7 @@ class TestDelegation(TestController):
         self.setupGridsiteEnvironment()
         creds = self.getUserCredentials()
 
-        request = self.app.get(url = url_for(controller = 'delegation', action = 'request', id = '12345xx'),
+        request = self.app.get(url = "/delegation/12345xx/request",
                                status = 403)
 
 
@@ -127,7 +126,7 @@ class TestDelegation(TestController):
         self.setupGridsiteEnvironment()
         creds = self.getUserCredentials()
 
-        request = self.app.get(url = url_for(controller = 'delegation', action = 'view', id = '12345xx'),
+        request = self.app.get(url = "/delegation/12345x",
                                status = 403)
 
 
@@ -140,10 +139,10 @@ class TestDelegation(TestController):
         
         self.test_valid_proxy()
         
-        request = self.app.delete(url = url_for(controller = 'delegation', action = 'delete', id = creds.delegation_id),
+        request = self.app.delete(url = "/delegation/%s" % (creds.delegation_id),
                                   status = 204)
         
-        request = self.app.delete(url = url_for(controller = 'delegation', action = 'delete', id = creds.delegation_id),
+        request = self.app.delete(url = "/delegation/%s" % (creds.delegation_id),
                                   status = 404)
         
         proxy = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
@@ -172,7 +171,7 @@ class TestDelegation(TestController):
         Session.commit()
         
         # Now, request the voms extensions
-        request = self.app.post(url = url_for(controller = 'delegation', action = 'voms', id = creds.delegation_id),
+        request = self.app.post(url = "/delegation/%s/voms" % (creds.delegation_id),
                                 content_type = 'application/json',
                                 params = json.dumps(['dteam:/dteam/Role=lcgadmin']),
                                 status = 203)

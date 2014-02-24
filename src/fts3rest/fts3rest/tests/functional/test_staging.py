@@ -2,7 +2,6 @@ from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Job, File, OptimizerActive
 import hashlib
-from routes import url_for
 import json
 
 
@@ -29,7 +28,7 @@ class TestSubmitToStaging(TestController):
               'params': {'overwrite': True, 'copy_pin_lifetime': 3600, 'bring_online': 60,
                          'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -62,7 +61,7 @@ class TestSubmitToStaging(TestController):
               'params': {'overwrite': True, 'bring_online': 60,
                          'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)
@@ -95,7 +94,7 @@ class TestSubmitToStaging(TestController):
               'params': {'overwrite': True, 'copy_pin_lifetime': 60,
                          'verify_checksum': True}}
         
-        answer = self.app.post(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.post(url = "/jobs",
                                content_type = 'application/json',
                                params = json.dumps(job),
                                status = 200)

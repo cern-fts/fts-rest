@@ -2,7 +2,6 @@ from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Job, File, OptimizerActive
 import hashlib
-from routes import url_for
 import json
 
 class TestListJobs(TestController):
@@ -20,7 +19,7 @@ class TestListJobs(TestController):
                           }],
               'params': {'overwrite': True, 'verify_checksum': True}}
         
-        answer = self.app.put(url = url_for(controller = 'jobs', action = 'submit'),
+        answer = self.app.put(url = "/jobs",
                               params = json.dumps(job),
                               status = 200)
         
@@ -39,7 +38,7 @@ class TestListJobs(TestController):
         
         jobId = self._submit()
 
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
+        answer = self.app.get(url = "/jobs",
                               status = 200)
         jobList = json.loads(answer.body)
         self.assertTrue(jobId in map(lambda j: j['job_id'], jobList))
@@ -55,7 +54,7 @@ class TestListJobs(TestController):
 
         jobId = self._submit()
 
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
+        answer = self.app.get(url = "/jobs",
                               params = {'dlg_id': creds.delegation_id},
                               status = 200)
         jobList = json.loads(answer.body)
@@ -71,7 +70,7 @@ class TestListJobs(TestController):
         self.pushDelegation()
         creds = self.getUserCredentials()
 
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
+        answer = self.app.get(url = "/jobs",
                               params = {'dlg_id': creds.delegation_id + '1234'},
                               status = 403)
 
@@ -85,7 +84,7 @@ class TestListJobs(TestController):
         self.pushDelegation()
         creds = self.getUserCredentials()
 
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
+        answer = self.app.get(url = "/jobs",
                               params = {'dlg_id': creds.delegation_id, 'user_dn': '/CN=1234'},
                               status = 400)
 
@@ -100,7 +99,7 @@ class TestListJobs(TestController):
 
         jobId = self._submit()
 
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
+        answer = self.app.get(url = "/jobs",
                               params = {'dlg_id': creds.delegation_id, 'state_in': 'FINISHED,FAILED,CANCELED'},
                               status = 200)
         jobList = json.loads(answer.body)
@@ -117,7 +116,7 @@ class TestListJobs(TestController):
 
         jobId = self._submit()
 
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
+        answer = self.app.get(url = "/jobs",
                               params = {'dlg_id': creds.delegation_id, 'state_in': 'ACTIVE,SUBMITTED'},
                               status = 200)
         jobList = json.loads(answer.body)
@@ -132,7 +131,7 @@ class TestListJobs(TestController):
         self.pushDelegation()
         creds = self.getUserCredentials()
 
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
+        answer = self.app.get(url = "/jobs",
                               params = {'state_in': 'SUBMITTED,ACTIVE'},
                               status = 403)
 
@@ -148,7 +147,7 @@ class TestListJobs(TestController):
         jobId = self._submit()
         
         # Must be in the listings!
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'index'),
+        answer = self.app.get(url = "/jobs",
                               status = 200)
         jobList = json.loads(answer.body)
         self.assertTrue(jobId in map(lambda j: j['job_id'], jobList))
@@ -165,7 +164,7 @@ class TestListJobs(TestController):
         jobId = self._submit()
         
         # Must be in the listings!
-        answer = self.app.get(url = url_for(controller = 'jobs', action = 'show', id = jobId),
+        answer = self.app.get(url = "/jobs/%s" % (jobId),
                               status = 200)
         jobInfo = json.loads(answer.body)
         self.assertEqual(jobId, jobInfo['job_id'])
