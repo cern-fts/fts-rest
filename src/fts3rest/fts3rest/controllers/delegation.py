@@ -44,6 +44,24 @@ def generateProxyRequest(dnList):
 
     return (request, requestPKey)
 
+def _validateProxy(proxy_str, priv_key_str):
+    x509Proxy           = X509.load_cert_string(proxy_str)
+    proxyExpirationTime = x509Proxy.get_not_after().get_datetime().replace(tzinfo = None)
+    
+
+    # Validate the subject
+    proxySubject = '/' + '/'.join(x509Proxy.get_subject().as_text().split(', '))
+    proxyIssuer = '/' + '/'.join(x509Proxy.get_issuer().as_text().split(', '))
+    if proxySubject != proxyIssuer + '/CN=proxy':
+        raise Exception("The subject and the issuer of the proxy do not match")
+    
+    # Make sure the certificate corresponds to the private key
+    pkey = EVP.load_key_string(str(priv_key_str), callback = _muteCallback)
+    if x509Proxy.get_pubkey().get_modulus() != pkey.get_modulus():
+        raise Exception("The delegated proxy do not correspond the stored private key")
+    
+    return proxyExpirationTime
+
 
 class DelegationController(BaseController):
     """
@@ -171,21 +189,8 @@ class DelegationController(BaseController):
         x509ProxyPEM = request.body
 
         try:
-            x509Proxy           = X509.load_cert_string(x509ProxyPEM)
-            proxyExpirationTime = x509Proxy.get_not_after().get_datetime().replace(tzinfo = None)
+            proxyExpirationTime = _validateProxy(x509ProxyPEM, credentialCache.priv_key)
             x509FullProxyPEM    = self._buildFullProxyPEM(x509ProxyPEM, credentialCache.priv_key)
-
-            # Validate the subject
-            proxySubject = '/' + '/'.join(x509Proxy.get_subject().as_text().split(', '))
-            proxyIssuer = '/' + '/'.join(x509Proxy.get_issuer().as_text().split(', '))
-            if proxySubject != proxyIssuer + '/CN=proxy':
-                raise Exception("The subject and the issuer of the proxy do not match")
-            
-            # Make sure the certificate corresponds to the private key
-            pkey = EVP.load_key_string(str(credentialCache.priv_key),
-                                       callback = lambda v, p1, p2: None)
-            if x509Proxy.get_pubkey().get_modulus() != pkey.get_modulus():
-                raise Exception("The delegated proxy do not correspond the stored private key")
         except Exception, e:
             start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
             return ['Could not process the proxy: ' + str(e)]
