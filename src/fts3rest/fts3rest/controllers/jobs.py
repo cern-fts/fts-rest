@@ -412,10 +412,11 @@ class JobsController(BaseController):
             raise HTTPBadRequest('Can not specify reuse and multiple replicas at the same time')
 
         # Update the optimizer
-        for f in job.files:
+        unique_pairs = set(map(lambda f: (f.source_se, f.dest_se), job.files))
+        for (source_se, dest_se) in unique_pairs:
             optimizer_active = OptimizerActive()
-            optimizer_active.source_se = f.source_se
-            optimizer_active.dest_se = f.dest_se
+            optimizer_active.source_se = source_se
+            optimizer_active.dest_se = dest_se
             Session.merge(optimizer_active)
 
         # Update the database
