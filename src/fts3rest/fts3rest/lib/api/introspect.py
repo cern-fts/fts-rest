@@ -2,16 +2,15 @@
 import imp
 import itertools
 import os
-import types
 import fts3.model
 from fts3.model.base import Flag, TernaryFlag, Json
 from fts3rest.config import routing
-from fts3rest.lib.base import BaseController
 from sqlalchemy import types
 from sqlalchemy.orm import Mapper
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.properties import ColumnProperty, RelationProperty
-from submit_schema import SubmitSchema
+from types import FunctionType
+
 
 root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 controllers_path = os.path.join(root_path, 'controllers')
@@ -37,15 +36,15 @@ def get_column_type_description(sql_type):
     return {'type': 'string'}
 
 
-def get_relation_type_description(property, model_list):
+def get_relation_type_description(prop, model_list):
     """
     Injects into model_list the additional types that may be needed
     """
-    if isinstance(property.argument, Mapper):
+    if isinstance(prop.argument, Mapper):
         return None
-    ref_type = property.argument().__name__
+    ref_type = prop.argument().__name__
     model_list.append(ref_type)
-    if property.uselist:
+    if prop.uselist:
         return {
             'type': 'array',
             'items': {'$ref': ref_type}
@@ -54,7 +53,7 @@ def get_relation_type_description(property, model_list):
         return {'type': ref_type}
 
 
-def get_model_fields(model_name, model_list = []):
+def get_model_fields(model_name, model_list):
     """
     Get a description of the fields of the model 'model_name'
     Injects into model_list the additional types that may be needed
@@ -66,12 +65,12 @@ def get_model_fields(model_name, model_list = []):
     for field in model.__dict__.values():
         if isinstance(field, InstrumentedAttribute):
             name = field.key
-            property = field.property
-            if isinstance(property, ColumnProperty):
-                column = property.columns[0]
+            prop = field.property
+            if isinstance(prop, ColumnProperty):
+                column = prop.columns[0]
                 fields[name] = get_column_type_description(column.type)
-            elif isinstance(property, RelationProperty):
-                relation_description = get_relation_type_description(property, model_list)
+            elif isinstance(prop, RelationProperty):
+                relation_description = get_relation_type_description(prop, model_list)
                 if relation_description:
                     fields[name] = relation_description
     return fields
@@ -121,7 +120,6 @@ def get_controllers():
     """
     Return a list of controllers
     """
-    import fts3rest.controllers
     controllers = {}
     for f in os.listdir(controllers_path):
         if not f.endswith('__init__.py') and f.endswith('.py'):
@@ -166,7 +164,7 @@ def generate_resources(routes, controllers):
                 }
             else:
                 pass
-    
+
     return resources.values()
 
 
@@ -205,11 +203,11 @@ def get_function_parameters(function):
     using api.decorators.query_arg
     """
     parameters = []
-    for (name, description, type, required) in getattr(function, 'doc_query', []):
+    for (name, description, return_type, required) in getattr(function, 'doc_query', []):
         parameters.append({
             'name': name,
             'description': description,
-            'type': type,
+            'type': return_type,
             'paramType': 'query',
             'required': bool(required),
         })
@@ -223,11 +221,11 @@ def get_function_input(function):
     """
     parameters = []
     if hasattr(function, 'doc_input'):
-        (description, type, required) = function.doc_input
+        (description, return_type, required) = function.doc_input
         parameters.append({
             'name': 'body',
             'description': description,
-            'type': type,
+            'type': return_type,
             'paramType': 'body',
             'required': bool(required)
         })
@@ -255,12 +253,12 @@ def get_function_return(function):
     """
     return_type = getattr(function, 'doc_return_type', None)
     if not return_type:
-        return (None, None)
+        return None, None
     elif return_type != 'array':
-        return (return_type, None)
+        return return_type, None
     else:
         item_type = getattr(function, 'doc_return_item_type', 'string')
-        return ('array', item_type)
+        return 'array', item_type
 
 
 def get_operations_for_function(route, function):
@@ -284,19 +282,20 @@ def get_operations_for_function(route, function):
         summary = doc_lines[0]
         if len(doc_lines) > 1:
             notes = "<br/>".join(doc_lines[1:])
-    
+
     required_models = []
     operations = []
     for m in methods:
-        input = get_function_input(function)
+        input_parameters = get_function_input(function)
         operation = {
             'method': m,
             'nickname': function.__name__,
             'summary': summary,
             'notes': notes,
-            'parameters': route2parameters(route.routelist) +
-                          get_function_parameters(function) +
-                          input,
+            'parameters':
+                route2parameters(route.routelist) +
+                get_function_parameters(function) +
+                input_parameters,
             'responseMessages': get_function_responses(function)
         }
         return_type, return_item_type = get_function_return(function)
@@ -306,14 +305,14 @@ def get_operations_for_function(route, function):
         if return_item_type:
             operation['items'] = {'$ref': return_item_type}
             required_models.append(return_item_type)
-        if len(input) > 0:
-            input_type = input[0].get('type', None)
+        if len(input_parameters) > 0:
+            input_type = input_parameters[0].get('type', None)
             if input_type:
                 required_models.append(input_type)
-            
+
         operations.append(operation)
 
-    return (operations, get_model_definitions(required_models))
+    return operations, get_model_definitions(required_models)
 
 
 def actions_from_controller(controller):
@@ -323,11 +322,11 @@ def actions_from_controller(controller):
     """
     actions = []
     for (name, value) in controller.__dict__.iteritems():
-        if isinstance(value, types.FunctionType) and not name.startswith('_'):
+        if isinstance(value, FunctionType) and not name.startswith('_'):
             actions.append(name)
     return actions
 
-    
+
 def generate_apis_and_models(routes, controllers):
     """
     Generate the dictionary documenting the different APIS (methods)
@@ -339,16 +338,16 @@ def generate_apis_and_models(routes, controllers):
         cname = route.defaults.get('controller', None)
         if cname:
             controller = controllers[str(cname)]
-            
+
             resource_root = get_root_from_route(route)
             if resource_root not in all_apis:
                 all_apis[resource_root] = {}
                 all_models[resource_root] = {}
-            
+
             raw_path = route2path(route.routelist)
             params = route2parameters(route.routelist)
             param_names = map(lambda p: p['name'], params)
-            
+
             if 'action' in param_names:
                 actions = actions_from_controller(controller)
             else:
@@ -357,32 +356,32 @@ def generate_apis_and_models(routes, controllers):
                     actions = [action]
                 else:
                     actions = []
-            
+
             for action in actions:
                 path = raw_path.replace('{action}', action)
                 function = controller.__dict__.get(action, None)
                 if function is None:
                     break
-                
+
                 operations, models = get_operations_for_function(route, function)
 
                 api = {
-                   'path': path,
-                   'operations': operations
+                    'path': path,
+                    'operations': operations
                 }
-                
+
                 if path in all_apis[resource_root]:
                     all_apis[resource_root][path]['operations'].extend(api['operations'])
                 else:
                     all_apis[resource_root][path] = api
                 all_models[resource_root].update(models)
-    
+
                 methods = map(lambda o: o['method'], api['operations'])
 
     # Remove keys used for convenience
     for resource_root in all_apis:
         all_apis[resource_root] = all_apis[resource_root].values()
-    return (all_apis, all_models)
+    return all_apis, all_models
 
 
 def introspect():
@@ -394,6 +393,4 @@ def introspect():
     routes = get_routes(mapper)
     resources = generate_resources(routes, controllers)
     apis, models = generate_apis_and_models(routes, controllers)
-    return (resources, apis, models)
-
-    
+    return resources, apis, models

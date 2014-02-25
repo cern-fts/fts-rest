@@ -13,7 +13,7 @@ def _json_type_name(type):
         return name
 
 
-def query_arg(arg_name, description, type=str, required=False):
+def query_arg(name, description, type=str, required=False):
     """
     Decorates a function with a set of arguments accepted through query
     arguments.
@@ -27,7 +27,7 @@ def query_arg(arg_name, description, type=str, required=False):
     def query_arg_inner(function):
         if not hasattr(function, 'doc_query'):
             setattr(function, 'doc_query', [])
-        function.doc_query.append((arg_name, description, _json_type_name(type), required))
+        function.doc_query.append((name, description, _json_type_name(type), required))
         return function
     return query_arg_inner
 
@@ -36,12 +36,12 @@ def input(description, type=None, required=True):
     """
     Decorates a function with its accepted input parameter
     (i.e. the body of a PUT)
-    
+
     Args:
         description: A human readable description
         type: The type of the body
         required: A boolean spec
-    """ 
+    """
     def input_body_inner(function):
         function.doc_input = (description, _json_type_name(type), required)
         return function
@@ -65,7 +65,7 @@ def response(code, description):
     return response_inner
 
 
-def return_type(type = None, array_of = None):
+def return_type(type=None, array_of=None):
     """
     Decorates a function with its return type.
 

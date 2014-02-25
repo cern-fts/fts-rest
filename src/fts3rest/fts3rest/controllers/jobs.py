@@ -330,7 +330,7 @@ class JobsController(BaseController):
     def cancel(self, job_id, **kwargs):
         """
         Cancel the given job
-        
+
         Returns the canceled job with its current status. CANCELED if it was canceled,
         its final status otherwise
         """
@@ -370,7 +370,7 @@ class JobsController(BaseController):
     def submit(self, **kwargs):
         """
         Submits a new job
-        
+
         It returns the information about the new submitted job. To know the format for the
         submission, /api-docs/schema/submit gives the expected format encoded as a JSON-schema.
         It can be used to validate (i.e in Python, jsonschema.validate)

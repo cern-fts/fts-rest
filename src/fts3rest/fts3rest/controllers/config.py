@@ -16,6 +16,6 @@ class ConfigController(BaseController):
     @jsonify
     def audit(self, **kwargs):
         """
-        Returns the last 100 entries of the config audit tables 
+        Returns the last 100 entries of the config audit tables
         """
         return Session.query(ConfigAudit).limit(100).all()
