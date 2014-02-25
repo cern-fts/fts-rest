@@ -1,38 +1,37 @@
 from constants import *
-from decorator import decorator
-from pylons import request
 from pylons.controllers.util import abort
 import functools
+import pylons
 
 
 def authorized(op, resource_owner=None, resource_vo=None, env=None):
     """
     Check if the user has enough privileges for a given operation
-    
+
     Args:
         op:             The operation to perform
         resource_owner: Who owns the resource
         resource_vo:    VO of the owner of the resource
         env:            Environment (i.e. os.environ)
-    
+
     Returns:
         True if the logged user has enough rights to perform the
         operation 'op' over a resource whose owner is resource_owner:resource_vo
     """
     if env is None:
-        env = request.environ
+        env = pylons.request.environ
 
     if not 'fts3.User.Credentials' in env:
         return False
 
     user = env['fts3.User.Credentials']
-    grantedLevel = user.getGrantedLevelFor(op)
+    granted_level = user.get_granted_level_for(op)
 
-    if grantedLevel == ALL:
+    if granted_level == ALL:
         return True
-    elif grantedLevel == VO:
-        return resource_vo is None or user.hasVo(resource_vo)
-    elif grantedLevel == PRIVATE:
+    elif granted_level == VO:
+        return resource_vo is None or user.has_vo(resource_vo)
+    elif granted_level == PRIVATE:
         return resource_owner is None or resource_owner == user.user_dn
     else:
         return False
@@ -41,10 +40,10 @@ def authorized(op, resource_owner=None, resource_vo=None, env=None):
 def authorize(op, env=None):
     """
     Decorator to check if the user has enough privileges to perform a given operation
-    
+
     Args:
         op: The required operation level
-    
+
     Returns:
         A method that can be used to decorate the resource/method
     """
