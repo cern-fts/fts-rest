@@ -5,7 +5,6 @@ from pylons.decorators.util import get_pylons
 from webob.exc import HTTPException
 from webob import Response
 import json
-import os
 
 
 class ClassEncoder(json.JSONEncoder):
@@ -37,12 +36,12 @@ def jsonify(f, *args, **kwargs):
     """
     Decorates methods in the controllers, and converts the output to a JSON
     serialization
-    
+
     Args:
         f:      The method to be called
         args:   Parameters for f
         kwargs: Named parameters for f
-    
+
     Returns:
         A string with the JSON representation of the value returned by f()
     """
@@ -57,9 +56,12 @@ def jsonify(f, *args, **kwargs):
         start_response = kwargs.get('start_response', None)
         if not environ or not start_response:
             raise
-        
-        jsonError = {'status': e.status, 'message': e.detail}
-        resp = Response(json.dumps(jsonError),
-                        status=e.status,
+
+        json_error = {
+            'status': getattr(e, 'status', 500),
+            'message': getattr(e, 'detail', '')
+        }
+        resp = Response(json.dumps(json_error),
+                        status=getattr(e, 'status', 500),
                         content_type='application/json')
         return resp(environ, start_response)
