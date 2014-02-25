@@ -5,7 +5,6 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.helpers import voms
 from M2Crypto import X509, RSA, EVP, BIO
-from pylons.decorators import rest
 from pylons import request
 import json
 import types
@@ -71,8 +70,8 @@ def _validate_proxy(proxy_pem, private_key_pem):
     except X509.X509Error:
         raise ProxyException("Malformed proxy")
 
-    expiration_time = x509_proxy.get_not_after().get_datetime().replace(tzinfo = None)
-    private_key     = EVP.load_key_string(str(private_key_pem), callback = _mute_callback)
+    expiration_time = x509_proxy.get_not_after().get_datetime().replace(tzinfo=None)
+    private_key     = EVP.load_key_string(str(private_key_pem), callback=_mute_callback)
 
     if x509_proxy.verify(private_key):
         raise ProxyException("Invalid proxy")
@@ -123,13 +122,13 @@ class DelegationController(BaseController):
 
     @doc.return_type('dateTime')
     @jsonify
-    def view(self, id, start_response):
+    def view(self, dlg_id, start_response):
         """
         Get the termination time of the current delegated credential, if any
         """
         user = request.environ['fts3.User.Credentials']
 
-        if id != user.delegation_id:
+        if dlg_id != user.delegation_id:
             start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
             return 'The resquested ID and the credentials ID do not match'
 
@@ -143,13 +142,13 @@ class DelegationController(BaseController):
     @doc.response(403, 'The requested delegation ID does not belong to the user')
     @doc.response(404, 'The credentials do not exist')
     @doc.response(204, 'The credentials were deleted successfully')
-    def delete(self, id, start_response):
+    def delete(self, dlg_id, start_response):
         """
         Delete the delegated credentials from the database
         """
         user = request.environ['fts3.User.Credentials']
         
-        if id != user.delegation_id:
+        if dlg_id != user.delegation_id:
             start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
             return ['The resquested ID and the credentials ID do not match']
         
@@ -167,7 +166,7 @@ class DelegationController(BaseController):
     @doc.response(403, 'The requested delegation ID does not belong to the user')
     @doc.response(200, 'The request was generated succesfully')
     @doc.return_type('PEM encoded certificate request')
-    def request(self, id, start_response):
+    def request(self, dlg_id, start_response):
         """
         First step of the delegation process: get a certificate request
         
@@ -176,7 +175,7 @@ class DelegationController(BaseController):
         """
         user = request.environ['fts3.User.Credentials']
 
-        if id != user.delegation_id:
+        if dlg_id != user.delegation_id:
             start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
             return ['The resquested ID and the credentials ID do not match']
 
@@ -185,11 +184,10 @@ class DelegationController(BaseController):
 
         if credential_cache is None:
             (x509_request, private_key) = _generate_proxy_request()
-            credential_cache = CredentialCache(dlg_id = user.delegation_id,
-                                               dn = user.user_dn,
-                                               cert_request = x509_request.as_pem(),
-                                               priv_key     = private_key.as_pem(cipher = None),
-                                               voms_attrs   = ' '.join(user.voms_cred))
+            credential_cache = CredentialCache(dlg_id=user.delegation_id, dn=user.user_dn,
+                                               cert_request=x509_request.as_pem(),
+                                               priv_key=private_key.as_pem(cipher=None),
+                                               voms_attrs=' '.join(user.voms_cred))
             Session.add(credential_cache)
             Session.commit()
 
@@ -201,7 +199,7 @@ class DelegationController(BaseController):
     @doc.response(403, 'The requested delegation ID does not belong to the user')
     @doc.response(400, 'The proxy failed the validation process')
     @doc.response(201, 'The proxy was stored successfully')
-    def credential(self, id, start_response):
+    def credential(self, dlg_id, start_response):
         """
         Second step of the delegation process: put the generated certificate
         
@@ -212,7 +210,7 @@ class DelegationController(BaseController):
         """
         user = request.environ['fts3.User.Credentials']
 
-        if id != user.delegation_id:
+        if dlg_id != user.delegation_id:
             start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
             return ['The resquested ID and the credentials ID do not match']
 
@@ -248,7 +246,7 @@ class DelegationController(BaseController):
     @doc.response(400, 'Could not understand the request')
     @doc.response(424, 'The obtention of the VOMS extensions failed')
     @doc.response(203, 'The obtention of the VOMS extensions succeeded')
-    def voms(self, id, start_response):
+    def voms(self, dlg_id, start_response):
         """
         Generate VOMS extensions for the delegated proxy
         
@@ -257,13 +255,13 @@ class DelegationController(BaseController):
         """
         user = request.environ['fts3.User.Credentials']
         
-        if id != user.delegation_id:
+        if dlg_id != user.delegation_id:
             start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
             return ['The resquested ID and the credentials ID do not match']
 
         try:
             voms_list = json.loads(request.body)
-            if type(voms_list) != types.ListType:
+            if not isinstance(voms_list, types.ListType):
                 raise Exception('Expecting a list of strings')
         except Exception, e:
             start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
@@ -283,7 +281,7 @@ class DelegationController(BaseController):
             # Error generating the proxy because of the request itself
             start_response('424 METHOD FAILURE', [('Content-Type', 'text/plain')])
             return [str(e)] 
-        except Exception, e:
+        except Exception:
             # Internal error, re-raise it and let it fail
             raise
         

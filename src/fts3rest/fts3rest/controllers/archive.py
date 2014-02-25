@@ -12,15 +12,15 @@ class ArchiveController(BaseController):
     Operations on archived jobs and transfers
     """
 
-    def _get_job(self, id):
-        job = Session.query(ArchivedJob).get(id)
+    def _get_job(self, job_id):
+        job = Session.query(ArchivedJob).get(job_id)
         if job is None:
             abort(404,
-                  'No job with the id "%s" has been found in the archive' % id)
+                  'No job with the id "%s" has been found in the archive' % job_id)
         if not authorized(TRANSFER,
                           resource_owner=job.user_dn, resource_vo=job.vo_name):
             abort(403,
-                  'Not enough permissions to check the job "%s"' % id)
+                  'Not enough permissions to check the job "%s"' % job_id)
         return job
 
     @jsonify
@@ -45,22 +45,22 @@ class ArchiveController(BaseController):
     @doc.response(404, 'The job doesn\'t exist')
     @doc.return_type(ArchivedJob)
     @jsonify
-    def get(self, id, **kwargs):
+    def get(self, job_id, **kwargs):
         """
         Get the job with the given ID
         """
-        job = self._get_job(id)
+        job = self._get_job(job_id)
         # Trigger the query, so it is serialized
         files = job.files
         return job
 
     @doc.response(404, 'The job or the field doesn\'t exist')
     @jsonify
-    def get_field(self, id, field, **kwargs):
+    def get_field(self, job_id, field, **kwargs):
         """
         Get a specific field from the job identified by id
         """
-        job = self._get_job(id)
+        job = self._get_job(job_id)
         if hasattr(job, field):
             return getattr(job, field)
         else:

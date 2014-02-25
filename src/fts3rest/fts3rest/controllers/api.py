@@ -1,8 +1,7 @@
 from fts3rest.lib.api import doc
-from fts3rest.lib.base import BaseController, Session
+from fts3rest.lib.base import BaseController
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib import api
-from pylons import request
 from pylons.controllers.util import abort
 
 
@@ -13,9 +12,9 @@ class ApiController(BaseController):
     
     def __init__(self):
         self.resources, self.apis, self.models = api.introspect()
-        self.resources.sort(key = lambda r: r['path'])
+        self.resources.sort(key=lambda res: res['path'])
         for r in self.apis.values():
-            r.sort(key = lambda a: a['path'])
+            r.sort(key=lambda a: a['path'])
      
     @jsonify
     def submit_schema(self):
@@ -56,11 +55,11 @@ class ApiController(BaseController):
         if resource_path not in self.apis:
             abort(404, 'API not found: ' + resource) 
         return {
-           'basePath': '/',
-           'swaggerVersion': '1.2',
-           'produces': ['application/json'],
-           'resourcePath': '/' + resource,
-           'authorizations': {},
-           'apis': self.apis.get(resource_path, []),
-           'models': self.models.get(resource_path, []),
+            'basePath': '/',
+            'swaggerVersion': '1.2',
+            'produces': ['application/json'],
+            'resourcePath': '/' + resource,
+            'authorizations': {},
+            'apis': self.apis.get(resource_path, []),
+            'models': self.models.get(resource_path, []),
         }

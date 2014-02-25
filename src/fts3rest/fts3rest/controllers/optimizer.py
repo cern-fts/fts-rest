@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
@@ -13,7 +12,7 @@ class OptimizerController(BaseController):
 
     @doc.return_type(bool)
     @jsonify
-    def isEnabled(self):
+    def is_enabled(self):
         """
         Indicates if the optimizer is enabled in the server
         """

@@ -13,12 +13,42 @@ import tempfile
 import urlparse
 
 
+def _get_valid_surl():
+    surl = request.params.get('surl')
+    if not surl:
+        abort(400, 'Missing surl parameter')
+
+    parsed = urlparse.urlparse(surl)
+    if parsed.scheme in ['file']:
+        abort(400, 'Forbiden SURL scheme')
+
+    return str(surl)
+
+
+def _http_status_from_gerror(e):
+    if e.code in (errno.EPERM, errno.EACCES):
+        return 403
+    elif e.code == errno.ENOENT:
+        return 404
+    elif e.code in (errno.EAGAIN, errno.EBUSY):
+        return 503
+    elif e.code in (errno.ENOTDIR, errno.EPROTONOSUPPORT):
+        return 400
+    else:
+        return 500
+
+
+def _raise_http_error_from_gerror(e):
+    abort(_http_status_from_gerror(e), "[%d] %s" % (e.code, e.message))
+
+
 class DatamanagementController(BaseController):
     """
     Data management operations
     """
     
-    def _getProxy(self):
+    @staticmethod
+    def _get_proxy():
         user = request.environ['fts3.User.Credentials']
         cred = Session.query(Credential).get((user.delegation_id, user.user_dn))
         if not cred:
@@ -27,69 +57,46 @@ class DatamanagementController(BaseController):
         if cred.termination_time <= datetime.utcnow():
             abort(401, 'Delegated proxy expired')
 
-        tmpFile = tempfile.NamedTemporaryFile(mode='w', suffix='.pem', prefix='rest-proxy-')
-        tmpFile.write(cred.proxy)
-        tmpFile.flush()
-        os.fsync(tmpFile.fileno())
-        return tmpFile
+        tmp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.pem', prefix='rest-proxy-')
+        tmp_file.write(cred.proxy)
+        tmp_file.flush()
+        os.fsync(tmp_file.fileno())
+        return tmp_file
     
-    def _setX509(self, proxyFile):
-        os.environ['X509_USER_CERT'] = proxyFile.name
-        os.environ['X509_USER_KEY'] = proxyFile.name
-        os.environ['X509_USER_PROXY'] = proxyFile.name
+    @staticmethod
+    def _set_x509_env(proxy_file):
+        os.environ['X509_USER_CERT'] = proxy_file.name
+        os.environ['X509_USER_KEY'] = proxy_file.name
+        os.environ['X509_USER_PROXY'] = proxy_file.name
         
-    def _clearX509(self, proxyFile):
+    @staticmethod
+    def _clear_x509_env():
         del os.environ['X509_USER_CERT']
         del os.environ['X509_USER_KEY']
         del os.environ['X509_USER_PROXY']
-        
-    def _getValidSurl(self):
-        surl = request.params.get('surl')
-        if not surl:
-            abort(400, 'Missing surl parameter')
-            
-        parsed = urlparse.urlparse(surl)
-        if parsed.scheme in ['file']:
-            abort(400, 'Forbiden SURL scheme')
-            
-        return str(surl)
-    
-    def _httpCodeFromGError(self, e):
-        if e.code in (errno.EPERM, errno.EACCES):
-            return 403
-        elif e.code == errno.ENOENT:
-            return 404
-        elif e.code in (errno.EAGAIN, errno.EBUSY):
-            return 503
-        elif e.code in (errno.ENOTDIR, errno.EPROTONOSUPPORT):
-            return 400
-        else:
-            return 500
-        
-    def _httpErrorFromGerror(self, e):
-        abort(self._httpCodeFromGError(e), "[%d] %s" % (e.code, e.message))
 
-    def _dirListing(self, surl):
+    @staticmethod
+    def _dir_listing(surl):
         ctx = gfal2.creat_context()
         try:
-            dir = ctx.opendir(surl)
+            path = ctx.opendir(surl)
             listing = {}
-            (entry, st_stat) = dir.readpp()
+            (entry, st_stat) = path.readpp()
             while entry:
                 d_name = entry.d_name
                 if stat.S_ISDIR(st_stat.st_mode):
                     d_name += '/'
 
                 listing[d_name] = {
-                   'size': st_stat.st_size,
-                   'mode': st_stat.st_mode,
-                   'mtime': st_stat.st_mtime
+                    'size': st_stat.st_size,
+                    'mode': st_stat.st_mode,
+                    'mtime': st_stat.st_mtime
                 }
 
-                (entry, st_stat) = dir.readpp()
+                (entry, st_stat) = path.readpp()
             return listing
         except gfal2.GError, e:
-            self._httpErrorFromGerror(e)
+            _raise_http_error_from_gerror(e)
     
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
@@ -102,13 +109,13 @@ class DatamanagementController(BaseController):
         """
         List the content of a remote directory
         """
-        proxy = self._getProxy()
-        surl = self._getValidSurl()
+        proxy = self._get_proxy()
+        surl = _get_valid_surl()
         try:
-            self._setX509(proxy)
-            return self._dirListing(surl)
+            self._set_x509_env(proxy)
+            return self._dir_listing(surl)
         finally:
-            self._clearX509(proxy)
+            self._clear_x509_env()
 
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
@@ -121,21 +128,21 @@ class DatamanagementController(BaseController):
         """
         Stat a remote file
         """
-        proxy = self._getProxy()
-        surl = self._getValidSurl()
+        proxy = self._get_proxy()
+        surl = _get_valid_surl()
         try:
-            self._setX509(proxy)
+            self._set_x509_env(proxy)
             ctx = gfal2.creat_context()
             stat_st = ctx.stat(surl)
             return {
-                'mode':  stat_st.st_mode,
+                'mode' : stat_st.st_mode,
                 'nlink': stat_st.st_nlink,
-                'size':  stat_st.st_size,
+                'size' : stat_st.st_size,
                 'atime': stat_st.st_atime,
                 'mtime': stat_st.st_mtime,
                 'ctime': stat_st.st_ctime
             }
         except gfal2.GError, e:
-            self._httpErrorFromGerror(e)
+            _raise_http_error_from_gerror(e)
         finally:
-            self._clearX509(proxy)
+            self._clear_x509_env()

@@ -20,21 +20,21 @@ def make_map(config):
     map.connect('/error/{action}/{id}', controller='error')
 
     # Root
-    map.connect('/', controller='misc', action='apiVersion')
+    map.connect('/', controller='misc', action='api_version')
 
     # Whoami
     map.connect('/whoami', controller='misc', action='whoami')
 
     # Delegation
-    map.connect('/delegation/{id}', controller='delegation', action='view',
+    map.connect('/delegation/{dlg_id}', controller='delegation', action='view',
                 conditions=dict(method=['GET']))
-    map.connect('/delegation/{id}', controller='delegation', action='delete',
+    map.connect('/delegation/{dlg_id}', controller='delegation', action='delete',
                 conditions=dict(method=['DELETE']))
-    map.connect('/delegation/{id}/request', controller='delegation', action='request',
+    map.connect('/delegation/{dlg_id}/request', controller='delegation', action='request',
                 conditions=dict(method=['GET']))
-    map.connect('/delegation/{id}/credential', controller='delegation', action='credential',
+    map.connect('/delegation/{dlg_id}/credential', controller='delegation', action='credential',
                 conditions=dict(method=['PUT', 'POST']))
-    map.connect('/delegation/{id}/voms', controller='delegation', action='voms',
+    map.connect('/delegation/{dlg_id}/voms', controller='delegation', action='voms',
                 conditions=dict(method=['POST']))
 
     # Jobs
@@ -42,11 +42,11 @@ def make_map(config):
                 conditions=dict(method=['GET']))
     map.connect('/jobs/', controller='jobs', action='index',
                 conditions=dict(method=['GET']))
-    map.connect('/jobs/{id}', controller='jobs', action='get',
+    map.connect('/jobs/{job_id}', controller='jobs', action='get',
                 conditions=dict(method=['GET']))
-    map.connect('/jobs/{id}/{field}', controller='jobs', action='get_field',
+    map.connect('/jobs/{job_id}/{field}', controller='jobs', action='get_field',
                 conditions=dict(method=['GET']))
-    map.connect('/jobs/{id}', controller='jobs', action='cancel',
+    map.connect('/jobs/{job_id}', controller='jobs', action='cancel',
                 conditions=dict(method=['DELETE']))
     map.connect('/jobs', controller='jobs', action='submit',
                 conditions=dict(method=['PUT', 'POST']))
@@ -56,9 +56,9 @@ def make_map(config):
                 conditions=dict(method=['GET']))
     map.connect('/archive/', controller='archive', action='index',
                 conditions=dict(method=['GET']))
-    map.connect('/archive/{id}', controller='archive', action='get',
+    map.connect('/archive/{job_id}', controller='archive', action='get',
                 conditions=dict(method=['GET']))
-    map.connect('/archive/{id}/{field}', controller='archive',
+    map.connect('/archive/{job_id}/{field}', controller='archive',
                 action='get_field',
                 conditions=dict(method=['GET']))
 
@@ -71,7 +71,7 @@ def make_map(config):
     map.connect('/config/audit', controller='config', action='audit')
 
     # Optimizer
-    map.connect('/optimizer', controller='optimizer', action='isEnabled')
+    map.connect('/optimizer', controller='optimizer', action='is_enabled')
     map.connect('/optimizer/evolution', controller='optimizer',
                 action='evolution')
     
