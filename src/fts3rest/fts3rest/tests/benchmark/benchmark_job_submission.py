@@ -25,7 +25,9 @@ def benchmark_submission(job_number, files_number):
         job_controller.submit()
     end = datetime.utcnow()
     duration = end - start
-    return duration, float(job_number) / duration.seconds, float(files_number / duration.seconds)
+    duration_seconds = duration.seconds + (duration.microseconds / 1000000.0)
+
+    return duration, float(job_number) / duration_seconds, float(files_number) / duration_seconds
 
 
 if __name__ == "__main__":
