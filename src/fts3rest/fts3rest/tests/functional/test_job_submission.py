@@ -56,8 +56,8 @@ class TestJobSubmission(TestController):
         """
         Submit a valid job
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -87,8 +87,8 @@ class TestJobSubmission(TestController):
         """
         Submit a valid reuse job
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -119,8 +119,8 @@ class TestJobSubmission(TestController):
         """
         Submit a valid job using POST instead of PUT
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -152,8 +152,8 @@ class TestJobSubmission(TestController):
         Submit a valid job where the port is explicit in the url.
         source_se and dest_se must exclude this port
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -191,8 +191,8 @@ class TestJobSubmission(TestController):
         Submit a valid job, without a path, but with a query in the url.
         This is valid for some protocols (i.e. srm)
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -230,8 +230,8 @@ class TestJobSubmission(TestController):
         """
         Valid job, with checksum explicitly set to null
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -264,8 +264,8 @@ class TestJobSubmission(TestController):
         Valid job, with checksum, but verify_checksum is not set
         In the DB, it must end as 'r' (compatibility with FTS3 behaviour)
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -298,8 +298,8 @@ class TestJobSubmission(TestController):
         """
         Valid job, with filesize explicitly set to null
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -331,8 +331,8 @@ class TestJobSubmission(TestController):
         Submit a valid job with no VO data in the credentials (could happen with plain SSL!)
         The job must be accepted, but assigned to the 'nil' vo.
         """
-        self.setupGridsiteEnvironment(noVo=True)
-        self.pushDelegation()
+        self.setup_gridsite_environment(no_vo=True)
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -360,8 +360,8 @@ class TestJobSubmission(TestController):
         """
         Submit with a specific retry value
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -408,8 +408,8 @@ class TestJobSubmission(TestController):
         """
         Submit a job specifiying activities for the files
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {'files': [
             {
@@ -440,8 +440,8 @@ class TestJobSubmission(TestController):
         """
         Submit a job where the surl has spaces at the beginning and at the end
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -472,8 +472,8 @@ class TestJobSubmission(TestController):
         hashed_id is a legacy name, its purpose is balance the transfers between hosts
         regardless of the number running in a giving moment
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         files = []
         for r in xrange(1000):

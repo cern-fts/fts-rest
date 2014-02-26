@@ -32,7 +32,7 @@ class TestArchive(TestController):
         """
         Query an archived job must succeed
         """
-        self.setupGridsiteEnvironment()
+        self.setup_gridsite_environment()
 
         job_id = self._insert_job()
         answer = self.app.get(url="/archive/%s" % job_id, status=200)
@@ -52,7 +52,7 @@ class TestArchive(TestController):
         """
         Query a specific field from an archived job
         """
-        self.setupGridsiteEnvironment()
+        self.setup_gridsite_environment()
 
         job_id = self._insert_job()
         answer = self.app.get(url="/archive/%s/job_state" % job_id, status=200)

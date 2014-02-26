@@ -26,12 +26,12 @@ class TestDelegation(TestController):
         credentials without the previous negotiation, so there is no
         CredentialCache in the database. This attempt must fail.
         """
-        self.setupGridsiteEnvironment()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
 
         request = self.app.get(url="/delegation/%s/request" % creds.delegation_id,
                                status=200)
-        proxy = self.getX509Proxy(request.body)
+        proxy = self.get_x509_proxy(request.body)
 
         Session.delete(Session.query(CredentialCache).get((creds.delegation_id, creds.user_dn)))
 
@@ -43,8 +43,8 @@ class TestDelegation(TestController):
         """
         Putting a malformed proxy must fail
         """
-        self.setupGridsiteEnvironment()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
 
         self.app.get(url="/delegation/%s/request" % creds.delegation_id,
                      status=200)
@@ -57,12 +57,12 @@ class TestDelegation(TestController):
         """
         Putting a well-formed proxy with all the right steps must succeed
         """
-        self.setupGridsiteEnvironment()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
 
         request = self.app.get(url="/delegation/%s/request" % creds.delegation_id,
                                status=200)
-        proxy = self.getX509Proxy(request.body)
+        proxy = self.get_x509_proxy(request.body)
 
         self.app.put(url="/delegation/%s/credential" % creds.delegation_id,
                      params=proxy,
@@ -76,13 +76,13 @@ class TestDelegation(TestController):
         """
         A well-formed proxy with mismatching issuer and subject must fail
         """
-        self.setupGridsiteEnvironment()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
 
         request = self.app.get(url="/delegation/%s/request" % creds.delegation_id,
                                status=200)
 
-        proxy = self.getX509Proxy(request.body, subject=[('DC', 'dummy')])
+        proxy = self.get_x509_proxy(request.body, subject=[('DC', 'dummy')])
 
         self.app.put(url="/delegation/%s/credential" % creds.delegation_id,
                      params=proxy,
@@ -93,13 +93,13 @@ class TestDelegation(TestController):
         Regression for FTS-30
         If a proxy is signed with an invalid private key, reject it
         """
-        self.setupGridsiteEnvironment()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
 
         request = self.app.get(url="/delegation/%s/request" % creds.delegation_id,
                                status=200)
 
-        proxy = self.getX509Proxy(request.body, private_key=EVP.PKey())
+        proxy = self.get_x509_proxy(request.body, private_key=EVP.PKey())
 
         self.app.put(url="/delegation/%s/credential" % creds.delegation_id,
                      params=proxy,
@@ -109,14 +109,14 @@ class TestDelegation(TestController):
         """
         Get a request, sign a different request and send it
         """
-        self.setupGridsiteEnvironment()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
 
         self.app.get(url="/delegation/%s/request" % creds.delegation_id,
                      status=200)
 
         (different_request, _) = _generate_proxy_request()
-        proxy = self.getX509Proxy(different_request.as_pem(), private_key=EVP.PKey())
+        proxy = self.get_x509_proxy(different_request.as_pem(), private_key=EVP.PKey())
 
         self.app.put(url="/delegation/%s/credential" % creds.delegation_id,
                      params=proxy,
@@ -127,7 +127,7 @@ class TestDelegation(TestController):
         A user should be able only to get his/her own proxy request,
         and be denied any other.
         """
-        self.setupGridsiteEnvironment()
+        self.setup_gridsite_environment()
 
         self.app.get(url="/delegation/12345xx/request",
                      status=403)
@@ -136,7 +136,7 @@ class TestDelegation(TestController):
         """
         A user should be able only to get his/her own delegation information.
         """
-        self.setupGridsiteEnvironment()
+        self.setup_gridsite_environment()
 
         self.app.get(url="/delegation/12345x",
                      status=403)
@@ -145,8 +145,8 @@ class TestDelegation(TestController):
         """
         A user should be able to remove his/her proxy
         """
-        self.setupGridsiteEnvironment()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
 
         self.test_valid_proxy()
 
@@ -164,11 +164,11 @@ class TestDelegation(TestController):
         The server must regenerate a proxy with VOMS extensions
         Need a real proxy for this one
         """
-        self.setupGridsiteEnvironment()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
 
         # Need to push a real proxy :/
-        proxy_pem = self.getRealX509Proxy()
+        proxy_pem = self.get_real_x509_proxy()
         if proxy_pem is None:
             raise SkipTest('Could not get a valid real proxy for test_set_voms')
 

@@ -14,8 +14,8 @@ class TestJobCancel(TestController):
         """
         Submit a valid job
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{

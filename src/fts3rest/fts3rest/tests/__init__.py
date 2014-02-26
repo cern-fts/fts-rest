@@ -31,6 +31,7 @@ SetupCommand('setup-app').run([pylons.test.pylonsapp.config['__file__']])
 
 environ = {}
 
+
 def _generate_mock_cert():
     rsa_key = RSA.gen_key(512, 65537)
     pkey = EVP.PKey()
@@ -41,7 +42,7 @@ def _generate_mock_cert():
     not_before = ASN1.ASN1_UTCTIME()
     not_before.set_datetime(datetime.now(pytz.UTC))
     not_after = ASN1.ASN1_UTCTIME()
-    not_after.set_datetime(datetime.now(pytz.UTC) + timedelta(hours = 24))
+    not_after.set_datetime(datetime.now(pytz.UTC) + timedelta(hours=24))
     cert.set_not_before(not_before)
     cert.set_not_after(not_after)
     cert.sign(pkey, 'md5')
@@ -63,7 +64,7 @@ class TestController(TestCase):
 
         self.pkey, self.cert = _generate_mock_cert()
 
-    def setupGridsiteEnvironment(self, noVo=False):
+    def setup_gridsite_environment(self, no_vo=False):
         """
         Add to the test environment mock values of the variables
         set by mod_gridsite.
@@ -73,27 +74,27 @@ class TestController(TestCase):
         """
         env = {'GRST_CRED_AURI_0': 'dn:/DC=ch/DC=cern/OU=Test User'}
 
-        if not noVo:
+        if not no_vo:
             env.update({
-               'GRST_CRED_AURI_1': 'fqan:/testvo/Role=NULL/Capability=NULL',
-               'GRST_CRED_AURI_2': 'fqan:/testvo/Role=myrole/Capability=NULL'
-              })
+                'GRST_CRED_AURI_1': 'fqan:/testvo/Role=NULL/Capability=NULL',
+                'GRST_CRED_AURI_2': 'fqan:/testvo/Role=myrole/Capability=NULL'
+            })
         self.app.extra_environ.update(env)
 
-    def getUserCredentials(self):
+    def get_user_credentials(self):
         """
         Get the user credentials from the environment
         """
         return fts3auth.UserCredentials(self.app.extra_environ, {'public': {'*': 'all'}})
 
-    def pushDelegation(self, lifetime=timedelta(hours=7)):
+    def push_delegation(self, lifetime=timedelta(hours=7)):
         """
         Push into the database a mock delegated credential
 
         Args:
             lifetime: The mock credential lifetime
         """
-        creds = self.getUserCredentials()
+        creds = self.get_user_credentials()
         delegated = Credential()
         delegated.dlg_id     = creds.delegation_id
         delegated.dn         = creds.user_dn
@@ -104,21 +105,18 @@ class TestController(TestCase):
         Session.merge(delegated)
         Session.commit()
 
-    def popDelegation(self):
+    def pop_delegation(self):
         """
         Remove the mock proxy from the database
         """
-        cred = self.getUserCredentials()
+        cred = self.get_user_credentials()
         if cred and cred.delegation_id:
             delegated = Session.query(Credential).get((cred.delegation_id, cred.user_dn))
             if delegated:
                 Session.delete(delegated)
                 Session.commit()
 
-    def getX509Proxy(self, requestPEM,
-                     issuer = [('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User')],
-                     subject = None,
-                     private_key = None):
+    def get_x509_proxy(self, request_pem, issuer=None, subject=None, private_key=None):
         """
         Generate a X509 proxy based on the request
 
@@ -130,34 +128,36 @@ class TestController(TestCase):
         Returns:
             A X509 proxy PEM encoded
         """
+        if issuer is None:
+            issuer = [('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User')]
         if subject is None:
             subject = issuer + [('CN', 'proxy')]
 
-        x509Request = X509.load_request_string(str(requestPEM))
+        x509_request = X509.load_request_string(str(request_pem))
 
-        notBefore = ASN1.ASN1_UTCTIME()
-        notBefore.set_datetime(datetime.now(pytz.UTC))
-        notAfter = ASN1.ASN1_UTCTIME()
-        notAfter.set_datetime(datetime.now(pytz.UTC) + timedelta(hours = 3))
+        not_before = ASN1.ASN1_UTCTIME()
+        not_before.set_datetime(datetime.now(pytz.UTC))
+        not_after = ASN1.ASN1_UTCTIME()
+        not_after.set_datetime(datetime.now(pytz.UTC) + timedelta(hours=3))
 
-        issuerSubject = X509.X509_Name()
+        issuer_subject = X509.X509_Name()
         for c in issuer:
-            issuerSubject.add_entry_by_txt(c[0], 0x1000, c[1], -1, -1, 0)
+            issuer_subject.add_entry_by_txt(c[0], 0x1000, c[1], -1, -1, 0)
 
-        proxySubject = X509.X509_Name()
+        proxy_subject = X509.X509_Name()
         for c in subject:
-            proxySubject.add_entry_by_txt(c[0], 0x1000, c[1], -1, -1, 0)
+            proxy_subject.add_entry_by_txt(c[0], 0x1000, c[1], -1, -1, 0)
 
         proxy = X509.X509()
         proxy.set_version(2)
-        proxy.set_subject(proxySubject)
-        proxy.set_serial_number(long(time.time()))
-        proxy.set_version(x509Request.get_version())
-        proxy.set_issuer(issuerSubject)
-        proxy.set_pubkey(x509Request.get_pubkey())
+        proxy.set_subject(proxy_subject)
+        proxy.set_serial_number(int(time.time()))
+        proxy.set_version(x509_request.get_version())
+        proxy.set_issuer(issuer_subject)
+        proxy.set_pubkey(x509_request.get_pubkey())
 
-        proxy.set_not_after(notAfter)
-        proxy.set_not_before(notBefore)
+        proxy.set_not_after(not_after)
+        proxy.set_not_before(not_before)
 
         if not private_key:
             proxy.sign(self.pkey, 'sha1')
@@ -166,7 +166,7 @@ class TestController(TestCase):
 
         return proxy.as_pem() + self.cert.as_pem()
 
-    def getRealX509Proxy(self):
+    def get_real_x509_proxy(self):
         """
         Get a real X509 proxy
 
@@ -183,4 +183,4 @@ class TestController(TestCase):
         """
         Called by the test framework at the end of each test
         """
-        self.popDelegation()
+        self.pop_delegation()

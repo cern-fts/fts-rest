@@ -15,7 +15,7 @@ class TestJobInvalidSubmits(TestController):
         Submit a piece of data that is not well-formed json
         """
         self.assertFalse('GRST_CRED_AURI_0' in self.app.extra_environ)
-        self.setupGridsiteEnvironment()
+        self.setup_gridsite_environment()
         self.assertTrue('GRST_CRED_AURI_0' in self.app.extra_environ)
         self.app.put(url="/jobs",
                      params='thisXisXnotXjson',
@@ -25,8 +25,8 @@ class TestJobInvalidSubmits(TestController):
         """
         Submit valid json data, but without actual transfers
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
         job = {'parameters': {}}
 
         self.app.put(url="/jobs",
@@ -37,8 +37,8 @@ class TestJobInvalidSubmits(TestController):
         """
         Source and destination protocol mismatch
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -61,7 +61,7 @@ class TestJobInvalidSubmits(TestController):
         """
         Request an invalid job
         """
-        self.setupGridsiteEnvironment()
+        self.setup_gridsite_environment()
         self.app.get(url="/jobs/1234x",
                      status=404)
 
@@ -69,8 +69,8 @@ class TestJobInvalidSubmits(TestController):
         """
         Submit a valid transfer, but with urls with no protocol
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -88,8 +88,8 @@ class TestJobInvalidSubmits(TestController):
         """
         Submit a valid transfer, but using file://
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -107,8 +107,8 @@ class TestJobInvalidSubmits(TestController):
         """
         Well-formed json, but source url is malformed
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -131,8 +131,8 @@ class TestJobInvalidSubmits(TestController):
         """
         Well-formed json, but source path is missing
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -155,8 +155,8 @@ class TestJobInvalidSubmits(TestController):
         """
         Well-formed json, but source url is missing
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
         job = {'transfers': [{'destinations': ['root://dest.ch/file']}]}
 
         self.app.put(url="/jobs",
@@ -173,8 +173,8 @@ class TestJobInvalidSubmits(TestController):
         """
         Well-formed json, but the urls are malformed
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
         job = {
             'files': [{
                 'sources': ['http: //source.es/file'],  # Note the space!
@@ -204,7 +204,7 @@ class TestJobInvalidSubmits(TestController):
         Submission with valid credentials, but without a delegated proxy,
         must request a delegation
         """
-        self.setupGridsiteEnvironment()
+        self.setup_gridsite_environment()
 
         job = {
             'files': [{
@@ -221,8 +221,8 @@ class TestJobInvalidSubmits(TestController):
         """
         Submission with an expired proxy must request a delegation
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation(lifetime=timedelta(hours=-1))
+        self.setup_gridsite_environment()
+        self.push_delegation(lifetime=timedelta(hours=-1))
 
         job = {
             'files': [{

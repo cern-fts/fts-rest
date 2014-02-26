@@ -15,8 +15,8 @@ class TestSubmitToStaging(TestController):
         """
         Submit a job into staging
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -54,8 +54,8 @@ class TestSubmitToStaging(TestController):
         """
         Submit a job into staging, with pin lifetime not set
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -92,8 +92,8 @@ class TestSubmitToStaging(TestController):
         """
         Submit a job into staging, with bring_online not set
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{

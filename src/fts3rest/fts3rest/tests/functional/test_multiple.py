@@ -15,8 +15,8 @@ class TestMultiple(TestController):
         Submit one transfer with multiple sources and multiple destinations.
         It must be treated as a transfer with alternatives
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [
@@ -57,8 +57,8 @@ class TestMultiple(TestController):
         """
         Submit one job with multiple independent transfers
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [
@@ -114,8 +114,8 @@ class TestMultiple(TestController):
         Submit a job with two related transfers (alternatives) and
         a third independent one
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [
@@ -176,8 +176,8 @@ class TestMultiple(TestController):
         One job with alternatives, and reuse set.
         This combination must be denied!
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [{
@@ -200,8 +200,8 @@ class TestMultiple(TestController):
         """
         Submit a reuse job
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job = {
             'files': [

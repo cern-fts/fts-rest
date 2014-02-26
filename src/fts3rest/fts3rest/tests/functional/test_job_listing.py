@@ -34,8 +34,8 @@ class TestJobListing(TestController):
         """
         Get information about a job
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job_id = self._submit()
         answer = self.app.get(url="/jobs/%s" % job_id, status=200)
@@ -48,8 +48,8 @@ class TestJobListing(TestController):
         """
         List active jobs
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         job_id = self._submit()
 
@@ -62,9 +62,9 @@ class TestJobListing(TestController):
         """
         List active jobs with the right delegation id
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        creds = self.get_user_credentials()
 
         job_id = self._submit()
 
@@ -79,9 +79,9 @@ class TestJobListing(TestController):
         Trying to list jobs belonging to a different delegation id
         must be forbidden
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        creds = self.get_user_credentials()
 
         self.app.get(url="/jobs",
                      params={'dlg_id': creds.delegation_id + '1234'},
@@ -92,9 +92,9 @@ class TestJobListing(TestController):
         Trying to list with the right delegation id mismatched bad DN is a bad
         request
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        creds = self.get_user_credentials()
 
         self.app.get(url="/jobs",
                      params={'dlg_id': creds.delegation_id, 'user_dn': '/CN=1234'},
@@ -104,9 +104,9 @@ class TestJobListing(TestController):
         """
         Filter by state (no match)
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        creds = self.get_user_credentials()
 
         job_id = self._submit()
 
@@ -120,9 +120,9 @@ class TestJobListing(TestController):
         """
         Filter by state (match)
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
-        creds = self.getUserCredentials()
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        creds = self.get_user_credentials()
 
         job_id = self._submit()
 
@@ -136,8 +136,8 @@ class TestJobListing(TestController):
         """
         When specifying the statuses in the query, dlg_id is mandatory
         """
-        self.setupGridsiteEnvironment()
-        self.pushDelegation()
+        self.setup_gridsite_environment()
+        self.push_delegation()
 
         self.app.get(url="/jobs",
                      params={'state_in': 'SUBMITTED,ACTIVE'},
@@ -148,8 +148,8 @@ class TestJobListing(TestController):
         Submit a valid job with no VO data in the credentials. Listing it should be possible
         afterwards (regression test for FTS-18)
         """
-        self.setupGridsiteEnvironment(noVo=True)
-        self.pushDelegation()
+        self.setup_gridsite_environment(no_vo=True)
+        self.push_delegation()
 
         job_id = self._submit()
 
@@ -164,8 +164,8 @@ class TestJobListing(TestController):
         Submit a valid job with no VO data in the credentials. Stating it should be possible
         afterwards (regression test for FTS-18)
         """
-        self.setupGridsiteEnvironment(noVo=True)
-        self.pushDelegation()
+        self.setup_gridsite_environment(no_vo=True)
+        self.push_delegation()
 
         job_id = self._submit()
 
@@ -180,8 +180,8 @@ class TestJobListing(TestController):
         """
         Request a field from a job
         """
-        self.setupGridsiteEnvironment(noVo=True)
-        self.pushDelegation()
+        self.setup_gridsite_environment(no_vo=True)
+        self.push_delegation()
 
         job_id = self._submit()
 
