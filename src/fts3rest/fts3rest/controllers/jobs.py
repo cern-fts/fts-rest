@@ -32,18 +32,18 @@ DEFAULT_PARAMS = {
 }
 
 
-def _set_job_source_and_destination(job):
+def _set_job_source_and_destination(job, files):
     """
     Iterates through the files that belong to the job, and determines the
     'overall' job source and destination Storage Elements
     """
-    job.source_se = job.files[0].source_se
-    job.dest_se = job.files[0].dest_se
-    for f in job.files:
-        if f.source_se != job.source_se:
-            job.source_se = None
-        if f.dest_se != job.dest_se:
-            job.dest_se = None
+    job['source_se'] = files[0]['source_se']
+    job['dest_se'] = files[0]['dest_se']
+    for f in files:
+        if f['source_se'] != job['source_se']:
+            job['source_se'] = None
+        if f['dest_se'] != job['dest_se']:
+            job['dest_se'] = None
 
 
 def _get_storage_element(uri):
@@ -69,7 +69,7 @@ def _has_multiple_options(files):
     for the same destination.
     This sort of transfers can not be accepted when reuse is enabled
     """
-    ids = map(lambda f: f.file_index, files)
+    ids = map(lambda f: f['file_index'], files)
     id_count = len(ids)
     unique_id_count = len(set(ids))
     return unique_id_count != id_count
@@ -98,7 +98,16 @@ def _validate_url(url):
         raise ValueError('Missing host (%s)' % url)
 
 
-def _populate_files(files_dict, findex, vo_name, shared_hashed_id=None):
+def _valid_filesize(value):
+    if isinstance(value, float):
+        return value
+    elif value is None:
+        return 0.0
+    else:
+        return float(value)
+
+
+def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None):
     """
     From the dictionary files_dict, generate a list of transfers for a job
     """
@@ -117,37 +126,30 @@ def _populate_files(files_dict, findex, vo_name, shared_hashed_id=None):
 
     # Create one File entry per matching pair
     for (s, d) in pairs:
-        f = File()
-
-        f.file_index = findex
-        f.file_state = 'SUBMITTED'
-        f.source_surl = s
-        f.dest_surl = d
-        f.source_se = _get_storage_element(s)
-        f.dest_se = _get_storage_element(d)
-        f.vo_name = vo_name
-
-        f.user_filesize = files_dict.get('filesize', None)
-        if f.user_filesize is None:
-            f.user_filesize = 0
-        f.selection_strategy = files_dict.get('selection_strategy', None)
-
-        f.checksum = files_dict.get('checksum', None)
-        f.file_metadata = files_dict.get('metadata', None)
-        f.activity = files_dict.get('activity', None)
-
-        if shared_hashed_id:
-            f.hashed_id = shared_hashed_id
-        else:
-            f.hashed_id = random.randint(0, 2 ** 16 - 1)
-
+        f = dict(
+            job_id=job_id,
+            file_index=f_index,
+            file_state='SUBMITTED',
+            source_surl=s,
+            dest_surl=d,
+            source_se=_get_storage_element(s),
+            dest_se=_get_storage_element(d),
+            vo_name=vo_name,
+            user_filesize=_valid_filesize(files_dict.get('filesize', 0)),
+            selection_strategy=files_dict.get('selection_strategy', None),
+            checksum=files_dict.get('checksum', None),
+            file_metadata=files_dict.get('metadata', None),
+            activity=files_dict.get('activity', 'default'),
+            hashed_id=shared_hashed_id if shared_hashed_id else random.randint(0, 2 ** 16 - 1)
+        )
         files.append(f)
     return files
 
 
 def _setup_job_from_dict(job_dict, user):
     """
-    From the dictionary, create and populate a Job
+    From the submitted dictionary, create and populate dictionaries
+    suitable for insertion
     """
     try:
         if len(job_dict['files']) == 0:
@@ -164,72 +166,71 @@ def _setup_job_from_dict(job_dict, user):
                 if v is None and k in DEFAULT_PARAMS:
                     params[k] = DEFAULT_PARAMS[k]
 
-        # Create
-        job = Job()
-
-        # Job
-        job.job_id = str(uuid.uuid1())
-        job.job_state = 'SUBMITTED'
-        job.reuse_job = _yes_or_no(params['reuse'])
-        job.retry = int(params['retry'])
-        job.job_params = params['gridftp']
-        job.submit_host = socket.getfqdn()
-        job.user_dn = user.user_dn
+        # Create the job
+        job_id = str(uuid.uuid1())
+        job = dict(
+            job_id=job_id,
+            job_state='SUBMITTED',
+            reuse_job=_yes_or_no(params['reuse']),
+            retry=int(params['retry']),
+            job_params=params['gridftp'],
+            submit_host=socket.getfqdn(),
+            user_dn=user.user_dn,
+            voms_cred=' '.join(user.voms_cred),
+            vo_name=user.vos[0] if len(user.vos) > 0 and user.vos[0] else 'nil',
+            submit_time=datetime.utcnow(),
+            priority=3,
+            space_token=params['spacetoken'],
+            overwrite_flag=_yes_or_no(params['overwrite']),
+            source_space_token=params['source_spacetoken'],
+            copy_pin_lifetime=int(params['copy_pin_lifetime']),
+            checksum_method=params['verify_checksum'],
+            bring_online=params['bring_online'],
+            job_metadata=params['job_metadata']
+        )
 
         if 'credential' in job_dict:
-            job.user_cred = job_dict['credential']
-            job.cred_id = str()
+            job['user_cred'] = job_dict['credential']
+            job['cred_id'] = str()
         else:
-            job.user_cred = str()
-            job.cred_id = user.delegation_id
-
-        job.voms_cred = ' '.join(user.voms_cred)
-        job.vo_name = user.vos[0] if len(user.vos) > 0 and user.vos[0] else 'nil'
-        job.submit_time = datetime.utcnow()
-        job.priority = 3
-        job.space_token = params['spacetoken']
-        job.overwrite_flag = _yes_or_no(params['overwrite'])
-        job.source_space_token = params['source_spacetoken']
-        job.copy_pin_lifetime = int(params['copy_pin_lifetime'])
-        job.verify_checksum = params['verify_checksum']
-        job.bring_online = int(params['bring_online'])
-        job.job_metadata = params['job_metadata']
-        job.job_params = str()
+            job['user_cred'] = str()
+            job['cred_id'] = user.delegation_id
 
         # If reuse is enabled, generate one single "hash" for all files
-        if job.reuse_job:
+        if job['reuse_job']:
             shared_hashed_id = random.randint(0, 2 ** 16 - 1)
         else:
             shared_hashed_id = None
 
         # Files
-        findex = 0
+        files = []
+        f_index = 0
         for t in job_dict['files']:
-            job.files.extend(_populate_files(t, findex, job.vo_name, shared_hashed_id))
-            findex += 1
+            files.extend(_populate_files(t, job_id, f_index, job['vo_name'], shared_hashed_id))
+            f_index += 1
 
-        if len(job.files) == 0:
+        if len(files) == 0:
             raise HTTPBadRequest('No pair with matching protocols')
 
         # If copy_pin_lifetime OR bring_online are specified, go to staging directly
-        if job.copy_pin_lifetime > 0 or job.bring_online > 0:
-            job.job_state = 'STAGING'
-            for t in job.files:
-                t.file_state = 'STAGING'
+        if job['copy_pin_lifetime'] > 0 or job['bring_online'] > 0:
+            job['job_state'] = 'STAGING'
+            for t in files:
+                t['file_state'] = 'STAGING'
 
         # If a checksum is provided, but no checksum is available, 'relaxed' comparison
         # (Not nice, but need to keep functionality!)
         has_checksum = False
-        for f in job.files:
-            if f.checksum is not None:
-                has_checksum = len(f.checksum) > 0
+        for f in files:
+            if f['checksum'] is not None:
+                has_checksum = len(f['checksum']) > 0
                 break
-        if not job.verify_checksum and has_checksum:
-            job.verify_checksum = 'r'
+        if not job['checksum_method'] and has_checksum:
+            job['checksum_method'] = 'r'
 
-        _set_job_source_and_destination(job)
+        _set_job_source_and_destination(job, files)
 
-        return job
+        return job, files
 
     except ValueError, e:
         raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
@@ -253,7 +254,6 @@ class JobsController(BaseController):
                           resource_owner=job.user_dn, resource_vo=job.vo_name):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         return job
-
 
     @doc.query_arg('user_dn', 'Filter by user DN')
     @doc.query_arg('vo_name', 'Filter by VO')
@@ -364,7 +364,7 @@ class JobsController(BaseController):
     @doc.response(400, 'The submission request could not be understood')
     @doc.response(403, 'The user doesn\'t have enough permissions to submit')
     @doc.response(419, 'The credentials need to be re-delegated')
-    @doc.return_type(Job)
+    @doc.return_type('{"job_id": <job id>}')
     @authorize(TRANSFER)
     @jsonify
     def submit(self, **kwargs):
@@ -404,15 +404,15 @@ class JobsController(BaseController):
         if credential.remaining() < timedelta(hours=1):
             raise HTTPAuthenticationTimeout('The delegated credentials has less than one hour left')
 
-        # Populate the job and file
-        job = _setup_job_from_dict(submitted_dict, user)
+        # Populate the job and files
+        job, files = _setup_job_from_dict(submitted_dict, user)
 
         # Validate that there are no bad combinations
-        if job.reuse_job and _has_multiple_options(job.files):
+        if job['reuse_job'] and _has_multiple_options(files):
             raise HTTPBadRequest('Can not specify reuse and multiple replicas at the same time')
 
         # Update the optimizer
-        unique_pairs = set(map(lambda f: (f.source_se, f.dest_se), job.files))
+        unique_pairs = set(map(lambda f: (f['source_se'], f['dest_se']), files))
         for (source_se, dest_se) in unique_pairs:
             optimizer_active = OptimizerActive()
             optimizer_active.source_se = source_se
@@ -420,7 +420,8 @@ class JobsController(BaseController):
             Session.merge(optimizer_active)
 
         # Update the database
-        Session.merge(job)
+        Session.execute(Job.__table__.insert(), [job])
+        Session.execute(File.__table__.insert(), files)
         Session.commit()
 
-        return job
+        return {'job_id': job['job_id']}

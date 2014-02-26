@@ -3,7 +3,7 @@ import scipy.stats
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import Job, OptimizerActive
+from fts3.model import File, Job, OptimizerActive
 
 
 class TestJobSubmission(TestController):
@@ -488,8 +488,10 @@ class TestJobSubmission(TestController):
                               params=json.dumps(job),
                               status=200)
 
-        submitted = json.loads(answer.body)
-        hashed_ids = map(lambda f: f['hashed_id'], submitted['files'])
+        job_id = json.loads(answer.body)['job_id']
+
+        files = Session.query(File.hashed_id).filter(File.job_id==job_id)
+        hashed_ids = map(lambda f: f.hashed_id, files)
 
         # Null hypothesis: the distribution of hashed_ids is uniform
         histogram, min_value, binsize, outsiders = scipy.stats.histogram(hashed_ids, defaultlimits=(0, 2 ** 16 - 1))
