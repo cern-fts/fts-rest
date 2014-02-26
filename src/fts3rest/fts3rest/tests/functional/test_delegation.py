@@ -4,6 +4,7 @@ from nose.plugins.skip import SkipTest
 import json
 import pytz
 
+from fts3rest.controllers.delegation import _generate_proxy_request
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Credential, CredentialCache
@@ -99,6 +100,23 @@ class TestDelegation(TestController):
                                status=200)
 
         proxy = self.getX509Proxy(request.body, private_key=EVP.PKey())
+
+        self.app.put(url="/delegation/%s/credential" % creds.delegation_id,
+                     params=proxy,
+                     status=400)
+
+    def test_wrong_request(self):
+        """
+        Get a request, sign a different request and send it
+        """
+        self.setupGridsiteEnvironment()
+        creds = self.getUserCredentials()
+
+        self.app.get(url="/delegation/%s/request" % creds.delegation_id,
+                     status=200)
+
+        (different_request, _) = _generate_proxy_request()
+        proxy = self.getX509Proxy(different_request.as_pem(), private_key=EVP.PKey())
 
         self.app.put(url="/delegation/%s/credential" % creds.delegation_id,
                      params=proxy,

@@ -8,18 +8,14 @@ This module initializes the application via ``websetup`` (`paster
 setup-app`) and provides the base testing objects.
 """
 import time
-
 from datetime import datetime, timedelta
 from unittest import TestCase
-from M2Crypto import ASN1, X509, RSA, EVP, BIO, m2
+from M2Crypto import ASN1, X509, RSA, EVP
 import os
-
-from paste.deploy import loadapp
 from paste.script.appinstall import SetupCommand
 from pylons import url
 from routes.util import URLGenerator
 from webtest import TestApp
-
 import pylons.test
 import pytz
 
@@ -35,6 +31,23 @@ SetupCommand('setup-app').run([pylons.test.pylonsapp.config['__file__']])
 
 environ = {}
 
+def _generate_mock_cert():
+    rsa_key = RSA.gen_key(512, 65537)
+    pkey = EVP.PKey()
+    pkey.assign_rsa(rsa_key)
+
+    cert = X509.X509()
+    cert.set_pubkey(pkey)
+    not_before = ASN1.ASN1_UTCTIME()
+    not_before.set_datetime(datetime.now(pytz.UTC))
+    not_after = ASN1.ASN1_UTCTIME()
+    not_after.set_datetime(datetime.now(pytz.UTC) + timedelta(hours = 24))
+    cert.set_not_before(not_before)
+    cert.set_not_after(not_after)
+    cert.sign(pkey, 'md5')
+
+    return pkey, cert
+
 
 class TestController(TestCase):
     """
@@ -47,17 +60,14 @@ class TestController(TestCase):
         self.app = TestApp(wsgiapp)
         url._push_object(URLGenerator(config['routes.map'], environ))
         TestCase.__init__(self, *args, **kwargs)
-        
-        key = RSA.gen_key(512, 65537)
-        self.pkey = EVP.PKey()
-        self.pkey.assign_rsa(key)
 
+        self.pkey, self.cert = _generate_mock_cert()
 
     def setupGridsiteEnvironment(self, noVo=False):
         """
         Add to the test environment mock values of the variables
         set by mod_gridsite.
-        
+
         Args:
             noVo: If True, no VO attributes will be set
         """
@@ -79,7 +89,7 @@ class TestController(TestCase):
     def pushDelegation(self, lifetime=timedelta(hours=7)):
         """
         Push into the database a mock delegated credential
-        
+
         Args:
             lifetime: The mock credential lifetime
         """
@@ -122,9 +132,9 @@ class TestController(TestCase):
         """
         if subject is None:
             subject = issuer + [('CN', 'proxy')]
-            
+
         x509Request = X509.load_request_string(str(requestPEM))
-        
+
         notBefore = ASN1.ASN1_UTCTIME()
         notBefore.set_datetime(datetime.now(pytz.UTC))
         notAfter = ASN1.ASN1_UTCTIME()
@@ -133,7 +143,7 @@ class TestController(TestCase):
         issuerSubject = X509.X509_Name()
         for c in issuer:
             issuerSubject.add_entry_by_txt(c[0], 0x1000, c[1], -1, -1, 0)
-        
+
         proxySubject = X509.X509_Name()
         for c in subject:
             proxySubject.add_entry_by_txt(c[0], 0x1000, c[1], -1, -1, 0)
@@ -154,7 +164,7 @@ class TestController(TestCase):
         else:
             proxy.sign(private_key, 'sha1')
 
-        return proxy.as_pem()
+        return proxy.as_pem() + self.cert.as_pem()
 
     def getRealX509Proxy(self):
         """
