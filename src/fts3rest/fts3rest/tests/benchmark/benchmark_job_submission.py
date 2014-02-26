@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from datetime import datetime
+from datetime import datetime, timedelta
 from optparse import OptionParser
 from sqlalchemy.exc import SQLAlchemyError
 import json
@@ -12,7 +12,7 @@ from util import *
 
 def benchmark_submission(job_number, files_number):
     job_controller = MockedJobController()
-    start = datetime.utcnow()
+    duration = timedelta()
     for j in xrange(job_number):
         files = []
         for f in xrange(files_number):
@@ -22,11 +22,12 @@ def benchmark_submission(job_number, files_number):
             })
         request.method = 'PUT'
         request.body = json.dumps({'files': files})
+        start = datetime.utcnow()
         job_controller.submit()
-    end = datetime.utcnow()
-    duration = end - start
-    duration_seconds = duration.seconds + (duration.microseconds / 1000000.0)
+        end = datetime.utcnow()
+        duration += (end - start)
 
+    duration_seconds = duration.seconds + (duration.microseconds / 1000000.0)
     return duration, float(job_number) / duration_seconds, float(files_number) / duration_seconds
 
 
