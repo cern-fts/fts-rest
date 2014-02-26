@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 import logging
+import pycallgraph
 import sys
 
 from fts3rest.model import Base, Session
@@ -47,4 +48,23 @@ def setup_database(db_connect, proxy=None):
     Base.metadata.create_all(checkfirst=True)
 
 
-__all__ = ["setup_logging", "setup_database"]
+class ProfiledFunction(object):
+    """
+    Wraps the callable f, and generated a callgraph when called
+    """
+
+    def __init__(self, func):
+        pycallgraph.reset_trace()
+        self.func = func
+
+    def __call__(self, *args, **kwargs):
+        pycallgraph.start_trace(reset=False)
+        return_value = self.func(*args, **kwargs)
+        pycallgraph.stop_trace()
+        return return_value
+
+    def generate_callgraph(self, output_filename):
+        pycallgraph.make_dot_graph(output_filename)
+
+
+__all__ = ["setup_logging", "setup_database", "ProfiledFunction"]
