@@ -35,7 +35,7 @@ def _populated_x509_name(components):
 def _generate_proxy_request():
     """
     Generates a X509 proxy request.
-    
+
     Returns:
         A tuple (X509 request, generated private key)
     """
@@ -51,30 +51,54 @@ def _generate_proxy_request():
     return (x509_request, pkey)
 
 
+def _read_X509_list(x509_pem):
+    """
+    Loads the list of certificates contained in x509_pem
+    """
+    x509_list = []
+    bio = BIO.MemoryBuffer(x509_pem)
+    try:
+        while bio.readable():
+            cert = X509.load_cert_bio(bio)
+            x509_list.append(cert)
+    except X509.X509Error:
+        pass
+    return x509_list
+
+
 def _validate_proxy(proxy_pem, private_key_pem):
     """
     Validates a proxy being put by the client
-    
+
     Args:
         proxy_pem: The PEM representation of the proxy
         private_key_pem: The PEM representation of the private key
-    
+
     Returns:
         The proxy expiration time
-    
+
     Raises:
         ProxyException: If the validation fails
     """
     try:
-        x509_proxy      = X509.load_cert_string(proxy_pem)
+        x509_list = _read_X509_list(proxy_pem)
+        if len(x509_list) < 2:
+            raise ProxyException("Malformed proxy")
+        x509_proxy = x509_list[0]
+        x509_proxy_issuer = x509_list[1]
     except X509.X509Error:
         raise ProxyException("Malformed proxy")
 
     expiration_time = x509_proxy.get_not_after().get_datetime().replace(tzinfo=None)
     private_key     = EVP.load_key_string(str(private_key_pem), callback=_mute_callback)
 
-    if x509_proxy.verify(private_key):
-        raise ProxyException("Invalid proxy")
+    # The modulus of the stored private key and the modulus of the proxy must match
+    if x509_proxy.get_pubkey().get_modulus() != private_key.get_modulus():
+        raise ProxyException("The proxy does not match the stored associated private key")
+
+    # Verify the issuer
+    if x509_proxy.verify(x509_proxy_issuer.get_pubkey()) < 1:
+        raise ProxyException("Failed to verify the proxy, maybe signed with the wrong private key?")
 
     # Validate the subject
     subject = '/' + '/'.join(x509_proxy.get_subject().as_text().split(', '))
@@ -83,21 +107,6 @@ def _validate_proxy(proxy_pem, private_key_pem):
         raise ProxyException("The subject and the issuer of the proxy do not match")
 
     return expiration_time
-
-
-def _read_X509_list(x509_pem):
-    """
-    Loads the list of certificates contained in x509_pem
-    """
-    x509_list = []
-    bio = BIO.MemoryBuffer(x509_pem)
-    try:
-        while True:
-            cert = X509.load_cert_bio(bio)
-            x509_list.append(cert)
-    except X509.X509Error:
-        pass
-    return x509_list
 
 
 def _build_full_proxy(x509_pem, privkey_pem):
@@ -147,11 +156,11 @@ class DelegationController(BaseController):
         Delete the delegated credentials from the database
         """
         user = request.environ['fts3.User.Credentials']
-        
+
         if dlg_id != user.delegation_id:
             start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
             return ['The resquested ID and the credentials ID do not match']
-        
+
         cred = Session.query(Credential).get((user.delegation_id, user.user_dn))
         if not cred:
             start_response('404 NOT FOUND', [('Content-Type', 'text/plain')])
@@ -169,7 +178,7 @@ class DelegationController(BaseController):
     def request(self, dlg_id, start_response):
         """
         First step of the delegation process: get a certificate request
-        
+
         The returned certificate request must be signed with the user's original
         credentials.
         """
@@ -202,7 +211,7 @@ class DelegationController(BaseController):
     def credential(self, dlg_id, start_response):
         """
         Second step of the delegation process: put the generated certificate
-        
+
         The certificate being PUT will have to pass the following validation:
             - There is a previous certificate request done
             - The certificate subject matches the certificate issuer + '/CN=Proxy'
@@ -249,12 +258,12 @@ class DelegationController(BaseController):
     def voms(self, dlg_id, start_response):
         """
         Generate VOMS extensions for the delegated proxy
-        
+
         The input must be a json-serialized list of strings, where each strings
         is a voms command (i.e. ["dteam", "dteam:/dteam/Role=lcgadmin"])
         """
         user = request.environ['fts3.User.Credentials']
-        
+
         if dlg_id != user.delegation_id:
             start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
             return ['The resquested ID and the credentials ID do not match']
@@ -280,16 +289,16 @@ class DelegationController(BaseController):
         except voms.VomsException, e:
             # Error generating the proxy because of the request itself
             start_response('424 METHOD FAILURE', [('Content-Type', 'text/plain')])
-            return [str(e)] 
+            return [str(e)]
         except Exception:
             # Internal error, re-raise it and let it fail
             raise
-        
+
         credential.proxy = new_proxy
         credential.termination_time = new_termination_time
         credential.voms_attrs = ' '.join(voms_list)
         Session.merge(credential)
         Session.commit()
-        
+
         start_response('203 NON-AUTHORITATIVE INFORMATION', [('Content-Type', 'text/plain')])
         return [str(new_termination_time)]
