@@ -1,9 +1,7 @@
 """Pylons environment configuration"""
 import os
 
-from mako.lookup import TemplateLookup
 from pylons import config
-from pylons.error import handle_mako_error
 from sqlalchemy import engine_from_config
 
 import fts3rest.lib.app_globals as app_globals
@@ -40,14 +38,6 @@ def load_environment(global_conf, app_conf):
     if config.get('fts3.config'):
         fts3cfg = fts3_config.fts3_config_load(fts3_config_file)
         config.update(fts3cfg)
-
-    # Create the Mako TemplateLookup, with the default auto-escaping
-    config['pylons.app_globals'].mako_lookup = TemplateLookup(
-        directories=paths['templates'],
-        error_handler=handle_mako_error,
-        module_directory=os.path.join(app_conf['cache_dir'], 'templates'),
-        input_encoding='utf-8', default_filters=['escape'],
-        imports=['from webhelpers.html import escape'])
 
     # Setup the SQLAlchemy database engine
     engine = engine_from_config(config, 'sqlalchemy.', pool_recycle = 7200)
