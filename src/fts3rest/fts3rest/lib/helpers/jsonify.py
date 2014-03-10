@@ -48,20 +48,5 @@ def jsonify(f, *args, **kwargs):
     pylons = get_pylons(args)
     pylons.response.headers['Content-Type'] = 'application/json'
 
-    try:
-        data = f(*args, **kwargs)
-        return [json.dumps(data, cls=ClassEncoder, indent=2, sort_keys=True)]
-    except HTTPException, e:
-        environ = kwargs.get('environ', None)
-        start_response = kwargs.get('start_response', None)
-        if not environ or not start_response:
-            raise
-
-        json_error = {
-            'status': getattr(e, 'status', 500),
-            'message': getattr(e, 'detail', '')
-        }
-        resp = Response(json.dumps(json_error),
-                        status=getattr(e, 'status', 500),
-                        content_type='application/json')
-        return resp(environ, start_response)
+    data = f(*args, **kwargs)
+    return [json.dumps(data, cls=ClassEncoder, indent=2, sort_keys=True)]
