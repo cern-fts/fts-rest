@@ -102,6 +102,7 @@ mkdir -p %{buildroot}
 make install DESTDIR=%{buildroot}
 
 mkdir -p %{buildroot}/%{_var}/cache/fts3rest/
+mkdir -p %{buildroot}/%{_var}/log/fts3rest/
 
 %clean
 rm -rf %{buildroot}
@@ -113,6 +114,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.ini
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/fts3rest.conf
 %dir %attr(0775,apache,apache) %{_var}/cache/fts3rest
+%dir %attr(0775,apache,apache) %{_var}/log/fts3rest
 
 %files cli
 %defattr(-,root,root,-)
@@ -122,6 +124,9 @@ rm -rf %{buildroot}
 %files selinux
 
 %changelog
+* Mon Mar 10 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.2.0-1
+- Creating log directory
+
 * Mon Jan 03 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.1.0-1
 - Major and minor versions follow FTS3
 
