@@ -1,10 +1,11 @@
+from webob.exc import HTTPNotFound, HTTPForbidden
+
 from fts3.model import ArchivedJob
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.middleware.fts3auth import authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
-from pylons.controllers.util import abort
 
 
 class ArchiveController(BaseController):
@@ -15,12 +16,10 @@ class ArchiveController(BaseController):
     def _get_job(self, job_id):
         job = Session.query(ArchivedJob).get(job_id)
         if job is None:
-            abort(404,
-                  'No job with the id "%s" has been found in the archive' % job_id)
+            raise HTTPNotFound('No job with the id "%s" has been found in the archive' % job_id)
         if not authorized(TRANSFER,
                           resource_owner=job.user_dn, resource_vo=job.vo_name):
-            abort(403,
-                  'Not enough permissions to check the job "%s"' % job_id)
+            raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         return job
 
     @jsonify
@@ -64,4 +63,4 @@ class ArchiveController(BaseController):
         if hasattr(job, field):
             return getattr(job, field)
         else:
-            abort(404, 'No such field')
+            raise HTTPNotFound('No such field')

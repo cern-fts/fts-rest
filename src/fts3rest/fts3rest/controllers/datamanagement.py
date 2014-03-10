@@ -1,26 +1,29 @@
 from datetime import datetime
-from fts3.model import Credential
-from fts3rest.lib.api import doc
-from fts3rest.lib.base import BaseController, Session
-from fts3rest.lib.helpers import jsonify
 from pylons import request
 from pylons.controllers.util import abort
+from webob.exc import HTTPBadRequest
 import errno
-import gfal2
 import os
 import stat
 import tempfile
 import urlparse
 
+from fts3.model import Credential
+from fts3rest.lib.api import doc
+from fts3rest.lib.base import BaseController, Session
+from fts3rest.lib.helpers import jsonify
+from fts3rest.lib.http_exceptions import HTTPAuthenticationTimeout
+import gfal2
+
 
 def _get_valid_surl():
     surl = request.params.get('surl')
     if not surl:
-        abort(400, 'Missing surl parameter')
+        raise HTTPBadRequest('Missing surl parameter')
 
     parsed = urlparse.urlparse(surl)
     if parsed.scheme in ['file']:
-        abort(400, 'Forbiden SURL scheme')
+        raise HTTPBadRequest('Forbiden SURL scheme')
 
     return str(surl)
 
@@ -46,29 +49,29 @@ class DatamanagementController(BaseController):
     """
     Data management operations
     """
-    
+
     @staticmethod
     def _get_proxy():
         user = request.environ['fts3.User.Credentials']
         cred = Session.query(Credential).get((user.delegation_id, user.user_dn))
         if not cred:
-            abort(401, 'No delegated proxy available')
-            
+            raise HTTPAuthenticationTimeout('No delegated proxy available')
+
         if cred.termination_time <= datetime.utcnow():
-            abort(401, 'Delegated proxy expired')
+            raise HTTPAuthenticationTimeout('Delegated proxy expired')
 
         tmp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.pem', prefix='rest-proxy-')
         tmp_file.write(cred.proxy)
         tmp_file.flush()
         os.fsync(tmp_file.fileno())
         return tmp_file
-    
+
     @staticmethod
     def _set_x509_env(proxy_file):
         os.environ['X509_USER_CERT'] = proxy_file.name
         os.environ['X509_USER_KEY'] = proxy_file.name
         os.environ['X509_USER_PROXY'] = proxy_file.name
-        
+
     @staticmethod
     def _clear_x509_env():
         del os.environ['X509_USER_CERT']
@@ -97,13 +100,14 @@ class DatamanagementController(BaseController):
             return listing
         except gfal2.GError, e:
             _raise_http_error_from_gerror(e)
-    
+
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
     @doc.response(403, 'Permission denied')
     @doc.response(404, 'The SURL does not exist')
+    @doc.response(419, 'The credentials need to be re-delegated')
     @doc.response(503, 'Try again later')
-    @doc.response(500, 'Internal error') 
+    @doc.response(500, 'Internal error')
     @jsonify
     def list(self, **kwargs):
         """
@@ -121,8 +125,9 @@ class DatamanagementController(BaseController):
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
     @doc.response(403, 'Permission denied')
     @doc.response(404, 'The SURL does not exist')
+    @doc.response(419, 'The credentials need to be re-delegated')
     @doc.response(503, 'Try again later')
-    @doc.response(500, 'Internal error') 
+    @doc.response(500, 'Internal error')
     @jsonify
     def stat(self, **kwargs):
         """
