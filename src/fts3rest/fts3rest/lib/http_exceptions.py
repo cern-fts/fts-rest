@@ -9,4 +9,10 @@ class HTTPAuthenticationTimeout(HTTPClientError):
     title = 'Authentication Timeout'
     explanation = ('The authentication has expired')
 
+class HTTPMethodFailure(HTTPClientError):
+    code = 424
+    title = 'Method Failure'
+    explanation = ('Method failure')
+
 status_map[419] = HTTPAuthenticationTimeout
+status_map[424] = HTTPMethodFailure

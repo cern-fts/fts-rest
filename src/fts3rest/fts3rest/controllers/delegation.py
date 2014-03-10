@@ -1,13 +1,18 @@
 from datetime import datetime
+from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPNotFound
 from fts3.model import CredentialCache, Credential
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.helpers import voms
+from fts3rest.lib.http_exceptions import HTTPMethodFailure
 from M2Crypto import X509, RSA, EVP, BIO
 from pylons import request
 import json
+import logging
 import types
+
+log = logging.getLogger(__name__)
 
 
 class ProxyException(Exception):
@@ -104,6 +109,7 @@ def _validate_proxy(proxy_pem, private_key_pem):
     subject = '/' + '/'.join(x509_proxy.get_subject().as_text().split(', '))
     issuer = '/' + '/'.join(x509_proxy.get_issuer().as_text().split(', '))
     if subject != issuer + '/CN=proxy':
+        log.debug("%s != %s" % (subject, issuer + '/CN=proxy'))
         raise ProxyException("The subject and the issuer of the proxy do not match")
 
     return expiration_time
@@ -138,8 +144,7 @@ class DelegationController(BaseController):
         user = request.environ['fts3.User.Credentials']
 
         if dlg_id != user.delegation_id:
-            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
-            return 'The resquested ID and the credentials ID do not match'
+            raise HTTPForbidden('The resquested ID and the credentials ID do not match')
 
         cred = Session.query(Credential).get((user.delegation_id, user.user_dn))
         if not cred:
@@ -158,17 +163,15 @@ class DelegationController(BaseController):
         user = request.environ['fts3.User.Credentials']
 
         if dlg_id != user.delegation_id:
-            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
-            return ['The resquested ID and the credentials ID do not match']
+            raise HTTPForbidden('The resquested ID and the credentials ID do not match')
 
         cred = Session.query(Credential).get((user.delegation_id, user.user_dn))
         if not cred:
-            start_response('404 NOT FOUND', [('Content-Type', 'text/plain')])
-            return ['Delegated credentials not found']
+            raise HTTPNotFound('Delegated credentials not found')
         else:
             Session.delete(cred)
             Session.commit()
-            start_response('204 NO CONTENT', [])
+            start_response('204 No Content', [])
             return ['']
 
 
@@ -185,8 +188,7 @@ class DelegationController(BaseController):
         user = request.environ['fts3.User.Credentials']
 
         if dlg_id != user.delegation_id:
-            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
-            return ['The resquested ID and the credentials ID do not match']
+            raise HTTPForbidden('The resquested ID and the credentials ID do not match')
 
         credential_cache = Session.query(CredentialCache)\
             .get((user.delegation_id, user.user_dn))
@@ -199,8 +201,11 @@ class DelegationController(BaseController):
                                                voms_attrs=' '.join(user.voms_cred))
             Session.add(credential_cache)
             Session.commit()
+            log.debug("Generated new credential request for %s" % dlg_id)
+        else:
+            log.debug("Using cached request for %s" % dlg_id)
 
-        start_response('200 OK', [('X-Delegation-ID', credential_cache.dlg_id),
+        start_response('200 Ok', [('X-Delegation-ID', credential_cache.dlg_id),
                                   ('Content-Type', 'text/plain')])
         return credential_cache.cert_request
 
@@ -220,23 +225,22 @@ class DelegationController(BaseController):
         user = request.environ['fts3.User.Credentials']
 
         if dlg_id != user.delegation_id:
-            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
-            return ['The resquested ID and the credentials ID do not match']
+            raise HTTPForbidden('The resquested ID and the credentials ID do not match')
 
         credential_cache = Session.query(CredentialCache)\
             .get((user.delegation_id, user.user_dn))
         if credential_cache is None:
-            start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
-            return ['No credential cache found']
+            raise HTTPBadRequest('No credential cache found')
 
         x509_proxy_pem = request.body
+        log.debug("Received delegated credentials for %s" % dlg_id)
+        log.debug(x509_proxy_pem)
 
         try:
             expiration_time = _validate_proxy(x509_proxy_pem, credential_cache.priv_key)
             x509_full_proxy_pem = _build_full_proxy(x509_proxy_pem, credential_cache.priv_key)
         except ProxyException, e:
-            start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
-            return ['Could not process the proxy: ' + str(e)]
+            raise HTTPBadRequest('Could not process the proxy: ' + str(e))
 
         credential = Credential(dlg_id           = user.delegation_id,
                                 dn               = user.user_dn,
@@ -247,7 +251,7 @@ class DelegationController(BaseController):
         Session.merge(credential)
         Session.commit()
 
-        start_response('201 CREATED', [])
+        start_response('201 Created', [])
         return ['']
 
     @doc.input('List of voms commands', 'array')
@@ -265,31 +269,28 @@ class DelegationController(BaseController):
         user = request.environ['fts3.User.Credentials']
 
         if dlg_id != user.delegation_id:
-            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
-            return ['The resquested ID and the credentials ID do not match']
+            raise HTTPForbidden('The resquested ID and the credentials ID do not match')
 
         try:
             voms_list = json.loads(request.body)
+            log.debug("VOMS request received for %s: %s" % (dlg_id, ', '.join(voms_list)))
             if not isinstance(voms_list, types.ListType):
                 raise Exception('Expecting a list of strings')
         except Exception, e:
-            start_response('400 BAD REQUEST', [('Content-Type', 'text/plain')])
-            return [str(e)]
+            raise HTTPBadRequest(str(e))
 
         credential = Session.query(Credential)\
             .get((user.delegation_id, user.user_dn))
 
         if credential.termination_time <= datetime.utcnow():
-            start_response('403 FORBIDDEN', [('Content-Type', 'text/plain')])
-            return ['Delegated proxy already expired']
+            raise HTTPForbidden('Delegated proxy already expired')
 
         try:
             voms_client = voms.VomsClient(credential.proxy)
             (new_proxy, new_termination_time) = voms_client.init(voms_list)
         except voms.VomsException, e:
             # Error generating the proxy because of the request itself
-            start_response('424 METHOD FAILURE', [('Content-Type', 'text/plain')])
-            return [str(e)]
+            raise HTTPMethodFailure(str(e))
         except Exception:
             # Internal error, re-raise it and let it fail
             raise
@@ -300,5 +301,5 @@ class DelegationController(BaseController):
         Session.merge(credential)
         Session.commit()
 
-        start_response('203 NON-AUTHORITATIVE INFORMATION', [('Content-Type', 'text/plain')])
+        start_response('203 Non-Authoritative Information', [('Content-Type', 'text/plain')])
         return [str(new_termination_time)]

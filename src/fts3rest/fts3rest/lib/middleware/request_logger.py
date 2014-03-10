@@ -19,7 +19,7 @@ class RequestLogger(object):
             start_response(status, headers, exc_info)
             self._stat_msg = status
         response = self.app(environ, override_start_response)
-        if hasattr(pylons.response, 'wsgi_response'):
+        if hasattr(pylons.response, 'detail'):
             self._log_request(environ, self._stat_msg, pylons.response.detail)
         else:
             self._log_request(environ, self._stat_msg)

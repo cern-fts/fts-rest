@@ -9,6 +9,7 @@ from fts3rest.lib.middleware.fts3auth import authorize, authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
 from pylons import request
 import json
+import logging
 import random
 import re
 import socket
@@ -17,6 +18,7 @@ import urllib
 import urlparse
 import uuid
 
+log = logging.getLogger(__name__)
 
 DEFAULT_PARAMS = {
     'bring_online': -1,
@@ -355,6 +357,9 @@ class JobsController(BaseController):
             Session.commit()
 
             job = JobsController._get_job(job_id)
+            log.info("Job %s canceled" % job_id)
+        else:
+            log.warning("The job %s can not be canceled, since it is %s" % (job_id, job.job_state))
 
         # Trigger the query for the files
         files = job.files
@@ -423,5 +428,7 @@ class JobsController(BaseController):
         Session.execute(Job.__table__.insert(), [job])
         Session.execute(File.__table__.insert(), files)
         Session.commit()
+
+        log.info("Job %s submitted with %d transfers" % (job['job_id'], len(files)))
 
         return {'job_id': job['job_id']}
