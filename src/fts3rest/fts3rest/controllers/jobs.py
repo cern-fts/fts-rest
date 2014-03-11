@@ -306,6 +306,7 @@ class JobsController(BaseController):
         return jobs.limit(100).all()
 
     @doc.response(404, 'The job doesn\'t exist')
+    @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
     @jsonify
     def get(self, job_id, **kwargs):
@@ -316,6 +317,7 @@ class JobsController(BaseController):
         return job
 
     @doc.response(404, 'The job or the field doesn\'t exist')
+    @doc.response(413, 'The user doesn\'t have enough privileges')
     @jsonify
     def get_field(self, job_id, field, **kwargs):
         """
@@ -328,6 +330,7 @@ class JobsController(BaseController):
             raise HTTPBadRequest('No such field')
 
     @doc.response(404, 'The job doesn\'t exist')
+    @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
     @jsonify
     def cancel(self, job_id, **kwargs):
