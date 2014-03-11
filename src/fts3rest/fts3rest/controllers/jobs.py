@@ -51,9 +51,11 @@ def _set_job_source_and_destination(job, files):
 def _get_storage_element(uri):
     """
     Returns the storage element of the given uri, which is the scheme + hostname without the port
+
+    Args:
+        uri: An urlparse instance
     """
-    parsed = urlparse.urlparse(uri)
-    return "%s://%s" % (parsed.scheme, parsed.hostname)
+    return "%s://%s" % (uri.scheme, uri.hostname)
 
 
 def _yes_or_no(value):
@@ -92,8 +94,8 @@ def _validate_url(url):
     """
     Validates the format and content of the url
     """
-    if re.match('^\w+://', url.geturl()) is None:
-        raise ValueError('Malformed URL (%s)' % url)
+    if not url.scheme:
+        raise ValueError('Missing scheme (%s)' % url)
     if not url.path or (url.path == '/' and not url.query):
         raise ValueError('Missing path (%s)' % url)
     if not url.hostname or url.hostname == '':
@@ -124,7 +126,7 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
             dest_url = urlparse.urlparse(d.strip())
             _validate_url(dest_url)
             if _valid_third_party_transfer(source_url.scheme, dest_url.scheme):
-                pairs.append((source_url.geturl(), dest_url.geturl()))
+                pairs.append((source_url, dest_url))
 
     # Create one File entry per matching pair
     for (s, d) in pairs:
@@ -132,8 +134,8 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
             job_id=job_id,
             file_index=f_index,
             file_state='SUBMITTED',
-            source_surl=s,
-            dest_surl=d,
+            source_surl=s.geturl(),
+            dest_surl=d.geturl(),
             source_se=_get_storage_element(s),
             dest_se=_get_storage_element(d),
             vo_name=vo_name,
