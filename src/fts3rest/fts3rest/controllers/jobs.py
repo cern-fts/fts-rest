@@ -313,8 +313,6 @@ class JobsController(BaseController):
         Get the job with the given ID
         """
         job = JobsController._get_job(job_id)
-        # Trigger the query, so it is serialized
-        files = job.files
         return job
 
     @doc.response(404, 'The job or the field doesn\'t exist')
