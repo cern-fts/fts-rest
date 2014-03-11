@@ -48,8 +48,7 @@ class TestJobCancel(TestController):
 
         self.assertEqual(job['job_id'], job_id)
         self.assertEqual(job['job_state'], 'CANCELED')
-        for f in job['files']:
-            self.assertEqual(f['file_state'], 'CANCELED')
+        self.assertEqual(job['reason'], 'Job canceled by the user')
 
         # Is it in the database?
         job = Session.query(Job).get(job_id)

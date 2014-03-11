@@ -1,5 +1,15 @@
 from datetime import datetime, timedelta
-from fts3.model import Job, File, JobActiveStates
+from pylons import request
+import json
+import logging
+import random
+import socket
+import types
+import urllib
+import urlparse
+import uuid
+
+from fts3.model import Job, File, JobActiveStates, FileActiveStates
 from fts3.model import Credential, OptimizerActive
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
@@ -7,16 +17,7 @@ from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.middleware.fts3auth import authorize, authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
-from pylons import request
-import json
-import logging
-import random
-import re
-import socket
-import types
-import urllib
-import urlparse
-import uuid
+
 
 log = logging.getLogger(__name__)
 
@@ -348,12 +349,8 @@ class JobsController(BaseController):
             job.job_finished = now
             job.reason = 'Job canceled by the user'
 
-            for f in job.files:
-                if f.file_state in JobActiveStates:
-                    f.file_state = 'CANCELED'
-                    f.job_finished = now
-                    f.finish_time = now
-                    f.reason = 'Job canceled by the user'
+            Session.query(File).filter(File.job_id == job_id).filter(File.file_state.in_(FileActiveStates))\
+                   .update({'file_state': 'CANCELED', 'reason': 'Job canceled by the user'})
 
             Session.merge(job)
             Session.commit()
@@ -363,8 +360,6 @@ class JobsController(BaseController):
         else:
             log.warning("The job %s can not be canceled, since it is %s" % (job_id, job.job_state))
 
-        # Trigger the query for the files
-        files = job.files
         return job
 
     @doc.input('Submission description', 'SubmitSchema')

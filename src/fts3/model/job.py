@@ -6,6 +6,7 @@ from base import Base, Flag, TernaryFlag, Json
 
 
 JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING']
+FileActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING']
 
 
 class Job(Base):
