@@ -36,8 +36,7 @@ def _generate_delegation_id(dn, fqans):
     d = EVP.MessageDigest('sha1')
     d.update(dn)
 
-    if len(fqans) > 0:
-        fqan = fqans[-1]
+    for fqan in fqans:
         d.update(fqan)
 
     digest_hex = d.digest().encode('hex')
