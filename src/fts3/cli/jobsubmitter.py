@@ -8,10 +8,10 @@ import time
 
 
 class JobSubmitter(Base):
-    
+
     def __init__(self, argv = sys.argv[1:]):
         super(JobSubmitter, self).__init__(extra_args = 'SOURCE DESTINATION [CHECKSUM]')
-        
+
         # Specific options
         self.optParser.add_option('-b', '--blocking', dest = 'blocking', default = False, action = 'store_true',
                                   help = 'blocking mode. Wait until the operation completes.')
@@ -50,11 +50,11 @@ class JobSubmitter(Base):
         self.optParser.add_option('--retry', dest = 'retry', type = 'int', default = 0,
                                   help = 'Number of retries. If 0, the server default will be used. If negative, there will be no retries.')
         (self.options, self.args) = self.optParser.parse_args(argv)
-        
+
         if self.options.endpoint is None:
             self.logger.critical('Need an endpoint')
             sys.exit(1)
-        
+
         if not self.options.bulk_file:
             if len(self.args) < 2:
                 self.logger.critical("Need a source and a destination")
@@ -67,7 +67,7 @@ class JobSubmitter(Base):
             else:
                 self.logger.critical("Too many parameters")
                 sys.exit(1)
-                
+
         if self.options.verbose:
             self.logger.setLevel(logging.DEBUG)
 
@@ -79,21 +79,22 @@ class JobSubmitter(Base):
         else:
             return [{"sources": [self.source], "destinations": [self.destination]}]
 
-    def _doSubmit(self):    
+    def _doSubmit(self):
         verify_checksum = None
         if self.options.compare_checksum:
             verify_checksum = True
-        
+
         delegator = Delegator(self.context)
         delegationId = delegator.delegate(timedelta(minutes = self.options.proxy_lifetime))
-        
+
         transfers = self._buildTransfers()
-        
+
         if self.options.retry <= -2:
             self.options.retry = 0
 
-        submitter = Submitter(self.context) 
-        self.options.job_metadata = self.options.job_metadata.replace("\"","'")
+        submitter = Submitter(self.context)
+        if self.options.job_metadata:
+            self.options.job_metadata = self.options.job_metadata.replace("\"","'")
         jobId = submitter.submit(transfers,
                                  bring_online      = self.options.bring_online,
                                  verify_checksum   = verify_checksum,
@@ -109,13 +110,13 @@ class JobSubmitter(Base):
                                  reuse             = self.options.reuse,
                                  retry             = self.options.retry
                                 )
-        
+
         if self.options.json:
             self.logger.info(jobId)
         else:
             self.logger.info("Job successfully submitted.")
             self.logger.info("Job id: %s" % jobId)
-    
+
         if jobId and self.options.blocking:
             inquirer = Inquirer(self.context)
             while True:
@@ -124,11 +125,11 @@ class JobSubmitter(Base):
                 if job['job_state'] not in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE']:
                     break
                 self.logger.info("Job in state %s" % job['job_state'])
-            
+
             self.logger.info("Job finished with state %s" % job['job_state'])
             if job['reason']:
                 self.logger.info("Reason: %s" % job['reason'])
-                
+
         return jobId
 
 
@@ -136,7 +137,7 @@ class JobSubmitter(Base):
         verify_checksum = None
         if self.options.compare_checksum:
             verify_checksum = True
-            
+
         submitter = Submitter(self.context)
         print submitter.buildSubmission(self._buildTransfers(),
                                  checksum          = self.checksum,
@@ -160,7 +161,7 @@ class JobSubmitter(Base):
         self.context = Context(self.options.endpoint,
                                                      ukey=self.options.ukey,
                                                      ucert=self.options.ucert)
-        
+
         if not self.options.dry_run:
             return self._doSubmit()
         else:
