@@ -114,4 +114,20 @@ def make_map(config):
     map.connect('/ban/dn', controller='banning', action='ban_dn', conditions=dict(method=['POST']))
     map.connect('/ban/dn', controller='banning', action='unban_dn', conditions=dict(method=['DELETE']))
 
+    # Cloud Storage
+    map.connect('/cs/registered/{service}', controller='cloudStorage', action='isCSRegistered',
+                conditions=dict(method=['GET']))
+    map.connect('/cs/access_request/{service}', controller='cloudStorage', action='isCSAccessRequested',
+                conditions=dict(method=['GET']))
+    map.connect('/cs/access_request/{service}/', controller='cloudStorage', action='isCSAccessRequested',
+                conditions=dict(method=['GET']))
+    map.connect('/cs/access_request/{service}/request', controller='cloudStorage', action='getCSAccessRequested',
+                conditions=dict(method=['GET']))
+    map.connect('/cs/access_grant/{service}', controller='cloudStorage', action='getCSAccessGranted',
+                conditions=dict(method=['GET']))
+    map.connect('/cs/remote_content/{service}', controller='cloudStorage', action='getCSFolderContent',
+                conditions=dict(method=['GET']))
+    map.connect('/cs/file_urllink/{service}/{path}', controller='cloudStorage', action='getCSFileLink',
+                conditions=dict(method=['GET']))
+    
     return map
