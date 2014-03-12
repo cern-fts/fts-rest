@@ -53,6 +53,11 @@ class Delegator(object):
         proxy.set_issuer(self.context.x509.get_subject())
         proxy.set_pubkey(x509Request.get_pubkey())
 
+        # X509v3 Basic Constraints
+        proxy.add_ext(X509.new_extension('basicConstraints', 'CA:FALSE', critical=True))
+        # X509v3 Key Usage
+        proxy.add_ext(X509.new_extension('keyUsage', 'Digital Signature, Key Encipherment', critical=True))
+
         # Make sure the proxy is not longer than any other inside the chain
         any_rfc_proxies = False
         for cert in self.context.x509List:
@@ -83,7 +88,7 @@ class Delegator(object):
         for cert in self.context.x509List:
             chain += cert.as_pem()
         return chain
-    
+
     def getInfo(self, delegationId = None):
         if delegationId is None:
             delegationId = self._getDelegationId()
