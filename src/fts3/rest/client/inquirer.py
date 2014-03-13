@@ -8,19 +8,22 @@ class Inquirer(object):
     def __init__(self, context):
         self.context = context
 
-    def getJobStatus(self, jobId):
+    def getJobStatus(self, job_id, list_files=False):
         try:
-            return json.loads(self.context.get("/jobs/%s" % jobId))
+            job_info = json.loads(self.context.get("/jobs/%s" % job_id))
+            if list_files:
+                job_info['files'] = json.loads(self.context.get("/jobs/%s/files" % job_id))
+            return job_info
         except NotFound:
-            raise NotFound(jobId)
+            raise NotFound(job_id)
 
-    def getJobList(self, userDn=None, voName=None):
+    def getJobList(self, user_dn=None, vo_name=None):
         url = "/jobs?"
         args = {}
-        if userDn:
-            args['user_dn'] = userDn
-        if voName:
-            args['vo_name'] = voName
+        if user_dn:
+            args['user_dn'] = user_dn
+        if vo_name:
+            args['vo_name'] = vo_name
 
         query = '&'.join(map(lambda (k, v): "%s=%s" % (k, urllib.quote(v, '')),
                              args.iteritems()))
