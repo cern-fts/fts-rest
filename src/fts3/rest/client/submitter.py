@@ -1,6 +1,4 @@
-from exceptions import *
 import json
-import urllib
 
 
 class Submitter(object):
@@ -8,7 +6,8 @@ class Submitter(object):
     def __init__(self, context):
         self.context = context
 
-    def buildSubmission(self, transfers, **kwargs):
+    @staticmethod
+    def _build_submission(transfers, **kwargs):
         job = dict()
 
         job['files'] = transfers
@@ -26,9 +25,9 @@ class Submitter(object):
         return json.dumps(job, indent=2)
 
     def submit(self, transfers, **kwargs):
-        job = self.buildSubmission(transfers, **kwargs)
+        job = Submitter._build_submission(transfers, **kwargs)
         r = json.loads(self.context.post_json('/jobs', job))
         return r['job_id']
 
-    def cancel(self, jobId):
-        return json.loads(self.context.delete('/jobs/%s' % jobId))
+    def cancel(self, job_id):
+        return json.loads(self.context.delete('/jobs/%s' % job_id))

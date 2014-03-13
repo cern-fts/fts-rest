@@ -1,7 +1,7 @@
 import json
 
 
-def job2HumanReadable(job):
+def job_human_readable(job):
     """
     Generates a human readable string for the given job.
     """
@@ -18,24 +18,24 @@ VO Name: %(vo_name)s
     return s
 
 
-def jobList2HumanReadable(jobList):
+def job_list_human_readable(job_list):
     """
     Generates a guman readable string for the given job list.
     """
-    jobStr = []
-    for job in jobList:
-        jobStr.append(job2HumanReadable(job))
-    return '\n'.join(jobStr)
+    jobstr = []
+    for job in job_list:
+        jobstr.append(job_human_readable(job))
+    return '\n'.join(jobstr)
 
 
-def jobList2Json(job):
+def job_list_as_json(job_list):
     """
     Serializes a job list into JSON
     """
-    return json.dumps(job, indent=2)
+    return json.dumps(job_list, indent=2)
 
 
-def job2Json(job):
+def job_as_json(job):
     """
     Serializes a job into JSON
     """

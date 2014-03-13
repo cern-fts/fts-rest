@@ -1,6 +1,7 @@
-from exceptions import *
 import json
 import urllib
+
+from exceptions import *
 
 
 class Inquirer(object):
@@ -8,7 +9,7 @@ class Inquirer(object):
     def __init__(self, context):
         self.context = context
 
-    def getJobStatus(self, job_id, list_files=False):
+    def get_job_status(self, job_id, list_files=False):
         try:
             job_info = json.loads(self.context.get("/jobs/%s" % job_id))
             if list_files:
@@ -17,7 +18,7 @@ class Inquirer(object):
         except NotFound:
             raise NotFound(job_id)
 
-    def getJobList(self, user_dn=None, vo_name=None):
+    def get_job_list(self, user_dn=None, vo_name=None):
         url = "/jobs?"
         args = {}
         if user_dn:

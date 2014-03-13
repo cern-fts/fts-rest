@@ -1,22 +1,23 @@
-from datetime import datetime, timedelta
-from exceptions import *
-from M2Crypto import X509, RSA, EVP, ASN1, BIO
-from request import RequestFactory
+from datetime import datetime
+from M2Crypto import X509, RSA, EVP, BIO
 import json
 import logging
 import os
 import pytz
 import sys
 
+from exceptions import *
+from request import RequestFactory
+
 
 # Return a list of certificates from the file
-def getX509List(file, logger):
-    x509List = []
-    fd = BIO.openfile(file, 'rb')
+def _get_x509_list(cert, logger):
+    x509_list = []
+    fd = BIO.openfile(cert, 'rb')
     cert = X509.load_cert_bio(fd)
     try:
         while True:
-            x509List.append(cert)
+            x509_list.append(cert)
             logger.debug("Loaded " + cert.get_subject().as_text())
             cert = X509.load_cert_bio(fd)
     except X509.X509Error:
@@ -24,19 +25,19 @@ def getX509List(file, logger):
         pass
 
     del fd
-    return x509List
+    return x509_list
 
 
 # Base class for actors
 class Context(object):
 
-    def _setLogger(self, logger):
+    def _set_logger(self, logger):
         if logger:
             self.logger = logger
         else:
             self.logger = logging.getLogger()
 
-    def _setX509(self, ucert, ukey):
+    def _set_x509(self, ucert, ukey):
         if not ucert:
             if 'X509_USER_PROXY' in os.environ:
                 ucert = os.environ['X509_USER_PROXY']
@@ -50,50 +51,50 @@ class Context(object):
                 ukey = os.environ['X509_USER_KEY']
 
         if ucert and ukey:
-            self.x509List = getX509List(ucert, self.logger)
-            self.x509 = self.x509List[0]
-            notAfter = self.x509.get_not_after()
-            if notAfter.get_datetime() < datetime.now(pytz.UTC):
+            self.x509_list = _get_x509_list(ucert, self.logger)
+            self.x509 = self.x509_list[0]
+            not_after = self.x509.get_not_after()
+            if not_after.get_datetime() < datetime.now(pytz.UTC):
                 raise Exception("Proxy expired!")
 
-            self.rsaKey = RSA.load_key(ukey)
-            self.evpKey = EVP.PKey()
-            self.evpKey.assign_rsa(self.rsaKey)
+            self.rsa_key = RSA.load_key(ukey)
+            self.evp_key = EVP.PKey()
+            self.evp_key.assign_rsa(self.rsa_key)
 
             self.ucert = ucert
             self.ukey = ukey
         else:
             self.ucert = self.ukey = None
 
-    def _setEndpoint(self, endpoint):
+    def _set_endpoint(self, endpoint):
         self.endpoint = endpoint
         if self.endpoint.endswith('/'):
             self.endpoint = self.endpoint[:-1]
 
-    def _validateEndpoint(self):
+    def _validate_endpoint(self):
         try:
-            endpointInfo = json.loads(self.get('/'))
-            endpointInfo['url'] = self.endpoint
+            endpoint_info = json.loads(self.get('/'))
+            endpoint_info['url'] = self.endpoint
         except FTS3ClientException:
             raise
         except Exception, e:
             raise BadEndpoint("%s (%s)" % (self.endpoint, str(e))), None, sys.exc_info()[2]
-        return endpointInfo
+        return endpoint_info
 
-    def __init__(self, endpoint, ucert=None, ukey=None, logger=None, **kwargs):
-        self._setLogger(logger)
-        self._setEndpoint(endpoint)
-        self._setX509(ucert, ukey)
+    def __init__(self, endpoint, ucert=None, ukey=None, logger=None):
+        self._set_logger(logger)
+        self._set_endpoint(endpoint)
+        self._set_x509(ucert, ukey)
         self._requester = RequestFactory(self.ucert, self.ukey)
-        self.endpointInfo = self._validateEndpoint()
+        self.endpoint_info = self._validate_endpoint()
         # Log obtained information
-        self.logger.debug("Using endpoint: %s" % self.endpointInfo['url'])
-        self.logger.debug("REST API version: %(major)d.%(minor)d.%(patch)d" % self.endpointInfo['api'])
-        self.logger.debug("Schema version: %(major)d.%(minor)d.%(patch)d" % self.endpointInfo['schema'])
-        self.logger.debug("Delegation version: %(major)d.%(minor)d.%(patch)d" % self.endpointInfo['delegation'])
+        self.logger.debug("Using endpoint: %s" % self.endpoint_info['url'])
+        self.logger.debug("REST API version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['api'])
+        self.logger.debug("Schema version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['schema'])
+        self.logger.debug("Delegation version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['delegation'])
 
-    def getEndpointInfo(self):
-        return self.endpointInfo
+    def get_endpoint_info(self):
+        return self.endpoint_info
 
     def get(self, path):
         return self._requester.method('GET',

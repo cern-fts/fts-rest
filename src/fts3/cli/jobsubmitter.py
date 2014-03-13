@@ -1,55 +1,56 @@
-from base import Base
 from datetime import timedelta
-from fts3.rest.client import Submitter, Delegator, Inquirer, Context
 import json
 import logging
 import sys
 import time
 
+from base import Base
+from fts3.rest.client import Submitter, Delegator, Inquirer, Context
+
 
 class JobSubmitter(Base):
-
-    def __init__(self, argv = sys.argv[1:]):
-        super(JobSubmitter, self).__init__(extra_args = 'SOURCE DESTINATION [CHECKSUM]')
+    def __init__(self, argv=sys.argv[1:]):
+        super(JobSubmitter, self).__init__(extra_args='SOURCE DESTINATION [CHECKSUM]')
 
         # Specific options
-        self.optParser.add_option('-b', '--blocking', dest = 'blocking', default = False, action = 'store_true',
-                                  help = 'blocking mode. Wait until the operation completes.')
-        self.optParser.add_option('-i', '--interval', dest = 'poll_interval', type = 'int', default = 30,
-                                  help = 'interval between two poll operations in blocking mode.')
-        self.optParser.add_option('-e', '--expire', dest = 'proxy_lifetime', type = 'int', default = 420,
-                                  help = 'expiration time of the delegation in minutes.')
-        self.optParser.add_option('-o', '--overwrite', dest = 'overwrite', default = False, action = 'store_true',
-                                  help = 'overwrite files.')
-        self.optParser.add_option('-r', '--reuse', dest = 'reuse', default = False, action = 'store_true',
-                                  help = 'enable session reuse for the transfer job.')
-        self.optParser.add_option('--job-metadata', dest = 'job_metadata',
-                                  help = 'transfer job metadata.')
-        self.optParser.add_option('--file-metadata', dest = 'file_metadata',
-                                  help = 'file metadata.')
-        self.optParser.add_option('--file-size', dest = 'file_size', type = 'long',
-                                  help = 'file size (in Bytes)')
-        self.optParser.add_option('-g', '--gparam', dest = 'gridftp_params',
-                                  help = 'GridFTP parameters.')
-        self.optParser.add_option('-t', '--dest-token', dest = 'destination_token',
-                                  help = 'the destination space token or its description.')
-        self.optParser.add_option('-S', '--source-token', dest = 'source_token',
-                                  help = 'the source space token or its description.')
-        self.optParser.add_option('-K', '--compare-checksum', dest = 'compare_checksum',
-                                  help = 'compare checksums between source and destination.')
-        self.optParser.add_option('--copy-pin-lifetime', dest = 'pin_lifetime', type = 'long', default = -1,
-                                  help = 'pin lifetime of the copy in seconds.')
-        self.optParser.add_option('--bring-online',  dest = 'bring_online', type = 'long', default = None,
-                                  help = 'bring online timeout in seconds.')
-        self.optParser.add_option('--fail-nearline', dest = 'fail_nearline', default = False, action = 'store_true',
-                                  help = 'fail the transfer is the file is nearline.')
-        self.optParser.add_option('--dry-run', dest = 'dry_run', default = False, action = 'store_true',
-                                  help = 'do not send anything, just print the JSON message.')
-        self.optParser.add_option('-f', '--file', dest = 'bulk_file', type = 'string',
-                                  help = 'Name of configuration file')
-        self.optParser.add_option('--retry', dest = 'retry', type = 'int', default = 0,
-                                  help = 'Number of retries. If 0, the server default will be used. If negative, there will be no retries.')
-        (self.options, self.args) = self.optParser.parse_args(argv)
+        self.opt_parser.add_option('-b', '--blocking', dest='blocking', default=False, action='store_true',
+                                   help='blocking mode. Wait until the operation completes.')
+        self.opt_parser.add_option('-i', '--interval', dest='poll_interval', type='int', default=30,
+                                   help='interval between two poll operations in blocking mode.')
+        self.opt_parser.add_option('-e', '--expire', dest='proxy_lifetime', type='int', default=420,
+                                   help='expiration time of the delegation in minutes.')
+        self.opt_parser.add_option('-o', '--overwrite', dest='overwrite', default=False, action='store_true',
+                                   help='overwrite files.')
+        self.opt_parser.add_option('-r', '--reuse', dest='reuse', default=False, action='store_true',
+                                   help='enable session reuse for the transfer job.')
+        self.opt_parser.add_option('--job-metadata', dest='job_metadata',
+                                   help='transfer job metadata.')
+        self.opt_parser.add_option('--file-metadata', dest='file_metadata',
+                                   help='file metadata.')
+        self.opt_parser.add_option('--file-size', dest='file_size', type='long',
+                                   help='file size (in Bytes)')
+        self.opt_parser.add_option('-g', '--gparam', dest='gridftp_params',
+                                   help='GridFTP parameters.')
+        self.opt_parser.add_option('-t', '--dest-token', dest='destination_token',
+                                   help='the destination space token or its description.')
+        self.opt_parser.add_option('-S', '--source-token', dest='source_token',
+                                   help='the source space token or its description.')
+        self.opt_parser.add_option('-K', '--compare-checksum', dest='compare_checksum',
+                                   help='compare checksums between source and destination.')
+        self.opt_parser.add_option('--copy-pin-lifetime', dest='pin_lifetime', type='long', default=-1,
+                                   help='pin lifetime of the copy in seconds.')
+        self.opt_parser.add_option('--bring-online', dest='bring_online', type='long', default=None,
+                                   help='bring online timeout in seconds.')
+        self.opt_parser.add_option('--fail-nearline', dest='fail_nearline', default=False, action='store_true',
+                                   help='fail the transfer is the file is nearline.')
+        self.opt_parser.add_option('--dry-run', dest='dry_run', default=False, action='store_true',
+                                   help='do not send anything, just print the JSON message.')
+        self.opt_parser.add_option('-f', '--file', dest='bulk_file', type='string',
+                                   help='Name of configuration file')
+        self.opt_parser.add_option('--retry', dest='retry', type='int', default=0,
+                                   help='Number of retries. If 0, the server default will be used.'
+                                        'If negative, there will be no retries.')
+        (self.options, self.args) = self.opt_parser.parse_args(argv)
 
         if self.options.endpoint is None:
             self.logger.critical('Need an endpoint')
@@ -71,7 +72,7 @@ class JobSubmitter(Base):
         if self.options.verbose:
             self.logger.setLevel(logging.DEBUG)
 
-    def _buildTransfers(self):
+    def _build_transfers(self):
         if self.options.bulk_file:
             filecontent = open(self.options.bulk_file).read()
             bulk = json.loads(filecontent)
@@ -79,91 +80,86 @@ class JobSubmitter(Base):
         else:
             return [{"sources": [self.source], "destinations": [self.destination]}]
 
-    def _doSubmit(self):
+    def _do_submit(self, context):
         verify_checksum = None
         if self.options.compare_checksum:
             verify_checksum = True
 
-        delegator = Delegator(self.context)
-        delegationId = delegator.delegate(timedelta(minutes = self.options.proxy_lifetime))
+        delegator = Delegator(context)
+        delegator.delegate(timedelta(minutes=self.options.proxy_lifetime))
 
-        transfers = self._buildTransfers()
+        transfers = self._build_transfers()
 
         if self.options.retry <= -2:
             self.options.retry = 0
 
-        submitter = Submitter(self.context)
+        submitter = Submitter(context)
         if self.options.job_metadata:
-            self.options.job_metadata = self.options.job_metadata.replace("\"","'")
-        jobId = submitter.submit(transfers,
-                                 bring_online      = self.options.bring_online,
-                                 verify_checksum   = verify_checksum,
-                                 spacetoken        = self.options.destination_token,
-                                 source_spacetoken = self.options.source_token,
-                                 fail_nearline     = self.options.fail_nearline,
-                                 file_metadata     = self.options.file_metadata,
-                                 filesize          = self.options.file_size,
-                                 gridftp           = self.options.gridftp_params,
-                                 job_metadata      = self.options.job_metadata,
-                                 overwrite         = self.options.overwrite,
-                                 copy_pin_lifetime = self.options.pin_lifetime,
-                                 reuse             = self.options.reuse,
-                                 retry             = self.options.retry
-                                )
+            self.options.job_metadata = self.options.job_metadata.replace("\"", "'")
+        job_id = submitter.submit(
+            transfers,
+            bring_online=self.options.bring_online,
+            verify_checksum=verify_checksum,
+            spacetoken=self.options.destination_token,
+            source_spacetoken=self.options.source_token,
+            fail_nearline=self.options.fail_nearline,
+            file_metadata=self.options.file_metadata,
+            filesize=self.options.file_size,
+            gridftp=self.options.gridftp_params,
+            job_metadata=self.options.job_metadata,
+            overwrite=self.options.overwrite,
+            copy_pin_lifetime=self.options.pin_lifetime,
+            reuse=self.options.reuse,
+            retry=self.options.retry
+        )
 
         if self.options.json:
-            self.logger.info(jobId)
+            self.logger.info(job_id)
         else:
             self.logger.info("Job successfully submitted.")
-            self.logger.info("Job id: %s" % jobId)
+            self.logger.info("Job id: %s" % job_id)
 
-        if jobId and self.options.blocking:
-            inquirer = Inquirer(self.context)
-            while True:
-                time.sleep(self.options.poll_interval)
-                job = inquirer.getJobStatus(jobId)
-                if job['job_state'] not in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE']:
-                    break
+        if job_id and self.options.blocking:
+            inquirer = Inquirer(context)
+            job = inquirer.get_job_status(job_id)
+            while job['job_state'] in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE']:
                 self.logger.info("Job in state %s" % job['job_state'])
+                time.sleep(self.options.poll_interval)
+                job = inquirer.get_job_status(job_id)
 
             self.logger.info("Job finished with state %s" % job['job_state'])
             if job['reason']:
                 self.logger.info("Reason: %s" % job['reason'])
 
-        return jobId
+        return job_id
 
-
-    def _doDryRun(self):
+    def _do_dry_run(self, context):
         verify_checksum = None
         if self.options.compare_checksum:
             verify_checksum = True
 
-        submitter = Submitter(self.context)
-        print submitter.buildSubmission(self._buildTransfers(),
-                                 checksum          = self.checksum,
-                                 bring_online      = self.options.bring_online,
-                                 verify_checksum   = verify_checksum,
-                                 spacetoken        = self.options.destination_token,
-                                 source_spacetoken = self.options.source_token,
-                                 fail_nearline     = self.options.fail_nearline,
-                                 file_metadata     = self.options.file_metadata,
-                                 filesize          = self.options.file_size,
-                                 gridftp           = self.options.gridftp_params,
-                                 job_metadata      = self.options.job_metadata,
-                                 overwrite         = self.options.overwrite,
-                                 copy_pin_lifetime = self.options.pin_lifetime,
-                                 reuse             = self.options.reuse
-                                )
+        submitter = Submitter(context)
+        print submitter.build_submission(
+            self._build_transfers(),
+            checksum=self.checksum,
+            bring_online=self.options.bring_online,
+            verify_checksum=verify_checksum,
+            spacetoken=self.options.destination_token,
+            source_spacetoken=self.options.source_token,
+            fail_nearline=self.options.fail_nearline,
+            file_metadata=self.options.file_metadata,
+            filesize=self.options.file_size,
+            gridftp=self.options.gridftp_params,
+            job_metadata=self.options.job_metadata,
+            overwrite=self.options.overwrite,
+            copy_pin_lifetime=self.options.pin_lifetime,
+            reuse=self.options.reuse
+        )
         return None
 
-
     def __call__(self):
-        self.context = Context(self.options.endpoint,
-                                                     ukey=self.options.ukey,
-                                                     ucert=self.options.ucert)
-
+        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
         if not self.options.dry_run:
-            return self._doSubmit()
+            return self._do_submit(context)
         else:
-            return self._doDryRun()
-
+            return self._do_dry_run(context)
