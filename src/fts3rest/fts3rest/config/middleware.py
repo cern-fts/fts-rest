@@ -9,6 +9,7 @@ from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
 
 from fts3rest.lib.middleware.fts3auth import FTS3AuthMiddleware
+from fts3rest.lib.middleware.request_logger import RequestLogger
 from fts3rest.config.environment import load_environment
 
 
@@ -47,6 +48,9 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
 
     # FTS3 authentication/authorization middleware
     app = FTS3AuthMiddleware(app, config)
+
+    # Request logging
+    app = RequestLogger(app, config)
 
     # Error handling
     if asbool(full_stack):

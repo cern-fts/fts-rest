@@ -5,6 +5,10 @@ from webob.exc import HTTPForbidden
 
 
 class FTS3AuthMiddleware(object):
+    """
+    Pylons middleware to wrap the authentication as part of the request
+    process.
+    """
 
     def __init__(self, wrap_app, config):
         self.app    = wrap_app
@@ -16,17 +20,17 @@ class FTS3AuthMiddleware(object):
         if not credentials.user_dn:
             return HTTPForbidden('A valid X509 certificate or proxy is needed')(environ, start_response)
 
-        if not self._hasAuthorizedVo(credentials):
+        if not self._has_authorized_vo(credentials):
             return HTTPForbidden('The user does not belong to any authorized vo')(environ, start_response)
 
-        if self._isBanned(credentials):
+        if self._is_banned(credentials):
             return HTTPForbidden('The user has been banned')(environ, start_response)
 
         environ['fts3.User.Credentials'] = credentials
 
         return self.app(environ, start_response)
 
-    def _hasAuthorizedVo(self, credentials):
+    def _has_authorized_vo(self, credentials):
         if '*' in self.config['fts3.AuthorizedVO']:
             return True
         for v in credentials.vos:
@@ -34,6 +38,6 @@ class FTS3AuthMiddleware(object):
                 return True
         return False
 
-    def _isBanned(self, credentials):
+    def _is_banned(self, credentials):
         banned = Session.query(BannedDN).get(credentials.user_dn)
         return banned is not None

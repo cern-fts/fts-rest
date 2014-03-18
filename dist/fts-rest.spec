@@ -16,7 +16,7 @@
 %endif
 
 Name:           fts-rest
-Version:        3.1.0
+Version:        3.2.0
 Release:        1
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
@@ -37,6 +37,7 @@ BuildRequires:  python26-devel
 %else
 BuildRequires:  python-devel
 %endif
+BuildRequires:  scipy
 
 Requires:     gridsite%{?_isa} >= 1.7
 Requires:     httpd%{?_isa}
@@ -72,13 +73,15 @@ so Apache can bind to it.
 %post selinux
 if [ "$1" -le "1" ] ; then # First install
 semanage port -a -t http_port_t -p tcp 8446
-setsebool -P httpd_can_network_connect=1 
+setsebool -P httpd_can_network_connect=1
+setsebool -P httpd_setrlimit=1
 fi
 
 %preun selinux
 if [ "$1" -lt "1" ] ; then # Final removal
 semanage port -d -t http_port_t -p tcp 8446
 setsebool -P httpd_can_network_connect=0
+setsebool -P httpd_setrlimit=0
 fi
 
 %prep
@@ -99,6 +102,7 @@ mkdir -p %{buildroot}
 make install DESTDIR=%{buildroot}
 
 mkdir -p %{buildroot}/%{_var}/cache/fts3rest/
+mkdir -p %{buildroot}/%{_var}/log/fts3rest/
 
 %clean
 rm -rf %{buildroot}
@@ -110,6 +114,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.ini
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/fts3rest.conf
 %dir %attr(0775,apache,apache) %{_var}/cache/fts3rest
+%dir %attr(0775,apache,apache) %{_var}/log/fts3rest
 
 %files cli
 %defattr(-,root,root,-)
@@ -119,6 +124,12 @@ rm -rf %{buildroot}
 %files selinux
 
 %changelog
+<<<<<<< HEAD
+=======
+* Mon Mar 10 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.2.0-1
+- Creating log directory
+
+>>>>>>> develop
 * Mon Jan 03 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.1.0-1
 - Major and minor versions follow FTS3
 
