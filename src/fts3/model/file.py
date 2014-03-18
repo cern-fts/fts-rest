@@ -48,6 +48,7 @@ class File(Base):
     bringonline_token    = Column(String(255))
     log_file             = Column('t_log_file', String(2048))
     log_debug            = Column('t_log_file_debug', Integer)
+    activity             = Column(String(255), default = 'default')
 
     retries = relation("FileRetryLog", uselist=True, lazy=False,
                        backref=backref("file", lazy=False))

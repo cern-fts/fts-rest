@@ -25,6 +25,7 @@ class TestJsonSchema(unittest.TestCase):
                         "spacetoken": None,
                         "bring_online": None,
                         "copy_pin_lifetime": -1,
+                        "job_metadata": {"activity": "test"},
                         "source_spacetoken": None,
                         "overwrite": True,
                         "gridftp": None
