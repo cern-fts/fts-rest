@@ -124,12 +124,9 @@ rm -rf %{buildroot}
 %files selinux
 
 %changelog
-<<<<<<< HEAD
-=======
 * Mon Mar 10 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.2.0-1
 - Creating log directory
 
->>>>>>> develop
 * Mon Jan 03 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.1.0-1
 - Major and minor versions follow FTS3
 
