@@ -234,3 +234,22 @@ class TestJobInvalidSubmits(TestController):
         self.app.put(url="/jobs",
                      params=json.dumps(job),
                      status=419)
+
+
+    def test_submit_missing_path(self):
+        """
+        Submit with a url that has no path
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http:/google.com'],
+                'destinations': ['root://dest/file'],
+            }]
+        }
+
+        self.app.put(url="/jobs",
+                     params=json.dumps(job),
+                     status=400)

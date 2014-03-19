@@ -96,11 +96,11 @@ def _validate_url(url):
     Validates the format and content of the url
     """
     if not url.scheme:
-        raise ValueError('Missing scheme (%s)' % url)
+        raise ValueError('Missing scheme (%s)' % url.geturl())
     if not url.path or (url.path == '/' and not url.query):
-        raise ValueError('Missing path (%s)' % url)
+        raise ValueError('Missing path (%s)' % url.geturl())
     if not url.hostname or url.hostname == '':
-        raise ValueError('Missing host (%s)' % url)
+        raise ValueError('Missing host (%s)' % url.geturl())
 
 
 def _valid_filesize(value):
