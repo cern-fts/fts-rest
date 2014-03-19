@@ -55,6 +55,8 @@ class TestController(TestCase):
     Base class for the tests
     """
 
+    TEST_USER_DN = '/DC=ch/DC=cern/OU=Test User'
+
     def __init__(self, *args, **kwargs):
         wsgiapp = pylons.test.pylonsapp
         config = wsgiapp.config
@@ -72,7 +74,7 @@ class TestController(TestCase):
         Args:
             noVo: If True, no VO attributes will be set
         """
-        env = {'GRST_CRED_AURI_0': 'dn:/DC=ch/DC=cern/OU=Test User'}
+        env = {'GRST_CRED_AURI_0': 'dn:' + TestController.TEST_USER_DN}
 
         if not no_vo:
             env.update({

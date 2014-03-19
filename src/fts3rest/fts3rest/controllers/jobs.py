@@ -97,6 +97,8 @@ def _validate_url(url):
     """
     if not url.scheme:
         raise ValueError('Missing scheme (%s)' % url.geturl())
+    if url.scheme == 'file':
+        raise ValueError('Can not transfer local files (%s)' % url.geturl())
     if not url.path or (url.path == '/' and not url.query):
         raise ValueError('Missing path (%s)' % url.geturl())
     if not url.hostname or url.hostname == '':
@@ -399,7 +401,7 @@ class JobsController(BaseController):
         user = request.environ['fts3.User.Credentials']
         credential = Session.query(Credential).get((user.delegation_id, user.user_dn))
         if credential is None:
-            raise HTTPAuthenticationTimeout('No delegation id found for "%s"' % user.user_dn)
+            raise HTTPAuthenticationTimeout('No delegation found for "%s"' % user.user_dn)
         if credential.expired():
             remaining = credential.remaining()
             seconds = abs(remaining.seconds + remaining.days * 24 * 3600)

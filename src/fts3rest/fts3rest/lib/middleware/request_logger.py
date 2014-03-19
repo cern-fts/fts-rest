@@ -14,15 +14,15 @@ class RequestLogger(object):
         self.app = wrap_app
 
     def __call__(self, environ, start_response):
-        self._stat_msg = None
+        self._status_msg = None
         def override_start_response(status, headers, exc_info=None):
             start_response(status, headers, exc_info)
-            self._stat_msg = status
+            self._status_msg = status
         response = self.app(environ, override_start_response)
         if hasattr(pylons.response, 'detail'):
-            self._log_request(environ, self._stat_msg, pylons.response.detail)
+            self._log_request(environ, self._status_msg, pylons.response.detail)
         else:
-            self._log_request(environ, self._stat_msg)
+            self._log_request(environ, self._status_msg)
         return response
 
     def _log_request(self, environ, status, message = None):

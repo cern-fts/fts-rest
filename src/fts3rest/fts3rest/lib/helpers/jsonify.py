@@ -2,8 +2,6 @@ from datetime import datetime
 from decorator import decorator
 from fts3.model.base import Base
 from pylons.decorators.util import get_pylons
-from webob.exc import HTTPException
-from webob import Response
 import json
 
 
