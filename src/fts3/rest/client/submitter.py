@@ -20,8 +20,6 @@ class Submitter(object):
         if 'file_metadata' in kwargs:
             del job['params']['file_metadata']
 
-        print job
-
         return json.dumps(job, indent=2)
 
     def submit(self, transfers, **kwargs):
