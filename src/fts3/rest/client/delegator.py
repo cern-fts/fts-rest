@@ -46,7 +46,6 @@ class Delegator(object):
         proxy_subject.add_entry_by_txt('commonName', 0x1000, 'proxy', -1, -1, 0)
 
         proxy = X509.X509()
-        proxy.set_version(2)
         proxy.set_subject(proxy_subject)
         proxy.set_serial_number(int(time.time()))
         proxy.set_version(x509_request.get_version())
@@ -75,6 +74,7 @@ class Delegator(object):
         if any_rfc_proxies:
             raise NotImplementedError('RFC proxies not supported yet')
 
+        proxy.set_version(2)
         proxy.sign(self.context.evp_key, 'sha1')
 
         return proxy

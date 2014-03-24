@@ -1,5 +1,6 @@
 from datetime import datetime
 from M2Crypto import X509, RSA, EVP, BIO
+import getpass
 import json
 import logging
 import os
@@ -37,6 +38,11 @@ class Context(object):
         else:
             self.logger = logging.getLogger()
 
+    def _read_passwd_from_stdin(self, *args, **kwargs):
+        if not self.passwd:
+            self.passwd = getpass.getpass('Private key password: ')
+        return self.passwd
+
     def _set_x509(self, ucert, ukey):
         if not ucert:
             if 'X509_USER_PROXY' in os.environ:
@@ -57,7 +63,7 @@ class Context(object):
             if not_after.get_datetime() < datetime.now(pytz.UTC):
                 raise Exception("Proxy expired!")
 
-            self.rsa_key = RSA.load_key(ukey)
+            self.rsa_key = RSA.load_key(ukey, self._read_passwd_from_stdin)
             self.evp_key = EVP.PKey()
             self.evp_key.assign_rsa(self.rsa_key)
 
@@ -82,10 +88,12 @@ class Context(object):
         return endpoint_info
 
     def __init__(self, endpoint, ucert=None, ukey=None, logger=None):
+        self.passwd = None
+
         self._set_logger(logger)
         self._set_endpoint(endpoint)
         self._set_x509(ucert, ukey)
-        self._requester = RequestFactory(self.ucert, self.ukey)
+        self._requester = RequestFactory(self.ucert, self.ukey, passwd=self.passwd)
         self.endpoint_info = self._validate_endpoint()
         # Log obtained information
         self.logger.debug("Using endpoint: %s" % self.endpoint_info['url'])

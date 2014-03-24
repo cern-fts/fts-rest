@@ -56,6 +56,7 @@ Summary:        FTS3 Rest Interface CLI
 Group:          Applications/Internet
 
 Requires:       python-fts
+Requires:       python-pycurl
 
 %description cli
 Command line utilities for the FTS3 REST interface

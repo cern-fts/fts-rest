@@ -1,28 +1,14 @@
-import httplib
-import sys
-import urllib2
+import pycurl
 from exceptions import *
-
-
-class HTTPSWithCertHandler(urllib2.HTTPSHandler):
-    def __init__(self, cert, key):
-        urllib2.HTTPSHandler.__init__(self)
-        self.cert = cert
-        self.key  = key
-
-    def https_open(self, req):
-        return self.do_open(self.getConnection, req)
-
-    def getConnection(self, host, timeout=1000):
-        return httplib.HTTPSConnection(host, cert_file=self.cert,
-                                       key_file=self.key)
+from StringIO import StringIO
 
 
 class RequestFactory(object):
 
-    def __init__(self, ucert, ukey, cafile=None, capath=None, verify=False):
+    def __init__(self, ucert, ukey, cafile=None, capath=None, passwd=None, verify=False):
         self.ucert = ucert
         self.ukey  = ukey
+        self.passwd = passwd
 
         self.verify = verify
 
@@ -36,28 +22,67 @@ class RequestFactory(object):
         else:
             self.capath = '/etc/grid-security/certificates'
 
-    def _handleException(self, url, e):
-        f = open('/tmp/request-error.html', 'w')
-        print >>f, e.read()
-        del f
-        if e.code == 400:
-            raise ClientError(str(e))
-        elif e.code >= 401 and e.code <= 403:
+    def _handle_error(self, url, code):
+        if code == 400:
+            raise ClientError('Bad request')
+        elif code >= 401 and code <= 403:
             raise Unauthorized()
-        elif e.code == 404:
+        elif code == 404:
             raise NotFound(url)
-        elif e.code > 404 and e.code < 500:
-            raise ClientError(str(e))
-        elif e.code >= 500:
-            raise ServerError(str(e))
+        elif code > 404 and code < 500:
+            raise ClientError(str(code))
+        elif code >= 500:
+            raise ServerError(str(code))
 
-    def method(self, method, url, body=None, headers={}):
-        opener = urllib2.build_opener(HTTPSWithCertHandler(self.ucert,
-                                                           self.ukey))
-        try:
-            request = urllib2.Request(url, headers=headers, data=body)
-            request.get_method = lambda: method
-            response = opener.open(request)
-            return response.read()
-        except urllib2.HTTPError, e:
-            self._handleException(url, e)
+    def _receive(self, data):
+        self._response += data
+        return len(data)
+
+    def _send(self, len):
+        return self._input.read(len)
+
+    def _ioctl(self, cmd):
+        if cmd == pycurl.IOCMD_RESTARTREAD:
+            self._input.seek(0)
+
+    def method(self, method, url, body=None, headers=None):
+        handle = pycurl.Curl()
+        handle.setopt(pycurl.SSL_VERIFYPEER, self.verify)
+        handle.setopt(pycurl.SSL_VERIFYHOST, self.verify)
+        handle.setopt(pycurl.CAPATH, self.capath)
+        handle.setopt(pycurl.CAINFO, self.cafile)
+        handle.setopt(pycurl.SSLCERT, self.ucert)
+        handle.setopt(pycurl.SSLKEY, self.ukey)
+        if self.passwd:
+            handle.setopt(pycurl.SSLKEYPASSWD, self.passwd)
+
+        if method == 'GET':
+            handle.setopt(pycurl.HTTPGET, True)
+        elif method == 'HEAD':
+            handle.setopt(pycurl.NOBODY, True)
+        elif method == 'POST':
+            handle.setopt(pycurl.POST, True)
+        elif method == 'PUT':
+            handle.setopt(pycurl.UPLOAD, True)
+        else:
+            handle.setopt(pycurl.CUSTOMREQUEST, method)
+        if headers:
+            handle.setopt(pycurl.HTTPHEADER, map(lambda (k, v): "%s: %s" % (k, v), headers.iteritems()))
+
+        handle.setopt(pycurl.URL, str(url))
+
+        self._response = ''
+        handle.setopt(pycurl.WRITEFUNCTION, self._receive)
+
+        if body is not None:
+            self._input = StringIO(body)
+            handle.setopt(pycurl.INFILESIZE, len(body))
+            handle.setopt(pycurl.POSTFIELDSIZE, len(body))
+            handle.setopt(pycurl.READFUNCTION, self._send)
+            handle.setopt(pycurl.IOCTLFUNCTION, self._ioctl)
+
+        handle.perform()
+
+        self._handle_error(url, handle.getinfo(pycurl.HTTP_CODE))
+
+        return self._response
