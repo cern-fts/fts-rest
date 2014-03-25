@@ -114,7 +114,7 @@ class JobSubmitter(Base):
         )
 
         if self.options.json:
-            self.logger.info(job_id)
+            self.logger.info(json.dumps(job_id))
         else:
             self.logger.info("Job successfully submitted.")
             self.logger.info("Job id: %s" % job_id)
