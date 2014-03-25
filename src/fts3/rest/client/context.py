@@ -72,6 +72,9 @@ class Context(object):
         else:
             self.ucert = self.ukey = None
 
+        logging.debug("User certificte: %s" % self.ucert)
+        logging.debug("User private key: %s" % self.ukey)
+
     def _set_endpoint(self, endpoint):
         self.endpoint = endpoint
         if self.endpoint.endswith('/'):
