@@ -16,7 +16,7 @@
 %endif
 
 Name:			python-fts
-Version:		3.2.0
+Version:		3.2.1
 Release:		1
 BuildArch:		noarch
 Summary:		FTS3 database model
