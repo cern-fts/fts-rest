@@ -1,11 +1,52 @@
 from datetime import datetime, timedelta
 from M2Crypto import X509, ASN1, m2
+import ctypes
 import json
 import pytz
 import sys
-import time
 
 from exceptions import *
+
+# See https://bugzilla.osafoundation.org/show_bug.cgi?id=7530
+# for an explanation on all this mess
+# TL;DR: M2Crypto fails to properly initialize the internal structure, which
+# results eventually in segfaults
+class M2Ctx(ctypes.Structure):
+    _fields_ = [
+        ('flags', ctypes.c_int),
+        ('issuer_cert', ctypes.c_void_p),
+        ('subject_cert', ctypes.c_void_p),
+        ('subject_req', ctypes.c_void_p),
+        ('crl', ctypes.c_void_p),
+        ('db_meth', ctypes.c_void_p),
+        ('db', ctypes.c_void_p),
+    ]
+
+
+def _init_m2_ctx(m2_ctx, issuer=None):
+    ctx = M2Ctx.from_address(int(m2_ctx))
+    ctx.flags = 0
+    ctx.subject_cert = None
+    ctx.subject_req = None
+    ctx.crl = None
+    if issuer is None:
+        ctx.issuer_cert = None
+    else:
+        ctx.issuer_cert = int(issuer.x509)
+
+
+def _workaround_new_extension(name, value, critical=False, issuer=None, _pyfree=1):
+    lhash = m2.x509v3_lhash()
+    ctx = m2.x509v3_set_conf_lhash(lhash)
+    _init_m2_ctx(ctx, issuer)
+
+    x509_ext_ptr = m2.x509v3_ext_conf(lhash, ctx, name, value)
+    if x509_ext_ptr is None:
+        raise Exception('Could not create the X509v3 extension')
+
+    x509_ext = X509.X509_Extension(x509_ext_ptr, _pyfree)
+    x509_ext.set_critical(critical)
+    return x509_ext
 
 
 class Delegator(object):
@@ -47,7 +88,7 @@ class Delegator(object):
 
         proxy = X509.X509()
         proxy.set_subject(proxy_subject)
-        proxy.set_serial_number(int(time.time()))
+        proxy.set_serial_number(self.context.x509.get_serial_number())
         proxy.set_version(x509_request.get_version())
         proxy.set_issuer(self.context.x509.get_subject())
         proxy.set_pubkey(x509_request.get_pubkey())
@@ -56,6 +97,11 @@ class Delegator(object):
         proxy.add_ext(X509.new_extension('basicConstraints', 'CA:FALSE', critical=True))
         # X509v3 Key Usage
         proxy.add_ext(X509.new_extension('keyUsage', 'Digital Signature, Key Encipherment', critical=True))
+        #X509v3 Authority Key Identifier
+        identifier_ext = _workaround_new_extension(
+            'authorityKeyIdentifier', 'keyid', critical=False, issuer=self.context.x509
+        )
+        proxy.add_ext(identifier_ext)
 
         # Make sure the proxy is not longer than any other inside the chain
         any_rfc_proxies = False
