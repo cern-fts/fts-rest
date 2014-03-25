@@ -22,6 +22,10 @@ class ErrorAsJson(object):
         def override_start_response(status, headers, exc_info=None):
             self._status_code = int(status.split()[0])
             if self._status_code >= 400 and is_json_accepted:
+                headers = filter(
+                    lambda h: h[0].lower() not in ['content-type', 'content-length'],
+                    headers
+                )
                 headers.append(('Content-Type', 'application/json'))
             start_response(status, headers, exc_info)
             self._status_msg = status
