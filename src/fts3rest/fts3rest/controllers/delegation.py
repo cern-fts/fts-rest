@@ -85,14 +85,11 @@ def _validate_proxy(proxy_pem, private_key_pem):
     Raises:
         ProxyException: If the validation fails
     """
-    try:
-        x509_list = _read_X509_list(proxy_pem)
-        if len(x509_list) < 2:
-            raise ProxyException("Malformed proxy")
-        x509_proxy = x509_list[0]
-        x509_proxy_issuer = x509_list[1]
-    except X509.X509Error:
+    x509_list = _read_X509_list(proxy_pem)
+    if len(x509_list) < 2:
         raise ProxyException("Malformed proxy")
+    x509_proxy = x509_list[0]
+    x509_proxy_issuer = x509_list[1]
 
     expiration_time = x509_proxy.get_not_after().get_datetime().replace(tzinfo=None)
     private_key     = EVP.load_key_string(str(private_key_pem), callback=_mute_callback)
