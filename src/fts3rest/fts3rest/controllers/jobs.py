@@ -60,7 +60,7 @@ def _get_storage_element(uri):
 
 
 def _yes_or_no(value):
-    if isinstance(value, types.StringType):
+    if isinstance(value, types.StringType) or isinstance(value, types.UnicodeType):
         return len(value) > 0 and value[0].upper() == 'Y'
     elif value:
         return True
@@ -329,7 +329,7 @@ class JobsController(BaseController):
         if hasattr(job, field):
             return getattr(job, field)
         else:
-            raise HTTPBadRequest('No such field')
+            raise HTTPNotFound('No such field')
 
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')

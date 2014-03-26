@@ -288,9 +288,6 @@ class DelegationController(BaseController):
         except voms.VomsException, e:
             # Error generating the proxy because of the request itself
             raise HTTPMethodFailure(str(e))
-        except Exception:
-            # Internal error, re-raise it and let it fail
-            raise
 
         credential.proxy = new_proxy
         credential.termination_time = new_termination_time
