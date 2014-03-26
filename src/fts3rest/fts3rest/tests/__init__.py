@@ -186,3 +186,9 @@ class TestController(TestCase):
         Called by the test framework at the end of each test
         """
         self.pop_delegation()
+
+    # Handy asserts not available in the EPEL-6 version
+    def assertGreater(self, a, b):
+        if not a > b:
+            standardMsg = '%s not greater than %s' % (repr(a), repr(b))
+            self.fail(standardMsg)

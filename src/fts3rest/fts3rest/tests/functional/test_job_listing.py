@@ -1,5 +1,6 @@
 import json
 
+from fts3rest.lib.middleware.fts3auth import UserCredentials
 from fts3rest.tests import TestController
 
 
@@ -27,7 +28,7 @@ class TestJobListing(TestController):
 
         # Make sure it was commited to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
         return job_id
 
     def test_show_job(self):
@@ -43,6 +44,23 @@ class TestJobListing(TestController):
 
         self.assertEqual(job['job_id'], job_id)
         self.assertEqual(job['job_state'], 'SUBMITTED')
+
+    def test_missing_job(self):
+        """
+        Request an invalid job
+        """
+        self.setup_gridsite_environment()
+        response = self.app.get(
+            url="/jobs/1234x",
+            status=404
+        )
+
+        self.assertEquals(response.content_type, 'application/json')
+
+        error = json.loads(response.body)
+
+        self.assertEquals(error['status'], '404 Not Found')
+        self.assertEquals(error['message'], 'No job with the id "1234x" has been found')
 
     def test_list_job_default(self):
         """
@@ -70,6 +88,38 @@ class TestJobListing(TestController):
 
         answer = self.app.get(url="/jobs",
                               params={'dlg_id': creds.delegation_id},
+                              status=200)
+        job_list = json.loads(answer.body)
+        self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
+
+    def test_list_with_dn(self):
+        """
+        List active jobs with the right user DN
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        creds = self.get_user_credentials()
+
+        job_id = self._submit()
+
+        answer = self.app.get(url="/jobs",
+                              params={'user_dn': creds.user_dn},
+                              status=200)
+        job_list = json.loads(answer.body)
+        self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
+
+    def test_list_with_vo(self):
+        """
+        List active jobs with the right VO
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        creds = self.get_user_credentials()
+
+        job_id = self._submit()
+
+        answer = self.app.get(url="/jobs",
+                              params={'vo_name': creds.vos[0]},
                               status=200)
         job_list = json.loads(answer.body)
         self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
@@ -189,3 +239,35 @@ class TestJobListing(TestController):
                               status=200)
         state = json.loads(answer.body)
         self.assertEqual(state, 'SUBMITTED')
+
+    def test_get_job_forbidden(self):
+        """
+        Ask for a job we don't have permission to get
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        job_id = self._submit()
+
+        old_granted = UserCredentials.get_granted_level_for
+        UserCredentials.get_granted_level_for = lambda self_, op: None
+
+        answer = self.app.get("/jobs/%s" % job_id, status=403)
+
+        UserCredentials.get_granted_level_for = old_granted
+
+        error = json.loads(answer.body)
+        self.assertEqual(error['status'], '403 Forbidden')
+
+    def test_get_missing_field(self):
+        """
+        Ask for a field that doesn't exist
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        job_id = self._submit()
+
+        answer = self.app.get(url="/jobs/%s/not_really_a_field" % job_id, status=404)
+
+        error = json.loads(answer.body)
+        self.assertEqual(error['status'], '404 Not Found')
+        self.assertEqual(error['message'], 'No such field')

@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from M2Crypto import EVP
 from nose.plugins.skip import SkipTest
 import json
-import pytz
 
 from fts3rest.controllers.delegation import _generate_proxy_request
 from fts3rest.tests import TestController
@@ -15,10 +14,25 @@ class TestDelegation(TestController):
     Tests for the delegation controller
     """
 
-    def _get_termination_time(self, dlg_id):
-        answer = self.app.get(url="/delegation/%s" % dlg_id)
-        tt = datetime.strptime(str(json.loads(answer.body)['termination_time']), '%Y-%m-%dT%H:%M:%S')
-        return tt.replace(tzinfo=pytz.UTC)
+    def test_get_termination_time_not_existing(self):
+        """
+        Get the termination time for a dlg_id that hasn't delegated yet
+        """
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
+
+        answer = self.app.get(url="/delegation/%s" % creds.delegation_id, status=200)
+
+        self.assertEqual(json.loads(answer.body), None)
+
+    def test_get_termination_time(self):
+        self.test_valid_proxy()
+        creds = self.get_user_credentials()
+
+        answer = self.app.get(url="/delegation/%s" % creds.delegation_id, status=200)
+
+        termination = datetime.strptime(json.loads(answer.body)['termination_time'], '%Y-%m-%dT%H:%M:%S')
+        self.assertGreater(termination, datetime.utcnow() + timedelta(hours=2, minutes=58))
 
     def test_put_cred_without_cache(self):
         """

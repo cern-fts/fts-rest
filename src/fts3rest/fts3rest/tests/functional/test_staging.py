@@ -42,7 +42,7 @@ class TestSubmitToStaging(TestController):
 
         # Make sure it was committed to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
         self.assertEqual(db_job.job_state, 'STAGING')
@@ -80,7 +80,7 @@ class TestSubmitToStaging(TestController):
 
         # Make sure it was committed to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
         self.assertEqual(db_job.job_state, 'STAGING')
@@ -118,7 +118,7 @@ class TestSubmitToStaging(TestController):
 
         # Make sure it was committed to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
         self.assertEqual(db_job.job_state, 'STAGING')

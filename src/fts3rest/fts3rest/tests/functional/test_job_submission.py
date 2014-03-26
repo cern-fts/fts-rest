@@ -1,5 +1,6 @@
 import json
 import scipy.stats
+import urllib
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
@@ -50,7 +51,7 @@ class TestJobSubmission(TestController):
         # Validate optimizer too
         oa = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
         self.assertTrue(oa is not None)
-        self.assertTrue(oa.active > 0)
+        self.assertGreater(oa.active, 0)
 
     def test_submit(self):
         """
@@ -77,7 +78,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was commited to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(job_id, 0)
 
         self._validate_submitted(Session.query(Job).get(job_id))
 
@@ -108,12 +109,42 @@ class TestJobSubmission(TestController):
 
         # Make sure it was commited to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.reuse_job, True)
 
         return job_id
+
+    def test_submit_Y(self):
+        """
+        Submit a valid reuse job, using 'Y' instead of True
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['root://source.es/file'],
+                'destinations': ['root://dest.ch/file'],
+                'selection_strategy': 'orderly',
+                'checksum': 'adler32:1234',
+                'filesize': 1024,
+                'metadata': {'mykey': 'myvalue'},
+            }],
+            'params': {'overwrite': 'Y', 'verify_checksum': 'Y', 'reuse': 'Y'}
+        }
+
+        answer = self.app.put(url="/jobs",
+                              params=json.dumps(job),
+                              status=200)
+
+        # Make sure it was commited to the DB
+        job_id = json.loads(answer.body)['job_id']
+        self.assertGreater(len(job_id), 0)
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.reuse_job, True)
 
     def test_submit_post(self):
         """
@@ -141,7 +172,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was committed to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         self._validate_submitted(Session.query(Job).get(job_id))
 
@@ -174,7 +205,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was committed to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
 
@@ -218,7 +249,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was committed to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
         self.assertEqual(db_job.job_state, 'STAGING')
@@ -252,7 +283,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was committed to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.files[0].checksum, None)
@@ -286,7 +317,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was committed to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.files[0].checksum, '1234F')
@@ -319,7 +350,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was committed to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.files[0].user_filesize, 0)
@@ -352,7 +383,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was commited to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         self._validate_submitted(Session.query(Job).get(job_id), no_vo=True)
 
@@ -381,7 +412,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was commited to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
         self._validate_submitted(job)
@@ -430,7 +461,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was commited to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.files[0].activity, 'my-activity')
@@ -449,7 +480,7 @@ class TestJobSubmission(TestController):
                 'destinations': ['\r\n root://dest.ch/file\n\n \n'],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
-                'filesize': 1024,
+                'filesize': 1024.0,
                 'metadata': {'mykey': 'myvalue'},
             }],
             'params': {'overwrite': True, 'verify_checksum': True}
@@ -461,7 +492,7 @@ class TestJobSubmission(TestController):
 
         # Make sure it was commited to the DB
         job_id = json.loads(answer.body)['job_id']
-        self.assertTrue(len(job_id) > 0)
+        self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
         self._validate_submitted(job)
@@ -497,6 +528,6 @@ class TestJobSubmission(TestController):
         histogram, min_value, binsize, outsiders = scipy.stats.histogram(hashed_ids, defaultlimits=(0, 2 ** 16 - 1))
         chisq, pvalue = scipy.stats.chisquare(histogram)
 
-        self.assertTrue(min_value >= 0)
+        self.assertGreater(min_value, -1)
         self.assertEqual(outsiders, 0)
-        self.assertTrue(pvalue > 0.1)
+        self.assertGreater(pvalue, 0.1)

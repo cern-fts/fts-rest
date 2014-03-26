@@ -83,23 +83,6 @@ class TestJobInvalidSubmits(TestController):
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'No pair with matching protocols')
 
-    def test_missing_job(self):
-        """
-        Request an invalid job
-        """
-        self.setup_gridsite_environment()
-        response = self.app.get(
-            url="/jobs/1234x",
-            status=404
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
-
-        self.assertEquals(error['status'], '404 Not Found')
-        self.assertEquals(error['message'], 'No job with the id "1234x" has been found')
-
     def test_no_protocol(self):
         """
         Submit a valid transfer, but with urls with no protocol
@@ -352,6 +335,33 @@ class TestJobInvalidSubmits(TestController):
         self.assertEquals(error['status'], '419 Authentication Timeout')
         self.assertEquals(error['message'][0:33], 'The delegated credentials expired')
 
+    def test_submit_almost_expired_credentials(self):
+        """
+        Submission with an proxy that expires in minutes
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation(lifetime=timedelta(minutes=30))
+
+        job = {
+            'files': [{
+                'sources': ['root://source/file'],
+                'destinations': ['root://dest/file'],
+            }]
+        }
+
+        response = self.app.put(
+            url="/jobs",
+            params=json.dumps(job),
+            status=419
+        )
+
+        self.assertEquals(response.content_type, 'application/json')
+
+        error = json.loads(response.body)
+
+        self.assertEquals(error['status'], '419 Authentication Timeout')
+        self.assertEquals(error['message'], 'The delegated credentials has less than one hour left')
+
     def test_submit_missing_path(self):
         """
         Submit with a url that has no path
@@ -378,3 +388,45 @@ class TestJobInvalidSubmits(TestController):
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'Invalid value within the request: Missing path (http://google.com)')
+
+    def test_submit_no_files(self):
+        """
+        Submit with empty files
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {'files': []}
+
+        response = self.app.put(
+            url="/jobs",
+            params=json.dumps(job),
+            status=400
+        )
+
+        error = json.loads(response.body)
+
+        self.assertEqual(error['status'], '400 Bad Request')
+        self.assertEqual(error['message'], 'No transfers specified')
+
+    def test_invalid_files(self):
+        """
+        Set something completely wrong in files
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': 48,
+        }
+
+        response = self.app.put(
+            url="/jobs",
+            params=json.dumps(job),
+            status=400
+        )
+
+        error = json.loads(response.body)
+
+        self.assertEqual(error['status'], '400 Bad Request')
+        self.assertEqual(error['message'][0:17], 'Malformed request')
