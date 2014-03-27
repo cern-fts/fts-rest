@@ -5,7 +5,7 @@ from StringIO import StringIO
 
 class RequestFactory(object):
 
-    def __init__(self, ucert, ukey, cafile=None, capath=None, passwd=None, verify=False):
+    def __init__(self, ucert, ukey, cafile=None, capath=None, passwd=None, verify=True):
         self.ucert = ucert
         self.ukey  = ukey
         self.passwd = passwd
@@ -49,10 +49,10 @@ class RequestFactory(object):
         handle = pycurl.Curl()
         handle.setopt(pycurl.SSL_VERIFYPEER, self.verify)
         handle.setopt(pycurl.SSL_VERIFYHOST, self.verify)
-        handle.setopt(pycurl.CAPATH, self.capath)
-        handle.setopt(pycurl.CAINFO, self.cafile)
         handle.setopt(pycurl.SSLCERT, self.ucert)
         handle.setopt(pycurl.SSLKEY, self.ukey)
+        handle.setopt(pycurl.CAPATH, self.capath)
+        handle.setopt(pycurl.CAINFO, self.cafile)
         if self.passwd:
             handle.setopt(pycurl.SSLKEYPASSWD, self.passwd)
 
