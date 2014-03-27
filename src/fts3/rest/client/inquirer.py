@@ -31,3 +31,6 @@ class Inquirer(object):
         url += query
 
         return json.loads(self.context.get(url))
+
+    def whoami(self):
+        return json.loads(self.context.get("/whoami"))
