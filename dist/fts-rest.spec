@@ -28,7 +28,7 @@ Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  cmake
 BuildRequires:  m2crypto
-BuildRequires:  python-fts
+BuildRequires:  python-fts >= %{version}
 BuildRequires:  python-jsonschema
 BuildRequires:  python-nose
 BuildRequires:  python-pylons
