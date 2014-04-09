@@ -16,7 +16,7 @@
 %endif
 
 Name:			python-fts
-Version:		3.2.1
+Version:		3.2.2
 Release:		1
 BuildArch:		noarch
 Summary:		FTS3 database model
@@ -34,7 +34,7 @@ BuildRequires:	python-devel
 
 Requires:		python-sqlalchemy
 Requires:		m2crypto
-Requires:		pytz
+Requires:		python-dateutil
 
 %description
 This package provides an object model of the FTS3
