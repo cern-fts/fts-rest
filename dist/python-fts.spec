@@ -34,7 +34,7 @@ BuildRequires:	python-devel
 
 Requires:		python-sqlalchemy
 Requires:		m2crypto
-Requires:		python-dateutil
+Requires:		pytz
 
 %description
 This package provides an object model of the FTS3
