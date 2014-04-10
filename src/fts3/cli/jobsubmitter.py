@@ -8,6 +8,13 @@ from base import Base
 from fts3.rest.client import Submitter, Delegator, Inquirer, Context
 
 
+def _metadata(data):
+    try:
+        return json.loads(data)
+    except:
+        return str(data)
+
+
 class JobSubmitter(Base):
     def __init__(self, argv=sys.argv[1:]):
         super(JobSubmitter, self).__init__(extra_args='SOURCE DESTINATION [CHECKSUM]')
@@ -90,12 +97,11 @@ class JobSubmitter(Base):
 
         transfers = self._build_transfers()
 
-        if self.options.retry <= -2:
+        if self.options.retry < 0:
             self.options.retry = 0
 
         submitter = Submitter(context)
-        if self.options.job_metadata:
-            self.options.job_metadata = self.options.job_metadata.replace("\"", "'")
+
         job_id = submitter.submit(
             transfers,
             bring_online=self.options.bring_online,
@@ -103,10 +109,10 @@ class JobSubmitter(Base):
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,
             fail_nearline=self.options.fail_nearline,
-            file_metadata=self.options.file_metadata,
+            file_metadata=_metadata(self.options.file_metadata),
             filesize=self.options.file_size,
             gridftp=self.options.gridftp_params,
-            job_metadata=self.options.job_metadata,
+            job_metadata=_metadata(self.options.job_metadata),
             overwrite=self.options.overwrite,
             copy_pin_lifetime=self.options.pin_lifetime,
             reuse=self.options.reuse,
@@ -147,10 +153,10 @@ class JobSubmitter(Base):
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,
             fail_nearline=self.options.fail_nearline,
-            file_metadata=self.options.file_metadata,
+            file_metadata=_metadata(self.options.file_metadata),
             filesize=self.options.file_size,
             gridftp=self.options.gridftp_params,
-            job_metadata=self.options.job_metadata,
+            job_metadata=_metadata(self.options.job_metadata),
             overwrite=self.options.overwrite,
             copy_pin_lifetime=self.options.pin_lifetime,
             reuse=self.options.reuse
