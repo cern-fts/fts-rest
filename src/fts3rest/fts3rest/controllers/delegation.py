@@ -141,7 +141,7 @@ class DelegationController(BaseController):
         user = request.environ['fts3.User.Credentials']
 
         if dlg_id != user.delegation_id:
-            raise HTTPForbidden('The resquested ID and the credentials ID do not match')
+            raise HTTPForbidden('The requested ID and the credentials ID do not match')
 
         cred = Session.query(Credential).get((user.delegation_id, user.user_dn))
         if not cred:
@@ -160,7 +160,7 @@ class DelegationController(BaseController):
         user = request.environ['fts3.User.Credentials']
 
         if dlg_id != user.delegation_id:
-            raise HTTPForbidden('The resquested ID and the credentials ID do not match')
+            raise HTTPForbidden('The requested ID and the credentials ID do not match')
 
         cred = Session.query(Credential).get((user.delegation_id, user.user_dn))
         if not cred:
@@ -185,7 +185,7 @@ class DelegationController(BaseController):
         user = request.environ['fts3.User.Credentials']
 
         if dlg_id != user.delegation_id:
-            raise HTTPForbidden('The resquested ID and the credentials ID do not match')
+            raise HTTPForbidden('The requested ID and the credentials ID do not match')
 
         credential_cache = Session.query(CredentialCache)\
             .get((user.delegation_id, user.user_dn))
@@ -222,7 +222,7 @@ class DelegationController(BaseController):
         user = request.environ['fts3.User.Credentials']
 
         if dlg_id != user.delegation_id:
-            raise HTTPForbidden('The resquested ID and the credentials ID do not match')
+            raise HTTPForbidden('The requested ID and the credentials ID do not match')
 
         credential_cache = Session.query(CredentialCache)\
             .get((user.delegation_id, user.user_dn))
@@ -266,7 +266,7 @@ class DelegationController(BaseController):
         user = request.environ['fts3.User.Credentials']
 
         if dlg_id != user.delegation_id:
-            raise HTTPForbidden('The resquested ID and the credentials ID do not match')
+            raise HTTPForbidden('The requested ID and the credentials ID do not match')
 
         try:
             voms_list = json.loads(request.body)
