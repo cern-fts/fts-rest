@@ -122,6 +122,7 @@ def get_controllers():
     """
     controllers = {}
     for f in os.listdir(controllers_path):
+        imp.load_source('fts3rest.controllers', os.path.join(controllers_path, '__init__.py'))
         if not f.endswith('__init__.py') and f.endswith('.py'):
             path = os.path.join(controllers_path, f)
             cname = f.split('.')[0]
