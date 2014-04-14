@@ -5,6 +5,7 @@ install(PROGRAMS      fts-rest-transfer-cancel
                       fts-rest-transfer-status
                       fts-rest-transfer-submit
                       fts-rest-delegate
+                      fts-rest-whoami
         DESTINATION   usr/bin
 )
 

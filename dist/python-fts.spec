@@ -1,19 +1,14 @@
-%{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
-%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
-
 %if 0%{?rhel} == 5
 %global with_python26 1
 %endif
 
 %if 0%{?with_python26}
-%global __python26 %{_bindir}/python2.6
-%global py26dir %{_builddir}/python26-%{name}-%{version}-%{release}
-%{!?python26_sitelib: %global python26_sitelib %(%{__python26} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
-%{!?python26_sitearch: %global python26_sitearch %(%{__python26} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
-# Update rpm byte compilation script so that we get the modules compiled by the
-# correct inerpreter
-%global __os_install_post %__multiple_python_os_install_post
+%global __python %{_bindir}/python2.6
+%global __os_install_post %{?__python26_os_install_post}
 %endif
+
+%{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
+%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
 
 Name:			python-fts
 Version:		3.2.2
@@ -28,12 +23,15 @@ Buildroot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %if 0%{?with_python26}
 BuildRequires:	python26-devel
+Requires:		python26-m2crypto
+Requires:       python26-pycurl
+Requires:		python26-sqlalchemy
 %else
-BuildRequires:	python-devel
-%endif
-
-Requires:		python-sqlalchemy
 Requires:		m2crypto
+BuildRequires:	python-devel
+Requires:       python-pycurl
+Requires:		python-sqlalchemy
+%endif
 
 %description
 This package provides an object model of the FTS3
@@ -55,6 +53,9 @@ rm -rf %{buildroot}
 %{python_sitearch}/*
 
 %changelog
+* Mon Apr 14 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.2.2-1
+- Adapted for EL5
+
 * Mon Jan 03 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.1.0-1
 - Major and minor versions follow FTS3
 
