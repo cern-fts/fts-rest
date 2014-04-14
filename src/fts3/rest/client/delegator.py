@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from M2Crypto import X509, ASN1, m2
+from M2Crypto.ASN1 import UTC
 import ctypes
 import json
-import pytz
 import sys
 
 from exceptions import *
@@ -77,9 +77,9 @@ class Delegator(object):
 
     def _sign_request(self, x509_request, lifetime):
         not_before = ASN1.ASN1_UTCTIME()
-        not_before.set_datetime(datetime.now(pytz.UTC))
+        not_before.set_datetime(datetime.now(UTC))
         not_after = ASN1.ASN1_UTCTIME()
-        not_after.set_datetime(datetime.now(pytz.UTC) + lifetime)
+        not_after.set_datetime(datetime.now(UTC) + lifetime)
 
         proxy_subject = X509.X509_Name()
         for c in self.context.x509.get_subject():

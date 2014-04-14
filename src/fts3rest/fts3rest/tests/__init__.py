@@ -7,17 +7,18 @@ command.
 This module initializes the application via ``websetup`` (`paster
 setup-app`) and provides the base testing objects.
 """
+import os
+import pylons.test
 import time
+
 from datetime import datetime, timedelta
 from unittest import TestCase
 from M2Crypto import ASN1, X509, RSA, EVP
-import os
+from M2Crypto.ASN1 import UTC
 from paste.script.appinstall import SetupCommand
 from pylons import url
 from routes.util import URLGenerator
 from webtest import TestApp
-import pylons.test
-import pytz
 
 from fts3rest.lib.middleware import fts3auth
 from fts3rest.lib.base import Session
@@ -40,9 +41,9 @@ def _generate_mock_cert():
     cert = X509.X509()
     cert.set_pubkey(pkey)
     not_before = ASN1.ASN1_UTCTIME()
-    not_before.set_datetime(datetime.now(pytz.UTC))
+    not_before.set_datetime(datetime.now(UTC))
     not_after = ASN1.ASN1_UTCTIME()
-    not_after.set_datetime(datetime.now(pytz.UTC) + timedelta(hours=24))
+    not_after.set_datetime(datetime.now(UTC) + timedelta(hours=24))
     cert.set_not_before(not_before)
     cert.set_not_after(not_after)
     cert.sign(pkey, 'md5')
@@ -138,9 +139,9 @@ class TestController(TestCase):
         x509_request = X509.load_request_string(str(request_pem))
 
         not_before = ASN1.ASN1_UTCTIME()
-        not_before.set_datetime(datetime.now(pytz.UTC))
+        not_before.set_datetime(datetime.now(UTC))
         not_after = ASN1.ASN1_UTCTIME()
-        not_after.set_datetime(datetime.now(pytz.UTC) + timedelta(hours=3))
+        not_after.set_datetime(datetime.now(UTC) + timedelta(hours=3))
 
         issuer_subject = X509.X509_Name()
         for c in issuer:

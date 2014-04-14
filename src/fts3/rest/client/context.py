@@ -1,10 +1,10 @@
 from datetime import datetime
 from M2Crypto import X509, RSA, EVP, BIO
+from M2Crypto.ASN1 import UTC
 import getpass
 import json
 import logging
 import os
-import pytz
 import sys
 
 from exceptions import *
@@ -60,7 +60,7 @@ class Context(object):
             self.x509_list = _get_x509_list(ucert, self.logger)
             self.x509 = self.x509_list[0]
             not_after = self.x509.get_not_after()
-            if not_after.get_datetime() < datetime.now(pytz.UTC):
+            if not_after.get_datetime() < datetime.now(UTC):
                 raise Exception("Proxy expired!")
 
             self.rsa_key = RSA.load_key(ukey, self._read_passwd_from_stdin)
