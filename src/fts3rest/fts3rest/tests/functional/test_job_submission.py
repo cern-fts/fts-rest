@@ -507,7 +507,7 @@ class TestJobSubmission(TestController):
         self.push_delegation()
 
         files = []
-        for r in xrange(1000):
+        for r in xrange(5000):
             files.append({
                 'sources': ["root://source.es/file%d" % r],
                 'destinations': ["root://dest.ch/file%d" % r]
