@@ -3,6 +3,7 @@ from M2Crypto import X509, ASN1, m2
 from M2Crypto.ASN1 import UTC
 import ctypes
 import json
+import platform
 import sys
 
 from exceptions import *
@@ -49,7 +50,36 @@ def _workaround_new_extension(name, value, critical=False, issuer=None, _pyfree=
     return x509_ext
 
 
+def _m2crypto_extensions_broken():
+    (dist, version, id) = platform.linux_distribution(full_distribution_name=False)
+    if dist.lower() == 'redhat' and int(version.split('.')[0]) < 6:
+        return True
+    return False
+
+
 class Delegator(object):
+
+    nid = {'C'                      : m2.NID_countryName,
+           'SP'                     : m2.NID_stateOrProvinceName,
+           'ST'                     : m2.NID_stateOrProvinceName,
+           'stateOrProvinceName'    : m2.NID_stateOrProvinceName,
+           'L'                      : m2.NID_localityName,
+           'localityName'           : m2.NID_localityName,
+           'O'                      : m2.NID_organizationName,
+           'organizationName'       : m2.NID_organizationName,
+           'OU'                     : m2.NID_organizationalUnitName,
+           'organizationUnitName'   : m2.NID_organizationalUnitName,
+           'CN'                     : m2.NID_commonName,
+           'commonName'             : m2.NID_commonName,
+           'Email'                  : m2.NID_pkcs9_emailAddress,
+           'emailAddress'           : m2.NID_pkcs9_emailAddress,
+           'serialNumber'           : m2.NID_serialNumber,
+           'SN'                     : m2.NID_surname,
+           'surname'                : m2.NID_surname,
+           'GN'                     : m2.NID_givenName,
+           'givenName'              : m2.NID_givenName,
+           'DC'                     : 391
+           }
 
     def __init__(self, context):
         self.context = context
@@ -82,9 +112,11 @@ class Delegator(object):
         not_after.set_datetime(datetime.now(UTC) + lifetime)
 
         proxy_subject = X509.X509_Name()
-        for c in self.context.x509.get_subject():
-            m2.x509_name_add_entry(proxy_subject._ptr(), c._ptr(), -1, 0)
-        proxy_subject.add_entry_by_txt('commonName', 0x1000, 'proxy', -1, -1, 0)
+        for key, value in map(lambda e: e.split('='), self.context.x509.get_subject().as_text().split(',')):
+            key = key.strip()
+            value = value.strip()
+            m2.x509_name_set_by_nid(proxy_subject._ptr(), Delegator.nid[key], value)
+        m2.x509_name_set_by_nid(proxy_subject._ptr(), X509.X509_Name.nid['commonName'], 'proxy')
 
         proxy = X509.X509()
         proxy.set_subject(proxy_subject)
@@ -93,15 +125,19 @@ class Delegator(object):
         proxy.set_issuer(self.context.x509.get_subject())
         proxy.set_pubkey(x509_request.get_pubkey())
 
-        # X509v3 Basic Constraints
-        proxy.add_ext(X509.new_extension('basicConstraints', 'CA:FALSE', critical=True))
-        # X509v3 Key Usage
-        proxy.add_ext(X509.new_extension('keyUsage', 'Digital Signature, Key Encipherment', critical=True))
-        #X509v3 Authority Key Identifier
-        identifier_ext = _workaround_new_extension(
-            'authorityKeyIdentifier', 'keyid', critical=False, issuer=self.context.x509
-        )
-        proxy.add_ext(identifier_ext)
+        # Extensions are broken in SL5!!
+        if _m2crypto_extensions_broken():
+            self.context.logger.warning("X509v3 extensions disabled!")
+        else:
+            # X509v3 Basic Constraints
+            proxy.add_ext(X509.new_extension('basicConstraints', 'CA:FALSE', critical=True))
+            # X509v3 Key Usage
+            proxy.add_ext(X509.new_extension('keyUsage', 'Digital Signature, Key Encipherment', critical=True))
+            #X509v3 Authority Key Identifier
+            identifier_ext = _workaround_new_extension(
+                'authorityKeyIdentifier', 'keyid', critical=False, issuer=self.context.x509
+            )
+            proxy.add_ext(identifier_ext)
 
         # Make sure the proxy is not longer than any other inside the chain
         any_rfc_proxies = False
