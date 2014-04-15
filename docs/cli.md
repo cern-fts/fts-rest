@@ -315,7 +315,7 @@ The expected format is similar as the one expected by the gSOAP-based fts-transf
 
 The example above represents one single job with two transfers: one from `gsiftp://source.host/file` to `gsiftp://destination.host/file` and another from `gsiftp://source.host/file2` to `gsiftp://destination.host/file2`.
 
-But you can do [more complex things](cli-bulk.md) with this format!
+But you can do [more complex things](bulk.md) with this format!
 
 ### fts-rest-whoami
 This command exists for convenience. It can be used to check, as the name suggests, who are we for the server.

@@ -83,7 +83,13 @@ class JobSubmitter(Base):
         if self.options.bulk_file:
             filecontent = open(self.options.bulk_file).read()
             bulk = json.loads(filecontent)
-            return bulk["Files"]
+            if "files" in bulk:
+                return bulk["files"]
+            elif "Files" in bulk:
+                return bulk["Files"]
+            else:
+                self.logger.critical("Could not find any transfers")
+                sys.exit(1)
         else:
             return [{"sources": [self.source], "destinations": [self.destination]}]
 

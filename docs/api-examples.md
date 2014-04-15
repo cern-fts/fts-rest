@@ -241,4 +241,4 @@ Here you can see an example of a submission file
 ```
 
 Please, note that comments are not supported in JSON. They are just shown here as a help.
-If you want to check other more complex submission modes, you can check the reference page for the [bulk submission format](cli-bulk.md).
+If you want to check other more complex submission modes, you can check the reference page for the [bulk submission format](bulk.md).

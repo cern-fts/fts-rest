@@ -1,5 +1,5 @@
-FTS3 RESTful CLI: Bulk submissions
-==================================
+Bulk submissions
+================
 
 One job with multiple files
 ---------------------------
@@ -7,16 +7,16 @@ This is the basic submission pattern: several files that belong to a single job.
 
 ```json
 {
-  "Files": [
+  "files": [
     {
       "sources": [
         "gsiftp://source.host/file"
-      ], 
+      ],
       "destinations": [
         "gsiftp://destination.host/file"
       ],
-      "metadata": "file-metadata", 
-      "checksum": "ADLER32:1234", 
+      "metadata": "file-metadata",
+      "checksum": "ADLER32:1234",
       "filesize": 1024
     },
     {
@@ -47,17 +47,17 @@ You can provide several sources and one single destination, so if A to B fails, 
 
 ```json
 {
-  "Files": [
+  "files": [
     {
       "sources": [
         "gsiftp://source.host/file", "gsiftp://alternative.host/file"
-      ], 
+      ],
       "destinations": [
         "gsiftp://destination.host/file"
       ],
       "selection_strategy": "orderly",
-      "metadata": "file-metadata", 
-      "checksum": "ADLER32:1234", 
+      "metadata": "file-metadata",
+      "checksum": "ADLER32:1234",
       "filesize": 1024
     }
   ]
@@ -71,17 +71,17 @@ The same can be achieved but even combining protocols.
 
 ```json
 {
-  "Files": [
+  "files": [
     {
       "sources": [
         "davs://source.host/file", "gsiftp://source.host/file"
-      ], 
+      ],
       "destinations": [
         "davs://destination.host/file", "gsiftp://destination.host/file"
       ],
       "selection_strategy": "orderly",
-      "metadata": "file-metadata", 
-      "checksum": "ADLER32:1234", 
+      "metadata": "file-metadata",
+      "checksum": "ADLER32:1234",
       "filesize": 1024
     }
   ]
