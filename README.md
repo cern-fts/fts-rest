@@ -3,6 +3,8 @@ FTS3-REST
 
 This is the FTS3 RESTful API.
 
+For more detailed information about installation, usage, etc... please, check the [doc](doc/README.md) subdirectory.
+
 About FTS3
 ----------
 The File Transfer Service is a transfer job scheduler for scientific experiments producing, analyzing and storing high amount of data, used mainly in CERN/LHC experiments.
