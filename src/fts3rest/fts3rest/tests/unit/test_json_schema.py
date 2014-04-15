@@ -8,7 +8,7 @@ class TestJsonSchema(unittest.TestCase):
     Use jsonschema to check that the JSON-Schema provided by the API
     is correct.
     """
-    
+
     def setUp(self):
         self.data = {"files": [
                         {
@@ -28,7 +28,8 @@ class TestJsonSchema(unittest.TestCase):
                         "job_metadata": {"activity": "test"},
                         "source_spacetoken": None,
                         "overwrite": True,
-                        "gridftp": None
+                        "gridftp": None,
+                        "multihop": True
                       }
                     }
         self.schema = SubmitSchema
@@ -52,8 +53,8 @@ class TestJsonSchema(unittest.TestCase):
         """
         del self.data['params']
         jsonschema.validate(self.data, self.schema)
-        
-        
+
+
     def test_bad_reuse(self):
         """
         reuse parameter expects a boolean
@@ -76,4 +77,3 @@ class TestJsonSchema(unittest.TestCase):
         """
         self.data['files'][0]['sources'] = 'srm://srm.grid.sara.nl:8443/pnfs/grid.sara.nl/data/dteam/test.rand'
         self.assertRaises(jsonschema.ValidationError, jsonschema.validate, self.data, self.schema)
-

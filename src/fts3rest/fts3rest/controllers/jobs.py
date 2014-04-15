@@ -29,6 +29,7 @@ DEFAULT_PARAMS = {
     'job_metadata': None,
     'overwrite': False,
     'reuse': False,
+    'multihop': False,
     'source_spacetoken': '',
     'spacetoken': '',
     'retry': 0
@@ -178,7 +179,7 @@ def _setup_job_from_dict(job_dict, user):
         job = dict(
             job_id=job_id,
             job_state='SUBMITTED',
-            reuse_job=_yes_or_no(params['reuse']),
+            reuse_job='H' if params['multihop'] else _yes_or_no(params['reuse']),
             retry=int(params['retry']),
             job_params=params['gridftp'],
             submit_host=socket.getfqdn(),

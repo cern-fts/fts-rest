@@ -48,8 +48,9 @@ class Flag(TypeDecorator):
             return len(value) > 0 and value.upper() != self.negative
 
 
-# This is used for the verify_checksum flag, which actually can be
-# True, False and 'Relaxed' (r)
+# This is used for flags that can be True, False, or some other thing
+# i.e. verify_checksum flag, which can be True, False and 'Relaxed' (r)
+#      reuse_job, which can be True, False and 'Multihop' (h)
 class TernaryFlag(TypeDecorator):
     impl = String
 

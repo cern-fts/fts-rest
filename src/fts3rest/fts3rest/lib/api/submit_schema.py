@@ -56,7 +56,10 @@ paramSchema = {
             'type': ['string', 'null'],
             'title': 'Reserved for future usage'
         },
-        'retry': {'type': ['integer', 'null']}
+        'retry': {'type': ['integer', 'null']},
+        'multihop': {
+            'type': ['boolean', 'null']
+        }
     },
 }
 
