@@ -57,6 +57,8 @@ class JobSubmitter(Base):
         self.opt_parser.add_option('--retry', dest='retry', type='int', default=0,
                                    help='Number of retries. If 0, the server default will be used.'
                                         'If negative, there will be no retries.')
+        self.opt_parser.add_option('-m', '--multi-hop', dest='multihop', default=False, action='store_true',
+                                   help='submit a multihop transfer.')
         (self.options, self.args) = self.opt_parser.parse_args(argv)
 
         if self.options.endpoint is None:
@@ -122,7 +124,8 @@ class JobSubmitter(Base):
             overwrite=self.options.overwrite,
             copy_pin_lifetime=self.options.pin_lifetime,
             reuse=self.options.reuse,
-            retry=self.options.retry
+            retry=self.options.retry,
+            multihop=self.options.multihop
         )
 
         if self.options.json:
@@ -165,7 +168,8 @@ class JobSubmitter(Base):
             job_metadata=_metadata(self.options.job_metadata),
             overwrite=self.options.overwrite,
             copy_pin_lifetime=self.options.pin_lifetime,
-            reuse=self.options.reuse
+            reuse=self.options.reuse,
+            multihop=self.options.multihop
         )
         return None
 

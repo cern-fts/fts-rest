@@ -133,7 +133,7 @@ $ fts-rest-transfer-status -s https://fts3-devel.cern.ch:8446 c079a636-c363-11e3
 Request ID: c079a636-c363-11e3-b7e5-02163e009f5a
 Status: FINISHED
 Client DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=saketag/CN=678984/CN=Alejandro Alvarez Ayllon
-Reason: 
+Reason:
 Submission time: 2014-04-13T23:31:34
 Priority: 3
 VO Name: dteam
@@ -146,80 +146,80 @@ $ fts-rest-transfer-status -s https://fts3-devel.cern.ch:8446 c079a636-c363-11e3
 ```
 ```json
 {
-  "cred_id": "0ef8fb17bc42a356", 
-  "user_dn": "/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=saketag/CN=678984/CN=Alejandro Alvarez Ayllon", 
-  "retry": 0, 
-  "job_id": "c079a636-c363-11e3-b7e5-02163e009f5a", 
-  "cancel_job": false, 
-  "job_finished": "2014-04-13T23:31:37", 
-  "submit_host": "fts3devel01.cern.ch", 
-  "priority": 3, 
-  "source_space_token": "", 
-  "max_time_in_queue": null, 
+  "cred_id": "0ef8fb17bc42a356",
+  "user_dn": "/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=saketag/CN=678984/CN=Alejandro Alvarez Ayllon",
+  "retry": 0,
+  "job_id": "c079a636-c363-11e3-b7e5-02163e009f5a",
+  "cancel_job": false,
+  "job_finished": "2014-04-13T23:31:37",
+  "submit_host": "fts3devel01.cern.ch",
+  "priority": 3,
+  "source_space_token": "",
+  "max_time_in_queue": null,
   "job_metadata": {
-    "test": "test_bring_online_only", 
+    "test": "test_bring_online_only",
     "label": "fts3-tests"
-  }, 
-  "source_se": "srm://hepgrid11.ph.liv.ac.uk", 
-  "user_cred": "", 
-  "reuse_job": false, 
+  },
+  "source_se": "srm://hepgrid11.ph.liv.ac.uk",
+  "user_cred": "",
+  "reuse_job": false,
   "files": [
     {
-      "symbolicname": null, 
-      "tx_duration": null, 
-      "pid": null, 
-      "hashed_id": 16774, 
-      "num_failures": null, 
-      "dest_surl": "srm://hepgrid11.ph.liv.ac.uk:8446/srm/managerv2?SFN=/dpm/ph.liv.ac.uk/home/dteam//fts3tests.5c48938b-e4fe-44e6-9a3e-a4463abe8386", 
-      "log_debug": null, 
-      "retry": 0, 
-      "job_id": "c079a636-c363-11e3-b7e5-02163e009f5a", 
-      "job_finished": null, 
-      "staging_start": "2014-04-13T23:31:36", 
-      "filesize": null, 
-      "source_se": "srm://hepgrid11.ph.liv.ac.uk", 
-      "file_state": "FINISHED", 
-      "start_time": null, 
-      "current_failures": null, 
-      "internal_file_params": null, 
-      "reason": "", 
-      "file_id": 594344, 
-      "error_phase": null, 
-      "source_surl": "srm://hepgrid11.ph.liv.ac.uk:8446/srm/managerv2?SFN=/dpm/ph.liv.ac.uk/home/dteam//fts3tests.5c48938b-e4fe-44e6-9a3e-a4463abe8386", 
-      "bringonline_token": "4899eeca-ccf5-4a4f-a0f7-fbef0adddf03", 
-      "selection_strategy": null, 
-      "retries": [], 
-      "dest_se": "srm://hepgrid11.ph.liv.ac.uk", 
-      "file_index": 0, 
-      "finish_time": null, 
-      "checksum": null, 
-      "staging_finished": "2014-04-13T23:31:37", 
-      "user_filesize": 0.0, 
-      "file_metadata": "None", 
-      "error_scope": null, 
-      "transferhost": "fts3devel01.cern.ch", 
-      "throughput": null, 
-      "activity": "default", 
-      "log_file": null, 
-      "agent_dn": null, 
-      "reason_class": null, 
+      "symbolicname": null,
+      "tx_duration": null,
+      "pid": null,
+      "hashed_id": 16774,
+      "num_failures": null,
+      "dest_surl": "srm://hepgrid11.ph.liv.ac.uk:8446/srm/managerv2?SFN=/dpm/ph.liv.ac.uk/home/dteam//fts3tests.5c48938b-e4fe-44e6-9a3e-a4463abe8386",
+      "log_debug": null,
+      "retry": 0,
+      "job_id": "c079a636-c363-11e3-b7e5-02163e009f5a",
+      "job_finished": null,
+      "staging_start": "2014-04-13T23:31:36",
+      "filesize": null,
+      "source_se": "srm://hepgrid11.ph.liv.ac.uk",
+      "file_state": "FINISHED",
+      "start_time": null,
+      "current_failures": null,
+      "internal_file_params": null,
+      "reason": "",
+      "file_id": 594344,
+      "error_phase": null,
+      "source_surl": "srm://hepgrid11.ph.liv.ac.uk:8446/srm/managerv2?SFN=/dpm/ph.liv.ac.uk/home/dteam//fts3tests.5c48938b-e4fe-44e6-9a3e-a4463abe8386",
+      "bringonline_token": "4899eeca-ccf5-4a4f-a0f7-fbef0adddf03",
+      "selection_strategy": null,
+      "retries": [],
+      "dest_se": "srm://hepgrid11.ph.liv.ac.uk",
+      "file_index": 0,
+      "finish_time": null,
+      "checksum": null,
+      "staging_finished": "2014-04-13T23:31:37",
+      "user_filesize": 0.0,
+      "file_metadata": "None",
+      "error_scope": null,
+      "transferhost": "fts3devel01.cern.ch",
+      "throughput": null,
+      "activity": "default",
+      "log_file": null,
+      "agent_dn": null,
+      "reason_class": null,
       "vo_name": "dteam"
     }
-  ], 
-  "source_token_description": null, 
-  "job_params": "", 
-  "bring_online": 120, 
-  "reason": "", 
-  "space_token": "", 
-  "submit_time": "2014-04-13T23:31:34", 
-  "dest_se": "srm://hepgrid11.ph.liv.ac.uk", 
-  "internal_job_params": null, 
-  "finish_time": "2014-04-13T23:31:37", 
-  "verify_checksum": false, 
-  "vo_name": "dteam", 
-  "copy_pin_lifetime": -1, 
-  "agent_dn": null, 
-  "job_state": "FINISHED", 
+  ],
+  "source_token_description": null,
+  "job_params": "",
+  "bring_online": 120,
+  "reason": "",
+  "space_token": "",
+  "submit_time": "2014-04-13T23:31:34",
+  "dest_se": "srm://hepgrid11.ph.liv.ac.uk",
+  "internal_job_params": null,
+  "finish_time": "2014-04-13T23:31:37",
+  "verify_checksum": false,
+  "vo_name": "dteam",
+  "copy_pin_lifetime": -1,
+  "agent_dn": null,
+  "job_state": "FINISHED",
   "overwrite_flag": false
 }
 ```
@@ -259,6 +259,7 @@ This command can be used to submit new jobs to FTS3. It has several options:
                         Name of configuration file
   --retry=RETRY         Number of retries. If 0, the server default will be
                         used.If negative, there will be no retries.
+  -m, --multi-hop        submit a multihop transfer.
 ```
 
 If can be used in two manners:
@@ -286,16 +287,16 @@ The expected format is similar as the one expected by the gSOAP-based fts-transf
 
 ```json
 {
-  "Files": [
+  "files": [
     {
       "sources": [
         "gsiftp://source.host/file"
-      ], 
+      ],
       "destinations": [
         "gsiftp://destination.host/file"
       ],
-      "metadata": "file-metadata", 
-      "checksum": "ADLER32:1234", 
+      "metadata": "file-metadata",
+      "checksum": "ADLER32:1234",
       "filesize": 1024
     },
     {
@@ -316,6 +317,8 @@ The expected format is similar as the one expected by the gSOAP-based fts-transf
 The example above represents one single job with two transfers: one from `gsiftp://source.host/file` to `gsiftp://destination.host/file` and another from `gsiftp://source.host/file2` to `gsiftp://destination.host/file2`.
 
 But you can do [more complex things](bulk.md) with this format!
+
+*Hint*: Try --dry-run to see what would be sent to the server
 
 ### fts-rest-whoami
 This command exists for convenience. It can be used to check, as the name suggests, who are we for the server.
