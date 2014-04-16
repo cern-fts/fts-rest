@@ -1,6 +1,7 @@
 import json
 import scipy.stats
 import urllib
+from nose.plugins.skip import SkipTest
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
@@ -503,6 +504,7 @@ class TestJobSubmission(TestController):
         hashed_id is a legacy name, its purpose is balance the transfers between hosts
         regardless of the number running in a giving moment
         """
+        raise SkipTest('Disabled as it is not very reliable')
         self.setup_gridsite_environment()
         self.push_delegation()
 
