@@ -3,7 +3,7 @@ FTS3-REST
 
 This is the FTS3 RESTful API.
 
-For more detailed information about installation, usage, etc... please, check the [doc](doc/README.md) subdirectory.
+For more detailed information about installation, usage, etc... please, check the [docs](docs/README.md) subdirectory.
 
 About FTS3
 ----------
