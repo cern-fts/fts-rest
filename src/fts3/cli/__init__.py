@@ -13,6 +13,8 @@ class FTS3CliFormatter(logging.Formatter):
 
         if record.levelno == logging.CRITICAL:
             self._fmt = 'Error: %(msg)s'
+        elif record.levelno == logging.WARNING:
+            self._fmt = '# Warning: %(msg)s'
         elif record.levelno == logging.DEBUG:
             self._fmt = '# %(msg)s'
         else:

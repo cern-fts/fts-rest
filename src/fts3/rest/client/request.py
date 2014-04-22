@@ -49,10 +49,14 @@ class RequestFactory(object):
         handle = pycurl.Curl()
         handle.setopt(pycurl.SSL_VERIFYPEER, self.verify)
         handle.setopt(pycurl.SSL_VERIFYHOST, self.verify)
-        handle.setopt(pycurl.SSLCERT, self.ucert)
-        handle.setopt(pycurl.SSLKEY, self.ukey)
-        handle.setopt(pycurl.CAPATH, self.capath)
-        handle.setopt(pycurl.CAINFO, self.cafile)
+        if self.ucert:
+            handle.setopt(pycurl.SSLCERT, self.ucert)
+        if self.ukey:
+            handle.setopt(pycurl.SSLKEY, self.ukey)
+        if self.capath:
+            handle.setopt(pycurl.CAPATH, self.capath)
+        if self.cafile:
+            handle.setopt(pycurl.CAINFO, self.cafile)
         if self.passwd:
             handle.setopt(pycurl.SSLKEYPASSWD, self.passwd)
 

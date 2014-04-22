@@ -44,17 +44,19 @@ class Context(object):
         return self.passwd
 
     def _set_x509(self, ucert, ukey):
+        if not ukey:
+            if ucert:
+                ukey = ucert
+            elif 'X509_USER_PROXY' in os.environ:
+                ukey = os.environ['X509_USER_PROXY']
+            elif 'X509_USER_KEY' in os.environ:
+                ukey = os.environ['X509_USER_KEY']
+
         if not ucert:
             if 'X509_USER_PROXY' in os.environ:
                 ucert = os.environ['X509_USER_PROXY']
             elif 'X509_USER_CERT' in os.environ:
                 ucert = os.environ['X509_USER_CERT']
-
-        if not ukey:
-            if 'X509_USER_PROXY' in os.environ:
-                ukey = os.environ['X509_USER_PROXY']
-            elif 'X509_USER_KEY' in os.environ:
-                ukey = os.environ['X509_USER_KEY']
 
         if ucert and ukey:
             self.x509_list = _get_x509_list(ucert, self.logger)
@@ -63,7 +65,13 @@ class Context(object):
             if not_after.get_datetime() < datetime.now(UTC):
                 raise Exception("Proxy expired!")
 
-            self.rsa_key = RSA.load_key(ukey, self._read_passwd_from_stdin)
+            try:
+                self.rsa_key = RSA.load_key(ukey, self._read_passwd_from_stdin)
+            except RSA.RSAError, e:
+                raise RSA.RSAError("Could not load %s: %s" % (ukey, str(e)))
+            except Exception, e:
+                raise Exception("Could not load %s: %s" % (ukey, str(e)))
+
             self.evp_key = EVP.PKey()
             self.evp_key.assign_rsa(self.rsa_key)
 
@@ -72,8 +80,11 @@ class Context(object):
         else:
             self.ucert = self.ukey = None
 
-        logging.debug("User certificte: %s" % self.ucert)
-        logging.debug("User private key: %s" % self.ukey)
+        if not self.ucert and not self.ukey:
+            logging.warning("No user certificate given!")
+        else:
+            logging.debug("User certificte: %s" % self.ucert)
+            logging.debug("User private key: %s" % self.ukey)
 
     def _set_endpoint(self, endpoint):
         self.endpoint = endpoint
