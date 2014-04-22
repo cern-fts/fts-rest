@@ -22,8 +22,35 @@ class FTS3CliFormatter(logging.Formatter):
 
         return logging.Formatter.format(self, record)
 
+
+class FTS3CliFilter(object):
+
+    def __init__(self, includes):
+        self.includes = includes
+
+    def filter(self, record):
+        return record.levelno in self.includes
+
+
+class FTS3CliFilterExclude(object):
+
+    def __init__(self, excludes):
+        self.excludes = excludes
+
+    def filter(self, record):
+        return record.levelno not in self.excludes
+
+
 fmt = FTS3CliFormatter()
-handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(fmt)
-logging.root.addHandler(handler)
+stdout_handler = logging.StreamHandler(sys.stdout)
+stderr_handler = logging.StreamHandler(sys.stderr)
+
+stdout_handler.setFormatter(fmt)
+stdout_handler.addFilter(FTS3CliFilterExclude([logging.WARNING, logging.DEBUG]))
+stderr_handler.setFormatter(fmt)
+stderr_handler.addFilter(FTS3CliFilter([logging.WARNING, logging.DEBUG]))
+
+logging.root.addHandler(stdout_handler)
+logging.root.addHandler(stderr_handler)
+
 logging.root.setLevel(logging.INFO)
