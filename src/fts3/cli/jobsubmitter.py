@@ -103,15 +103,11 @@ class JobSubmitter(Base):
         delegator = Delegator(context)
         delegator.delegate(timedelta(minutes=self.options.proxy_lifetime))
 
-        transfers = self._build_transfers()
-
-        if self.options.retry < 0:
-            self.options.retry = 0
-
         submitter = Submitter(context)
 
         job_id = submitter.submit(
-            transfers,
+            self._build_transfers(),
+            checksum=self.checksum,
             bring_online=self.options.bring_online,
             verify_checksum=verify_checksum,
             spacetoken=self.options.destination_token,
@@ -169,6 +165,7 @@ class JobSubmitter(Base):
             overwrite=self.options.overwrite,
             copy_pin_lifetime=self.options.pin_lifetime,
             reuse=self.options.reuse,
+            retry=self.options.retry,
             multihop=self.options.multihop
         )
         return None
