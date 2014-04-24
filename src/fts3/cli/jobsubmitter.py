@@ -77,6 +77,8 @@ class JobSubmitter(Base):
             else:
                 self.logger.critical("Too many parameters")
                 sys.exit(1)
+        else:
+            self.checksum = None
 
         if self.options.verbose:
             self.logger.setLevel(logging.DEBUG)
