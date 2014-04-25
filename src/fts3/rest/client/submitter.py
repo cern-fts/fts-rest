@@ -15,7 +15,8 @@ class Submitter(object):
         job['params'].update(kwargs)
         if 'checksum' in kwargs:
             for f in job['files']:
-                f['checksum'] = kwargs['checksum']
+                if 'checksum' not in f:
+                    f['checksum'] = kwargs['checksum']
             del job['params']['checksum']
         if 'filesize' in kwargs:
             for f in job['files']:
