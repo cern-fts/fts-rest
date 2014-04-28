@@ -78,6 +78,9 @@ def new_job(transfers=[], verify_checksum=True, reuse=False, overwrite=False, mu
         copy_pin_lifetime: Pin lifetime
         retry:             Number of retries: <0 is no retries, 0 is server default, >0 is whatever value is passed
         metadata:          Metadata to bind to the job
+
+    Returns:
+        An initialized dictionary representing a job
     """
     params = dict(
         verify_checksum=verify_checksum,
@@ -107,7 +110,7 @@ def submit(context, job):
         job:     Dictionary representing the job
 
     Returns:
-        The JSON response with the job ID
+        The job id
     """
     submitter = Submitter(context)
     return submitter.submit(job['files'], **job['params'])

@@ -11,7 +11,7 @@ def list_jobs(context, user_dn=None, vo=None):
         vo:      Filter by vo. Can be left empty
 
     Returns:
-        The JSON message returned by the server (list of jobs)
+        Decoded JSON message returned by the server (list of jobs)
     """
     inquirer = Inquirer(context)
     return inquirer.get_job_list(user_dn, vo)
@@ -25,6 +25,9 @@ def get_job_status(context, job_id, list_files=False):
         context:    fts3.rest.client.context.Context instance
         job_id:     The job ID
         list_files: If True, the status of each individual file will be queried
+
+    Returns:
+        Decoded JSON message returned by the server (job status plus, optionally, list of files)
     """
     inquirer = Inquirer(context)
     return inquirer.get_job_status(job_id, list_files)

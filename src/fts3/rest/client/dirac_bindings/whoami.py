@@ -9,7 +9,7 @@ def whoami(context):
         context: fts3.rest.client.context.Context instance
 
     Returns:
-        The JSON message returned by the server with a representation of
+        Decoded JSON message returned by the server with a representation of
         the user credentials (as set in context)
     """
     inquirer = Inquirer(context)
