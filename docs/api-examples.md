@@ -235,8 +235,9 @@ Here you can see an example of a submission file
     "job_metadata": null,       // Any valid json object: User defined metadata
     "source_spacetoken": null,  // String: Source space token.
     "overwrite": false,         // Boolean: Overwrite the destination file.
-    "gridftp": null             // Not used yet. It can be left empty.
-    "multihop": false           /// Boolean: If set to true, the transfer will be a multihop transfer
+    "gridftp": null,            // Not used yet. It can be left empty.
+    "multihop": false,          // Boolean: If set to true, the transfer will be a multihop transfer
+    "retry": 2                  // Integer: Number of retries, if the error is recoverable
   }
 }
 ```
