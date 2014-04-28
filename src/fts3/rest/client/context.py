@@ -10,16 +10,18 @@ import sys
 from exceptions import *
 from request import RequestFactory
 
+log = logging.getLogger(__name__)
+
 
 # Return a list of certificates from the file
-def _get_x509_list(cert, logger):
+def _get_x509_list(cert):
     x509_list = []
     fd = BIO.openfile(cert, 'rb')
     cert = X509.load_cert_bio(fd)
     try:
         while True:
             x509_list.append(cert)
-            logger.debug("Loaded " + cert.get_subject().as_text())
+            log.debug("Loaded " + cert.get_subject().as_text())
             cert = X509.load_cert_bio(fd)
     except X509.X509Error:
         # When there are no more certs, this is what we get, so it is fine
@@ -31,12 +33,6 @@ def _get_x509_list(cert, logger):
 
 # Base class for actors
 class Context(object):
-
-    def _set_logger(self, logger):
-        if logger:
-            self.logger = logger
-        else:
-            self.logger = logging.getLogger()
 
     def _read_passwd_from_stdin(self, *args, **kwargs):
         if not self.passwd:
@@ -59,7 +55,7 @@ class Context(object):
                 ucert = os.environ['X509_USER_CERT']
 
         if ucert and ukey:
-            self.x509_list = _get_x509_list(ucert, self.logger)
+            self.x509_list = _get_x509_list(ucert)
             self.x509 = self.x509_list[0]
             not_after = self.x509.get_not_after()
             if not_after.get_datetime() < datetime.now(UTC):
@@ -101,19 +97,18 @@ class Context(object):
             raise BadEndpoint("%s (%s)" % (self.endpoint, str(e))), None, sys.exc_info()[2]
         return endpoint_info
 
-    def __init__(self, endpoint, ucert=None, ukey=None, logger=None):
+    def __init__(self, endpoint, ucert=None, ukey=None):
         self.passwd = None
 
-        self._set_logger(logger)
         self._set_endpoint(endpoint)
         self._set_x509(ucert, ukey)
         self._requester = RequestFactory(self.ucert, self.ukey, passwd=self.passwd)
         self.endpoint_info = self._validate_endpoint()
         # Log obtained information
-        self.logger.debug("Using endpoint: %s" % self.endpoint_info['url'])
-        self.logger.debug("REST API version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['api'])
-        self.logger.debug("Schema version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['schema'])
-        self.logger.debug("Delegation version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['delegation'])
+        log.debug("Using endpoint: %s" % self.endpoint_info['url'])
+        log.debug("REST API version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['api'])
+        log.debug("Schema version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['schema'])
+        log.debug("Delegation version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['delegation'])
 
     def get_endpoint_info(self):
         return self.endpoint_info

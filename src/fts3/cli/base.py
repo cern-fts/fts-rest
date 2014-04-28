@@ -21,7 +21,7 @@ CONFIG_DEFAULTS = {
 class Base(object):
 
     def __init__(self, extra_args=None):
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger('fts3')
 
         # Common CLI options
         usage = None

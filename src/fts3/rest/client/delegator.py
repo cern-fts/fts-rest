@@ -3,11 +3,14 @@ from M2Crypto import X509, ASN1, m2
 from M2Crypto.ASN1 import UTC
 import ctypes
 import json
+import logging
 import platform
 import sys
 import time
 
 from exceptions import *
+
+log = logging.getLogger(__name__)
 
 # See https://bugzilla.osafoundation.org/show_bug.cgi?id=7530
 # for an explanation on all this mess
@@ -135,7 +138,7 @@ class Delegator(object):
 
         # Extensions are broken in SL5!!
         if _m2crypto_extensions_broken():
-            self.context.logger.warning("X509v3 extensions disabled!")
+            log.warning("X509v3 extensions disabled!")
         else:
             # X509v3 Basic Constraints
             proxy.add_ext(X509.new_extension('basicConstraints', 'CA:FALSE', critical=True))
@@ -194,27 +197,27 @@ class Delegator(object):
     def delegate(self, lifetime=timedelta(hours=7), force=False):
         try:
             delegation_id = self._get_delegation_id()
-            self.context.logger.debug("Delegation ID: " + delegation_id)
+            log.debug("Delegation ID: " + delegation_id)
 
             remaining_life = self._get_remaining_life(delegation_id)
 
             if remaining_life is None:
-                self.context.logger.debug("No previous delegation found")
+                log.debug("No previous delegation found")
             elif remaining_life <= timedelta(0):
-                self.context.logger.debug("The delegated credentials expired")
+                log.debug("The delegated credentials expired")
             elif remaining_life >= timedelta(hours=1):
                 if not force:
-                    self.context.logger.debug("Not bothering doing the delegation")
+                    log.debug("Not bothering doing the delegation")
                     return delegation_id
                 else:
-                    self.context.logger.debug("Delegation not expired, but this is a forced delegation")
+                    log.debug("Delegation not expired, but this is a forced delegation")
 
             # Ask for the request
-            self.context.logger.debug("Delegating")
+            log.debug("Delegating")
             x509_request = self._get_proxy_request(delegation_id)
 
             # Sign request
-            self.context.logger.debug("Signing request")
+            log.debug("Signing request")
             x509_proxy = self._sign_request(x509_request, lifetime)
             x509_proxy_pem = self._full_proxy_chain(x509_proxy)
 
