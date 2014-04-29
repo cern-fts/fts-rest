@@ -103,11 +103,17 @@ def _validate_proxy(proxy_pem, private_key_pem):
         raise ProxyException("Failed to verify the proxy, maybe signed with the wrong private key?")
 
     # Validate the subject
-    subject = '/' + '/'.join(x509_proxy.get_subject().as_text().split(', '))
-    issuer = '/' + '/'.join(x509_proxy.get_issuer().as_text().split(', '))
-    if subject != issuer + '/CN=proxy':
-        log.debug("%s != %s" % (subject, issuer + '/CN=proxy'))
-        raise ProxyException("The subject and the issuer of the proxy do not match")
+    subject = x509_proxy.get_subject().as_text().split(', ')
+    issuer  = x509_proxy.get_issuer().as_text().split(', ')
+    if subject[:-1] != issuer:
+        raise ProxyException(
+            "The subject and the issuer of the proxy do not match: %s != %s" %
+            (x509_proxy.get_subject().as_text(), x509_proxy.get_issuer().as_text())
+        )
+    elif not subject[-1].startswith('CN='):
+        raise ProxyException("Missing trailing Common Name in the proxy")
+    else:
+        log.debug("Delegated DN: " + '/'.join(subject))
 
     return expiration_time
 

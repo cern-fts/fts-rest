@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from M2Crypto import EVP
 from nose.plugins.skip import SkipTest
 import json
+import time
 
 from fts3rest.controllers.delegation import _generate_proxy_request
 from fts3rest.tests import TestController
@@ -204,3 +205,25 @@ class TestDelegation(TestController):
         proxy2 = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
         self.assertNotEqual(proxy.proxy, proxy2.proxy)
         self.assertEqual('dteam:/dteam/Role=lcgadmin', proxy2.voms_attrs)
+
+    def test_delegate_rfc(self):
+        """
+        Delegate an RFC-like proxy
+        """
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
+
+        request = self.app.get(url="/delegation/%s/request" % creds.delegation_id,
+                               status=200)
+
+        proxy = self.get_x509_proxy(
+            request.body,
+            subject=[('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User'), ('CN', str(int(time.time())))]
+        )
+
+        self.app.put(url="/delegation/%s/credential" % creds.delegation_id,
+                     params=proxy,
+                     status=201)
+
+        proxy = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
+        self.assertNotEqual(None, proxy)

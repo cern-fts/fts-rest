@@ -5,6 +5,7 @@ import ctypes
 import json
 import platform
 import sys
+import time
 
 from exceptions import *
 
@@ -55,6 +56,14 @@ def _m2crypto_extensions_broken():
     if dist.lower() == 'redhat' and int(version.split('.')[0]) < 6:
         return True
     return False
+
+
+def _add_rfc3820_extensions(proxy):
+    proxy.add_ext(X509.new_extension(
+        'proxyCertInfo',
+        'critical,language:Inherit all',
+        critical=True
+    ))
 
 
 class Delegator(object):
@@ -116,7 +125,6 @@ class Delegator(object):
             key = key.strip()
             value = value.strip()
             m2.x509_name_set_by_nid(proxy_subject._ptr(), Delegator.nid[key], value)
-        m2.x509_name_set_by_nid(proxy_subject._ptr(), X509.X509_Name.nid['commonName'], 'proxy')
 
         proxy = X509.X509()
         proxy.set_subject(proxy_subject)
@@ -139,7 +147,7 @@ class Delegator(object):
             )
             proxy.add_ext(identifier_ext)
 
-        # Make sure the proxy is not longer than any other inside the chain
+        # Make sure the proxy is not longer than any other inside the chain, and look for RFC 3820
         any_rfc_proxies = False
         for cert in self.context.x509_list:
             if cert.get_not_after().get_datetime() < not_after.get_datetime():
@@ -154,7 +162,15 @@ class Delegator(object):
         proxy.set_not_before(not_before)
 
         if any_rfc_proxies:
-            raise NotImplementedError('RFC proxies not supported yet')
+            if _m2crypto_extensions_broken():
+                raise NotImplementedError("X509v3 extensions are disabled, so RFC proxies can not be generated!")
+            else:
+                _add_rfc3820_extensions(proxy)
+
+        if any_rfc_proxies:
+            m2.x509_name_set_by_nid(proxy_subject._ptr(), X509.X509_Name.nid['commonName'], str(int(time.time())))
+        else:
+            m2.x509_name_set_by_nid(proxy_subject._ptr(), X509.X509_Name.nid['commonName'], 'proxy')
 
         proxy.set_version(2)
         proxy.sign(self.context.evp_key, 'sha1')
