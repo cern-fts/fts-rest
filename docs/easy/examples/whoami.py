@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# How to query 'whoami' using the Dirac bindings
+# How to query whoami
 #
 import json
 import logging
-import fts3.rest.client.dirac_bindings as fts3
+import fts3.rest.client.easy as fts3
 from optparse import OptionParser
 
 

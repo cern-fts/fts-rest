@@ -1,17 +1,17 @@
-DIRAC Bindings
+Easy Bindings
 ==============
 
-This subdirectory contains documentation about the provided DIRAC bindings.
+This subdirectory contains documentation about the provided Easy bindings.
 The directory [examples](examples/) contains a set of example Python programs showing
 practical uses of the bindings.
 
 The API
 -------
-For using the DIRAC bindings, you need to import `fts3.rest.client.dirac_bindings`, althought
+For using the Easy bindings, you need to import `fts3.rest.client.easy`, althought
 for convenience it can be renamed as something else
 
 ```python
-import fts3.rest.client.dirac_bindings as fts3
+import fts3.rest.client.easy as fts3
 ```
 
 In the following code snippets, an import as above is assumed.
