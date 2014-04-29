@@ -26,7 +26,7 @@ BuildRequires:  cmake
 %if 0%{?rhel} > 5
 BuildRequires:  python-fts >= %{version}
 BuildRequires:  python-jsonschema
-BuildRequires:  python-nose
+BuildRequires:  python-nose1.1
 BuildRequires:  python-pylons
 BuildRequires:  scipy
 %endif
@@ -90,7 +90,7 @@ sed -i 's:#!/usr/bin/env python:#!/usr/bin/env python26:g' src/cli/fts-rest-*
 %check
 %if 0%{?rhel} > 5
 pushd src/fts3rest
-nosetests -x
+nosetests1.1 --with-xunit --xunit-file=/tmp/nosetests.xml
 popd
 %endif
 
