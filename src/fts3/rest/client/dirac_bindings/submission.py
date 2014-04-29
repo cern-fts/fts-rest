@@ -1,4 +1,6 @@
+from datetime import timedelta
 from fts3.rest.client import Submitter
+from delegate import delegate
 
 
 def cancel(context, job_id):
@@ -59,7 +61,7 @@ def add_alternative_source(transfer, alt_source):
     return transfer
 
 
-def new_job(transfers=[], verify_checksum=True, reuse=False, overwrite=False, multihop=False,
+def new_job(transfers=None, verify_checksum=True, reuse=False, overwrite=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
             retry=-1, metadata=None):
@@ -82,6 +84,8 @@ def new_job(transfers=[], verify_checksum=True, reuse=False, overwrite=False, mu
     Returns:
         An initialized dictionary representing a job
     """
+    if transfers is None:
+        transfers = []
     params = dict(
         verify_checksum=verify_checksum,
         reuse=reuse,
@@ -101,16 +105,19 @@ def new_job(transfers=[], verify_checksum=True, reuse=False, overwrite=False, mu
     return job
 
 
-def submit(context, job):
+def submit(context, job, delegation_lifetime=timedelta(hours=7), force_delegation=False):
     """
     Submits a job
 
     Args:
         context: fts3.rest.client.context.Context instance
         job:     Dictionary representing the job
+        delegation_lifetime: Delegation lifetime
+        force_delegation:    Force delegation even if there is a valid proxy
 
     Returns:
         The job id
     """
+    delegate(context, delegation_lifetime, force_delegation)
     submitter = Submitter(context)
     return submitter.submit(job['files'], **job['params'])

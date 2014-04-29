@@ -14,7 +14,7 @@ For this, use `new_transfer(source, destination, checksu, filesize, metadata)`
 
 ### Returns:
 An initialized transfer
-    
+
 ### Example
 ```python
 transfer = fts3.new_transfer(
@@ -62,13 +62,17 @@ job = fts3.new_job(transfers, verify_checksum=True, reuse=True, ...)
 
 Submit the job
 --------------
-Finally you can submit the job. Remember to [delegate](README.md#delegate) before!
+Finally you can submit the job. You can [delegate](README.md#delegate) yourself before, but submit will
+take care of it anyway.
+
 Also, there is no need to build the dictionary step by step as shown here. You can build the dictionary by yourself,
 as long as it follows the [expected schema](../api-examples.md#get-the-submit-schema)
 
 ### Args:
 * **context**
 * **job**
+* **delegation_lifetime** Delegation lifetime
+* **force_delegation**    Force delegation even if there is a valid proxy
 
 ### Returns
 The job id

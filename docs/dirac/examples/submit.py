@@ -36,5 +36,4 @@ if options.dry_run:
     print json.dumps(job, indent=2)
 else:
     context = fts3.Context(options.endpoint)
-    fts3.delegate(context)
     print fts3.submit(context, job)
