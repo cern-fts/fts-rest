@@ -145,7 +145,7 @@ class Delegator(object):
             if cert.get_not_after().get_datetime() < not_after.get_datetime():
                 not_after = cert.get_not_after()
             try:
-                cert.get_ext('1.3.6.1.5.5.7.1.14')
+                cert.get_ext('proxyCertInfo')
                 any_rfc_proxies = True
             except:
                 pass
