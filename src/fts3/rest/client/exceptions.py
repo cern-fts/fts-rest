@@ -25,12 +25,27 @@ class ClientError(FTS3ClientException):
         return "Client error: %s" % self.reason
 
 
+class NeedDelegation(ClientError):
+    def __str__(self):
+        return "Need to delegate credentials"
+
+
+class FailedDependency(ClientError):
+    def __str__(self):
+        return "Failed dependency"
+
+
 class ServerError(FTS3ClientException):
     def __init__(self, reason):
         self.reason = reason
 
     def __str__(self):
         return "Server error: %s" % self.reason
+
+
+class TryAgain(ServerError):
+    def __str__(self):
+        return "Try again: %s" % self.reason
 
 
 class NotFound(FTS3ClientException):

@@ -29,8 +29,14 @@ class RequestFactory(object):
             raise Unauthorized()
         elif code == 404:
             raise NotFound(url)
+        elif code == 419:
+            raise NeedDelegation()
+        elif code == 424:
+            raise FailedDependency()
         elif code > 404 and code < 500:
             raise ClientError(str(code))
+        elif code == 503:
+            raise TryAgain(str(code))
         elif code >= 500:
             raise ServerError(str(code))
 
