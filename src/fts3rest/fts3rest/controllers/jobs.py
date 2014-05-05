@@ -185,7 +185,7 @@ def _setup_job_from_dict(job_dict, user):
             submit_host=socket.getfqdn(),
             user_dn=user.user_dn,
             voms_cred=' '.join(user.voms_cred),
-            vo_name=user.vos[0] if len(user.vos) > 0 and user.vos[0] else 'nil',
+            vo_name=user.vos[0],
             submit_time=datetime.utcnow(),
             priority=3,
             space_token=params['spacetoken'],

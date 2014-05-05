@@ -44,6 +44,23 @@ def _generate_delegation_id(dn, fqans):
     return digest_hex[:16]
 
 
+def _build_vo_from_dn(user_dn):
+    """
+    Generate an 'anonymous' VO from the user_dn
+    """
+    components = filter(lambda c: len(c) == 2, map(lambda c: tuple(c.split('=')), user_dn.split('/')))
+    domain = []
+    uname = ''
+    for key, value in components:
+        if key.upper() == 'CN':
+            uname = value
+        elif key.upper() == 'DC':
+            domain.append(value)
+    # Normalize name
+    uname = ''.join(uname.split())
+    return uname + '@' + '.'.join(reversed(domain))
+
+
 class UserCredentials(object):
     """
     Handles the user credentials and privileges
@@ -94,9 +111,9 @@ class UserCredentials(object):
         if self.user_dn is not None:
             self.delegation_id = _generate_delegation_id(self.user_dn, self.voms_cred)
 
-        # If no vo information is available, assume nil
-        if not self.vos:
-            self.vos.append('nil')
+        # If no vo information is available, build a 'virtual vo' for this user
+        if not self.vos and self.user_dn:
+            self.vos.append(_build_vo_from_dn(self.user_dn))
 
         # Populate roles
         self.roles = self._populate_roles()

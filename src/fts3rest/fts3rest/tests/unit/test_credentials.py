@@ -8,7 +8,7 @@ class TestUserCredentials(unittest.TestCase):
     Given a set of Gridsite environment variables, check the user
     credentials are being set correctly.
     """
-    DN = '/DC=ch/DC=cern/OU=Test User'
+    DN = '/DC=ch/DC=cern/CN=Test User'
     FQANS = ['/testvo/Role=NULL/Capability=NULL',
              '/testvo/group/Role=NULL/Capability=NULL',
              '/testvo/Role=myrole/Capability=NULL',
@@ -27,7 +27,7 @@ class TestUserCredentials(unittest.TestCase):
 
         self.assertEqual(TestUserCredentials.DN, creds.user_dn)
         self.assertEqual([], creds.voms_cred)
-        self.assertEqual(['nil'], creds.vos)
+        self.assertEqual(['TestUser@cern.ch'], creds.vos)
 
 
     def test_gridsite(self):

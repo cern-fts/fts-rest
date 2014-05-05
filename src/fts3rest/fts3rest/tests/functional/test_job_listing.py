@@ -224,7 +224,7 @@ class TestJobListing(TestController):
                               status=200)
         job_info = json.loads(answer.body)
         self.assertEqual(job_id, job_info['job_id'])
-        self.assertEqual('nil', job_info['vo_name'])
+        self.assertEqual(self.get_user_credentials().vos[0], job_info['vo_name'])
 
     def test_get_field(self):
         """

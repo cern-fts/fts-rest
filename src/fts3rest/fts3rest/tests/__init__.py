@@ -56,7 +56,7 @@ class TestController(TestCase):
     Base class for the tests
     """
 
-    TEST_USER_DN = '/DC=ch/DC=cern/OU=Test User'
+    TEST_USER_DN = '/DC=ch/DC=cern/CN=Test User'
 
     def __init__(self, *args, **kwargs):
         wsgiapp = pylons.test.pylonsapp
@@ -132,7 +132,7 @@ class TestController(TestCase):
             A X509 proxy PEM encoded
         """
         if issuer is None:
-            issuer = [('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User')]
+            issuer = [('DC', 'ch'), ('DC', 'cern'), ('CN', 'Test User')]
         if subject is None:
             subject = issuer + [('CN', 'proxy')]
 

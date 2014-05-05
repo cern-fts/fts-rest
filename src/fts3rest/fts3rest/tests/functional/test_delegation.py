@@ -218,7 +218,7 @@ class TestDelegation(TestController):
 
         proxy = self.get_x509_proxy(
             request.body,
-            subject=[('DC', 'ch'), ('DC', 'cern'), ('OU', 'Test User'), ('CN', str(int(time.time())))]
+            subject=[('DC', 'ch'), ('DC', 'cern'), ('CN', 'Test User'), ('CN', str(int(time.time())))]
         )
 
         self.app.put(url="/delegation/%s/credential" % creds.delegation_id,

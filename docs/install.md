@@ -54,7 +54,7 @@ You can check the service is up and running just opening with your browser <http
   "user_dn": "/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=aalvarez/CN=12345/CN=Alejandro Alvarez Ayllon", 
   "voms_cred": [], 
   "vos": [
-    "nil"
+    "AlejandroAlvarezAyllon@cern.ch"
   ]
 }
 ```

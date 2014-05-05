@@ -1,6 +1,5 @@
 import json
 import scipy.stats
-import urllib
 from nose.plugins.skip import SkipTest
 
 from fts3rest.tests import TestController
@@ -18,9 +17,9 @@ class TestJobSubmission(TestController):
         files = job.files
         self.assertNotEqual(files, None)
 
-        self.assertEqual(job.user_dn, '/DC=ch/DC=cern/OU=Test User')
+        self.assertEqual(job.user_dn, '/DC=ch/DC=cern/CN=Test User')
         if no_vo:
-            self.assertEqual(job.vo_name, 'nil')
+            self.assertEqual(job.vo_name, 'TestUser@cern.ch')
         else:
             self.assertEqual(job.vo_name, 'testvo')
         self.assertEqual(job.job_state, 'SUBMITTED')
@@ -43,7 +42,7 @@ class TestJobSubmission(TestController):
         self.assertEqual(files[0].checksum, 'adler32:1234')
         self.assertEqual(files[0].file_metadata['mykey'], 'myvalue')
         if no_vo:
-            self.assertEqual(files[0].vo_name, 'nil')
+            self.assertEqual(files[0].vo_name, 'TestUser@cern.ch')
         else:
             self.assertEqual(files[0].vo_name, 'testvo')
 
@@ -361,7 +360,7 @@ class TestJobSubmission(TestController):
     def test_no_vo(self):
         """
         Submit a valid job with no VO data in the credentials (could happen with plain SSL!)
-        The job must be accepted, but assigned to the 'nil' vo.
+        The job must be accepted, but assigned to the user's 'virtual' vo.
         """
         self.setup_gridsite_environment(no_vo=True)
         self.push_delegation()
