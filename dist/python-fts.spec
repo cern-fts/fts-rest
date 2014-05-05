@@ -11,7 +11,7 @@
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
 
 Name:			python-fts
-Version:		3.2.3
+Version:		3.2.4
 Release:		1
 BuildArch:		noarch
 Summary:		FTS3 database model
