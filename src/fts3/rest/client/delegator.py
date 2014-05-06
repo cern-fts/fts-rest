@@ -130,7 +130,6 @@ class Delegator(object):
             m2.x509_name_set_by_nid(proxy_subject._ptr(), Delegator.nid[key], value)
 
         proxy = X509.X509()
-        proxy.set_subject(proxy_subject)
         proxy.set_serial_number(self.context.x509.get_serial_number())
         proxy.set_version(x509_request.get_version())
         proxy.set_issuer(self.context.x509.get_subject())
@@ -175,6 +174,7 @@ class Delegator(object):
         else:
             m2.x509_name_set_by_nid(proxy_subject._ptr(), X509.X509_Name.nid['commonName'], 'proxy')
 
+        proxy.set_subject(proxy_subject)
         proxy.set_version(2)
         proxy.sign(self.context.evp_key, 'sha1')
 
