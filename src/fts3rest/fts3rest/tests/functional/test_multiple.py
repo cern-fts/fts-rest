@@ -265,7 +265,48 @@ class TestMultiple(TestController):
 
         self.assertEqual('H', job.reuse_job)
 
-        files = Session.query(File).filter(File.job_id == job_id)
+        files = Session.query(File).filter(File.job_id == job_id).all()
+        self.assertEquals(2, len(files))
+        hashed = files[0].hashed_id
+        for f in files:
+            self.assertEqual(hashed, f.hashed_id)
+
+    def test_multihop_lfc(self):
+        """
+        Submit a multihop transfer with a final LFC hop
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [
+                {
+                    'sources': ['http://source.es:8446/file'],
+                    'destinations': ['http://intermediate.ch:8447/file'],
+                },
+                {
+                    'sources': ['http://intermediate.ch:8447/file'],
+                    'destinations': ['lfc://lfc.ch/lfn']
+                }
+            ],
+            'params': {'overwrite': True, 'multihop': True}
+        }
+
+        answer = self.app.post(url="/jobs",
+                               content_type='application/json',
+                               params=json.dumps(job),
+                               status=200)
+
+        job_id = json.loads(answer.body)['job_id']
+
+        # The hashed ID must be the same for all files!
+        # Also, the reuse flag must be 'H' in the database
+        job = Session.query(Job).get(job_id)
+
+        self.assertEqual('H', job.reuse_job)
+
+        files = Session.query(File).filter(File.job_id == job_id).all()
+        self.assertEquals(2, len(files))
         hashed = files[0].hashed_id
         for f in files:
             self.assertEqual(hashed, f.hashed_id)

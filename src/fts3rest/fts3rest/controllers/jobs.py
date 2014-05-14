@@ -89,7 +89,9 @@ def _valid_third_party_transfer(src_scheme, dst_scheme):
     forbidden_schemes = ['', 'file']
     return src_scheme not in forbidden_schemes and \
            dst_scheme not in forbidden_schemes and \
-           (src_scheme == dst_scheme or src_scheme == 'srm' or dst_scheme == 'srm')
+           (src_scheme == dst_scheme or
+            src_scheme in ['srm', 'lfc'] or
+            dst_scheme in ['srm', 'lfc'])
 
 
 def _validate_url(url):
