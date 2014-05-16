@@ -3,11 +3,13 @@ cmake_minimum_required (VERSION 2.6)
 add_subdirectory (fts3rest)
 
 # egg-info
-install (DIRECTORY      fts3rest.egg-info
-         DESTINATION    ${PYTHON_SITE_PACKAGES})
+install (DIRECTORY      fts3rest.egg-info 
+         DESTINATION    ${PYTHON_SITE_PACKAGES}
+         
+)
 
 # WSGI
-install (FILES          fts3rest.wsgi
+install (PROGRAMS        fts3rest.wsgi
          DESTINATION    usr/libexec/fts3/
 )
 
