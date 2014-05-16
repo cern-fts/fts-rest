@@ -15,6 +15,7 @@ install (DIRECTORY   controllers
 )
 
 install (DIRECTORY   lib
+         USE_SOURCE_PERMISSIONS
          DESTINATION ${PYTHON_SITE_PACKAGES}/fts3rest
          PATTERN     "*.pyc" EXCLUDE
 )
