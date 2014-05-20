@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-project (fts3-misc)
+project (fts-rest)
 
 # Python libraries location
 if (NOT DEFINED PYTHON_SITE_PACKAGES)
