@@ -1,14 +1,14 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,7 +39,7 @@ from webtest import TestApp
 
 from fts3rest.lib.middleware import fts3auth
 from fts3rest.lib.base import Session
-from fts3.model import Credential
+from fts3.model import Credential, CredentialCache, Job, File
 
 
 __all__ = ['environ', 'url', 'TestController']
@@ -203,7 +203,10 @@ class TestController(TestCase):
         """
         Called by the test framework at the end of each test
         """
-        self.pop_delegation()
+        Session.query(Credential).delete()
+        Session.query(CredentialCache).delete()
+        Session.query(File).delete()
+        Session.query(Job).delete()
 
     # Handy asserts not available in the EPEL-6 version
     def assertGreater(self, a, b):

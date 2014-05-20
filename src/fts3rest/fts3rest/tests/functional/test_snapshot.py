@@ -15,8 +15,7 @@
 
 import json
 import urllib
-import uuid
-from datetime import datetime, timedelta
+from insert_job import insert_job
 
 from fts3.model import Job, File
 from fts3rest.tests import TestController
@@ -41,69 +40,32 @@ class TestSnapshot(TestController):
     """
     Test the snapshot API
     """
-    def _insert_job(self, vo, source, destination, state, duration=None, queued=None, thr=None, reason=None):
-        job = Job()
-        job.user_dn = '/XX'
-        job.vo_name = vo
-        job.source_se = source
-        job.job_state = state
-        job.submit_time = datetime.utcnow()
-        if duration and queued:
-            job.finish_time = job.submit_time + timedelta(seconds=duration+queued)
-        elif duration:
-            job.finish_time = job.submit_time + timedelta(seconds=duration)
-        job.job_id = str(uuid.uuid4())
-
-        Session.merge(job)
-
-        file = File()
-        file.job_id = job.job_id
-        file.vo_name = vo
-        file.source_se = source
-        file.source_surl = source + '/path'
-        file.dest_se = destination
-        file.dest_surl = destination + '/path'
-        file.file_state = state
-        if queued:
-            file.start_time = job.submit_time + timedelta(seconds=queued)
-        if duration:
-            file.tx_duration = duration
-        if reason:
-            file.reason = reason
-        if thr:
-            file.throughput = thr
-
-        Session.merge(file)
-        Session.commit()
 
     def setUp(self):
         """
         Insert some registers into the tables
         """
         TestController.setUp(self)
-        # Clear previous content to start with clean tables and predictable results
-        Session.query(File).delete()
-        Session.query(Job).delete()
         # Insert some values into the DB so we can check the return
         # values
-        self._insert_job('dteam', 'srm://source.se', 'srm://dest.es', 'ACTIVE')
-        self._insert_job('dteam', 'srm://source.se', 'srm://dest.es', 'SUBMITTED')
-        self._insert_job('dteam', 'srm://source.se', 'srm://dest.es', 'SUBMITTED')
-        self._insert_job(
+        insert_job('dteam', 'srm://source.se', 'srm://dest.es', 'ACTIVE')
+        insert_job('dteam', 'srm://source.se', 'srm://dest.es', 'SUBMITTED')
+        insert_job('dteam', 'srm://source.se', 'srm://dest.es', 'SUBMITTED')
+        insert_job(
             'dteam', 'srm://source.se', 'srm://dest.es', 'FINISHED', duration=55, queued=10, thr=10
         )
-        self._insert_job(
+        insert_job(
             'atlas', 'srm://source.se', 'srm://dest.es', 'FINISHED', duration=100, queued=20, thr=100
         )
-        self._insert_job(
+        insert_job(
             'atlas', 'srm://source.se', 'srm://dest.es', 'FAILED', duration=150, queued=30, thr=200,
             reason='DESTINATION Something something'
         )
-        self._insert_job(
+        insert_job(
             'atlas', 'gsiftp://source.se', 'gsiftp://dest.es', 'FAILED', duration=5000, queued=0,
             reason='SOURCE Blah'
         )
-        self._insert_job(
+        insert_job(
             'atlas', 'srm://source.se', 'gsiftp://dest.es', 'FINISHED', duration=100, queued=20, thr=50
         )
 
