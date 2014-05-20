@@ -1,14 +1,14 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -291,7 +291,7 @@ class JobsController(BaseController):
     @doc.return_type(array_of=Job)
     @authorize(TRANSFER)
     @jsonify
-    def index(self, **kwargs):
+    def index(self):
         """
         Get a list of active jobs, or those that match the filter requirements
         """
@@ -331,7 +331,7 @@ class JobsController(BaseController):
     @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
     @jsonify
-    def get(self, job_id, **kwargs):
+    def get(self, job_id):
         """
         Get the job with the given ID
         """
@@ -341,7 +341,7 @@ class JobsController(BaseController):
     @doc.response(404, 'The job or the field doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')
     @jsonify
-    def get_field(self, job_id, field, **kwargs):
+    def get_field(self, job_id, field):
         """
         Get a specific field from the job identified by id
         """
@@ -355,7 +355,7 @@ class JobsController(BaseController):
     @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
     @jsonify
-    def cancel(self, job_id, **kwargs):
+    def cancel(self, job_id):
         """
         Cancel the given job
 
@@ -392,7 +392,7 @@ class JobsController(BaseController):
     @doc.return_type('{"job_id": <job id>}')
     @authorize(TRANSFER)
     @jsonify
-    def submit(self, **kwargs):
+    def submit(self):
         """
         Submits a new job
 
