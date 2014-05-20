@@ -84,6 +84,34 @@ $ fts-rest-delegate -s https://fts3-devel.cern.ch:8446
 Delegation id: 9a4257f435fa2010
 ```
 
+### fts-rest-snapshot
+This command can be used to retrieve the internal status FTS3 has on all pairs with ACTIVE transfers. It allows
+to filter by VO, source SE and destination SE.
+
+Options:
+```
+  --vo=VO               filter by VO
+  --source=SOURCE       filter by source SE
+  --destination=DESTINATION
+                        filter by destination SE
+```
+
+```
+fts-rest-snapshot -s https://fts3-devel.cern.ch:8446
+Source:              gsiftp://whatever
+Destination:         gsiftp://whatnot
+VO:                  dteam
+Max. Active:         5
+Active:              1
+Submitted:           0
+Finished:            0
+Failed:              0
+Success ratio:       -
+Avg. Throughput:     -
+Avg. Duration:       -
+Avg. Queued:         0 seconds
+Most frequent error: -
+```
 
 ### fts-rest-transfer-cancel
 This command can be used to cancel a running job.  It returns the final state of the canceled job.

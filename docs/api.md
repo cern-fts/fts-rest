@@ -401,6 +401,18 @@ Indicates if the optimizer is enabled in the server
 ##### Returns
 boolean
 
+### Snapshot API
+#### GET /snapshot
+Get the current status of the server
+
+##### Query arguments
+
+|Name     |Type  |Required|Description             |
+|---------|------|--------|------------------------|
+|dest_se  |string|False   |Filter by destination SE|
+|source_se|string|False   |Filter by source SE     |
+|vo_name  |string|False   |Filter by VO name       |
+
 Models
 ------
 ### ArchivedFile
@@ -512,7 +524,7 @@ Models
 |submit_host             |string  |
 |priority                |integer |
 |source_space_token      |string  |
-|reuse_job               |boolean |
+|reuse_job               |string  |
 |job_metadata            |string  |
 |source_se               |string  |
 |user_cred               |string  |

@@ -28,6 +28,34 @@ Checking how the server sees us
 }
 ```
 
+Get FTS3 internal status for a given pair
+-----------------------------------------
+`curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem "https://fts3-pilot.cern.ch:8446/snapshot?vo_name=dteam&dest_se=gsiftp://whatnot&&source_se=gsiftp://whatever"`
+
+```json
+[
+  {
+    "active": 1,
+    "avg_duration": null,
+    "avg_queued": 0.0,
+    "avg_throughput": null,
+    "dest_se": "gsiftp://whatnot",
+    "failed": 0,
+    "finished": 0,
+    "frequent_error": null,
+    "limits": {},
+    "max_active": 5,
+    "source_se": "gsiftp://whatever",
+    "submitted": 0,
+    "success_ratio": null,
+    "vo_name": "dteam"
+  }
+]
+```
+
+All parameters are optional. If none is specified, all pairs will be shown.
+Filtering by only vo, only source and only destination (and combinations) are supported.
+
 Get a list of jobs running
 --------------------------
 Filtering by atlas

@@ -1,14 +1,14 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2010.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -91,9 +91,12 @@ def make_map(config):
     map.connect('/optimizer', controller='optimizer', action='is_enabled')
     map.connect('/optimizer/evolution', controller='optimizer',
                 action='evolution')
-    
+
     # GFAL2 bindings
     map.connect('/dm/list', controller='datamanagement', action='list')
     map.connect('/dm/stat', controller='datamanagement', action='stat')
+
+    # Snapshot
+    map.connect('/snapshot', controller='snapshot', action='snapshot')
 
     return map

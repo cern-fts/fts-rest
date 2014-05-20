@@ -258,3 +258,21 @@ dlg_id = fts3.delegate(context, lifetime=timedelta(hours=48), force=False)
 
 ### submit
 Check the documentation on [submit](submit.md) to see how to build a job and submit it.
+
+
+### get_snapshot
+Gets a server snapshot
+
+#### Args:
+* **context** fts3.rest.client.context.Context instance
+* **vo**      Filter by vo. Can be left empty.
+* **source**  Filter by source SE. Can be left empty
+* **destination** Filter by destination SE. Can be left empty.
+
+#### Returns
+Decoded JSON message returned by the server (server snapshot)
+
+#### Example
+```python
+snapshot = fts3.get_snapshot(vo='lhcb', source='srm://server/path')
+```
