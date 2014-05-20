@@ -5,9 +5,13 @@ from fts3.model import Job, File
 from fts3rest.lib.base import Session
 
 
-def insert_job(vo, source, destination, state, duration=None, queued=None, thr=None, reason=None):
+def insert_job(vo, source=None, destination=None, state='SUBMITTED', multiple=None,
+               duration=None, queued=None, thr=None, reason=None,
+               user_dn='/DC=ch/DC=cern/CN=Test User'):
+    assert(multiple is not None or (destination is not None and source is not None))
+
     job = Job()
-    job.user_dn = '/XX'
+    job.user_dn = user_dn
     job.vo_name = vo
     job.source_se = source
     job.job_state = state
@@ -20,22 +24,26 @@ def insert_job(vo, source, destination, state, duration=None, queued=None, thr=N
 
     Session.merge(job)
 
-    file = File()
-    file.job_id = job.job_id
-    file.vo_name = vo
-    file.source_se = source
-    file.source_surl = source + '/path'
-    file.dest_se = destination
-    file.dest_surl = destination + '/path'
-    file.file_state = state
-    if queued:
-        file.start_time = job.submit_time + timedelta(seconds=queued)
-    if duration:
-        file.tx_duration = duration
-    if reason:
-        file.reason = reason
-    if thr:
-        file.throughput = thr
+    if multiple is None:
+        multiple = [(source, destination)]
 
-    Session.merge(file)
+    for (s, d) in multiple:
+        transfer = File()
+        transfer.job_id = job.job_id
+        transfer.vo_name = vo
+        transfer.source_se = s
+        transfer.source_surl = s + '/path'
+        transfer.dest_se = d
+        transfer.dest_surl = d + '/path'
+        transfer.file_state = state
+        if queued:
+            transfer.start_time = job.submit_time + timedelta(seconds=queued)
+        if duration:
+            transfer.tx_duration = duration
+        if reason:
+            transfer.reason = reason
+        if thr:
+            transfer.throughput = thr
+        Session.merge(transfer)
     Session.commit()
+    return job.job_id

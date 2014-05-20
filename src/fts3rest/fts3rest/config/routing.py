@@ -99,4 +99,10 @@ def make_map(config):
     # Snapshot
     map.connect('/snapshot', controller='snapshot', action='snapshot')
 
+    # Banning
+    map.connect('/ban/se', controller='banning', action='ban_se', conditions=dict(method=['POST']))
+    map.connect('/ban/se', controller='banning', action='unban_se', conditions=dict(method=['DELETE']))
+    map.connect('/ban/dn', controller='banning', action='ban_dn', conditions=dict(method=['POST']))
+    map.connect('/ban/dn', controller='banning', action='unban_dn', conditions=dict(method=['DELETE']))
+
     return map

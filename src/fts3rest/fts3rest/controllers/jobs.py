@@ -27,7 +27,7 @@ import urlparse
 import uuid
 
 from fts3.model import Job, File, JobActiveStates, FileActiveStates
-from fts3.model import Credential, OptimizerActive
+from fts3.model import Credential, OptimizerActive, BannedSE
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
@@ -105,10 +105,10 @@ def _valid_third_party_transfer(src_scheme, dst_scheme):
     """
     forbidden_schemes = ['', 'file']
     return src_scheme not in forbidden_schemes and \
-           dst_scheme not in forbidden_schemes and \
-           (src_scheme == dst_scheme or
-            src_scheme in ['srm', 'lfc'] or
-            dst_scheme in ['srm', 'lfc'])
+        dst_scheme not in forbidden_schemes and \
+        (src_scheme == dst_scheme or
+         src_scheme in ['srm', 'lfc'] or
+         dst_scheme in ['srm', 'lfc'])
 
 
 def _validate_url(url):
@@ -265,6 +265,44 @@ def _setup_job_from_dict(job_dict, user):
         raise HTTPBadRequest('Malformed request: %s' % str(e))
     except KeyError, e:
         raise HTTPBadRequest('Missing parameter: %s' % str(e))
+
+
+def _apply_banning(files):
+    """
+    Query the banning information for all pairs, reject the job
+    as soon as one SE can not submit.
+    Update wait_timeout and wait_timestamp is there is a hit
+    """
+    # Usually, banned SES will be in the order of ~100 max
+    # Files may be several thousands
+    # We get all banned in memory so we avoid querying too many times the DB
+    # We then build a dictionary to make look up easy
+    banned_ses = dict()
+    for b in Session.query(BannedSE):
+        banned_ses[str(b.se)] = (b.vo, b.status, b.wait_timeout)
+
+    now = datetime.utcnow()
+    for f in files:
+        source_banned = banned_ses.get(str(f['source_se']), None)
+        dest_banned = banned_ses.get(str(f['dest_se']), None)
+        timeout = None
+
+        if source_banned and (source_banned[0] == f['vo_name'] or source_banned[0] is None):
+            if source_banned[1] != 'WAIT_AS':
+                raise HTTPForbidden("%s is banned" % f['source_se'])
+            timeout = source_banned[2]
+
+        if dest_banned and (dest_banned[0] == f['vo_name'] or dest_banned[0] is None):
+            if dest_banned[1] != 'WAIT_AS':
+                raise HTTPForbidden("%s is banned" % f['dest_se'])
+            if not timeout:
+                timeout = dest_banned[2]
+            else:
+                timeout = max(timeout, dest_banned[2])
+
+        if timeout is not None:
+            f['wait_timestamp'] = now
+            f['wait_timeout'] = timeout
 
 
 class JobsController(BaseController):
@@ -434,6 +472,11 @@ class JobsController(BaseController):
 
         # Populate the job and files
         job, files = _setup_job_from_dict(submitted_dict, user)
+
+        # Reject for SE banning
+        # If any SE does not accept submissions, reject the whole job
+        # Update wait_timeout and wait_timestamp if WAIT_AS is set
+        _apply_banning(files)
 
         # Validate that there are no bad combinations
         if job['reuse_job'] and _has_multiple_options(files):

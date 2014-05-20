@@ -46,8 +46,7 @@ class TestSnapshot(TestController):
         Insert some registers into the tables
         """
         TestController.setUp(self)
-        # Insert some values into the DB so we can check the return
-        # values
+        # Insert some values into the DB
         insert_job('dteam', 'srm://source.se', 'srm://dest.es', 'ACTIVE')
         insert_job('dteam', 'srm://source.se', 'srm://dest.es', 'SUBMITTED')
         insert_job('dteam', 'srm://source.se', 'srm://dest.es', 'SUBMITTED')

@@ -213,3 +213,13 @@ class TestController(TestCase):
         if not a > b:
             standardMsg = '%s not greater than %s' % (repr(a), repr(b))
             self.fail(standardMsg)
+
+    def assertIn(self, member, container):
+        if member not in container:
+            standardMsg = '%s not in %s' % (member, str(container))
+            self.fail(standardMsg)
+
+    def assertNotIn(self, member, container):
+        if member in container:
+            standardMsg = '%s in %s' % (member, str(container))
+            self.fail(standardMsg)
