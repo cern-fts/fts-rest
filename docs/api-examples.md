@@ -272,3 +272,34 @@ Here you can see an example of a submission file
 
 Please, note that comments are not supported in JSON. They are just shown here as a help.
 If you want to check other more complex submission modes, you can check the reference page for the [bulk submission format](bulk.md).
+
+Banning/unbanning a storage
+---------------------------
+Banning:
+
+`curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem https://fts3-pilot.cern.ch:8446/ban/se --data-binary '{"storage": "gsiftp://example.com"}' -H 'Content-Type: application/json'`
+```json
+[]
+```
+
+Unbanning:
+
+`curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem "https://fts3-pilot.cern.ch:8446/ban/se?storage=gsiftp://example.com" -X DELETE`
+
+Mind that unbanning returns nothing.
+
+
+Banning/unbanning a user
+------------------------
+Banning:
+
+`curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem https://fts3-pilot.cern.ch:8446/ban/dn --data-binary '{"user_dn": "/DC=.../CN=..."}' -H 'Content-Type: application/json'`
+```json
+[]
+```
+
+Unbanning:
+
+`curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem "https://fts3-pilot.cern.ch:8446/ban/dn?user_dn=/DC=.../CN=..." -X DELETE`
+
+Mind that unbanning returns nothing.

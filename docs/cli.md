@@ -67,6 +67,34 @@ These options are common to all tools.
   --cert=UCERT                     the user certificate
 ```
 
+### fts-rest-ban
+Ban and unban storage elements and users.
+
+Options:
+
+```
+  --storage=STORAGE     storage element
+  --user=USER_DN        user dn
+  --unban               unban instead of ban
+  --status=STATUS       status of the jobs that are already in the queue:
+                        cancel or wait
+  --timeout=TIMEOUT     the timeout for the jobs that are already in the queue
+                        if status is wait
+  --allow-submit        allow submissions if status is wait
+```
+
+Mind that not all combinations make sense:
+
+* one, and only one, of --storage and --user must be specified
+* --status can only be cancel for --user
+* --allow-submit can only be enabled if --status is wait, for storages
+
+```
+$ fts-rest-ban -s https://planet-express.cern.ch:8446 --storage gsiftp://sample
+No jobs affected
+$ fts-rest-ban -s https://planet-express.cern.ch:8446 --storage gsiftp://sample --unban
+$
+```
 
 ### fts-rest-delegate
 This command can be used to (re)delegate your credentials to the FTS3 server.

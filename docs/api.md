@@ -34,6 +34,81 @@ Auto-generated API documentation for a specific resource
 |----|-----------------------------|
 |404 |The resource can not be found|
 
+### Banning API
+#### POST /ban/se
+Ban a storage element. Returns affected jobs ids.
+
+##### Returns
+Array of string
+
+##### Query arguments
+
+|Name        |Type  |Required|Description                                                                                      |
+|------------|------|--------|-------------------------------------------------------------------------------------------------|
+|timeout     |string|False   |If status==wait, timeout for the queued jobs. 0 = will not timeout (default)                     |
+|status      |string|False   |What to do with the queued jobs: cancel (default, cancel immediately) or wait(wait for some time)|
+|allow_submit|string|False   |If true, transfers will not run, but submissions will be accepted                                |
+|vo_name     |string|False   |Limit the banning to a given VO                                                                  |
+|storage     |string|True    |Storage to ban                                                                                   |
+
+##### Responses
+
+|Code|Description                                                   |
+|----|--------------------------------------------------------------|
+|413 |The user is not allowed to change the configuration           |
+|400 |storage is missing, or any of the others have an invalid value|
+
+#### DELETE /ban/se
+Unban a storage element
+
+##### Query arguments
+
+|Name   |Type  |Required|Description         |
+|-------|------|--------|--------------------|
+|storage|string|True    |The storage to unban|
+
+##### Responses
+
+|Code|Description                                             |
+|----|--------------------------------------------------------|
+|403 |The user is not allowed to perform configuration actions|
+|400 |storage is empty or missing                             |
+|204 |Success                                                 |
+
+#### POST /ban/dn
+Ban a user
+
+##### Query arguments
+
+|Name   |Type  |Required|Description   |
+|-------|------|--------|--------------|
+|user_dn|string|True    |User DN to ban|
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|413 |The user is not allowed to change the configuration|
+|409 |The user tried to ban (her|his)self                |
+|400 |dn is missing                                      |
+
+#### DELETE /ban/dn
+Unban a user
+
+##### Query arguments
+
+|Name   |Type  |Required|Description     |
+|-------|------|--------|----------------|
+|user_dn|string|True    |User DN to unban|
+
+##### Responses
+
+|Code|Description                                             |
+|----|--------------------------------------------------------|
+|403 |The user is not allowed to perform configuration actions|
+|400 |user_dn is empty or missing                             |
+|204 |Success                                                 |
+
 ### Data management operations
 #### GET /dm/list
 List the content of a remote directory
@@ -559,6 +634,7 @@ Models
 |retry               |integer |
 |job_id              |string  |
 |job_finished        |dateTime|
+|wait_timestamp      |dateTime|
 |staging_start       |dateTime|
 |filesize            |float   |
 |source_se           |string  |
@@ -568,6 +644,7 @@ Models
 |dest_se             |string  |
 |file_index          |integer |
 |reason              |string  |
+|wait_timeout        |integer |
 |file_id             |integer |
 |error_phase         |string  |
 |source_surl         |string  |
