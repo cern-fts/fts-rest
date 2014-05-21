@@ -15,6 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from banning import Banning
 from delegator import Delegator
 from jobcanceller import JobCanceller
 from joblister import JobLister
