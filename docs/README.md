@@ -11,6 +11,8 @@ You can check the automatically [generated documentation](api.md) in this same f
 
 Or you can have a look at our examples [using directly curl](api-examples.md)
 
+We also provide some Python wrappers to facilitate the usage of the REST API. They are called [easy bindings](easy/README.md).
+
 Command Line Interface
 ----------------------
 We provide a collection of [command line tools](cli.md) as a reference implementation, but they are also
