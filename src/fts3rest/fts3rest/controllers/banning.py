@@ -13,6 +13,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import json
+import logging
 from datetime import datetime
 from pylons import request
 from sqlalchemy import distinct, func
@@ -24,6 +26,8 @@ from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.middleware.fts3auth import authorize
 from fts3rest.lib.middleware.fts3auth.constants import *
+
+log = logging.getLogger(__name__)
 
 
 def _ban_se(storage, vo_name, allow_submit, status, timeout):
@@ -206,13 +210,21 @@ class BanningController(BaseController):
         """
         Ban a storage element. Returns affected jobs ids.
         """
-        storage = request.params.get('storage', None)
+        if request.content_type == 'application/json':
+            try:
+                input_dict = json.loads(request.body)
+            except Exception:
+                raise HTTPBadRequest('Malformed input')
+        else:
+            input_dict = request.params
+
+        storage = input_dict.get('storage', None)
         if not storage:
             raise HTTPBadRequest('Missing storage parameter')
 
-        vo_name = request.params.get('vo_name', None)
-        allow_submit = bool(request.params.get('allow_submit', False))
-        status = request.params.get('status', 'cancel').upper()
+        vo_name = input_dict.get('vo_name', None)
+        allow_submit = bool(input_dict.get('allow_submit', False))
+        status = input_dict.get('status', 'cancel').upper()
 
         if status not in ['CANCEL', 'WAIT']:
             raise HTTPBadRequest('status can only be cancel or wait')
@@ -221,7 +233,7 @@ class BanningController(BaseController):
             raise HTTPBadRequest('allow_submit and status = CANCEL can not be combined')
 
         try:
-            timeout = int(request.params.get('timeout', 0))
+            timeout = int(input_dict.get('timeout', 0))
             if timeout < 0:
                 raise ValueError()
         except ValueError:
@@ -230,9 +242,12 @@ class BanningController(BaseController):
         _ban_se(storage, vo_name, allow_submit, status, timeout)
 
         if status == 'CANCEL':
-            return _cancel_transfers(storage=storage, vo_name=vo_name)
+            affected = _cancel_transfers(storage=storage, vo_name=vo_name)
         else:
-            return _set_to_wait(storage=storage, vo_name=vo_name, timeout=timeout)
+            affected = _set_to_wait(storage=storage, vo_name=vo_name, timeout=timeout)
+
+        log.warn("Storage %s banned (%s), %d jobs affected" % (storage, status, len(affected)))
+        return affected
 
     @authorize(CONFIG)
     @doc.query_arg('user_dn', 'User DN to ban', required=True)
@@ -244,8 +259,16 @@ class BanningController(BaseController):
         """
         Ban a user
         """
+        if request.content_type == 'application/json':
+            try:
+                input_dict = json.loads(request.body)
+            except Exception:
+                raise HTTPBadRequest('Malformed input')
+        else:
+            input_dict = request.params
+
         user = request.environ['fts3.User.Credentials']
-        dn = request.params.get('user_dn', None)
+        dn = input_dict.get('user_dn', None)
 
         if not dn:
             raise HTTPBadRequest('Missing dn parameter')
@@ -253,7 +276,11 @@ class BanningController(BaseController):
             raise HTTPConflict('The user tried to ban (her|his)self')
 
         _ban_dn(dn)
-        return _cancel_jobs(dn=dn)
+        affected = _cancel_jobs(dn=dn)
+
+        log.warn("User %s banned, %d jobs affected" % (dn, len(affected)))
+
+        return affected
 
     @doc.query_arg('storage', 'The storage to unban', required=True)
     @doc.response(204, 'Success')
@@ -272,6 +299,9 @@ class BanningController(BaseController):
         if banned:
             Session.delete(banned)
             Session.commit()
+            log.warn("Storage %s unbanned" % storage)
+        else:
+            log.warn("Unban of storage %s without effect" % storage)
 
         start_response('204 No Content', [])
         return ['']
@@ -293,6 +323,9 @@ class BanningController(BaseController):
         if banned:
             Session.delete(banned)
             Session.commit()
+            log.warn("User %s unbanned" % dn)
+        else:
+            log.warn("Unban of user %s without effect" % dn)
 
         start_response('204 No Content', [])
         return ['']
