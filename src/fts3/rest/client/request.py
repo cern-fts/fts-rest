@@ -1,20 +1,21 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import json
 import pycurl
 from exceptions import *
 from StringIO import StringIO
@@ -39,9 +40,17 @@ class RequestFactory(object):
         else:
             self.capath = '/etc/grid-security/certificates'
 
-    def _handle_error(self, url, code):
+    def _handle_error(self, url, code, response_body=None):
+        # Try parsing the response, maybe we can get the error message
+        message = None
+        if response_body:
+            try:
+                message = json.loads(response_body)['message']
+            except:
+                pass
+
         if code == 400:
-            raise ClientError('Bad request')
+            raise ClientError('Bad request: ' + message)
         elif code >= 401 and code <= 403:
             raise Unauthorized()
         elif code == 404:
@@ -110,6 +119,6 @@ class RequestFactory(object):
 
         handle.perform()
 
-        self._handle_error(url, handle.getinfo(pycurl.HTTP_CODE))
+        self._handle_error(url, handle.getinfo(pycurl.HTTP_CODE), self._response)
 
         return self._response
