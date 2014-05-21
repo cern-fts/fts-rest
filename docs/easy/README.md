@@ -274,7 +274,7 @@ Decoded JSON message returned by the server (server snapshot)
 
 #### Example
 ```python
-snapshot = fts3.get_snapshot(vo='lhcb', source='srm://server/path')
+snapshot = fts3.get_snapshot(context, vo='lhcb', source='srm://server/path')
 ```
 
 ### ban_se / unban_se
@@ -284,7 +284,7 @@ Ban and unban a storage element.
 * **context** fts3.rest.client.context.Context instance
 * **storage** The storage to ban
 * **status**  The status of the banning: cancel or wait (leave queued jobs for some time)
-* **timeout** The wait timeout (0 means leave the queued jobs until they are done)
+* **timeout** The wait timeout in seconds (0 means leave the queued jobs until they are done)
 * **allow_submit** If True, submissions will be accepted. Only meaningful if status=active
 
 Returns a list of job ids affected by the banning.
@@ -294,6 +294,14 @@ Returns a list of job ids affected by the banning.
 * **storage** The storage to unban
 
 Returns nothing.
+
+#### Example
+```python
+affected_jobs = fts3.ban_se(context, 'gsiftp://example.com/', status='wait', timeout=3600, allow_submit=False)
+for job_id in affected_jobs:
+  print job_id
+fts3.unban_se(context, 'gsiftp://example.com/')
+```
 
 ### ban_dn / unban_dn
 Ban and unban a user.
@@ -307,5 +315,13 @@ Returns a list of job ids affected by the banning.
 #### unban_dn
 * **context** fts3.rest.client.context.Context instance
 * **dn** The user to unban
+
+#### Example
+```python
+affected_jobs = fts3.ban_dn(context, '/DC=cern/DC=ch/OU=....')
+for job_id in affected_jobs:
+  print job_id
+fts3.unban_dn(context, '/DC=cern/DC=ch/OU=....')
+```
 
 Returns nothing.
