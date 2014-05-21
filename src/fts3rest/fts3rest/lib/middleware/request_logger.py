@@ -1,14 +1,14 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@ log = logging.getLogger('fts3rest')
 
 class RequestLogger(object):
     """
-    This middleware wraps the calls and catched error messages, and send
+    This middleware wraps the calls and caught error messages, and send
     them to the logger
     """
 
@@ -35,6 +35,7 @@ class RequestLogger(object):
         def override_start_response(status, headers, exc_info=None):
             start_response(status, headers, exc_info)
             self._status_msg = status
+
         response = self.app(environ, override_start_response)
         if hasattr(pylons.response, 'detail'):
             self._log_request(environ, self._status_msg, pylons.response.detail)
@@ -65,5 +66,11 @@ class RequestLogger(object):
 
         if code >= 400:
             log.error(entry)
+            log.debug('Request params: ' + str(pylons.request.params))
+            log.debug('Request content type: ' + pylons.request.content_type)
+            if pylons.request.content_type == 'application/json':
+                log.debug('Request body: ')
+                for line in pylons.request.body.split('\n'):
+                    log.debug(line)
         else:
             log.info(entry)
