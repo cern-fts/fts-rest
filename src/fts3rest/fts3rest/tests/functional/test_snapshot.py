@@ -84,9 +84,8 @@ class TestSnapshot(TestController):
         self.assertEqual(1, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['finished'])
         self.assertEqual(0, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['failed'])
         self.assertEqual(None, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['frequent_error'])
-        self.assertEqual(55, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['avg_duration'])
         self.assertEqual(10, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['avg_queued'])
-        self.assertEqual(10, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['avg_throughput'])
+        self.assertEqual(10, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['avg_throughput']['60'])
         self.assertEqual(1.0, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['success_ratio'])
 
         self.assertEqual(0, snapshot[('srm://source.se', 'srm://dest.es', 'atlas')]['active'])
@@ -99,9 +98,8 @@ class TestSnapshot(TestController):
             snapshot[('srm://source.se', 'srm://dest.es', 'atlas')]['frequent_error']['reason']
         )
         # Note that only FINISHED must be count
-        self.assertEqual(100, snapshot[('srm://source.se', 'srm://dest.es', 'atlas')]['avg_duration'])
         self.assertEqual(25, snapshot[('srm://source.se', 'srm://dest.es', 'atlas')]['avg_queued'])
-        self.assertEqual(100, snapshot[('srm://source.se', 'srm://dest.es', 'atlas')]['avg_throughput'])
+        self.assertEqual(100, snapshot[('srm://source.se', 'srm://dest.es', 'atlas')]['avg_throughput']['30'])
         self.assertEqual(0.5, snapshot[('srm://source.se', 'srm://dest.es', 'atlas')]['success_ratio'])
 
         self.assertEqual(1, snapshot[('gsiftp://source.se', 'gsiftp://dest.es', 'atlas')]['frequent_error']['count'])
@@ -124,9 +122,8 @@ class TestSnapshot(TestController):
         self.assertEqual(2, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['submitted'])
         self.assertEqual(1, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['finished'])
         self.assertEqual(None, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['frequent_error'])
-        self.assertEqual(55, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['avg_duration'])
         self.assertEqual(10, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['avg_queued'])
-        self.assertEqual(10, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['avg_throughput'])
+        self.assertEqual(10, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['avg_throughput']['5'])
         self.assertEqual(1.0, snapshot[('srm://source.se', 'srm://dest.es', 'dteam')]['success_ratio'])
 
     def test_query_source(self):

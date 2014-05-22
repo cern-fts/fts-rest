@@ -23,45 +23,47 @@ from fts3.rest.client import Context, Inquirer
 
 def _human_readable_snapshot(logger, snapshot):
     for entry in snapshot:
-        logger.info("Source:              %s" % entry.get('source_se'))
-        logger.info("Destination:         %s" % entry.get('dest_se'))
-        logger.info("VO:                  %s" % entry.get('vo_name'))
-        logger.info("Max. Active:         %d" % entry.get('max_active', 0))
-        logger.info("Active:              %d" % entry.get('active', 0))
-        logger.info("Submitted:           %d" % entry.get('submitted', 0))
-        logger.info("Finished:            %d" % entry.get('finished', 0))
-        logger.info("Failed:              %d" % entry.get('failed', 0))
+        logger.info("Source:               %s" % entry.get('source_se'))
+        logger.info("Destination:          %s" % entry.get('dest_se'))
+        logger.info("VO:                   %s" % entry.get('vo_name'))
+        logger.info("Max. Active:          %d" % entry.get('max_active', 0))
+        logger.info("Active:               %d" % entry.get('active', 0))
+        logger.info("Submitted:            %d" % entry.get('submitted', 0))
+        logger.info("Finished:             %d" % entry.get('finished', 0))
+        logger.info("Failed:               %d" % entry.get('failed', 0))
         ratio = entry.get('success_ratio', None)
         if ratio:
-            logger.info("Success ratio:       %.2f%%" % ratio)
+            logger.info("Success ratio:        %.2f%%" % ratio)
         else:
             logger.info("Success ratio:       -")
         avg_thr = entry.get('avg_throughput', None)
-        if avg_thr is not None:
-            logger.info("Avg. Throughput:     %.2f MB/s" % avg_thr)
+        if isinstance(avg_thr, float):
+            logger.info("Avg. Throughput:      %.2f MB/s" % avg_thr)
+        elif isinstance(avg_thr, dict):
+            for interval, thr in sorted(avg_thr.iteritems(), key=lambda p: int(p[0])):
+                if thr is not None:
+                    logger.info("Avg. Throughput (%2d): %.2f MB/s" % (int(interval), thr))
+                else:
+                    logger.info("Avg. Throughput (%2d): -" % int(interval))
         else:
-            logger.info("Avg. Throughput:     -")
-        avg_duration = entry.get('avg_duration', None)
-        if avg_duration is not None:
-            logger.info("Avg. Duration:       %d seconds" % avg_duration)
-        else:
-            logger.info("Avg. Duration:       -")
+            logger.info("Avg. Throughput:      -")
+
         avg_queued = entry.get('avg_queued')
         if avg_queued is not None:
-            logger.info("Avg. Queued:         %d seconds" % avg_queued)
+            logger.info("Avg. Queued:          %d seconds" % avg_queued)
         else:
-            logger.info("Avg. Queued:         -")
+            logger.info("Avg. Queued:          -")
         frequent_error = entry.get('frequent_error', None)
         if frequent_error and 'count' in frequent_error and 'reason' in frequent_error:
-            logger.info("Most frequent error: [%d] %s" % (frequent_error['count'], frequent_error['reason']))
+            logger.info("Most frequent error:  [%d] %s" % (frequent_error['count'], frequent_error['reason']))
         else:
-            logger.info("Most frequent error: -")
+            logger.info("Most frequent error:  -")
         limits = entry.get('limits', None)
         if isinstance(limits, dict):
             if limits.get('source', None):
-                logger.info("Max. Source Thr:     %.2f" % limits['source'])
+                logger.info("Max. Source Thr:      %.2f" % limits['source'])
             if limits.get('destination', None):
-                logger.info("Max. Dest. Thr:      %.2f" % limits['destination'])
+                logger.info("Max. Dest. Thr:       %.2f" % limits['destination'])
         logger.info("\n")
 
 

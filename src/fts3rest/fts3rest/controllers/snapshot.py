@@ -65,7 +65,6 @@ class SnapshotController(BaseController):
         for vo in vos:
             pairs = Session.query(File.source_se, File.dest_se)\
                 .filter(File.vo_name == vo)\
-                .filter(File.job_finished == None)\
                 .distinct()
             if filter_source:
                 pairs = pairs.filter(File.source_se == filter_source)
@@ -106,10 +105,6 @@ class SnapshotController(BaseController):
                 n_queued = sum(map(lambda f: 1 if f[0] == 'SUBMITTED' else 0, files))
                 pair_info['submitted'] = n_queued
 
-                # Average duration
-                avg_duration = misc.average(map(lambda f: f[1], finished))
-                pair_info['avg_duration'] = avg_duration
-
                 # Average queue time
                 queued_times = map(
                     lambda f: (f[5] - f[4]),  # start_time - submit_time
@@ -130,8 +125,15 @@ class SnapshotController(BaseController):
                 pair_info['finished'] = n_finished
                 pair_info['failed'] = n_failed
 
-                # Average throughput
-                avg_thr = misc.average(map(lambda f: f[2], filter(lambda f: f[2], finished)))
+                # Average throughput for last 60, 30, 15 and 5 minutes
+                avg_thr = dict()
+                now = datetime.utcnow()
+                for min in (60, 30, 15, 5):
+                    tail = filter(
+                        lambda f: f[2] and f[6] is None or f[6] >= now - timedelta(minutes=min),
+                        finished
+                    )
+                    avg_thr[str(min)] = misc.average(map(lambda f: f[2], tail))
                 pair_info['avg_throughput'] = avg_thr
 
                 # Most frequent error
