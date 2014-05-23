@@ -17,6 +17,7 @@
 
 from datetime import datetime, timedelta
 from pylons import request
+import hashlib
 import json
 import logging
 import random
@@ -134,6 +135,14 @@ def _valid_filesize(value):
         return float(value)
 
 
+def _generate_hashed_id(job_id, f_index):
+    """
+    Generates a hashed if from the job_id and the file index inside this job
+    """
+    concat = "%s:%d" % (job_id, f_index)
+    return int(hashlib.md5(concat).hexdigest()[-4:], 16)
+
+
 def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None):
     """
     From the dictionary files_dict, generate a list of transfers for a job
@@ -167,7 +176,7 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
             checksum=files_dict.get('checksum', None),
             file_metadata=files_dict.get('metadata', None),
             activity=files_dict.get('activity', 'default'),
-            hashed_id=shared_hashed_id if shared_hashed_id else random.randint(0, 2 ** 16 - 1)
+            hashed_id=shared_hashed_id if shared_hashed_id else _generate_hashed_id(job_id, f_index)
         )
         files.append(f)
     return files
@@ -225,7 +234,7 @@ def _setup_job_from_dict(job_dict, user):
 
         # If reuse is enabled, generate one single "hash" for all files
         if job['reuse_job']:
-            shared_hashed_id = random.randint(0, 2 ** 16 - 1)
+            shared_hashed_id = _generate_hashed_id(job_id, 0)
         else:
             shared_hashed_id = None
 
