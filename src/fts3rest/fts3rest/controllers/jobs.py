@@ -163,7 +163,9 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
     # Create one File entry per matching pair
     initial_state='SUBMITTED'
     if len(files_dict['sources']) > 1 and len(files_dict['destinations']) == 1:
-        initial_state='NOT_USED'    
+        initial_state='NOT_USED' 
+        if not shared_hashed_id:
+            shared_hashed_id=_generate_hashed_id(job_id, f_index)
     
     for (s, d) in pairs:
         f = dict(
