@@ -150,11 +150,15 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
                 pairs.append((source_url, dest_url))
 
     # Create one File entry per matching pair
+    initial_state='SUBMITTED'
+    if len(files_dict['sources']) > 1 and len(files_dict['destinations']) == 1:
+        initial_state='NOT_USED' 
+    
     for (s, d) in pairs:
         f = dict(
             job_id=job_id,
             file_index=f_index,
-            file_state='SUBMITTED',
+            file_state=initial_state,
             source_surl=s.geturl(),
             dest_surl=d.geturl(),
             source_se=_get_storage_element(s),
@@ -168,6 +172,10 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
             hashed_id=shared_hashed_id if shared_hashed_id else random.randint(0, 2 ** 16 - 1)
         )
         files.append(f)
+        
+    if len(files) > 0 and initial_state == 'NOT_USED':
+        files[0]['file_state']='SUBMITTED'
+
     return files
 
 
