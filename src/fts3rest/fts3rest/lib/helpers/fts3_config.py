@@ -71,7 +71,11 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
     for role in parser.options('roles'):
         granted_array = parser.get('roles', role).split(';')
         for granted in granted_array:
-            (level, operation) = granted.split(':')
+            if granted.find(':') == -1:
+               level = ''
+               operation = granted
+            else:
+               (level, operation) = granted.split(':')
             if role not in fts3cfg['fts3.Roles']:
                 fts3cfg['fts3.Roles'][role] = {}
             fts3cfg['fts3.Roles'][role][operation] = level
