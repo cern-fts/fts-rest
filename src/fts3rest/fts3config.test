@@ -7,13 +7,10 @@ DbPassword=
 DbConnectString=/tmp/fts3.db
 
 Alias=Testing
-#TransferLogDirectory=/var/log/fts3/
 Infosys=lcg-bdii.cern.ch:2170
-Optimizer=true
-HttpKeepAlive=true
 AuthorizedVO=testers.eu-emi.eu;*
 CleanRecordsHost=false
 
 
 [roles]
-Public = vo:transfer;all:config;:deleg
+Public=vo:transfer;all:config;:deleg
