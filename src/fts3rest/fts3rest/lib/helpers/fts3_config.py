@@ -15,7 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from ConfigParser import SafeConfigParser, NoOptionError
+from ConfigParser import ConfigParser, NoOptionError
 from StringIO import StringIO
 from urllib import quote_plus
 import os
@@ -33,7 +33,7 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
     content = "[fts3]\n" + open(path).read()
     io = StringIO(content)
 
-    parser = SafeConfigParser()
+    parser = ConfigParser()
     parser.readfp(io)
 
     db_type = parser.get('fts3', 'DbType')
