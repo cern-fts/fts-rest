@@ -45,8 +45,12 @@ def _ban_se(storage, vo_name, allow_submit, status, timeout):
     else:
         banned.status = status
     banned.wait_timeout = timeout
-    Session.merge(banned)
-    Session.commit()
+    try:
+        Session.merge(banned)
+        Session.commit()
+    except Exception:
+        Session.rollback()
+        raise
 
 
 def _ban_dn(dn):
@@ -58,8 +62,12 @@ def _ban_dn(dn):
     banned.dn = dn
     banned.addition_time = datetime.utcnow()
     banned.admin_dn = user.user_dn
-    Session.merge(banned)
-    Session.commit()
+    try:
+        Session.merge(banned)
+        Session.commit()
+    except Exception:
+        Session.rollback()
+        raise
 
 
 def _cancel_transfers(storage=None, vo_name=None):
@@ -297,8 +305,11 @@ class BanningController(BaseController):
 
         banned = Session.query(BannedSE).get(storage)
         if banned:
-            Session.delete(banned)
-            Session.commit()
+            try:
+                Session.delete(banned)
+                Session.commit()
+            except Exception:
+                Session.rollback()
             log.warn("Storage %s unbanned" % storage)
         else:
             log.warn("Unban of storage %s without effect" % storage)
@@ -321,8 +332,12 @@ class BanningController(BaseController):
 
         banned = Session.query(BannedDN).get(dn)
         if banned:
-            Session.delete(banned)
-            Session.commit()
+            try:
+
+                Session.delete(banned)
+                Session.commit()
+            except Exception:
+                Session.rollback()
             log.warn("User %s unbanned" % dn)
         else:
             log.warn("Unban of user %s without effect" % dn)

@@ -428,14 +428,17 @@ class JobsController(BaseController):
             job.job_finished = now
             job.reason = 'Job canceled by the user'
 
-            Session.query(File).filter(File.job_id == job_id).filter(File.file_state.in_(FileActiveStates))\
-                .update({
-                    'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
-                    'job_finished': now, 'finish_time': now
-                })
-
-            Session.merge(job)
-            Session.commit()
+            try:
+                Session.query(File).filter(File.job_id == job_id).filter(File.file_state.in_(FileActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                    })
+                Session.merge(job)
+                Session.commit()
+            except Exception:
+                Session.rollback()
+                raise
 
             job = JobsController._get_job(job_id)
             log.info("Job %s canceled" % job_id)
@@ -509,9 +512,13 @@ class JobsController(BaseController):
             Session.merge(optimizer_active)
 
         # Update the database
-        Session.execute(Job.__table__.insert(), [job])
-        Session.execute(File.__table__.insert(), files)
-        Session.commit()
+        try:
+            Session.execute(Job.__table__.insert(), [job])
+            Session.execute(File.__table__.insert(), files)
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
 
         log.info("Job %s submitted with %d transfers" % (job['job_id'], len(files)))
 
