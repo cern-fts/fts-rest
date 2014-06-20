@@ -31,6 +31,10 @@ class TestMultiple(TestController):
         """
         Submit one transfer with multiple sources and multiple destinations.
         It must be treated as a transfer with alternatives
+        For REST <= 3.2.3, usually only matching pairs would be picked, but this
+        limitation was later removed
+        https://its.cern.ch/jira/browse/FTS-97
+        Because of this, we get a product between sources and destinations
         """
         self.setup_gridsite_environment()
         self.push_delegation()
@@ -58,7 +62,7 @@ class TestMultiple(TestController):
         job_id = json.loads(answer.body)['job_id']
         db_job = Session.query(Job).get(job_id)
 
-        self.assertEqual(len(db_job.files), 2)
+        self.assertEqual(len(db_job.files), 4)
 
         self.assertEqual(db_job.files[0].file_index, 0)
         self.assertEqual(db_job.files[0].source_surl, 'http://source.es:8446/file')
@@ -66,9 +70,19 @@ class TestMultiple(TestController):
         self.assertEqual(db_job.files[0].file_metadata['mykey'], 'myvalue')
 
         self.assertEqual(db_job.files[1].file_index, 0)
-        self.assertEqual(db_job.files[1].source_surl, 'root://source.es/file')
+        self.assertEqual(db_job.files[1].source_surl, 'http://source.es:8446/file')
         self.assertEqual(db_job.files[1].dest_surl, 'root://dest.ch/file')
         self.assertEqual(db_job.files[1].file_metadata['mykey'], 'myvalue')
+
+        self.assertEqual(db_job.files[2].file_index, 0)
+        self.assertEqual(db_job.files[2].source_surl, 'root://source.es/file')
+        self.assertEqual(db_job.files[2].dest_surl, 'http://dest.ch:8447/file')
+        self.assertEqual(db_job.files[2].file_metadata['mykey'], 'myvalue')
+
+        self.assertEqual(db_job.files[3].file_index, 0)
+        self.assertEqual(db_job.files[3].source_surl, 'root://source.es/file')
+        self.assertEqual(db_job.files[3].dest_surl, 'root://dest.ch/file')
+        self.assertEqual(db_job.files[3].file_metadata['mykey'], 'myvalue')
 
         # Same file index, same hashed id
         uniq_hashes = set(map(lambda f: f.hashed_id, db_job.files))

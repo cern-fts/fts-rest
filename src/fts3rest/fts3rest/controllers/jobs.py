@@ -157,16 +157,15 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
         for d in files_dict['destinations']:
             dest_url = urlparse.urlparse(d.strip())
             _validate_url(dest_url)
-            if _valid_third_party_transfer(source_url.scheme, dest_url.scheme):
-                pairs.append((source_url, dest_url))
+            pairs.append((source_url, dest_url))
 
     # Create one File entry per matching pair
     initial_state='SUBMITTED'
     if len(files_dict['sources']) > 1 and len(files_dict['destinations']) == 1:
         initial_state='NOT_USED'
         if not shared_hashed_id:
-            shared_hashed_id=_generate_hashed_id(job_id, f_index)  
-    
+            shared_hashed_id=_generate_hashed_id(job_id, f_index)
+
     for (s, d) in pairs:
         f = dict(
             job_id=job_id,
@@ -185,10 +184,10 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
             hashed_id=shared_hashed_id if shared_hashed_id else _generate_hashed_id(job_id, f_index)
         )
         files.append(f)
-        
+
     if len(files) > 0 and initial_state == 'NOT_USED':
         files[0]['file_state']='SUBMITTED'
-                
+
     return files
 
 
@@ -256,7 +255,7 @@ def _setup_job_from_dict(job_dict, user):
             f_index += 1
 
         if len(files) == 0:
-            raise HTTPBadRequest('No pair with matching protocols')
+            raise HTTPBadRequest('No valid pairs available')
 
         # If copy_pin_lifetime OR bring_online are specified, go to staging directly
         if job['copy_pin_lifetime'] > 0 or job['bring_online'] > 0:

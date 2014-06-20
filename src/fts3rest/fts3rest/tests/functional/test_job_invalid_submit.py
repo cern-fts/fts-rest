@@ -1,14 +1,14 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -66,39 +66,6 @@ class TestJobInvalidSubmits(TestController):
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'Missing parameter: \'files\'')
-
-    def test_submit_different_protocols(self):
-        """
-        Source and destination protocol mismatch
-        """
-        self.setup_gridsite_environment()
-        self.push_delegation()
-
-        job = {
-            'files': [{
-                'sources': ['http://source.es:8446/file'],
-                'destinations': ['root://dest.ch:8447/file'],
-                'selection_strategy': 'orderly',
-                'checksum': 'adler32:1234',
-                'filesize': 1024,
-                'metadata': {'mykey': 'myvalue'},
-            }],
-            'params': {'overwrite': True, 'verify_checksum': True}
-        }
-
-        response = self.app.post(
-            url="/jobs",
-            content_type='application/json',
-            params=json.dumps(job),
-            status=400
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
-
-        self.assertEquals(error['status'], '400 Bad Request')
-        self.assertEquals(error['message'], 'No pair with matching protocols')
 
     def test_no_protocol(self):
         """
