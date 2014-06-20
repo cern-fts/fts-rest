@@ -1,7 +1,5 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2013.
-#
-#   See www.eu-emi.eu for details on the copyright holders
+#   Copyright CERN, 2014.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
