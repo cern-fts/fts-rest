@@ -371,8 +371,10 @@ class JobsController(BaseController):
         if not filter_dlg_id and filter_state:
             raise HTTPForbidden('To filter by state, you need to provide dlg_id')
 
+        filter_not_before = None
         if filter_state:
             filter_state = filter_state.split(',')
+            filter_not_before = datetime.utcnow() - timedelta(hours=1)
         else:
             filter_state = JobActiveStates
 
@@ -387,9 +389,10 @@ class JobsController(BaseController):
             jobs = jobs.filter(Job.source_se == filter_source)
         if filter_dest:
             jobs = jobs.filter(Job.dest_se == filter_dest)
+        if filter_not_before:
+            jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
 
-        # Return list, limiting the size
-        return jobs.limit(100).all()
+        return jobs.all()
 
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')
