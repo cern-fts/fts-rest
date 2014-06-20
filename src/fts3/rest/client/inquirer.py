@@ -35,13 +35,17 @@ class Inquirer(object):
         except NotFound:
             raise NotFound(job_id)
 
-    def get_job_list(self, user_dn=None, vo_name=None):
+    def get_job_list(self, user_dn=None, vo_name=None, source_se=None, dest_se=None):
         url = "/jobs?"
         args = {}
         if user_dn:
             args['user_dn'] = user_dn
         if vo_name:
             args['vo_name'] = vo_name
+        if source_se:
+            args['source_se'] = source_se
+        if dest_se:
+            args['dest_se'] = dest_se
 
         query = '&'.join(map(lambda (k, v): "%s=%s" % (k, urllib.quote(v, '')),
                              args.iteritems()))

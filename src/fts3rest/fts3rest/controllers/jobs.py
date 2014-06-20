@@ -342,6 +342,8 @@ class JobsController(BaseController):
     @doc.query_arg('vo_name', 'Filter by VO')
     @doc.query_arg('dlg_id', 'Filter by delegation ID')
     @doc.query_arg('state_in', 'Comma separated list of job states to filter. ACTIVE only by default')
+    @doc.query_arg('source_se', 'Source storage element')
+    @doc.query_arg('dest_se', 'Destination storage element')
     @doc.response(403, 'Operation forbidden')
     @doc.response(400, 'DN and delegation ID do not match')
     @doc.return_type(array_of=Job)
@@ -359,6 +361,8 @@ class JobsController(BaseController):
         filter_vo = request.params.get('vo_name', None)
         filter_dlg_id = request.params.get('dlg_id', None)
         filter_state = request.params.get('state_in', None)
+        filter_source = request.params.get('source_se', None)
+        filter_dest = request.params.get('dest_se', None)
 
         if filter_dlg_id and filter_dlg_id != user.delegation_id:
             raise HTTPForbidden('The provided delegation id does not match your delegation id')
@@ -379,6 +383,10 @@ class JobsController(BaseController):
             jobs = jobs.filter(Job.vo_name == filter_vo)
         if filter_dlg_id:
             jobs = jobs.filter(Job.cred_id == filter_dlg_id)
+        if filter_source:
+            jobs = jobs.filter(Job.source_se == filter_source)
+        if filter_dest:
+            jobs = jobs.filter(Job.dest_se == filter_dest)
 
         # Return list, limiting the size
         return jobs.limit(100).all()

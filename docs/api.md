@@ -200,12 +200,14 @@ Array of [Job](#job)
 
 ##### Query arguments
 
-|Name    |Type  |Required|Description                                                         |
-|--------|------|--------|--------------------------------------------------------------------|
-|state_in|string|False   |Comma separated list of job states to filter. ACTIVE only by default|
-|dlg_id  |string|False   |Filter by delegation ID                                             |
-|vo_name |string|False   |Filter by VO                                                        |
-|user_dn |string|False   |Filter by user DN                                                   |
+|Name     |Type  |Required|Description                                                         |
+|---------|------|--------|--------------------------------------------------------------------|
+|dest_se  |string|False   |Destination storage element                                         |
+|source_se|string|False   |Source storage element                                              |
+|state_in |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
+|dlg_id   |string|False   |Filter by delegation ID                                             |
+|vo_name  |string|False   |Filter by VO                                                        |
+|user_dn  |string|False   |Filter by user DN                                                   |
 
 ##### Responses
 
@@ -222,12 +224,14 @@ Array of [Job](#job)
 
 ##### Query arguments
 
-|Name    |Type  |Required|Description                                                         |
-|--------|------|--------|--------------------------------------------------------------------|
-|state_in|string|False   |Comma separated list of job states to filter. ACTIVE only by default|
-|dlg_id  |string|False   |Filter by delegation ID                                             |
-|vo_name |string|False   |Filter by VO                                                        |
-|user_dn |string|False   |Filter by user DN                                                   |
+|Name     |Type  |Required|Description                                                         |
+|---------|------|--------|--------------------------------------------------------------------|
+|dest_se  |string|False   |Destination storage element                                         |
+|source_se|string|False   |Source storage element                                              |
+|state_in |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
+|dlg_id   |string|False   |Filter by delegation ID                                             |
+|vo_name  |string|False   |Filter by VO                                                        |
+|user_dn  |string|False   |Filter by user DN                                                   |
 
 ##### Responses
 
