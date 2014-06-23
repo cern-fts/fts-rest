@@ -136,6 +136,7 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %dir %config(noreplace) %{_sysconfdir}/fts3
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.ini
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/fts3rest.conf
+%config(noreplace) %{_sysconfdir}/logrotate.d/fts-rest
 %dir %attr(0755,apache,apache) %{_var}/cache/fts3rest
 %dir %attr(0755,apache,apache) %{_var}/log/fts3rest
 %doc docs/README.md

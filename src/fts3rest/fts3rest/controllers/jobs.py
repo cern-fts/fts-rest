@@ -157,16 +157,15 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
         for d in files_dict['destinations']:
             dest_url = urlparse.urlparse(d.strip())
             _validate_url(dest_url)
-            if _valid_third_party_transfer(source_url.scheme, dest_url.scheme):
-                pairs.append((source_url, dest_url))
+            pairs.append((source_url, dest_url))
 
     # Create one File entry per matching pair
     initial_state='SUBMITTED'
     if len(files_dict['sources']) > 1 and len(files_dict['destinations']) == 1:
-        initial_state='NOT_USED' 
+        initial_state='NOT_USED'
         if not shared_hashed_id:
             shared_hashed_id=_generate_hashed_id(job_id, f_index)
-    
+
     for (s, d) in pairs:
         f = dict(
             job_id=job_id,
@@ -185,7 +184,7 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
             hashed_id=shared_hashed_id if shared_hashed_id else _generate_hashed_id(job_id, f_index)
         )
         files.append(f)
-        
+
     if len(files) > 0 and initial_state == 'NOT_USED':
         files[0]['file_state']='SUBMITTED'
 
@@ -221,6 +220,7 @@ def _setup_job_from_dict(job_dict, user):
             retry=int(params['retry']),
             job_params=params['gridftp'],
             submit_host=socket.getfqdn(),
+            agent_dn='rest',
             user_dn=user.user_dn,
             voms_cred=' '.join(user.voms_cred),
             vo_name=user.vos[0],
@@ -256,7 +256,7 @@ def _setup_job_from_dict(job_dict, user):
             f_index += 1
 
         if len(files) == 0:
-            raise HTTPBadRequest('No pair with matching protocols')
+            raise HTTPBadRequest('No valid pairs available')
 
         # If copy_pin_lifetime OR bring_online are specified, go to staging directly
         if job['copy_pin_lifetime'] > 0 or job['bring_online'] > 0:
@@ -343,6 +343,8 @@ class JobsController(BaseController):
     @doc.query_arg('vo_name', 'Filter by VO')
     @doc.query_arg('dlg_id', 'Filter by delegation ID')
     @doc.query_arg('state_in', 'Comma separated list of job states to filter. ACTIVE only by default')
+    @doc.query_arg('source_se', 'Source storage element')
+    @doc.query_arg('dest_se', 'Destination storage element')
     @doc.response(403, 'Operation forbidden')
     @doc.response(400, 'DN and delegation ID do not match')
     @doc.return_type(array_of=Job)
@@ -360,6 +362,8 @@ class JobsController(BaseController):
         filter_vo = request.params.get('vo_name', None)
         filter_dlg_id = request.params.get('dlg_id', None)
         filter_state = request.params.get('state_in', None)
+        filter_source = request.params.get('source_se', None)
+        filter_dest = request.params.get('dest_se', None)
 
         if filter_dlg_id and filter_dlg_id != user.delegation_id:
             raise HTTPForbidden('The provided delegation id does not match your delegation id')
@@ -368,8 +372,10 @@ class JobsController(BaseController):
         if not filter_dlg_id and filter_state:
             raise HTTPForbidden('To filter by state, you need to provide dlg_id')
 
+        filter_not_before = None
         if filter_state:
             filter_state = filter_state.split(',')
+            filter_not_before = datetime.utcnow() - timedelta(hours=1)
         else:
             filter_state = JobActiveStates
 
@@ -380,9 +386,14 @@ class JobsController(BaseController):
             jobs = jobs.filter(Job.vo_name == filter_vo)
         if filter_dlg_id:
             jobs = jobs.filter(Job.cred_id == filter_dlg_id)
+        if filter_source:
+            jobs = jobs.filter(Job.source_se == filter_source)
+        if filter_dest:
+            jobs = jobs.filter(Job.dest_se == filter_dest)
+        if filter_not_before:
+            jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
 
-        # Return list, limiting the size
-        return jobs.limit(100).all()
+        return jobs.all()
 
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')

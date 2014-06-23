@@ -1,14 +1,14 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -198,6 +198,48 @@ class TestJobListing(TestController):
                               status=200)
         job_list = json.loads(answer.body)
         self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
+
+    def test_list_with_source_se(self):
+        """
+        Filter by source storage
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job_id = self._submit()
+
+        answer = self.app.get(url="/jobs",
+                              params={'source_se': 'root://source.es'},
+                              status=200)
+        job_list = json.loads(answer.body)
+        self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
+
+        answer = self.app.get(url="/jobs",
+                              params={'source_se': 'gsiftp://source.es'},
+                              status=200)
+        job_list = json.loads(answer.body)
+        self.assertTrue(job_id not in map(lambda j: j['job_id'], job_list))
+
+    def test_list_with_dest_se(self):
+        """
+        Filter by destination storage
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job_id = self._submit()
+
+        answer = self.app.get(url="/jobs",
+                              params={'dest_se': 'root://dest.ch'},
+                              status=200)
+        job_list = json.loads(answer.body)
+        self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
+
+        answer = self.app.get(url="/jobs",
+                              params={'dest_se': 'gsiftp://dest.ch'},
+                              status=200)
+        job_list = json.loads(answer.body)
+        self.assertTrue(job_id not in map(lambda j: j['job_id'], job_list))
 
     def test_list_with_state_no_dlg_id(self):
         """
