@@ -17,6 +17,7 @@
 
 import json
 import scipy.stats
+import socket
 from nose.plugins.skip import SkipTest
 
 from fts3rest.tests import TestController
@@ -69,6 +70,10 @@ class TestJobSubmission(TestController):
         oa = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
         self.assertTrue(oa is not None)
         self.assertGreater(oa.active, 0)
+
+        # Validate submitter
+        self.assertEqual(socket.getfqdn(), job.submit_host)
+        self.assertEqual('rest', job.agent_dn)
 
     def test_submit(self):
         """

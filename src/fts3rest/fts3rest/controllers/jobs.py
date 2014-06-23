@@ -220,6 +220,7 @@ def _setup_job_from_dict(job_dict, user):
             retry=int(params['retry']),
             job_params=params['gridftp'],
             submit_host=socket.getfqdn(),
+            agent_dn='rest',
             user_dn=user.user_dn,
             voms_cred=' '.join(user.voms_cred),
             vo_name=user.vos[0],
