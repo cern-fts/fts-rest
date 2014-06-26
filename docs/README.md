@@ -9,7 +9,7 @@ RESTful API
 -----------
 You can check the automatically [generated documentation](api.md) in this same folder.
 
-Or you can have a look at our examples [using directly curl](api-examples.md)
+Or you can have a look at our examples [using directly curl](api-curl.md)
 
 We also provide some Python wrappers to facilitate the usage of the REST API. They are called [easy bindings](easy/README.md).
 

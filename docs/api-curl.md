@@ -219,6 +219,10 @@ Remove delegated credentials
 ----------------------------
 `curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem https://fts3-pilot.cern.ch:8446/delegation/34644b4229f12f0d -X DELETE`
 
+Delegate credentials
+--------------------
+This is a little bit trickier to do command-line, so it is documented in a separated document: [delegating using standard clients](sh-delegation.md)
+
 Get the submit schema
 ---------------------
 Returns the JSON Schema for the submission message. This can be used by the clients to validate their JSON before actually submitting the transfer.
