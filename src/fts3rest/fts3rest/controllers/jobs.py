@@ -17,6 +17,7 @@
 
 from datetime import datetime, timedelta
 from pylons import request
+from sqlalchemy.orm import noload
 import hashlib
 import json
 import logging
@@ -28,7 +29,7 @@ import urlparse
 import uuid
 
 from fts3.model import Job, File, JobActiveStates, FileActiveStates
-from fts3.model import Credential, OptimizerActive, BannedSE
+from fts3.model import Credential, OptimizerActive, BannedSE, FileRetryLog
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
@@ -418,6 +419,42 @@ class JobsController(BaseController):
             return getattr(job, field)
         else:
             raise HTTPNotFound('No such field')
+
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.response(413, 'The user doesn\'t have enough privileges')
+    @doc.return_type(array_of=File)
+    @jsonify
+    def get_files(self, job_id):
+        """
+        Get the files within a job
+        """
+        owner = Session.query(Job.user_dn, Job.vo_name).filter(Job.job_id == job_id).all()
+        if owner is None or len(owner) < 1:
+            raise HTTPNotFound('No job with the id "%s" has been found' % job_id)
+        if not authorized(TRANSFER,
+                          resource_owner=owner[0][0], resource_vo=owner[0][1]):
+            raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
+        files = Session.query(File).filter(File.job_id == job_id).options(noload(File.retries))
+        return files.all()
+
+    @doc.response(404, 'The job or the file don\'t exist')
+    @doc.response(413, 'The user doesn\'t have enough privileges')
+    @jsonify
+    def get_file_retries(self, job_id, file_id):
+        """
+        Get the retries for a given file
+        """
+        owner = Session.query(Job.user_dn, Job.vo_name).filter(Job.job_id == job_id).all()
+        if owner is None or len(owner) < 1:
+            raise HTTPNotFound('No job with the id "%s" has been found' % job_id)
+        if not authorized(TRANSFER,
+                          resource_owner=owner[0][0], resource_vo=owner[0][1]):
+            raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
+        file = Session.query(File.file_id).filter(File.file_id==file_id)
+        if not file:
+            raise HTTPNotFound('No file with the id "%d" has been found' % file_id)
+        retries = Session.query(FileRetryLog).filter(FileRetryLog.file_id==file_id)
+        return retries.all()
 
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')

@@ -280,6 +280,25 @@ Submission description (SubmitSchema)
 |403 |The user doesn't have enough permissions to submit|
 |400 |The submission request could not be understood    |
 
+#### GET /jobs/{job_id}/files
+Get the files within a job
+
+##### Returns
+Array of [File](#file)
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|job_id|string|
+
+##### Responses
+
+|Code|Description                            |
+|----|---------------------------------------|
+|413 |The user doesn't have enough privileges|
+|404 |The job doesn't exist                  |
+
 #### GET /jobs/{job_id}
 Get the job with the given ID
 
@@ -337,6 +356,23 @@ Get a specific field from the job identified by id
 |----|---------------------------------------|
 |413 |The user doesn't have enough privileges|
 |404 |The job or the field doesn't exist     |
+
+#### GET /jobs/{job_id}/files/{file_id}/retries
+Get the retries for a given file
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|job_id |string|
+|file_id|string|
+
+##### Responses
+
+|Code|Description                            |
+|----|---------------------------------------|
+|413 |The user doesn't have enough privileges|
+|404 |The job or the file don't exist        |
 
 ### Operations on the config audit
 #### GET /config/audit
