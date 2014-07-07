@@ -19,7 +19,7 @@ import logging
 import sys
 
 from base import Base
-from fts3.rest.client import Delegator as Deleg, Context
+from fts3.rest.client import Delegator as Deleg
 
 
 class Delegator(Base):
@@ -41,7 +41,7 @@ class Delegator(Base):
             sys.exit(1)
 
     def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+        context = self._create_context()
         delegator = Deleg(context)
         delegation_id = delegator.delegate(force=self.options.force)
         self.logger.info("Delegation id: %s" % delegation_id)

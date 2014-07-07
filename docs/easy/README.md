@@ -52,7 +52,7 @@ kept.
 That's the purpose of a Context.
 
 ```python
-context = fts3.Context(endpoint, ucert, ukey)
+context = fts3.Context(endpoint, ucert, ukey, verify=True)
 ```
 
 If you are using a proxy certificate, you can either specify only user_certificate, or point both parameters
@@ -60,6 +60,8 @@ to the proxy.
 
 user_certificate and user_key can be safely omitted, and the program will use the values
 defined in the environment variables `X509_USER_PROXY` or `X509_USER_CERT + X509_USER_KEY`.
+
+If verify is False, the server certificate will not be verified.
 
 ### whoami
 Queries the server to see how does it see us

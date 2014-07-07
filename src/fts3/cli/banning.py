@@ -17,7 +17,7 @@ import logging
 import sys
 
 from base import Base
-from fts3.rest.client import Ban, Context
+from fts3.rest.client import Ban
 
 
 class Banning(Base):
@@ -73,7 +73,7 @@ class Banning(Base):
             sys.exit(1)
 
     def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+        context = self._create_context() 
         ban  = Ban(context)
 
         affected_jobs = None

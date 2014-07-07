@@ -18,7 +18,7 @@
 import logging
 import sys
 
-from fts3.rest.client import Inquirer, Context
+from fts3.rest.client import Inquirer
 from base import Base
 from utils import *
 
@@ -44,7 +44,7 @@ class JobShower(Base):
             self.logger.setLevel(logging.DEBUG)
 
     def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+        context = self._create_context() 
 
         inquirer = Inquirer(context)
         job      = inquirer.get_job_status(self.job_id, list_files=self.options.json)
