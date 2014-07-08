@@ -299,10 +299,10 @@ Returns nothing.
 
 #### Example
 ```python
-affected_jobs = fts3.ban_se(context, 'gsiftp://example.com/', status='wait', timeout=3600, allow_submit=False)
+affected_jobs = fts3.ban_se(context, 'gsiftp://example.com', status='wait', timeout=3600, allow_submit=False)
 for job_id in affected_jobs:
   print job_id
-fts3.unban_se(context, 'gsiftp://example.com/')
+fts3.unban_se(context, 'gsiftp://example.com')
 ```
 
 ### ban_dn / unban_dn
