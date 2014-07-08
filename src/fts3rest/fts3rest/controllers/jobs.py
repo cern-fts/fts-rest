@@ -373,14 +373,14 @@ class JobsController(BaseController):
         if not filter_dlg_id and filter_state:
             raise HTTPForbidden('To filter by state, you need to provide dlg_id')
 
-        filter_not_before = None
         if filter_state:
             filter_state = filter_state.split(',')
             filter_not_before = datetime.utcnow() - timedelta(hours=1)
+            jobs = jobs.filter(Job.job_state.in_(filter_state))
+            jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
         else:
-            filter_state = JobActiveStates
+            jobs = jobs.filter(Job.job_finished == None)
 
-        jobs = jobs.filter(Job.job_state.in_(filter_state))
         if filter_dn:
             jobs = jobs.filter(Job.user_dn == filter_dn)
         if filter_vo:
@@ -391,8 +391,6 @@ class JobsController(BaseController):
             jobs = jobs.filter(Job.source_se == filter_source)
         if filter_dest:
             jobs = jobs.filter(Job.dest_se == filter_dest)
-        if filter_not_before:
-            jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
 
         return jobs.all()
 
