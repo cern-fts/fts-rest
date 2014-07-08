@@ -80,7 +80,8 @@ class RequestFactory(object):
     def method(self, method, url, body=None, headers=None):
         handle = pycurl.Curl()
         handle.setopt(pycurl.SSL_VERIFYPEER, self.verify)
-        handle.setopt(pycurl.SSL_VERIFYHOST, self.verify)
+        if self.verify:
+            handle.setopt(pycurl.SSL_VERIFYHOST, 2)
         if self.ucert:
             handle.setopt(pycurl.SSLCERT, self.ucert)
         if self.ukey:

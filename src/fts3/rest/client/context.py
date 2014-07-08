@@ -114,12 +114,12 @@ class Context(object):
             raise BadEndpoint("%s (%s)" % (self.endpoint, str(e))), None, sys.exc_info()[2]
         return endpoint_info
 
-    def __init__(self, endpoint, ucert=None, ukey=None):
+    def __init__(self, endpoint, ucert=None, ukey=None, verify=True):
         self.passwd = None
 
         self._set_endpoint(endpoint)
         self._set_x509(ucert, ukey)
-        self._requester = RequestFactory(self.ucert, self.ukey, passwd=self.passwd)
+        self._requester = RequestFactory(self.ucert, self.ukey, passwd=self.passwd, verify=verify)
         self.endpoint_info = self._validate_endpoint()
         # Log obtained information
         log.debug("Using endpoint: %s" % self.endpoint_info['url'])

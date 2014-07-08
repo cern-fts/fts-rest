@@ -18,7 +18,7 @@ import logging
 import sys
 
 from base import Base
-from fts3.rest.client import Context, Inquirer
+from fts3.rest.client import Inquirer
 
 
 def _human_readable_snapshot(logger, snapshot):
@@ -87,7 +87,7 @@ class Snapshot(Base):
             self.logger.setLevel(logging.DEBUG)
 
     def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+        context = self._create_context() 
         inquirer = Inquirer(context)
         snapshot = inquirer.get_snapshot(self.options.vo, self.options.source, self.options.destination)
         if self.options.json:

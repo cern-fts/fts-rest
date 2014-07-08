@@ -90,9 +90,9 @@ Mind that not all combinations make sense:
 * --allow-submit can only be enabled if --status is wait, for storages
 
 ```
-$ fts-rest-ban -s https://planet-express.cern.ch:8446 --storage gsiftp://sample
+$ fts-rest-ban -s https://fts3-devel.cern.ch:8446 --storage gsiftp://sample
 No jobs affected
-$ fts-rest-ban -s https://planet-express.cern.ch:8446 --storage gsiftp://sample --unban
+$ fts-rest-ban -s https://fts3-devel.cern.ch:8446 --storage gsiftp://sample --unban
 $
 ```
 

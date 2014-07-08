@@ -18,7 +18,7 @@
 import logging
 import sys
 
-from fts3.rest.client import Inquirer, Context
+from fts3.rest.client import Inquirer
 from base import Base
 from utils import *
 
@@ -48,7 +48,7 @@ class JobLister(Base):
             self.logger.setLevel(logging.DEBUG)
 
     def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+        context = self._create_context() 
         inquirer = Inquirer(context)
         job_list  = inquirer.get_job_list(
             self.options.user_dn, self.options.vo_name, self.options.source_se, self.options.dest_se

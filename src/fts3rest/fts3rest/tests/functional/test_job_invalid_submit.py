@@ -344,7 +344,7 @@ class TestJobInvalidSubmits(TestController):
         error = json.loads(response.body)
 
         self.assertEquals(error['status'], '419 Authentication Timeout')
-        self.assertEquals(error['message'], 'The delegated credentials has less than one hour left')
+        self.assertTrue(error['message'].startswith('The delegated credentials has less than one hour left'))
 
     def test_submit_missing_path(self):
         """

@@ -61,6 +61,10 @@ def make_map(config):
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}', controller='jobs', action='get',
                 conditions=dict(method=['GET']))
+    map.connect('/jobs/{job_id}/files', controller='jobs', action='get_files',
+                conditions=dict(method=['GET']))
+    map.connect('/jobs/{job_id}/files/{file_id}/retries', controller='jobs', action='get_file_retries',
+                conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}/{field}', controller='jobs', action='get_field',
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}', controller='jobs', action='cancel',

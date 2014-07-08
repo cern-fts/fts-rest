@@ -20,6 +20,9 @@ from optparse import OptionParser
 import logging
 import os
 
+from fts3.rest.client import Context
+
+
 CONFIG_FILENAMES = [
     '/etc/fts3/fts3client.cfg',
     os.path.expanduser('~/.fts3client.cfg')
@@ -78,3 +81,9 @@ class Base(object):
                                    help='the user certificate private key.', default=opt_ukey)
         self.opt_parser.add_option('--cert', dest='ucert',
                                    help='the user certificate.', default=opt_ucert)
+        self.opt_parser.add_option('--insecure', dest='verify', default=True, action='store_false',
+                                   help='do not validate the server certificate')
+
+    def _create_context(self):
+        return Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert, verify=self.options.verify)
+

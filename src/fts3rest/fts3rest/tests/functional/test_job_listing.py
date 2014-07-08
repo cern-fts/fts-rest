@@ -16,7 +16,10 @@
 #   limitations under the License.
 
 import json
+from datetime import datetime
 
+from fts3.model import FileRetryLog
+from fts3rest.lib.base import Session
 from fts3rest.lib.middleware.fts3auth import UserCredentials
 from fts3rest.tests import TestController
 
@@ -330,3 +333,67 @@ class TestJobListing(TestController):
         error = json.loads(answer.body)
         self.assertEqual(error['status'], '404 Not Found')
         self.assertEqual(error['message'], 'No such field')
+
+    def test_get_files(self):
+        """
+        Get the files within a job
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        job_id = self._submit()
+
+        answer = self.app.get(url="/jobs/%s/files" % job_id, status=200)
+
+        files = json.loads(answer.body)
+
+        self.assertEqual(1, len(files))
+        self.assertEqual("root://source.es/file", files[0]['source_surl'])
+        self.assertEqual("root://dest.ch/file", files[0]['dest_surl'])
+        self.assertEqual(1024, files[0]['user_filesize'])
+
+    def test_no_retries(self):
+        """
+        Get the retries for a file, without retries
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        job_id = self._submit()
+
+        answer = self.app.get(url="/jobs/%s/files" % job_id, status=200)
+        files = json.loads(answer.body)
+        file_id = files[0]['file_id']
+
+        answer = self.app.get(url="/jobs/%s/files/%d/retries" % (job_id, file_id), status=200)
+        retries = json.loads(answer.body)
+
+        print retries
+
+        self.assertEqual(0, len(retries))
+
+    def test_get_retries(self):
+        """
+        Get the retries for a file, forcing one
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        job_id = self._submit()
+
+        answer = self.app.get(url="/jobs/%s/files" % job_id, status=200)
+        files = json.loads(answer.body)
+        file_id = files[0]['file_id']
+
+        retry = FileRetryLog()
+        retry.file_id = file_id
+        retry.attempt = 1
+        retry.datetime = datetime.utcnow()
+        retry.reason = 'Blahblahblah'
+
+        Session.merge(retry)
+        Session.commit()
+
+        answer = self.app.get(url="/jobs/%s/files/%d/retries" % (job_id, file_id), status=200)
+        retries = json.loads(answer.body)
+
+        self.assertEqual(1, len(retries))
+        self.assertEqual(1, retries[0]['attempt'])
+        self.assertEqual('Blahblahblah', retries[0]['reason'])

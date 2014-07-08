@@ -50,7 +50,7 @@ def _get_proxy():
         raise HTTPAuthenticationTimeout('No delegated proxy available')
 
     if cred.termination_time <= datetime.utcnow():
-        raise HTTPAuthenticationTimeout('Delegated proxy expired')
+        raise HTTPAuthenticationTimeout('Delegated proxy expired (%s)' % user.delegation_id)
 
     tmp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.pem', prefix='rest-proxy-', delete=False)
     tmp_file.write(cred.proxy)

@@ -20,7 +20,7 @@ import logging
 import sys
 
 from base import Base
-from fts3.rest.client import Context, Inquirer
+from fts3.rest.client import Inquirer
 
 
 class WhoAmI(Base):
@@ -38,7 +38,7 @@ class WhoAmI(Base):
             sys.exit(1)
 
     def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+        context = self._create_context() 
         inquirer = Inquirer(context)
         whoami = inquirer.whoami()
 
