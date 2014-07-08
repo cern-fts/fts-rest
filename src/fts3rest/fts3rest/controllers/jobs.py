@@ -534,9 +534,13 @@ class JobsController(BaseController):
         if credential.expired():
             remaining = credential.remaining()
             seconds = abs(remaining.seconds + remaining.days * 24 * 3600)
-            raise HTTPAuthenticationTimeout('The delegated credentials expired %d seconds ago' % seconds)
+            raise HTTPAuthenticationTimeout(
+                'The delegated credentials expired %d seconds ago (%s)' % (seconds, user.delegation_id)
+            )
         if credential.remaining() < timedelta(hours=1):
-            raise HTTPAuthenticationTimeout('The delegated credentials has less than one hour left')
+            raise HTTPAuthenticationTimeout(
+                'The delegated credentials has less than one hour left (%s)' % user.delegation_id
+            )
 
         # Populate the job and files
         job, files = _setup_job_from_dict(submitted_dict, user)
