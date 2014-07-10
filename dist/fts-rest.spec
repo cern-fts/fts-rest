@@ -59,6 +59,14 @@ Requires:       python-sqlalchemy
 This package provides an object model of the FTS3
 database, using sqlalchemy ORM.
 
+%post
+/sbin/service httpd condrestart >/dev/null 2>&1 || :
+
+%postun
+if [ "$1" -eq "0" ] ; then
+    /sbin/service httpd condrestart >/dev/null 2>&1 || :
+fi
+
 %post selinux
 if [ "$1" -le "1" ] ; then # First install
 semanage port -a -t http_port_t -p tcp 8446
