@@ -1,14 +1,14 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
-# 
+#   Copyright  Members of the EMI Collaboration, 2013.
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,6 +61,10 @@ def make_map(config):
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}', controller='jobs', action='get',
                 conditions=dict(method=['GET']))
+    map.connect('/jobs/{job_id}/files', controller='jobs', action='get_files',
+                conditions=dict(method=['GET']))
+    map.connect('/jobs/{job_id}/files/{file_id}/retries', controller='jobs', action='get_file_retries',
+                conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}/{field}', controller='jobs', action='get_field',
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}', controller='jobs', action='cancel',
@@ -91,9 +95,18 @@ def make_map(config):
     map.connect('/optimizer', controller='optimizer', action='is_enabled')
     map.connect('/optimizer/evolution', controller='optimizer',
                 action='evolution')
-    
+
     # GFAL2 bindings
     map.connect('/dm/list', controller='datamanagement', action='list')
     map.connect('/dm/stat', controller='datamanagement', action='stat')
+
+    # Snapshot
+    map.connect('/snapshot', controller='snapshot', action='snapshot')
+
+    # Banning
+    map.connect('/ban/se', controller='banning', action='ban_se', conditions=dict(method=['POST']))
+    map.connect('/ban/se', controller='banning', action='unban_se', conditions=dict(method=['DELETE']))
+    map.connect('/ban/dn', controller='banning', action='ban_dn', conditions=dict(method=['POST']))
+    map.connect('/ban/dn', controller='banning', action='unban_dn', conditions=dict(method=['DELETE']))
 
     return map

@@ -1,14 +1,14 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
-# 
+#   Copyright  Members of the EMI Collaboration, 2013.
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,8 @@
 
 from datetime import datetime, timedelta
 from pylons import request
+from sqlalchemy.orm import noload
+import hashlib
 import json
 import logging
 import random
@@ -27,7 +29,7 @@ import urlparse
 import uuid
 
 from fts3.model import Job, File, JobActiveStates, FileActiveStates
-from fts3.model import Credential, OptimizerActive
+from fts3.model import Credential, OptimizerActive, BannedSE, FileRetryLog
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
@@ -105,8 +107,10 @@ def _valid_third_party_transfer(src_scheme, dst_scheme):
     """
     forbidden_schemes = ['', 'file']
     return src_scheme not in forbidden_schemes and \
-           dst_scheme not in forbidden_schemes and \
-           (src_scheme == dst_scheme or src_scheme == 'srm' or dst_scheme == 'srm')
+        dst_scheme not in forbidden_schemes and \
+        (src_scheme == dst_scheme or
+         src_scheme in ['srm', 'lfc'] or
+         dst_scheme in ['srm', 'lfc'])
 
 
 def _validate_url(url):
@@ -132,6 +136,14 @@ def _valid_filesize(value):
         return float(value)
 
 
+def _generate_hashed_id(job_id, f_index):
+    """
+    Generates a hashed if from the job_id and the file index inside this job
+    """
+    concat = "%s:%d" % (job_id, f_index)
+    return int(hashlib.md5(concat).hexdigest()[-4:], 16)
+
+
 def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None):
     """
     From the dictionary files_dict, generate a list of transfers for a job
@@ -146,16 +158,15 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
         for d in files_dict['destinations']:
             dest_url = urlparse.urlparse(d.strip())
             _validate_url(dest_url)
-            if _valid_third_party_transfer(source_url.scheme, dest_url.scheme):
-                pairs.append((source_url, dest_url))
+            pairs.append((source_url, dest_url))
 
     # Create one File entry per matching pair
     initial_state='SUBMITTED'
     if len(files_dict['sources']) > 1 and len(files_dict['destinations']) == 1:
         initial_state='NOT_USED'
         if not shared_hashed_id:
-            shared_hashed_id=random.randint(0, 2 ** 16 - 1)        
-    
+            shared_hashed_id=_generate_hashed_id(job_id, f_index)
+
     for (s, d) in pairs:
         f = dict(
             job_id=job_id,
@@ -171,10 +182,10 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
             checksum=files_dict.get('checksum', None),
             file_metadata=files_dict.get('metadata', None),
             activity=files_dict.get('activity', 'default'),
-            hashed_id=shared_hashed_id if shared_hashed_id else random.randint(0, 2 ** 16 - 1)
+            hashed_id=shared_hashed_id if shared_hashed_id else _generate_hashed_id(job_id, f_index)
         )
         files.append(f)
-        
+
     if len(files) > 0 and initial_state == 'NOT_USED':
         files[0]['file_state']='SUBMITTED'
 
@@ -210,6 +221,7 @@ def _setup_job_from_dict(job_dict, user):
             retry=int(params['retry']),
             job_params=params['gridftp'],
             submit_host=socket.getfqdn(),
+            agent_dn='rest',
             user_dn=user.user_dn,
             voms_cred=' '.join(user.voms_cred),
             vo_name=user.vos[0],
@@ -233,7 +245,7 @@ def _setup_job_from_dict(job_dict, user):
 
         # If reuse is enabled, generate one single "hash" for all files
         if job['reuse_job']:
-            shared_hashed_id = random.randint(0, 2 ** 16 - 1)
+            shared_hashed_id = _generate_hashed_id(job_id, 0)
         else:
             shared_hashed_id = None
 
@@ -245,7 +257,7 @@ def _setup_job_from_dict(job_dict, user):
             f_index += 1
 
         if len(files) == 0:
-            raise HTTPBadRequest('No pair with matching protocols')
+            raise HTTPBadRequest('No valid pairs available')
 
         # If copy_pin_lifetime OR bring_online are specified, go to staging directly
         if job['copy_pin_lifetime'] > 0 or job['bring_online'] > 0:
@@ -275,6 +287,44 @@ def _setup_job_from_dict(job_dict, user):
         raise HTTPBadRequest('Missing parameter: %s' % str(e))
 
 
+def _apply_banning(files):
+    """
+    Query the banning information for all pairs, reject the job
+    as soon as one SE can not submit.
+    Update wait_timeout and wait_timestamp is there is a hit
+    """
+    # Usually, banned SES will be in the order of ~100 max
+    # Files may be several thousands
+    # We get all banned in memory so we avoid querying too many times the DB
+    # We then build a dictionary to make look up easy
+    banned_ses = dict()
+    for b in Session.query(BannedSE):
+        banned_ses[str(b.se)] = (b.vo, b.status, b.wait_timeout)
+
+    now = datetime.utcnow()
+    for f in files:
+        source_banned = banned_ses.get(str(f['source_se']), None)
+        dest_banned = banned_ses.get(str(f['dest_se']), None)
+        timeout = None
+
+        if source_banned and (source_banned[0] == f['vo_name'] or source_banned[0] is None):
+            if source_banned[1] != 'WAIT_AS':
+                raise HTTPForbidden("%s is banned" % f['source_se'])
+            timeout = source_banned[2]
+
+        if dest_banned and (dest_banned[0] == f['vo_name'] or dest_banned[0] is None):
+            if dest_banned[1] != 'WAIT_AS':
+                raise HTTPForbidden("%s is banned" % f['dest_se'])
+            if not timeout:
+                timeout = dest_banned[2]
+            else:
+                timeout = max(timeout, dest_banned[2])
+
+        if timeout is not None:
+            f['wait_timestamp'] = now
+            f['wait_timeout'] = timeout
+
+
 class JobsController(BaseController):
     """
     Operations on jobs and transfers
@@ -294,12 +344,14 @@ class JobsController(BaseController):
     @doc.query_arg('vo_name', 'Filter by VO')
     @doc.query_arg('dlg_id', 'Filter by delegation ID')
     @doc.query_arg('state_in', 'Comma separated list of job states to filter. ACTIVE only by default')
+    @doc.query_arg('source_se', 'Source storage element')
+    @doc.query_arg('dest_se', 'Destination storage element')
     @doc.response(403, 'Operation forbidden')
     @doc.response(400, 'DN and delegation ID do not match')
     @doc.return_type(array_of=Job)
     @authorize(TRANSFER)
     @jsonify
-    def index(self, **kwargs):
+    def index(self):
         """
         Get a list of active jobs, or those that match the filter requirements
         """
@@ -311,6 +363,8 @@ class JobsController(BaseController):
         filter_vo = request.params.get('vo_name', None)
         filter_dlg_id = request.params.get('dlg_id', None)
         filter_state = request.params.get('state_in', None)
+        filter_source = request.params.get('source_se', None)
+        filter_dest = request.params.get('dest_se', None)
 
         if filter_dlg_id and filter_dlg_id != user.delegation_id:
             raise HTTPForbidden('The provided delegation id does not match your delegation id')
@@ -321,25 +375,30 @@ class JobsController(BaseController):
 
         if filter_state:
             filter_state = filter_state.split(',')
+            filter_not_before = datetime.utcnow() - timedelta(hours=1)
+            jobs = jobs.filter(Job.job_state.in_(filter_state))
+            jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
         else:
-            filter_state = JobActiveStates
+            jobs = jobs.filter(Job.job_finished == None)
 
-        jobs = jobs.filter(Job.job_state.in_(filter_state))
         if filter_dn:
             jobs = jobs.filter(Job.user_dn == filter_dn)
         if filter_vo:
             jobs = jobs.filter(Job.vo_name == filter_vo)
         if filter_dlg_id:
             jobs = jobs.filter(Job.cred_id == filter_dlg_id)
+        if filter_source:
+            jobs = jobs.filter(Job.source_se == filter_source)
+        if filter_dest:
+            jobs = jobs.filter(Job.dest_se == filter_dest)
 
-        # Return list, limiting the size
-        return jobs.limit(100).all()
+        return jobs.all()
 
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
     @jsonify
-    def get(self, job_id, **kwargs):
+    def get(self, job_id):
         """
         Get the job with the given ID
         """
@@ -349,7 +408,7 @@ class JobsController(BaseController):
     @doc.response(404, 'The job or the field doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')
     @jsonify
-    def get_field(self, job_id, field, **kwargs):
+    def get_field(self, job_id, field):
         """
         Get a specific field from the job identified by id
         """
@@ -361,9 +420,45 @@ class JobsController(BaseController):
 
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')
+    @doc.return_type(array_of=File)
+    @jsonify
+    def get_files(self, job_id):
+        """
+        Get the files within a job
+        """
+        owner = Session.query(Job.user_dn, Job.vo_name).filter(Job.job_id == job_id).all()
+        if owner is None or len(owner) < 1:
+            raise HTTPNotFound('No job with the id "%s" has been found' % job_id)
+        if not authorized(TRANSFER,
+                          resource_owner=owner[0][0], resource_vo=owner[0][1]):
+            raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
+        files = Session.query(File).filter(File.job_id == job_id).options(noload(File.retries))
+        return files.all()
+
+    @doc.response(404, 'The job or the file don\'t exist')
+    @doc.response(413, 'The user doesn\'t have enough privileges')
+    @jsonify
+    def get_file_retries(self, job_id, file_id):
+        """
+        Get the retries for a given file
+        """
+        owner = Session.query(Job.user_dn, Job.vo_name).filter(Job.job_id == job_id).all()
+        if owner is None or len(owner) < 1:
+            raise HTTPNotFound('No job with the id "%s" has been found' % job_id)
+        if not authorized(TRANSFER,
+                          resource_owner=owner[0][0], resource_vo=owner[0][1]):
+            raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
+        file = Session.query(File.file_id).filter(File.file_id==file_id)
+        if not file:
+            raise HTTPNotFound('No file with the id "%d" has been found' % file_id)
+        retries = Session.query(FileRetryLog).filter(FileRetryLog.file_id==file_id)
+        return retries.all()
+
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
     @jsonify
-    def cancel(self, job_id, **kwargs):
+    def cancel(self, job_id):
         """
         Cancel the given job
 
@@ -380,11 +475,17 @@ class JobsController(BaseController):
             job.job_finished = now
             job.reason = 'Job canceled by the user'
 
-            Session.query(File).filter(File.job_id == job_id).filter(File.file_state.in_(FileActiveStates))\
-                   .update({'file_state': 'CANCELED', 'reason': 'Job canceled by the user'})
-
-            Session.merge(job)
-            Session.commit()
+            try:
+                Session.query(File).filter(File.job_id == job_id).filter(File.file_state.in_(FileActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                    })
+                Session.merge(job)
+                Session.commit()
+            except Exception:
+                Session.rollback()
+                raise
 
             job = JobsController._get_job(job_id)
             log.info("Job %s canceled" % job_id)
@@ -400,7 +501,7 @@ class JobsController(BaseController):
     @doc.return_type('{"job_id": <job id>}')
     @authorize(TRANSFER)
     @jsonify
-    def submit(self, **kwargs):
+    def submit(self):
         """
         Submits a new job
 
@@ -433,12 +534,21 @@ class JobsController(BaseController):
         if credential.expired():
             remaining = credential.remaining()
             seconds = abs(remaining.seconds + remaining.days * 24 * 3600)
-            raise HTTPAuthenticationTimeout('The delegated credentials expired %d seconds ago' % seconds)
+            raise HTTPAuthenticationTimeout(
+                'The delegated credentials expired %d seconds ago (%s)' % (seconds, user.delegation_id)
+            )
         if credential.remaining() < timedelta(hours=1):
-            raise HTTPAuthenticationTimeout('The delegated credentials has less than one hour left')
+            raise HTTPAuthenticationTimeout(
+                'The delegated credentials has less than one hour left (%s)' % user.delegation_id
+            )
 
         # Populate the job and files
         job, files = _setup_job_from_dict(submitted_dict, user)
+
+        # Reject for SE banning
+        # If any SE does not accept submissions, reject the whole job
+        # Update wait_timeout and wait_timestamp if WAIT_AS is set
+        _apply_banning(files)
 
         # Validate that there are no bad combinations
         if job['reuse_job'] and _has_multiple_options(files):
@@ -453,9 +563,13 @@ class JobsController(BaseController):
             Session.merge(optimizer_active)
 
         # Update the database
-        Session.execute(Job.__table__.insert(), [job])
-        Session.execute(File.__table__.insert(), files)
-        Session.commit()
+        try:
+            Session.execute(Job.__table__.insert(), [job])
+            Session.execute(File.__table__.insert(), files)
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
 
         log.info("Job %s submitted with %d transfers" % (job['job_id'], len(files)))
 

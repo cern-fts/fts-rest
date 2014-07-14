@@ -1,14 +1,14 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
-# 
+#   Copyright  Members of the EMI Collaboration, 2013.
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -189,8 +189,12 @@ class DelegationController(BaseController):
         if not cred:
             raise HTTPNotFound('Delegated credentials not found')
         else:
-            Session.delete(cred)
-            Session.commit()
+            try:
+                Session.delete(cred)
+                Session.commit()
+            except Exception:
+                Session.rollback()
+                raise
             start_response('204 No Content', [])
             return ['']
 
@@ -219,8 +223,12 @@ class DelegationController(BaseController):
                                                cert_request=x509_request.as_pem(),
                                                priv_key=private_key.as_pem(cipher=None),
                                                voms_attrs=' '.join(user.voms_cred))
-            Session.add(credential_cache)
-            Session.commit()
+            try:
+                Session.add(credential_cache)
+                Session.commit()
+            except Exception:
+                Session.rollback()
+                raise
             log.debug("Generated new credential request for %s" % dlg_id)
         else:
             log.debug("Using cached request for %s" % dlg_id)
@@ -268,8 +276,12 @@ class DelegationController(BaseController):
                                 voms_attrs       = credential_cache.voms_attrs,
                                 termination_time = expiration_time)
 
-        Session.merge(credential)
-        Session.commit()
+        try:
+            Session.merge(credential)
+            Session.commit()
+        except Exception:
+            Session.rollback()
+            raise
 
         start_response('201 Created', [])
         return ['']
@@ -315,8 +327,13 @@ class DelegationController(BaseController):
         credential.proxy = new_proxy
         credential.termination_time = new_termination_time
         credential.voms_attrs = ' '.join(voms_list)
-        Session.merge(credential)
-        Session.commit()
+
+        try:
+            Session.merge(credential)
+            Session.commit()
+        except Exception:
+            Session.rollback()
+            raise
 
         start_response('203 Non-Authoritative Information', [('Content-Type', 'text/plain')])
         return [str(new_termination_time)]

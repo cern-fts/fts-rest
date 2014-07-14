@@ -34,6 +34,81 @@ Auto-generated API documentation for a specific resource
 |----|-----------------------------|
 |404 |The resource can not be found|
 
+### Banning API
+#### POST /ban/se
+Ban a storage element. Returns affected jobs ids.
+
+##### Returns
+Array of string
+
+##### Query arguments
+
+|Name        |Type  |Required|Description                                                                                      |
+|------------|------|--------|-------------------------------------------------------------------------------------------------|
+|timeout     |string|False   |If status==wait, timeout for the queued jobs. 0 = will not timeout (default)                     |
+|status      |string|False   |What to do with the queued jobs: cancel (default, cancel immediately) or wait(wait for some time)|
+|allow_submit|string|False   |If true, transfers will not run, but submissions will be accepted                                |
+|vo_name     |string|False   |Limit the banning to a given VO                                                                  |
+|storage     |string|True    |Storage to ban                                                                                   |
+
+##### Responses
+
+|Code|Description                                                   |
+|----|--------------------------------------------------------------|
+|413 |The user is not allowed to change the configuration           |
+|400 |storage is missing, or any of the others have an invalid value|
+
+#### DELETE /ban/se
+Unban a storage element
+
+##### Query arguments
+
+|Name   |Type  |Required|Description         |
+|-------|------|--------|--------------------|
+|storage|string|True    |The storage to unban|
+
+##### Responses
+
+|Code|Description                                             |
+|----|--------------------------------------------------------|
+|403 |The user is not allowed to perform configuration actions|
+|400 |storage is empty or missing                             |
+|204 |Success                                                 |
+
+#### POST /ban/dn
+Ban a user
+
+##### Query arguments
+
+|Name   |Type  |Required|Description   |
+|-------|------|--------|--------------|
+|user_dn|string|True    |User DN to ban|
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|413 |The user is not allowed to change the configuration|
+|409 |The user tried to ban (her|his)self                |
+|400 |dn is missing                                      |
+
+#### DELETE /ban/dn
+Unban a user
+
+##### Query arguments
+
+|Name   |Type  |Required|Description     |
+|-------|------|--------|----------------|
+|user_dn|string|True    |User DN to unban|
+
+##### Responses
+
+|Code|Description                                             |
+|----|--------------------------------------------------------|
+|403 |The user is not allowed to perform configuration actions|
+|400 |user_dn is empty or missing                             |
+|204 |Success                                                 |
+
 ### Data management operations
 #### GET /dm/list
 List the content of a remote directory
@@ -125,12 +200,14 @@ Array of [Job](#job)
 
 ##### Query arguments
 
-|Name    |Type  |Required|Description                                                         |
-|--------|------|--------|--------------------------------------------------------------------|
-|state_in|string|False   |Comma separated list of job states to filter. ACTIVE only by default|
-|dlg_id  |string|False   |Filter by delegation ID                                             |
-|vo_name |string|False   |Filter by VO                                                        |
-|user_dn |string|False   |Filter by user DN                                                   |
+|Name     |Type  |Required|Description                                                         |
+|---------|------|--------|--------------------------------------------------------------------|
+|dest_se  |string|False   |Destination storage element                                         |
+|source_se|string|False   |Source storage element                                              |
+|state_in |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
+|dlg_id   |string|False   |Filter by delegation ID                                             |
+|vo_name  |string|False   |Filter by VO                                                        |
+|user_dn  |string|False   |Filter by user DN                                                   |
 
 ##### Responses
 
@@ -147,12 +224,14 @@ Array of [Job](#job)
 
 ##### Query arguments
 
-|Name    |Type  |Required|Description                                                         |
-|--------|------|--------|--------------------------------------------------------------------|
-|state_in|string|False   |Comma separated list of job states to filter. ACTIVE only by default|
-|dlg_id  |string|False   |Filter by delegation ID                                             |
-|vo_name |string|False   |Filter by VO                                                        |
-|user_dn |string|False   |Filter by user DN                                                   |
+|Name     |Type  |Required|Description                                                         |
+|---------|------|--------|--------------------------------------------------------------------|
+|dest_se  |string|False   |Destination storage element                                         |
+|source_se|string|False   |Source storage element                                              |
+|state_in |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
+|dlg_id   |string|False   |Filter by delegation ID                                             |
+|vo_name  |string|False   |Filter by VO                                                        |
+|user_dn  |string|False   |Filter by user DN                                                   |
 
 ##### Responses
 
@@ -200,6 +279,25 @@ Submission description (SubmitSchema)
 |419 |The credentials need to be re-delegated           |
 |403 |The user doesn't have enough permissions to submit|
 |400 |The submission request could not be understood    |
+
+#### GET /jobs/{job_id}/files
+Get the files within a job
+
+##### Returns
+Array of [File](#file)
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|job_id|string|
+
+##### Responses
+
+|Code|Description                            |
+|----|---------------------------------------|
+|413 |The user doesn't have enough privileges|
+|404 |The job doesn't exist                  |
 
 #### GET /jobs/{job_id}
 Get the job with the given ID
@@ -258,6 +356,23 @@ Get a specific field from the job identified by id
 |----|---------------------------------------|
 |413 |The user doesn't have enough privileges|
 |404 |The job or the field doesn't exist     |
+
+#### GET /jobs/{job_id}/files/{file_id}/retries
+Get the retries for a given file
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|job_id |string|
+|file_id|string|
+
+##### Responses
+
+|Code|Description                            |
+|----|---------------------------------------|
+|413 |The user doesn't have enough privileges|
+|404 |The job or the file don't exist        |
 
 ### Operations on the config audit
 #### GET /config/audit
@@ -401,6 +516,18 @@ Indicates if the optimizer is enabled in the server
 ##### Returns
 boolean
 
+### Snapshot API
+#### GET /snapshot
+Get the current status of the server
+
+##### Query arguments
+
+|Name     |Type  |Required|Description             |
+|---------|------|--------|------------------------|
+|dest_se  |string|False   |Filter by destination SE|
+|source_se|string|False   |Filter by source SE     |
+|vo_name  |string|False   |Filter by VO name       |
+
 Models
 ------
 ### ArchivedFile
@@ -512,7 +639,7 @@ Models
 |submit_host             |string  |
 |priority                |integer |
 |source_space_token      |string  |
-|reuse_job               |boolean |
+|reuse_job               |string  |
 |job_metadata            |string  |
 |source_se               |string  |
 |user_cred               |string  |
@@ -547,6 +674,7 @@ Models
 |retry               |integer |
 |job_id              |string  |
 |job_finished        |dateTime|
+|wait_timestamp      |dateTime|
 |staging_start       |dateTime|
 |filesize            |float   |
 |source_se           |string  |
@@ -556,6 +684,7 @@ Models
 |dest_se             |string  |
 |file_index          |integer |
 |reason              |string  |
+|wait_timeout        |integer |
 |file_id             |integer |
 |error_phase         |string  |
 |source_surl         |string  |

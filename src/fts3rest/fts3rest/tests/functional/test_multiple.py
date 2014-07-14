@@ -1,14 +1,14 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
-# 
+#   Copyright  Members of the EMI Collaboration, 2013.
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,6 +31,10 @@ class TestMultiple(TestController):
         """
         Submit one transfer with multiple sources and multiple destinations.
         It must be treated as a transfer with alternatives
+        For REST <= 3.2.3, usually only matching pairs would be picked, but this
+        limitation was later removed
+        https://its.cern.ch/jira/browse/FTS-97
+        Because of this, we get a product between sources and destinations
         """
         self.setup_gridsite_environment()
         self.push_delegation()
@@ -58,7 +62,7 @@ class TestMultiple(TestController):
         job_id = json.loads(answer.body)['job_id']
         db_job = Session.query(Job).get(job_id)
 
-        self.assertEqual(len(db_job.files), 2)
+        self.assertEqual(len(db_job.files), 4)
 
         self.assertEqual(db_job.files[0].file_index, 0)
         self.assertEqual(db_job.files[0].source_surl, 'http://source.es:8446/file')
@@ -66,9 +70,23 @@ class TestMultiple(TestController):
         self.assertEqual(db_job.files[0].file_metadata['mykey'], 'myvalue')
 
         self.assertEqual(db_job.files[1].file_index, 0)
-        self.assertEqual(db_job.files[1].source_surl, 'root://source.es/file')
+        self.assertEqual(db_job.files[1].source_surl, 'http://source.es:8446/file')
         self.assertEqual(db_job.files[1].dest_surl, 'root://dest.ch/file')
         self.assertEqual(db_job.files[1].file_metadata['mykey'], 'myvalue')
+
+        self.assertEqual(db_job.files[2].file_index, 0)
+        self.assertEqual(db_job.files[2].source_surl, 'root://source.es/file')
+        self.assertEqual(db_job.files[2].dest_surl, 'http://dest.ch:8447/file')
+        self.assertEqual(db_job.files[2].file_metadata['mykey'], 'myvalue')
+
+        self.assertEqual(db_job.files[3].file_index, 0)
+        self.assertEqual(db_job.files[3].source_surl, 'root://source.es/file')
+        self.assertEqual(db_job.files[3].dest_surl, 'root://dest.ch/file')
+        self.assertEqual(db_job.files[3].file_metadata['mykey'], 'myvalue')
+
+        # Same file index, same hashed id
+        uniq_hashes = set(map(lambda f: f.hashed_id, db_job.files))
+        self.assertEqual(len(uniq_hashes), 1)
 
     def test_submit_multiple_transfers(self):
         """
@@ -125,6 +143,10 @@ class TestMultiple(TestController):
         self.assertEqual(db_job.files[1].checksum, 'adler32:56789')
         self.assertEqual(db_job.files[1].user_filesize, 512)
         self.assertEqual(db_job.files[1].file_metadata['flag'], True)
+
+        # Hashed ids must be all different
+        uniq_hashes = set(map(lambda f: f.hashed_id, db_job.files))
+        self.assertEqual(len(uniq_hashes), 2)
 
     def test_submit_combination(self):
         """
@@ -187,6 +209,11 @@ class TestMultiple(TestController):
         self.assertEqual(db_job.files[2].checksum, 'adler32:56789')
         self.assertEqual(db_job.files[2].user_filesize, 512)
         self.assertEqual(db_job.files[2].file_metadata['flag'], True)
+
+        # In this case, files with the same file_index must have same
+        # hashed id, but different file_index means different hashed_id
+        self.assertEqual(db_job.files[0].hashed_id, db_job.files[1].hashed_id)
+        self.assertNotEqual(db_job.files[0].hashed_id, db_job.files[2].hashed_id)
 
     def test_submit_alternatives_with_reuse(self):
         """
@@ -282,7 +309,48 @@ class TestMultiple(TestController):
 
         self.assertEqual('H', job.reuse_job)
 
-        files = Session.query(File).filter(File.job_id == job_id)
+        files = Session.query(File).filter(File.job_id == job_id).all()
+        self.assertEquals(2, len(files))
+        hashed = files[0].hashed_id
+        for f in files:
+            self.assertEqual(hashed, f.hashed_id)
+
+    def test_multihop_lfc(self):
+        """
+        Submit a multihop transfer with a final LFC hop
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [
+                {
+                    'sources': ['http://source.es:8446/file'],
+                    'destinations': ['http://intermediate.ch:8447/file'],
+                },
+                {
+                    'sources': ['http://intermediate.ch:8447/file'],
+                    'destinations': ['lfc://lfc.ch/lfn']
+                }
+            ],
+            'params': {'overwrite': True, 'multihop': True}
+        }
+
+        answer = self.app.post(url="/jobs",
+                               content_type='application/json',
+                               params=json.dumps(job),
+                               status=200)
+
+        job_id = json.loads(answer.body)['job_id']
+
+        # The hashed ID must be the same for all files!
+        # Also, the reuse flag must be 'H' in the database
+        job = Session.query(Job).get(job_id)
+
+        self.assertEqual('H', job.reuse_job)
+
+        files = Session.query(File).filter(File.job_id == job_id).all()
+        self.assertEquals(2, len(files))
         hashed = files[0].hashed_id
         for f in files:
             self.assertEqual(hashed, f.hashed_id)

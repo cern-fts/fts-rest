@@ -4,7 +4,7 @@
 #
 
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
+#   Copyright  Members of the EMI Collaboration, 2013.
 # 
 #   See www.eu-emi.eu for details on the copyright holders
 # 

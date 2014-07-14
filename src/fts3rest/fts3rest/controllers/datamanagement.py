@@ -1,14 +1,14 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
-# 
+#   Copyright  Members of the EMI Collaboration, 2013.
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,7 +50,7 @@ def _get_proxy():
         raise HTTPAuthenticationTimeout('No delegated proxy available')
 
     if cred.termination_time <= datetime.utcnow():
-        raise HTTPAuthenticationTimeout('Delegated proxy expired')
+        raise HTTPAuthenticationTimeout('Delegated proxy expired (%s)' % user.delegation_id)
 
     tmp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.pem', prefix='rest-proxy-', delete=False)
     tmp_file.write(cred.proxy)
@@ -118,7 +118,7 @@ class DatamanagementController(BaseController):
     @doc.response(503, 'Try again later')
     @doc.response(500, 'Internal error')
     @jsonify
-    def list(self, **kwargs):
+    def list(self):
         """
         List the content of a remote directory
         """
@@ -139,7 +139,7 @@ class DatamanagementController(BaseController):
     @doc.response(503, 'Try again later')
     @doc.response(500, 'Internal error')
     @jsonify
-    def stat(self, **kwargs):
+    def stat(self):
         """
         Stat a remote file
         """

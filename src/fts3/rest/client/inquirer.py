@@ -1,14 +1,14 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
-# 
+#   Copyright  Members of the EMI Collaboration, 2013.
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,13 +35,17 @@ class Inquirer(object):
         except NotFound:
             raise NotFound(job_id)
 
-    def get_job_list(self, user_dn=None, vo_name=None):
+    def get_job_list(self, user_dn=None, vo_name=None, source_se=None, dest_se=None):
         url = "/jobs?"
         args = {}
         if user_dn:
             args['user_dn'] = user_dn
         if vo_name:
             args['vo_name'] = vo_name
+        if source_se:
+            args['source_se'] = source_se
+        if dest_se:
+            args['dest_se'] = dest_se
 
         query = '&'.join(map(lambda (k, v): "%s=%s" % (k, urllib.quote(v, '')),
                              args.iteritems()))
@@ -51,3 +55,11 @@ class Inquirer(object):
 
     def whoami(self):
         return json.loads(self.context.get("/whoami"))
+
+    def get_snapshot(self, vo=None, source=None, destination=None):
+        vo = urllib.quote(vo, '') if vo else ''
+        source = urllib.quote(source, '') if source else ''
+        destination = urllib.quote(destination, '') if destination else ''
+        return json.loads(
+            self.context.get("/snapshot?vo_name=%s&source_se=%s&dest_se=%s" % (vo, source, destination))
+        )

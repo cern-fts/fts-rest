@@ -52,7 +52,7 @@ kept.
 That's the purpose of a Context.
 
 ```python
-context = fts3.Context(endpoint, ucert, ukey)
+context = fts3.Context(endpoint, ucert, ukey, verify=True)
 ```
 
 If you are using a proxy certificate, you can either specify only user_certificate, or point both parameters
@@ -60,6 +60,8 @@ to the proxy.
 
 user_certificate and user_key can be safely omitted, and the program will use the values
 defined in the environment variables `X509_USER_PROXY` or `X509_USER_CERT + X509_USER_KEY`.
+
+If verify is False, the server certificate will not be verified.
 
 ### whoami
 Queries the server to see how does it see us
@@ -258,3 +260,70 @@ dlg_id = fts3.delegate(context, lifetime=timedelta(hours=48), force=False)
 
 ### submit
 Check the documentation on [submit](submit.md) to see how to build a job and submit it.
+
+
+### get_snapshot
+Gets a server snapshot
+
+#### Args:
+* **context** fts3.rest.client.context.Context instance
+* **vo**      Filter by vo. Can be left empty.
+* **source**  Filter by source SE. Can be left empty
+* **destination** Filter by destination SE. Can be left empty.
+
+#### Returns
+Decoded JSON message returned by the server (server snapshot)
+
+#### Example
+```python
+snapshot = fts3.get_snapshot(context, vo='lhcb', source='srm://server/path')
+```
+
+### ban_se / unban_se
+Ban and unban a storage element.
+
+#### ban_se
+* **context** fts3.rest.client.context.Context instance
+* **storage** The storage to ban
+* **status**  The status of the banning: cancel or wait (leave queued jobs for some time)
+* **timeout** The wait timeout in seconds (0 means leave the queued jobs until they are done)
+* **allow_submit** If True, submissions will be accepted. Only meaningful if status=active
+
+Returns a list of job ids affected by the banning.
+
+#### unban_se
+* **context** fts3.rest.client.context.Context instance
+* **storage** The storage to unban
+
+Returns nothing.
+
+#### Example
+```python
+affected_jobs = fts3.ban_se(context, 'gsiftp://example.com', status='wait', timeout=3600, allow_submit=False)
+for job_id in affected_jobs:
+  print job_id
+fts3.unban_se(context, 'gsiftp://example.com')
+```
+
+### ban_dn / unban_dn
+Ban and unban a user.
+
+#### ban_dn
+* **context** fts3.rest.client.context.Context instance
+* **dn** The user to ban
+
+Returns a list of job ids affected by the banning.
+
+#### unban_dn
+* **context** fts3.rest.client.context.Context instance
+* **dn** The user to unban
+
+#### Example
+```python
+affected_jobs = fts3.ban_dn(context, '/DC=cern/DC=ch/OU=....')
+for job_id in affected_jobs:
+  print job_id
+fts3.unban_dn(context, '/DC=cern/DC=ch/OU=....')
+```
+
+Returns nothing.

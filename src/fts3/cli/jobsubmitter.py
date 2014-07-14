@@ -1,5 +1,5 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
+#   Copyright  Members of the EMI Collaboration, 2013.
 # 
 #   See www.eu-emi.eu for details on the copyright holders
 # 
@@ -22,7 +22,7 @@ import sys
 import time
 
 from base import Base
-from fts3.rest.client import Submitter, Delegator, Inquirer, Context
+from fts3.rest.client import Submitter, Delegator, Inquirer
 
 
 def _metadata(data):
@@ -190,7 +190,7 @@ class JobSubmitter(Base):
         return None
 
     def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+        context = self._create_context() 
         if not self.options.dry_run:
             return self._do_submit(context)
         else:

@@ -9,7 +9,10 @@ service httpd restart
 
 If you are going to connect to an Oracle database, you will need to install cx_oracle as well.
 
-$ yum install cx_oracle
+```
+yum install cx_oracle
+```
+
 If you are installing in a different host, the steps are the same, but you will need to copy the FTS3 configuration file to the new host (since it is used by the rest front-end) and make sure you have installed the proper certificates under /etc/grid-security/certificates.
 
 If you have enabled SELinux, for convenience you can install fts-rest-selinux, which contains the rules needed to have REST working (i.e. allow Apache to connect to the database, allow Apache to bind to 8446)

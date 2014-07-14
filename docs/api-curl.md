@@ -28,6 +28,34 @@ Checking how the server sees us
 }
 ```
 
+Get FTS3 internal status for a given pair
+-----------------------------------------
+`curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem "https://fts3-pilot.cern.ch:8446/snapshot?vo_name=dteam&dest_se=gsiftp://whatnot&&source_se=gsiftp://whatever"`
+
+```json
+[
+  {
+    "active": 1,
+    "avg_duration": null,
+    "avg_queued": 0.0,
+    "avg_throughput": null,
+    "dest_se": "gsiftp://whatnot",
+    "failed": 0,
+    "finished": 0,
+    "frequent_error": null,
+    "limits": {},
+    "max_active": 5,
+    "source_se": "gsiftp://whatever",
+    "submitted": 0,
+    "success_ratio": null,
+    "vo_name": "dteam"
+  }
+]
+```
+
+All parameters are optional. If none is specified, all pairs will be shown.
+Filtering by only vo, only source and only destination (and combinations) are supported.
+
 Get a list of jobs running
 --------------------------
 Filtering by atlas
@@ -191,6 +219,10 @@ Remove delegated credentials
 ----------------------------
 `curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem https://fts3-pilot.cern.ch:8446/delegation/34644b4229f12f0d -X DELETE`
 
+Delegate credentials
+--------------------
+This is a little bit trickier to do command-line, so it is documented in a separated document: [delegating using standard clients](sh-delegation.md)
+
 Get the submit schema
 ---------------------
 Returns the JSON Schema for the submission message. This can be used by the clients to validate their JSON before actually submitting the transfer.
@@ -244,3 +276,34 @@ Here you can see an example of a submission file
 
 Please, note that comments are not supported in JSON. They are just shown here as a help.
 If you want to check other more complex submission modes, you can check the reference page for the [bulk submission format](bulk.md).
+
+Banning/unbanning a storage
+---------------------------
+Banning:
+
+`curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem https://fts3-pilot.cern.ch:8446/ban/se --data-binary '{"storage": "gsiftp://example.com"}' -H 'Content-Type: application/json'`
+```json
+[]
+```
+
+Unbanning:
+
+`curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem "https://fts3-pilot.cern.ch:8446/ban/se?storage=gsiftp://example.com" -X DELETE`
+
+Mind that unbanning returns nothing.
+
+
+Banning/unbanning a user
+------------------------
+Banning:
+
+`curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem https://fts3-pilot.cern.ch:8446/ban/dn --data-binary '{"user_dn": "/DC=.../CN=..."}' -H 'Content-Type: application/json'`
+```json
+[]
+```
+
+Unbanning:
+
+`curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem "https://fts3-pilot.cern.ch:8446/ban/dn?user_dn=/DC=.../CN=..." -X DELETE`
+
+Mind that unbanning returns nothing.

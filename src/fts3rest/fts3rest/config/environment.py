@@ -1,14 +1,14 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
-# 
+#   Copyright  Members of the EMI Collaboration, 2013.
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,6 +54,9 @@ def load_environment(global_conf, app_conf):
     fts3_config_file = config.get('fts3.config')
     if config.get('fts3.config'):
         fts3cfg = fts3_config.fts3_config_load(fts3_config_file)
+        # Let the database be overriden by fts3rest.ini
+        if 'sqlalchemy.url' in config and 'sqlalchemy.url' in fts3cfg:
+            del fts3cfg['sqlalchemy.url']
         config.update(fts3cfg)
 
     # Setup the SQLAlchemy database engine

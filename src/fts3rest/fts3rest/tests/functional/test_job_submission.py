@@ -1,14 +1,14 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
-# 
+#   Copyright  Members of the EMI Collaboration, 2013.
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,7 @@
 
 import json
 import scipy.stats
+import socket
 from nose.plugins.skip import SkipTest
 
 from fts3rest.tests import TestController
@@ -69,6 +70,10 @@ class TestJobSubmission(TestController):
         oa = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
         self.assertTrue(oa is not None)
         self.assertGreater(oa.active, 0)
+
+        # Validate submitter
+        self.assertEqual(socket.getfqdn(), job.submit_host)
+        self.assertEqual('rest', job.agent_dn)
 
     def test_submit(self):
         """
@@ -513,6 +518,43 @@ class TestJobSubmission(TestController):
 
         job = Session.query(Job).get(job_id)
         self._validate_submitted(job)
+
+    def test_submit_different_protocols(self):
+        """
+        Source and destination protocol mismatch
+        For REST <= 3.2.3, this used to be forbidden, but it was decided to allow it
+        https://its.cern.ch/jira/browse/FTS-97
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://dest.ch:8447/file'],
+                'selection_strategy': 'orderly',
+                'checksum': 'adler32:1234',
+                'filesize': 1024,
+                'metadata': {'mykey': 'myvalue'},
+            }],
+            'params': {'overwrite': True, 'verify_checksum': True}
+        }
+
+        response = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        )
+
+        self.assertEquals(response.content_type, 'application/json')
+
+        job_id = json.loads(response.body)['job_id']
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(1, len(job.files))
+        self.assertEqual('http://source.es:8446/file', job.files[0].source_surl)
+        self.assertEqual('root://dest.ch:8447/file', job.files[0].dest_surl)
 
     def test_files_balanced(self):
         """

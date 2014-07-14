@@ -1,14 +1,12 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2010.
-# 
-#   See www.eu-emi.eu for details on the copyright holders
-# 
+#   Copyright CERN, 2014.
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +16,7 @@
 from fts3.rest.client import Inquirer
 
 
-def list_jobs(context, user_dn=None, vo=None):
+def list_jobs(context, user_dn=None, vo=None, source_se=None, dest_se=None):
     """
     List active jobs. Can filter by user_dn and vo
 
@@ -31,7 +29,7 @@ def list_jobs(context, user_dn=None, vo=None):
         Decoded JSON message returned by the server (list of jobs)
     """
     inquirer = Inquirer(context)
-    return inquirer.get_job_list(user_dn, vo)
+    return inquirer.get_job_list(user_dn, vo, source_se, dest_se)
 
 
 def get_job_status(context, job_id, list_files=False):

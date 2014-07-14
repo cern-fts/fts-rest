@@ -1,18 +1,9 @@
-%if 0%{?rhel} == 5
-%global with_python26 1
-%endif
-
-%if 0%{?with_python26}
-%global __python %{_bindir}/python2.6
-%global __os_install_post %{?__python26_os_install_post}
-%endif
-
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
 
 Name:           fts-rest
-Version:        3.2.5
-Release:        1
+Version:        3.2.26
+Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
@@ -21,22 +12,12 @@ URL:            https://svnweb.cern.ch/trac/fts3
 Source0:        https://grid-deployment.web.cern.ch/grid-deployment/dms/fts3/tar/%{name}-%{version}.tar.gz
 
 BuildRequires:  cmake
-BuildRequires:  python2-devel
-
-%if 0%{?rhel} > 5
 BuildRequires:  python-jsonschema
 BuildRequires:  python-nose1.1
 BuildRequires:  python-pylons
 BuildRequires:  scipy
-%endif
-
-%if 0%{?with_python26}
-BuildRequires:  python26-m2crypto
-BuildRequires:  python26-sqlalchemy
-%else
 BuildRequires:  m2crypto
 BuildRequires:  python-sqlalchemy
-%endif
 
 Requires:     gridsite%{?_isa} >= 1.7
 Requires:     httpd%{?_isa}
@@ -65,28 +46,26 @@ Group:          Applications/Internet
 Requires:       %{name} = %{version}-%{release}
 
 %description selinux
-This package labels port 8446, used by fts-rest, as http_port_t,
-so Apache can bind to it.
+SELinux support for fts-rest
 
 %package -n python-fts
 Summary:        FTS3 database model
 Group:          Applications/Internet
-
-%if 0%{?with_python26}
-BuildRequires:  python26-devel
-Requires:       python26-m2crypto
-Requires:       python26-pycurl
-Requires:       python26-sqlalchemy
-%else
 Requires:       m2crypto
-BuildRequires:  python-devel
 Requires:       python-pycurl
 Requires:       python-sqlalchemy
-%endif
 
 %description -n python-fts
 This package provides an object model of the FTS3
 database, using sqlalchemy ORM.
+
+%post
+/sbin/service httpd condrestart >/dev/null 2>&1 || :
+
+%postun
+if [ "$1" -eq "0" ] ; then
+    /sbin/service httpd condrestart >/dev/null 2>&1 || :
+fi
 
 %post selinux
 if [ "$1" -le "1" ] ; then # First install
@@ -109,17 +88,10 @@ fi
 %cmake . -DCMAKE_INSTALL_PREFIX=/ -DPYTHON_SITE_PACKAGES=%{python_sitelib}
 make %{?_smp_mflags}
 
-# In EL5, use Python2.6
-%if 0%{?with_python26}
-sed -i 's:#!/usr/bin/env python:#!/usr/bin/env python26:g' src/cli/fts-rest-*
-%endif
-
 %check
-%if 0%{?rhel} > 5
 pushd src/fts3rest
 PYTHONPATH=../ nosetests1.1 --with-xunit --xunit-file=/tmp/nosetests.xml
 popd
-%endif
 
 %install
 mkdir -p %{buildroot}
@@ -133,9 +105,9 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %files
 %{python_sitelib}/fts3rest*
 %{_libexecdir}/fts3
-%dir %config(noreplace) %{_sysconfdir}/fts3
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.ini
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/fts3rest.conf
+%config(noreplace) %{_sysconfdir}/logrotate.d/fts-rest
 %dir %attr(0755,apache,apache) %{_var}/cache/fts3rest
 %dir %attr(0755,apache,apache) %{_var}/log/fts3rest
 %doc docs/README.md
@@ -144,7 +116,6 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 
 %files cli
 %{_bindir}/fts-rest-*
-%dir %config(noreplace) %{_sysconfdir}/fts3
 %config(noreplace) %{_sysconfdir}/fts3/fts3client.cfg
 %{_mandir}/man1/fts-rest*
 
@@ -155,6 +126,9 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %doc LICENSE
 
 %changelog
+* Mon Jun 30 2014 Michal Simon <michal.simon@cern.ch> - 3.2.6-1
+- First EPEL release
+
 * Tue May 13 2014 Michal Simon <michal.simon@cern.ch> - 3.2.5-1
 - Marging fts-rest and python-fts
 
