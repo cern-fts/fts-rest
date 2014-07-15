@@ -1,52 +1,192 @@
-.\" Manpage for fts-rest-transfer-submit.
-.\" Contact michal.simon@cern.ch to correct errors or typos.
-.TH man 1 "16 May 2014" "1.0" "fts-rest-transfer-submit man page"
+.TH FTS-REST-CLI 1 "July 15, 2014" "fts-rest-transfer-submit"
 .SH NAME
+.PP
 fts-rest-transfer-submit
-.SH SYNOPSIS
-fts-rest-transfer-submit [options] SOURCE DESTINATION [CHECKSUM]
+.SH SYNOPIS
+.PP
+Usage: fts-rest-transfer-submit [options] SOURCE DESTINATION [CHECKSUM]
 .SH DESCRIPTION
-fts-rest-transfer-submit is a tool for submitting transfer-jobs using rest interface of FTS3.  
+.PP
+This command can be used to submit new jobs to FTS3.
+It supports simple and bulk submissions.
+The bulk format is as follows:
+.IP
+.nf
+\f[C]
+{
+\ \ "files":\ [
+\ \ \ \ {
+\ \ \ \ \ \ "sources":\ [
+\ \ \ \ \ \ \ \ "gsiftp://source.host/file"
+\ \ \ \ \ \ ],
+\ \ \ \ \ \ "destinations":\ [
+\ \ \ \ \ \ \ \ "gsiftp://destination.host/file"
+\ \ \ \ \ \ ],
+\ \ \ \ \ \ "metadata":\ "file-metadata",
+\ \ \ \ \ \ "checksum":\ "ADLER32:1234",
+\ \ \ \ \ \ "filesize":\ 1024
+\ \ \ \ },
+\ \ \ \ {
+\ \ \ \ \ \ "sources":\ [
+\ \ \ \ \ \ \ \ "gsiftp://source.host/file2"
+\ \ \ \ \ \ ],
+\ \ \ \ \ \ "destinations":\ [
+\ \ \ \ \ \ \ \ "gsiftp://destination.host/file2"
+\ \ \ \ \ \ ],
+\ \ \ \ \ \ "metadata":\ "file2-metadata",
+\ \ \ \ \ \ "checksum":\ "ADLER32:4321",
+\ \ \ \ \ \ "filesize":\ 2048
+\ \ \ \ }
+\ \ ]
+}
+\f[]
+.fi
 .SH OPTIONS
-  -h, --help            show this help message and exit
-  -v, --verbose         verbose output.
-  -s ENDPOINT, --endpoint=ENDPOINT
-                        FTS3 REST endpoint.
-  -j                    print the output in JSON format.
-  --key=UKEY            the user certificate private key.
-  --cert=UCERT          the user certificate.
-  -b, --blocking        blocking mode. Wait until the operation completes.
-  -i POLL_INTERVAL, --interval=POLL_INTERVAL
-                        interval between two poll operations in blocking mode.
-  -e PROXY_LIFETIME, --expire=PROXY_LIFETIME
-                        expiration time of the delegation in minutes.
-  -o, --overwrite       overwrite files.
-  -r, --reuse           enable session reuse for the transfer job.
-  --job-metadata=JOB_METADATA
-                        transfer job metadata.
-  --file-metadata=FILE_METADATA
-                        file metadata.
-  --file-size=FILE_SIZE
-                        file size (in Bytes)
-  -g GRIDFTP_PARAMS, --gparam=GRIDFTP_PARAMS
-                        GridFTP parameters.
-  -t DESTINATION_TOKEN, --dest-token=DESTINATION_TOKEN
-                        the destination space token or its description.
-  -S SOURCE_TOKEN, --source-token=SOURCE_TOKEN
-                        the source space token or its description.
-  -K COMPARE_CHECKSUM, --compare-checksum=COMPARE_CHECKSUM
-                        compare checksums between source and destination.
-  --copy-pin-lifetime=PIN_LIFETIME
-                        pin lifetime of the copy in seconds.
-  --bring-online=BRING_ONLINE
-                        bring online timeout in seconds.
-  --fail-nearline       fail the transfer is the file is nearline.
-  --dry-run             do not send anything, just print the JSON message.
-  -f BULK_FILE, --file=BULK_FILE
-                        Name of configuration file
-  --retry=RETRY         Number of retries. If 0, the server default will be
-                        used.If negative, there will be no retries.
-  -m, --multi-hop       submit a multihop transfer.
+.TP
+.B -h/--help
+Show this help message and exit
+.RS
+.RE
+.TP
+.B -v/--verbose
+Verbose output.
+.RS
+.RE
+.TP
+.B -s/--endpoint
+Fts3 rest endpoint.
+.RS
+.RE
+.TP
+.B -j/--json
+Print the output in json format.
+.RS
+.RE
+.TP
+.B --key
+The user certificate private key.
+.RS
+.RE
+.TP
+.B --cert
+The user certificate.
+.RS
+.RE
+.TP
+.B --insecure
+Do not validate the server certificate
+.RS
+.RE
+.TP
+.B -b/--blocking
+Blocking mode.
+Wait until the operation completes.
+.RS
+.RE
+.TP
+.B -i/--interval
+Interval between two poll operations in blocking mode.
+.RS
+.RE
+.TP
+.B -e/--expire
+Expiration time of the delegation in minutes.
+.RS
+.RE
+.TP
+.B -o/--overwrite
+Overwrite files.
+.RS
+.RE
+.TP
+.B -r/--reuse
+Enable session reuse for the transfer job.
+.RS
+.RE
+.TP
+.B --job-metadata
+Transfer job metadata.
+.RS
+.RE
+.TP
+.B --file-metadata
+File metadata.
+.RS
+.RE
+.TP
+.B --file-size
+File size (in bytes)
+.RS
+.RE
+.TP
+.B -g/--gparam
+Gridftp parameters.
+.RS
+.RE
+.TP
+.B -t/--dest-token
+The destination space token or its description.
+.RS
+.RE
+.TP
+.B -S/--source-token
+The source space token or its description.
+.RS
+.RE
+.TP
+.B -K/--compare-checksum
+Compare checksums between source and destination.
+.RS
+.RE
+.TP
+.B --copy-pin-lifetime
+Pin lifetime of the copy in seconds.
+.RS
+.RE
+.TP
+.B --bring-online
+Bring online timeout in seconds.
+.RS
+.RE
+.TP
+.B --fail-nearline
+Fail the transfer is the file is nearline.
+.RS
+.RE
+.TP
+.B --dry-run
+Do not send anything, just print the json message.
+.RS
+.RE
+.TP
+.B -f/--file
+Name of configuration file
+.RS
+.RE
+.TP
+.B --retry
+Number of retries.
+If 0, the server default will be used.
+If negative, there will be no retries.
+.RS
+.RE
+.TP
+.B -m/--multi-hop
+Submit a multihop transfer.
+.RS
+.RE
+.SH EXAMPLE
+.IP
+.nf
+\f[C]
+$\ fts-rest-transfer-submit\ -s\ https://fts3-devel.cern.ch:8446\ gsiftp://source.host/file\ gsiftp://destination.host/file
+Job\ successfully\ submitted.
+Job\ id:\ 9fee8c1e-c46d-11e3-8299-02163e00a17a
 
-.SH SEE ALSO
-https://svnweb.cern.ch/trac/fts3/wiki/FTSRest
+$\ fts-rest-transfer-submit\ -s\ https://fts3-devel.cern.ch:8446\ -f\ bulk.json
+Job\ successfully\ submitted.
+Job\ id:\ 9fee8c1e-c46d-11e3-8299-02163e00a17a
+\f[]
+.fi
+.SH AUTHORS
+fts-devel\@cern.ch.

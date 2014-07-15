@@ -1,29 +1,88 @@
-.\" Manpage for fts-rest-ban.
-.\" Contact michal.simon@cern.ch to correct errors or typos.
-.TH man 1 "20 May 2014" "1.0" "fts-rest-ban man page"
+.TH FTS-REST-CLI 1 "July 15, 2014" "fts-rest-ban"
 .SH NAME
+.PP
 fts-rest-ban
-.SH SYNOPSIS
-fts-rest-ban [options]
+.SH SYNOPIS
+.PP
+Usage: fts-rest-ban [options]
 .SH DESCRIPTION
-fts-rest-ban is a tool for banning and unbanning users and storage elements on a FTS3.
+.PP
+Ban and unban storage elements and users
 .SH OPTIONS
-  -h, --help            show this help message and exit
-  -v, --verbose         verbose output.
-  -s ENDPOINT, --endpoint=ENDPOINT
-                        FTS3 REST endpoint.
-  -j, --json            print the output in JSON format.
-  --key=UKEY            the user certificate private key.
-  --cert=UCERT          the user certificate.
-  --storage=STORAGE     storage element
-  --user=USER_DN        user dn
-  --unban               unban instead of ban
-  --status=STATUS       status of the jobs that are already in the queue:
-                        cancel or wait
-  --timeout=TIMEOUT     the timeout for the jobs that are already in the queue
-                        if status is wait
-  --allow-submit        allow submissions if status is wait
-
-
-.SH SEE ALSO
-https://svnweb.cern.ch/trac/fts3/wiki/FTSRest
+.TP
+.B -h/--help
+Show this help message and exit
+.RS
+.RE
+.TP
+.B -v/--verbose
+Verbose output.
+.RS
+.RE
+.TP
+.B -s/--endpoint
+Fts3 rest endpoint.
+.RS
+.RE
+.TP
+.B -j/--json
+Print the output in json format.
+.RS
+.RE
+.TP
+.B --key
+The user certificate private key.
+.RS
+.RE
+.TP
+.B --cert
+The user certificate.
+.RS
+.RE
+.TP
+.B --insecure
+Do not validate the server certificate
+.RS
+.RE
+.TP
+.B --storage
+Storage element
+.RS
+.RE
+.TP
+.B --user
+User dn
+.RS
+.RE
+.TP
+.B --unban
+Unban instead of ban
+.RS
+.RE
+.TP
+.B --status
+Status of the jobs that are already in the queue: cancel or wait
+.RS
+.RE
+.TP
+.B --timeout
+The timeout for the jobs that are already in the queue if status is wait
+.RS
+.RE
+.TP
+.B --allow-submit
+Allow submissions if status is wait
+.RS
+.RE
+.SH EXAMPLE
+.IP
+.nf
+\f[C]
+$\ fts-rest-ban\ -s\ https://fts3-devel.cern.ch:8446\ --storage\ gsiftp://sample
+No\ jobs\ affected
+$\ fts-rest-ban\ -s\ https://fts3-devel.cern.ch:8446\ --storage\ gsiftp://sample\ --unban
+$
+\f[]
+.fi
+.SH AUTHORS
+fts-devel\@cern.ch.

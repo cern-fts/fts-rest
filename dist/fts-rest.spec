@@ -18,6 +18,7 @@ BuildRequires:  python-pylons
 BuildRequires:  scipy
 BuildRequires:  m2crypto
 BuildRequires:  python-sqlalchemy
+BuildRequires:  pandoc
 
 Requires:     gridsite%{?_isa} >= 1.7
 Requires:     httpd%{?_isa}
