@@ -14,8 +14,6 @@
 #   limitations under the License.
 
 import json
-import logging
-import sys
 
 from base import Base
 from fts3.rest.client import Inquirer
@@ -68,7 +66,7 @@ def _human_readable_snapshot(logger, snapshot):
 
 
 class Snapshot(Base):
-    def __init__(self, argv=sys.argv[1:]):
+    def __init__(self):
         super(Snapshot, self).__init__()
         # Specific options
         self.opt_parser.add_option('--vo', dest='vo',
@@ -77,17 +75,9 @@ class Snapshot(Base):
                                    help='filter by source SE')
         self.opt_parser.add_option('--destination', dest='destination',
                                    help='filter by destination SE')
-        (self.options, self.args) = self.opt_parser.parse_args(argv)
 
-        if self.options.endpoint is None:
-            self.logger.critical('Need an endpoint')
-            sys.exit(1)
-
-        if self.options.verbose:
-            self.logger.setLevel(logging.DEBUG)
-
-    def __call__(self):
-        context = self._create_context() 
+    def run(self):
+        context = self._create_context()
         inquirer = Inquirer(context)
         snapshot = inquirer.get_snapshot(self.options.vo, self.options.source, self.options.destination)
         if self.options.json:

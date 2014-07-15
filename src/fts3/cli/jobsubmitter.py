@@ -1,14 +1,14 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,7 +33,7 @@ def _metadata(data):
 
 
 class JobSubmitter(Base):
-    def __init__(self, argv=sys.argv[1:]):
+    def __init__(self):
         super(JobSubmitter, self).__init__(extra_args='SOURCE DESTINATION [CHECKSUM]')
 
         # Specific options
@@ -76,12 +76,8 @@ class JobSubmitter(Base):
                                         'If negative, there will be no retries.')
         self.opt_parser.add_option('-m', '--multi-hop', dest='multihop', default=False, action='store_true',
                                    help='submit a multihop transfer.')
-        (self.options, self.args) = self.opt_parser.parse_args(argv)
 
-        if self.options.endpoint is None:
-            self.logger.critical('Need an endpoint')
-            sys.exit(1)
-
+    def validate(self):
         if not self.options.bulk_file:
             if len(self.args) < 2:
                 self.logger.critical("Need a source and a destination")
@@ -189,8 +185,8 @@ class JobSubmitter(Base):
         )
         return None
 
-    def __call__(self):
-        context = self._create_context() 
+    def run(self):
+        context = self._create_context()
         if not self.options.dry_run:
             return self._do_submit(context)
         else:

@@ -15,9 +15,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import logging
-import sys
-
 from fts3.rest.client import Inquirer
 from base import Base
 from utils import *
@@ -25,7 +22,7 @@ from utils import *
 
 class JobLister(Base):
 
-    def __init__(self, argv=sys.argv[1:]):
+    def __init__(self):
         super(JobLister, self).__init__()
         # Specific options
         self.opt_parser.add_option('-u', '--userdn', dest='user_dn',
@@ -37,20 +34,10 @@ class JobLister(Base):
         self.opt_parser.add_option('--destination', dest='dest_se',
                                    help='query only for the given destination storage element')
 
-        # And parse
-        (self.options, self.args) = self.opt_parser.parse_args(argv)
-
-        if self.options.endpoint is None:
-            self.logger.critical('Need an endpoint')
-            sys.exit(1)
-
-        if self.options.verbose:
-            self.logger.setLevel(logging.DEBUG)
-
-    def __call__(self):
-        context = self._create_context() 
+    def run(self):
+        context = self._create_context()
         inquirer = Inquirer(context)
-        job_list  = inquirer.get_job_list(
+        job_list = inquirer.get_job_list(
             self.options.user_dn, self.options.vo_name, self.options.source_se, self.options.dest_se
         )
         if not self.options.json:

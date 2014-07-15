@@ -6,10 +6,10 @@ import traceback
 
 
 try:
-	whoami = WhoAmI(sys.argv[1:])
-	whoami()
+    whoami = WhoAmI()
+    whoami(sys.argv[1:])
 except Exception, e:
-	logging.critical(str(e))
-	if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
-		traceback.print_exc()
-	sys.exit(1)
+    logging.critical(str(e))
+    if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+        traceback.print_exc()
+    sys.exit(1)

@@ -5,10 +5,10 @@ import sys
 import traceback
 
 try:
-	lister = JobLister(sys.argv[1:])
-	lister()
+    lister = JobLister()
+    lister(sys.argv[1:])
 except Exception, e:
-	logging.critical(str(e))
-	if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
-		traceback.print_exc()
-	sys.exit(1)
+    logging.critical(str(e))
+    if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+        traceback.print_exc()
+    sys.exit(1)

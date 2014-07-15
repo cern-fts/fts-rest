@@ -13,7 +13,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import logging
 import sys
 
 from base import Base
@@ -22,7 +21,7 @@ from fts3.rest.client import Ban
 
 class Banning(Base):
 
-    def __init__(self, argv=sys.argv[1:]):
+    def __init__(self):
         super(Banning, self).__init__()
 
         self.opt_parser.add_option('--storage', dest='storage',
@@ -43,15 +42,7 @@ class Banning(Base):
                                    default=False, action='store_true',
                                    help='allow submissions if status is wait')
 
-        (self.options, self.args) = self.opt_parser.parse_args(argv)
-
-        if self.options.verbose:
-            self.logger.setLevel(logging.DEBUG)
-
-        if self.options.endpoint is None:
-            self.logger.critical('Need an endpoint')
-            sys.exit(1)
-
+    def validate(self):
         # Some sanity checks
         # This are checked server side anyway (or so they should) but we can shorcurt here
         self.options.status = self.options.status.lower()
@@ -72,9 +63,9 @@ class Banning(Base):
             self.logger.critical('Need to specify only one of --storage or --user')
             sys.exit(1)
 
-    def __call__(self):
-        context = self._create_context() 
-        ban  = Ban(context)
+    def run(self):
+        context = self._create_context()
+        ban = Ban(context)
 
         affected_jobs = None
         if self.options.storage:
