@@ -13,7 +13,9 @@ Source0:        https://grid-deployment.web.cern.ch/grid-deployment/dms/fts3/tar
 
 BuildRequires:  cmake
 BuildRequires:  python-jsonschema
+%if 0%{?rhel} > 5
 BuildRequires:  python-nose1.1
+%endif
 BuildRequires:  python-pylons
 BuildRequires:  scipy
 BuildRequires:  m2crypto
@@ -81,9 +83,11 @@ fi
 make %{?_smp_mflags}
 
 %check
+%if 0%{?rhel} > 5
 pushd src/fts3rest
 PYTHONPATH=../ nosetests1.1 --with-xunit --xunit-file=/tmp/nosetests.xml
 popd
+%endif
 
 %install
 mkdir -p %{buildroot}
