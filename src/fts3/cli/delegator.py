@@ -22,7 +22,13 @@ from fts3.rest.client import Delegator as Deleg
 class Delegator(Base):
 
     def __init__(self):
-        super(Delegator, self).__init__()
+        super(Delegator, self).__init__(
+            description="This command can be used to (re)delegate your credentials to the FTS3 server",
+            example="""
+            $ %(prog)s -s https://fts3-devel.cern.ch:8446
+            Delegation id: 9a4257f435fa2010"
+            """
+        )
 
         self.opt_parser.add_option('-f', '--force', dest='force',
                                    default=False, action='store_true',

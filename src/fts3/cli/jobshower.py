@@ -25,7 +25,20 @@ from utils import *
 class JobShower(Base):
 
     def __init__(self):
-        super(JobShower, self).__init__(extra_args='JOB_ID')
+        super(JobShower, self).__init__(
+            extra_args='JOB_ID',
+            description="This command can be used to check the current status of a given job",
+            example="""
+            $ %(prog)s -s https://fts3-devel.cern.ch:8446 c079a636-c363-11e3-b7e5-02163e009f5a
+            Request ID: c079a636-c363-11e3-b7e5-02163e009f5a
+            Status: FINISHED
+            Client DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=saketag/CN=678984/CN=Alejandro Alvarez Ayllon
+            Reason:
+            Submission time: 2014-04-13T23:31:34
+            Priority: 3
+            VO Name: dteam
+            """
+        )
 
     def validate(self):
         if len(self.args) == 0:

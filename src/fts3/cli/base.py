@@ -41,7 +41,7 @@ CONFIG_DEFAULTS = {
 
 class Base(object):
 
-    def __init__(self, extra_args=None):
+    def __init__(self, extra_args=None, description=None, example=None):
         self.logger = logging.getLogger('fts3')
 
         # Common CLI options
@@ -69,7 +69,7 @@ class Base(object):
         if opt_ucert == 'None':
             opt_ucert = None
 
-        self.opt_parser = OptionParser(usage=usage)
+        self.opt_parser = OptionParser(usage=usage, description=description, epilog=example)
 
         self.opt_parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
                                    help='verbose output.', default=config.getboolean(section, 'verbose'))

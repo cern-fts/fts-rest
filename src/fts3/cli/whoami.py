@@ -23,6 +23,21 @@ from fts3.rest.client import Inquirer
 
 class WhoAmI(Base):
 
+    def __init__(self):
+        super(WhoAmI, self).__init__(
+            description="""
+            This command exists for convenience. It can be used to check, as the name suggests,
+            who are we for the server.
+            """,
+            example="""
+            $ %(prog)s -s https://fts3-pilot.cern.ch:8446
+            User DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=saketag/CN=678984/CN=Alejandro Alvarez Ayllon
+            VO: dteam
+            VO: dteam/cern
+            Delegation id: 9a4257f435fa2010
+            """
+        )
+
     def run(self):
         context = self._create_context()
         inquirer = Inquirer(context)

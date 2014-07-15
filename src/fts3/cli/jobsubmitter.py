@@ -34,7 +34,51 @@ def _metadata(data):
 
 class JobSubmitter(Base):
     def __init__(self):
-        super(JobSubmitter, self).__init__(extra_args='SOURCE DESTINATION [CHECKSUM]')
+        super(JobSubmitter, self).__init__(
+            extra_args='SOURCE DESTINATION [CHECKSUM]',
+            description="""
+            This command can be used to submit new jobs to FTS3. It supports simple and bulk submissions. The bulk
+            format is as follows:
+
+            ```json
+            {
+              "files": [
+                {
+                  "sources": [
+                    "gsiftp://source.host/file"
+                  ],
+                  "destinations": [
+                    "gsiftp://destination.host/file"
+                  ],
+                  "metadata": "file-metadata",
+                  "checksum": "ADLER32:1234",
+                  "filesize": 1024
+                },
+                {
+                  "sources": [
+                    "gsiftp://source.host/file2"
+                  ],
+                  "destinations": [
+                    "gsiftp://destination.host/file2"
+                  ],
+                  "metadata": "file2-metadata",
+                  "checksum": "ADLER32:4321",
+                  "filesize": 2048
+                }
+              ]
+            }
+            ```
+            """,
+            example="""
+            $ %(prog)s -s https://fts3-devel.cern.ch:8446 gsiftp://source.host/file gsiftp://destination.host/file
+            Job successfully submitted.
+            Job id: 9fee8c1e-c46d-11e3-8299-02163e00a17a
+
+            $ %(prog)s -s https://fts3-devel.cern.ch:8446 -f bulk.json
+            Job successfully submitted.
+            Job id: 9fee8c1e-c46d-11e3-8299-02163e00a17a
+            """
+        )
 
         # Specific options
         self.opt_parser.add_option('-b', '--blocking', dest='blocking', default=False, action='store_true',

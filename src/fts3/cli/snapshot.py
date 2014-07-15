@@ -67,7 +67,28 @@ def _human_readable_snapshot(logger, snapshot):
 
 class Snapshot(Base):
     def __init__(self):
-        super(Snapshot, self).__init__()
+        super(Snapshot, self).__init__(
+            description="""
+            This command can be used to retrieve the internal status FTS3 has on all pairs with ACTIVE transfers.
+            It allows to filter by VO, source SE and destination SE
+            """,
+            example="""
+            $ %(prog)s -s https://fts3-devel.cern.ch:8446
+            Source:              gsiftp://whatever
+            Destination:         gsiftp://whatnot
+            VO:                  dteam
+            Max. Active:         5
+            Active:              1
+            Submitted:           0
+            Finished:            0
+            Failed:              0
+            Success ratio:       -
+            Avg. Throughput:     -
+            Avg. Duration:       -
+            Avg. Queued:         0 seconds
+            Most frequent error: -
+            """
+        )
         # Specific options
         self.opt_parser.add_option('--vo', dest='vo',
                                    help='filter by VO')
