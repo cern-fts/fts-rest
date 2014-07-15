@@ -15,18 +15,35 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import logging
-import sys
-
-from fts3.rest.client import Inquirer, Context
+from fts3.rest.client import Inquirer
 from base import Base
 from utils import *
 
 
 class JobLister(Base):
 
-    def __init__(self, argv=sys.argv[1:]):
-        super(JobLister, self).__init__()
+    def __init__(self):
+        super(JobLister, self).__init__(
+            description="This command can be used to list the running jobs, allowing to filter by user dn or vo name",
+            example="""
+            $ %(prog)s -s https://fts3-devel.cern.ch:8446 -o atlas
+            Request ID: ff294db7-655a-4c0a-9efb-44a994677bb3
+            Status: ACTIVE
+            Client DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=ddmadmin/CN=531497/CN=Robot: ATLAS Data Management
+            Reason: None
+            Submission time: 2014-04-15T07:05:38
+            Priority: 3
+            VO Name: atlas
+
+            Request ID: a2e4586c-760a-469e-8303-d0f3d5aadc73
+            Status: READY
+            Client DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=ddmadmin/CN=531497/CN=Robot: ATLAS Data Management
+            Reason: None
+            Submission time: 2014-04-15T07:07:33
+            Priority: 3
+            VO Name: atlas
+            """
+        )
         # Specific options
         self.opt_parser.add_option('-u', '--userdn', dest='user_dn',
                                    help='query only for the given user')
@@ -37,20 +54,10 @@ class JobLister(Base):
         self.opt_parser.add_option('--destination', dest='dest_se',
                                    help='query only for the given destination storage element')
 
-        # And parse
-        (self.options, self.args) = self.opt_parser.parse_args(argv)
-
-        if self.options.endpoint is None:
-            self.logger.critical('Need an endpoint')
-            sys.exit(1)
-
-        if self.options.verbose:
-            self.logger.setLevel(logging.DEBUG)
-
-    def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+    def run(self):
+        context = self._create_context()
         inquirer = Inquirer(context)
-        job_list  = inquirer.get_job_list(
+        job_list = inquirer.get_job_list(
             self.options.user_dn, self.options.vo_name, self.options.source_se, self.options.dest_se
         )
         if not self.options.json:

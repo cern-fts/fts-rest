@@ -1,14 +1,14 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,29 +16,30 @@
 #   limitations under the License.
 
 import json
-import logging
-import sys
 
 from base import Base
-from fts3.rest.client import Context, Inquirer
+from fts3.rest.client import Inquirer
 
 
 class WhoAmI(Base):
 
-    def __init__(self, argv=sys.argv[1:]):
-        super(WhoAmI, self).__init__()
+    def __init__(self):
+        super(WhoAmI, self).__init__(
+            description="""
+            This command exists for convenience. It can be used to check, as the name suggests,
+            who are we for the server.
+            """,
+            example="""
+            $ %(prog)s -s https://fts3-pilot.cern.ch:8446
+            User DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=saketag/CN=678984/CN=Alejandro Alvarez Ayllon
+            VO: dteam
+            VO: dteam/cern
+            Delegation id: 9a4257f435fa2010
+            """
+        )
 
-        (self.options, self.args) = self.opt_parser.parse_args(argv)
-
-        if self.options.verbose:
-            self.logger.setLevel(logging.DEBUG)
-
-        if self.options.endpoint is None:
-            self.logger.critical('Need an endpoint')
-            sys.exit(1)
-
-    def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+    def run(self):
+        context = self._create_context()
         inquirer = Inquirer(context)
         whoami = inquirer.whoami()
 

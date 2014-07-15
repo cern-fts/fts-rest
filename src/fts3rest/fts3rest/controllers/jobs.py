@@ -17,6 +17,7 @@
 
 from datetime import datetime, timedelta
 from pylons import request
+from sqlalchemy.orm import noload
 import hashlib
 import json
 import logging
@@ -28,7 +29,7 @@ import urlparse
 import uuid
 
 from fts3.model import Job, File, JobActiveStates, FileActiveStates
-from fts3.model import Credential, OptimizerActive, BannedSE
+from fts3.model import Credential, OptimizerActive, BannedSE, FileRetryLog
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
@@ -372,14 +373,14 @@ class JobsController(BaseController):
         if not filter_dlg_id and filter_state:
             raise HTTPForbidden('To filter by state, you need to provide dlg_id')
 
-        filter_not_before = None
         if filter_state:
             filter_state = filter_state.split(',')
             filter_not_before = datetime.utcnow() - timedelta(hours=1)
+            jobs = jobs.filter(Job.job_state.in_(filter_state))
+            jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
         else:
-            filter_state = JobActiveStates
+            jobs = jobs.filter(Job.job_finished == None)
 
-        jobs = jobs.filter(Job.job_state.in_(filter_state))
         if filter_dn:
             jobs = jobs.filter(Job.user_dn == filter_dn)
         if filter_vo:
@@ -390,8 +391,6 @@ class JobsController(BaseController):
             jobs = jobs.filter(Job.source_se == filter_source)
         if filter_dest:
             jobs = jobs.filter(Job.dest_se == filter_dest)
-        if filter_not_before:
-            jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
 
         return jobs.all()
 
@@ -418,6 +417,42 @@ class JobsController(BaseController):
             return getattr(job, field)
         else:
             raise HTTPNotFound('No such field')
+
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.response(413, 'The user doesn\'t have enough privileges')
+    @doc.return_type(array_of=File)
+    @jsonify
+    def get_files(self, job_id):
+        """
+        Get the files within a job
+        """
+        owner = Session.query(Job.user_dn, Job.vo_name).filter(Job.job_id == job_id).all()
+        if owner is None or len(owner) < 1:
+            raise HTTPNotFound('No job with the id "%s" has been found' % job_id)
+        if not authorized(TRANSFER,
+                          resource_owner=owner[0][0], resource_vo=owner[0][1]):
+            raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
+        files = Session.query(File).filter(File.job_id == job_id).options(noload(File.retries))
+        return files.all()
+
+    @doc.response(404, 'The job or the file don\'t exist')
+    @doc.response(413, 'The user doesn\'t have enough privileges')
+    @jsonify
+    def get_file_retries(self, job_id, file_id):
+        """
+        Get the retries for a given file
+        """
+        owner = Session.query(Job.user_dn, Job.vo_name).filter(Job.job_id == job_id).all()
+        if owner is None or len(owner) < 1:
+            raise HTTPNotFound('No job with the id "%s" has been found' % job_id)
+        if not authorized(TRANSFER,
+                          resource_owner=owner[0][0], resource_vo=owner[0][1]):
+            raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
+        file = Session.query(File.file_id).filter(File.file_id==file_id)
+        if not file:
+            raise HTTPNotFound('No file with the id "%d" has been found' % file_id)
+        retries = Session.query(FileRetryLog).filter(FileRetryLog.file_id==file_id)
+        return retries.all()
 
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')
@@ -499,9 +534,13 @@ class JobsController(BaseController):
         if credential.expired():
             remaining = credential.remaining()
             seconds = abs(remaining.seconds + remaining.days * 24 * 3600)
-            raise HTTPAuthenticationTimeout('The delegated credentials expired %d seconds ago' % seconds)
+            raise HTTPAuthenticationTimeout(
+                'The delegated credentials expired %d seconds ago (%s)' % (seconds, user.delegation_id)
+            )
         if credential.remaining() < timedelta(hours=1):
-            raise HTTPAuthenticationTimeout('The delegated credentials has less than one hour left')
+            raise HTTPAuthenticationTimeout(
+                'The delegated credentials has less than one hour left (%s)' % user.delegation_id
+            )
 
         # Populate the job and files
         job, files = _setup_job_from_dict(submitted_dict, user)

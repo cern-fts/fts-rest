@@ -1,14 +1,14 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@ import sys
 import time
 
 from base import Base
-from fts3.rest.client import Submitter, Delegator, Inquirer, Context
+from fts3.rest.client import Submitter, Delegator, Inquirer
 
 
 def _metadata(data):
@@ -33,8 +33,52 @@ def _metadata(data):
 
 
 class JobSubmitter(Base):
-    def __init__(self, argv=sys.argv[1:]):
-        super(JobSubmitter, self).__init__(extra_args='SOURCE DESTINATION [CHECKSUM]')
+    def __init__(self):
+        super(JobSubmitter, self).__init__(
+            extra_args='SOURCE DESTINATION [CHECKSUM]',
+            description="""
+            This command can be used to submit new jobs to FTS3. It supports simple and bulk submissions. The bulk
+            format is as follows:
+
+            ```json
+            {
+              "files": [
+                {
+                  "sources": [
+                    "gsiftp://source.host/file"
+                  ],
+                  "destinations": [
+                    "gsiftp://destination.host/file"
+                  ],
+                  "metadata": "file-metadata",
+                  "checksum": "ADLER32:1234",
+                  "filesize": 1024
+                },
+                {
+                  "sources": [
+                    "gsiftp://source.host/file2"
+                  ],
+                  "destinations": [
+                    "gsiftp://destination.host/file2"
+                  ],
+                  "metadata": "file2-metadata",
+                  "checksum": "ADLER32:4321",
+                  "filesize": 2048
+                }
+              ]
+            }
+            ```
+            """,
+            example="""
+            $ %(prog)s -s https://fts3-devel.cern.ch:8446 gsiftp://source.host/file gsiftp://destination.host/file
+            Job successfully submitted.
+            Job id: 9fee8c1e-c46d-11e3-8299-02163e00a17a
+
+            $ %(prog)s -s https://fts3-devel.cern.ch:8446 -f bulk.json
+            Job successfully submitted.
+            Job id: 9fee8c1e-c46d-11e3-8299-02163e00a17a
+            """
+        )
 
         # Specific options
         self.opt_parser.add_option('-b', '--blocking', dest='blocking', default=False, action='store_true',
@@ -76,12 +120,8 @@ class JobSubmitter(Base):
                                         'If negative, there will be no retries.')
         self.opt_parser.add_option('-m', '--multi-hop', dest='multihop', default=False, action='store_true',
                                    help='submit a multihop transfer.')
-        (self.options, self.args) = self.opt_parser.parse_args(argv)
 
-        if self.options.endpoint is None:
-            self.logger.critical('Need an endpoint')
-            sys.exit(1)
-
+    def validate(self):
         if not self.options.bulk_file:
             if len(self.args) < 2:
                 self.logger.critical("Need a source and a destination")
@@ -189,8 +229,8 @@ class JobSubmitter(Base):
         )
         return None
 
-    def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+    def run(self):
+        context = self._create_context()
         if not self.options.dry_run:
             return self._do_submit(context)
         else:

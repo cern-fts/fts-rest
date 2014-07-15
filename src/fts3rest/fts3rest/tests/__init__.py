@@ -39,7 +39,7 @@ from webtest import TestApp
 
 from fts3rest.lib.middleware import fts3auth
 from fts3rest.lib.base import Session
-from fts3.model import Credential, CredentialCache, Job, File
+from fts3.model import Credential, CredentialCache, Job, File, FileRetryLog
 
 
 __all__ = ['environ', 'url', 'TestController']
@@ -205,6 +205,7 @@ class TestController(TestCase):
         """
         Session.query(Credential).delete()
         Session.query(CredentialCache).delete()
+        Session.query(FileRetryLog).delete()
         Session.query(File).delete()
         Session.query(Job).delete()
 

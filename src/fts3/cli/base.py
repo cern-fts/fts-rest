@@ -19,6 +19,10 @@ from ConfigParser import SafeConfigParser
 from optparse import OptionParser
 import logging
 import os
+import sys
+
+from fts3.rest.client import Context
+
 
 CONFIG_FILENAMES = [
     '/etc/fts3/fts3client.cfg',
@@ -37,7 +41,7 @@ CONFIG_DEFAULTS = {
 
 class Base(object):
 
-    def __init__(self, extra_args=None):
+    def __init__(self, extra_args=None, description=None, example=None):
         self.logger = logging.getLogger('fts3')
 
         # Common CLI options
@@ -65,7 +69,7 @@ class Base(object):
         if opt_ucert == 'None':
             opt_ucert = None
 
-        self.opt_parser = OptionParser(usage=usage)
+        self.opt_parser = OptionParser(usage=usage, description=description, epilog=example)
 
         self.opt_parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
                                    help='verbose output.', default=config.getboolean(section, 'verbose'))
@@ -78,3 +82,32 @@ class Base(object):
                                    help='the user certificate private key.', default=opt_ukey)
         self.opt_parser.add_option('--cert', dest='ucert',
                                    help='the user certificate.', default=opt_ucert)
+        self.opt_parser.add_option('--insecure', dest='verify', default=True, action='store_false',
+                                   help='do not validate the server certificate')
+
+    def __call__(self, argv=sys.argv[1:]):
+        (self.options, self.args) = self.opt_parser.parse_args(argv)
+        if self.options.endpoint is None:
+            self.opt_parser.error('Need an endpoint')
+        if self.options.verbose:
+            self.logger.setLevel(logging.DEBUG)
+        self.validate()
+        self.run()
+
+    def validate(self):
+        """
+        Should be implemented by inheriting classes to validate the command line arguments.
+        The implementation is assumed to call sys.exit() to abort if needed
+        """
+        pass
+
+    def run(self):
+        """
+        Implementation of the command
+        """
+        raise NotImplementedError('Run method not implemented in %s' % type(self).__name__)
+
+    def _create_context(self):
+        return Context(
+            self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert, verify=self.options.verify
+        )

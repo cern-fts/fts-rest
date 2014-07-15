@@ -2,7 +2,7 @@
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
 
 Name:           fts-rest
-Version:        3.2.8
+Version:        3.2.26
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
@@ -20,6 +20,7 @@ BuildRequires:  python-pylons
 BuildRequires:  scipy
 BuildRequires:  m2crypto
 BuildRequires:  python-sqlalchemy
+BuildRequires:  pandoc
 
 Requires:     gridsite%{?_isa} >= 1.7
 Requires:     httpd%{?_isa}
@@ -60,6 +61,14 @@ Requires:       python-sqlalchemy
 %description -n python-fts
 This package provides an object model of the FTS3
 database, using sqlalchemy ORM.
+
+%post
+/sbin/service httpd condrestart >/dev/null 2>&1 || :
+
+%postun
+if [ "$1" -eq "0" ] ; then
+    /sbin/service httpd condrestart >/dev/null 2>&1 || :
+fi
 
 %post selinux
 if [ "$1" -le "1" ] ; then # First install

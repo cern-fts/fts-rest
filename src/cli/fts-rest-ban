@@ -5,11 +5,12 @@ import sys
 import traceback
 
 
-try:
-    banning = Banning(sys.argv[1:])
-    banning()
-except Exception, e:
-    logging.critical(str(e))
-    if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
-        traceback.print_exc()
-    sys.exit(1)
+if __name__ == "__main__":
+    try:
+        banning = Banning()
+        banning(sys.argv[1:])
+    except Exception, e:
+        logging.critical(str(e))
+        if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+            traceback.print_exc()
+        sys.exit(1)

@@ -14,11 +14,9 @@
 #   limitations under the License.
 
 import json
-import logging
-import sys
 
 from base import Base
-from fts3.rest.client import Context, Inquirer
+from fts3.rest.client import Inquirer
 
 
 def _human_readable_snapshot(logger, snapshot):
@@ -68,8 +66,29 @@ def _human_readable_snapshot(logger, snapshot):
 
 
 class Snapshot(Base):
-    def __init__(self, argv=sys.argv[1:]):
-        super(Snapshot, self).__init__()
+    def __init__(self):
+        super(Snapshot, self).__init__(
+            description="""
+            This command can be used to retrieve the internal status FTS3 has on all pairs with ACTIVE transfers.
+            It allows to filter by VO, source SE and destination SE
+            """,
+            example="""
+            $ %(prog)s -s https://fts3-devel.cern.ch:8446
+            Source:              gsiftp://whatever
+            Destination:         gsiftp://whatnot
+            VO:                  dteam
+            Max. Active:         5
+            Active:              1
+            Submitted:           0
+            Finished:            0
+            Failed:              0
+            Success ratio:       -
+            Avg. Throughput:     -
+            Avg. Duration:       -
+            Avg. Queued:         0 seconds
+            Most frequent error: -
+            """
+        )
         # Specific options
         self.opt_parser.add_option('--vo', dest='vo',
                                    help='filter by VO')
@@ -77,17 +96,9 @@ class Snapshot(Base):
                                    help='filter by source SE')
         self.opt_parser.add_option('--destination', dest='destination',
                                    help='filter by destination SE')
-        (self.options, self.args) = self.opt_parser.parse_args(argv)
 
-        if self.options.endpoint is None:
-            self.logger.critical('Need an endpoint')
-            sys.exit(1)
-
-        if self.options.verbose:
-            self.logger.setLevel(logging.DEBUG)
-
-    def __call__(self):
-        context = Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert)
+    def run(self):
+        context = self._create_context()
         inquirer = Inquirer(context)
         snapshot = inquirer.get_snapshot(self.options.vo, self.options.source, self.options.destination)
         if self.options.json:
