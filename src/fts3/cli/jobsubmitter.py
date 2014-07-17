@@ -63,7 +63,8 @@ class JobSubmitter(Base):
                   ],
                   "metadata": "file2-metadata",
                   "checksum": "ADLER32:4321",
-                  "filesize": 2048
+                  "filesize": 2048,
+                  "activity": "default"
                 }
               ]
             }
