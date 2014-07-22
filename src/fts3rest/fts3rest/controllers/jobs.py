@@ -235,12 +235,9 @@ def _setup_job_from_dict(job_dict, user):
             job_metadata=params['job_metadata']
         )
 
-        if 'credential' in job_dict:
-            job['user_cred'] = job_dict['credential']
-            job['cred_id'] = str()
-        else:
-            job['user_cred'] = str()
-            job['cred_id'] = user.delegation_id
+        if 'credential' in params:
+            job['user_cred'] = params['credential']
+        job['cred_id'] = user.delegation_id
 
         # If reuse is enabled, generate one single "hash" for all files
         if job['reuse_job']:
