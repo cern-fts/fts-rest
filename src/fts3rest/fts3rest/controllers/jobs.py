@@ -21,7 +21,6 @@ from sqlalchemy.orm import noload
 import hashlib
 import json
 import logging
-import random
 import socket
 import types
 import urllib
@@ -346,6 +345,7 @@ class JobsController(BaseController):
     @doc.query_arg('state_in', 'Comma separated list of job states to filter. ACTIVE only by default')
     @doc.query_arg('source_se', 'Source storage element')
     @doc.query_arg('dest_se', 'Destination storage element')
+    @doc.query_arg('limit', 'Limit the number of results')
     @doc.response(403, 'Operation forbidden')
     @doc.response(400, 'DN and delegation ID do not match')
     @doc.return_type(array_of=Job)
@@ -365,6 +365,10 @@ class JobsController(BaseController):
         filter_state = request.params.get('state_in', None)
         filter_source = request.params.get('source_se', None)
         filter_dest = request.params.get('dest_se', None)
+        try:
+            filter_limit = int(request.params.get('limit', 0))
+        except:
+            filter_limit = 0
 
         if filter_dlg_id and filter_dlg_id != user.delegation_id:
             raise HTTPForbidden('The provided delegation id does not match your delegation id')
@@ -372,12 +376,15 @@ class JobsController(BaseController):
             raise HTTPBadRequest('The provided DN and delegation id do not correspond to the same user')
         if not filter_dlg_id and filter_state:
             raise HTTPForbidden('To filter by state, you need to provide dlg_id')
+        if filter_limit < 0 or filter_limit > 500:
+            raise HTTPBadRequest('The limit must be positive and less or equal than 500')
 
         if filter_state:
             filter_state = filter_state.split(',')
-            filter_not_before = datetime.utcnow() - timedelta(hours=1)
             jobs = jobs.filter(Job.job_state.in_(filter_state))
-            jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
+            if not filter_limit:
+                filter_not_before = datetime.utcnow() - timedelta(hours=1)
+                jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
         else:
             jobs = jobs.filter(Job.job_finished == None)
 
@@ -392,7 +399,10 @@ class JobsController(BaseController):
         if filter_dest:
             jobs = jobs.filter(Job.dest_se == filter_dest)
 
-        return jobs.all()
+        if filter_limit:
+            return jobs[:filter_limit]
+        else:
+            return jobs.all()
 
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')

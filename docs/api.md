@@ -202,6 +202,7 @@ Array of [Job](#job)
 
 |Name     |Type  |Required|Description                                                         |
 |---------|------|--------|--------------------------------------------------------------------|
+|limit    |string|False   |Limit the number of results                                         |
 |dest_se  |string|False   |Destination storage element                                         |
 |source_se|string|False   |Source storage element                                              |
 |state_in |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
@@ -226,6 +227,7 @@ Array of [Job](#job)
 
 |Name     |Type  |Required|Description                                                         |
 |---------|------|--------|--------------------------------------------------------------------|
+|limit    |string|False   |Limit the number of results                                         |
 |dest_se  |string|False   |Destination storage element                                         |
 |source_se|string|False   |Source storage element                                              |
 |state_in |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
