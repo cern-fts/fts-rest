@@ -121,6 +121,8 @@ class JobSubmitter(Base):
                                         'If negative, there will be no retries.')
         self.opt_parser.add_option('-m', '--multi-hop', dest='multihop', default=False, action='store_true',
                                    help='submit a multihop transfer.')
+        self.opt_parser.add_option('--cloud-credentials', dest='cloud_cred', default=None,
+                                   help='use cloud credentials for the job (i.e. dropbox).')
 
     def validate(self):
         if not self.options.bulk_file:
@@ -181,7 +183,8 @@ class JobSubmitter(Base):
             copy_pin_lifetime=self.options.pin_lifetime,
             reuse=self.options.reuse,
             retry=self.options.retry,
-            multihop=self.options.multihop
+            multihop=self.options.multihop,
+            credential=self.options.cloud_cred
         )
 
         if self.options.json:
@@ -226,7 +229,8 @@ class JobSubmitter(Base):
             copy_pin_lifetime=self.options.pin_lifetime,
             reuse=self.options.reuse,
             retry=self.options.retry,
-            multihop=self.options.multihop
+            multihop=self.options.multihop,
+            credential=self.options.cloud_cred
         )
         return None
 
