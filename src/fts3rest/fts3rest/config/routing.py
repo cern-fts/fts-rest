@@ -72,6 +72,11 @@ def make_map(config):
     map.connect('/jobs', controller='jobs', action='submit',
                 conditions=dict(method=['PUT', 'POST']))
 
+    map.connect('/jobs/{job_id}', controller='jobs', action='job_options',
+                conditions=dict(method=['OPTIONS']))
+    map.connect('/jobs', controller='jobs', action='options',
+                conditions=dict(method=['OPTIONS']))
+
     # Archive
     map.connect('/archive', controller='archive', action='index',
                 conditions=dict(method=['GET']))

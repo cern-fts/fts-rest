@@ -21,6 +21,7 @@ from sqlalchemy.orm import noload
 import hashlib
 import json
 import logging
+import pylons
 import socket
 import types
 import urllib
@@ -335,6 +336,20 @@ class JobsController(BaseController):
                           resource_owner=job.user_dn, resource_vo=job.vo_name):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         return job
+
+    def options(self):
+        """
+        Answer the OPTIONS method over /jobs
+        """
+        pylons.response.headers['Allow'] = 'PUT, POST, GET, OPTIONS'
+        return []
+
+    def job_options(self, job_id):
+        """
+        Answers the OPTIONS method over /jobs/job-id
+        """
+        pylons.response.headers['Allow'] = 'GET, DELETE'
+        return []
 
     @doc.query_arg('user_dn', 'Filter by user DN')
     @doc.query_arg('vo_name', 'Filter by VO')
