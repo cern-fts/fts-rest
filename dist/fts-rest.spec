@@ -19,6 +19,7 @@ BuildRequires:  python-nose1.1
 BuildRequires:  python-pylons
 BuildRequires:  scipy
 BuildRequires:  m2crypto
+BuildRequires:  python-coverage
 BuildRequires:  python-sqlalchemy
 BuildRequires:  pandoc
 
