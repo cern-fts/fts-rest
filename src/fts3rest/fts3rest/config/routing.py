@@ -129,5 +129,19 @@ def make_map(config):
                 conditions=dict(method=['GET']))
     map.connect('/cs/file_urllink/{service}/{path}', controller='cloudStorage', action='getCSFileLink',
                 conditions=dict(method=['GET']))
-    
+
+    # OAuth 2.0
+    map.redirect('/oauth2', '/oauth2/apps')
+    map.connect('/oauth2/apps', controller='oauth2', action='get_my_apps', conditions=dict(method=['GET']))
+    map.connect('/oauth2/register', controller='oauth2', action='register_form', conditions=dict(method=['GET']))
+    map.connect('/oauth2/register', controller='oauth2', action='register', conditions=dict(method=['POST']))
+    map.connect('/oauth2/apps/{client_id}', controller='oauth2', action='get_app', conditions=dict(method=['GET']))
+    map.connect('/oauth2/apps/{client_id}', controller='oauth2', action='update_app', conditions=dict(method=['POST']))
+    map.connect('/oauth2/apps/{client_id}', controller='oauth2', action='delete_app', conditions=dict(method=['DELETE']))
+
+    map.connect('/oauth2/authorize', controller='oauth2', action='authorize', conditions=dict(method=['GET']))
+    map.connect('/oauth2/authorize', controller='oauth2', action='confirm', conditions=dict(method=['POST']))
+    map.connect('/oauth2/token', controller='oauth2', action='get_token', conditions=dict(method=['GET', 'POST']))
+    map.connect('/oauth2/revoke/{client_id}', controller='oauth2', action='revoke_token', conditions=dict(method=['GET']))
+
     return map

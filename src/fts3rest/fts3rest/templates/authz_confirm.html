@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <title>${site} FTS3 - Application authorization</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">
+                    <img src="/img/logo.png" width="24"/>
+                    ${site} FTS3 - Application authorization
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h1 class="panel-title">OAuth2 authorization request</h1>
+            </div>
+            <div class="panel-body">
+                <p>
+                    <b title="Registered by ${app.owner}" style="cursor: context-menu">${app.name}</b>
+                    is requesting permission to perform operations on your behalf on this FTS3 Server
+                </p>
+                <p>App description: ${app.description}</p>
+                <p>App website: <a href="${app.website}">${app.website}</a></p>
+                <p>You are</p>
+                <p style="text-align: center; color: red; font-size: 120%"><b>${user.user_dn} (${user.delegation_id})</b></p>
+                % for fqan in user.voms_cred:
+                    <p style="text-align: center; font-size: 120%">${fqan}</p>
+                % endfor
+                <div class="panel panel-success">
+                    <p class="panel-heading">
+                        <span class="panel-title">This application will be able to</span>
+                    </p>
+                    <ul class="list-group panel-body">
+                       <li class="list-group-item">
+                            <i class="glyphicon glyphicon-user"></i> Read your identity
+                        </li>
+                        <li class="list-group-item">
+                            <i class="glyphicon glyphicon-list"></i> Read your transfers
+                        </li>
+                        <li class="list-group-item">
+                            <i class="glyphicon glyphicon-cloud"></i> Submit transfers in your name
+                        </li>
+                        <li class="list-group-item">
+                            <i class="glyphicon glyphicon-cog"></i> Manage your transfers
+                        </li>
+                        <li class="list-group-item">
+                            <i class="glyphicon glyphicon-folder-open"></i> Perform namespace operations
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="panel panel-danger">
+                    <p class="panel-heading">
+                        <span class="panel-title">This application will <b>not</b> be able to</span>
+                    </p>
+                    <ul class="list-group panel-body">
+                        <li class="list-group-item">
+                            <i class="glyphicon glyphicon-briefcase"></i> Access your own applications
+                        </li>
+                        <li class="list-group-item">
+                            <i class="glyphicon glyphicon-lock"></i> Grant access to other applications
+                        </li>
+                    </ul>
+                </div>
+
+                <p>Authorize access to this application <b>only if you trust it!</b></p>
+                <p>If in doubt <b>DO NOT</b> authorize it</p>
+
+                <form method="POST">
+                    <p style="text-align: center">
+                        <input type="hidden" name="CSRFToken" value="${CSRFToken}"/>
+                        <button type="submit" name="accept" class="btn btn-success">Authorize</button>
+                        <button type="submit" name="reject" class="btn btn-danger">Reject</button>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

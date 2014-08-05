@@ -15,19 +15,23 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import json
+import logging
+import types
+
 from datetime import datetime
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPNotFound
+from M2Crypto import X509, RSA, EVP, BIO
+from pylons import request
+from pylons.templating import render_mako as render
+
 from fts3.model import CredentialCache, Credential
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.helpers import voms
 from fts3rest.lib.http_exceptions import HTTPMethodFailure
-from M2Crypto import X509, RSA, EVP, BIO
-from pylons import request
-import json
-import logging
-import types
+
 
 log = logging.getLogger(__name__)
 
@@ -217,14 +221,14 @@ class DelegationController(BaseController):
         credential_cache = Session.query(CredentialCache)\
             .get((user.delegation_id, user.user_dn))
 
-        if credential_cache is None:
+        if credential_cache is None or credential_cache.cert_request is None:
             (x509_request, private_key) = _generate_proxy_request()
             credential_cache = CredentialCache(dlg_id=user.delegation_id, dn=user.user_dn,
                                                cert_request=x509_request.as_pem(),
                                                priv_key=private_key.as_pem(cipher=None),
                                                voms_attrs=' '.join(user.voms_cred))
             try:
-                Session.add(credential_cache)
+                Session.merge(credential_cache)
                 Session.commit()
             except Exception:
                 Session.rollback()
@@ -235,7 +239,7 @@ class DelegationController(BaseController):
 
         start_response('200 Ok', [('X-Delegation-ID', credential_cache.dlg_id),
                                   ('Content-Type', 'text/plain')])
-        return credential_cache.cert_request
+        return [credential_cache.cert_request]
 
     @doc.input('Signed certificate', 'PEM encoded certificate')
     @doc.response(403, 'The requested delegation ID does not belong to the user')
@@ -337,3 +341,10 @@ class DelegationController(BaseController):
 
         start_response('203 Non-Authoritative Information', [('Content-Type', 'text/plain')])
         return [str(new_termination_time)]
+
+    def delegation_page(self):
+        """
+        Render an HTML form to delegate the credentials
+        """
+        user = request.environ['fts3.User.Credentials']
+        return render('/delegation.html', extra_vars={'user': user})

@@ -2,15 +2,15 @@
 
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,7 @@ def _add_to_syspath(base_dir, components):
 _base_dir = os.path.dirname(__file__)
 _add_to_syspath(_base_dir, ('..', 'src'))
 _add_to_syspath(_base_dir, ('..', 'src', 'fts3rest'))
-
+_add_to_syspath(_base_dir, ('..', 'src', 'fts3rest', 'fts3rest', 'controllers'))
 
 from fts3rest.lib import api
 
@@ -117,59 +117,60 @@ def write_markdown(resources, apis, models, md):
         if not description:
             description = path
         md.h3(description)
-        for call in apis[path]:
-            path = call['path']
-            for operation in call['operations']:
-                md.h4("%s %s" % (operation['method'], path))
-                md.paragraph(operation['summary'])
+        if path in apis:
+            for call in apis[path]:
+                path = call['path']
+                for operation in call['operations']:
+                    md.h4("%s %s" % (operation['method'], path))
+                    md.paragraph(operation['summary'])
 
-                type = operation.get('type', None)
-                if type == 'array':
-                    item_type = operation['items']['$ref']
-                    if item_type in available_models:
-                        type = 'Array of ' + md.href_to_header(item_type)
-                    else:
-                        type = 'Array of ' + item_type
-                elif type and type in available_models:
-                        type = md.href_to_header(type)
+                    type = operation.get('type', None)
+                    if type == 'array':
+                        item_type = operation['items']['$ref']
+                        if item_type in available_models:
+                            type = 'Array of ' + md.href_to_header(item_type)
+                        else:
+                            type = 'Array of ' + item_type
+                    elif type and type in available_models:
+                            type = md.href_to_header(type)
 
-                if type:
-                    md.h5('Returns')
-                    md.paragraph(type)
+                    if type:
+                        md.h5('Returns')
+                        md.paragraph(type)
 
-                if operation['notes']:
-                    md.h5('Notes')
-                    md.paragraph(operation['notes'])
+                    if operation['notes']:
+                        md.h5('Notes')
+                        md.paragraph(operation['notes'])
 
-                parameters = operation['parameters']
-                responses = operation['responseMessages']
+                    parameters = operation['parameters']
+                    responses = operation['responseMessages']
 
-                query_args = filter(lambda a: a['paramType'] == 'query', parameters)
-                path_args = filter(lambda a: a['paramType'] == 'path', parameters)
-                body_args = filter(lambda a: a['paramType'] == 'body', parameters)
+                    query_args = filter(lambda a: a['paramType'] == 'query', parameters)
+                    path_args = filter(lambda a: a['paramType'] == 'path', parameters)
+                    body_args = filter(lambda a: a['paramType'] == 'body', parameters)
 
-                if path_args:
-                    md.h5('Path arguments')
-                    md.table(
-                        ('Name', 'Type'),
-                        map(lambda a: (a['name'], a['type']), path_args)
-                    )
-                if query_args:
-                    md.h5('Query arguments')
-                    md.table(
-                        ('Name', 'Type', 'Required', 'Description'),
-                        map(lambda a: (a['name'], a['type'], a['required'], a['description']), query_args)
-                    )
-                if body_args:
-                    md.h5('Expected request body')
-                    md.paragraph("%s (%s)" % (body_args[0]['description'], body_args[0]['type']))
+                    if path_args:
+                        md.h5('Path arguments')
+                        md.table(
+                            ('Name', 'Type'),
+                            map(lambda a: (a['name'], a['type']), path_args)
+                        )
+                    if query_args:
+                        md.h5('Query arguments')
+                        md.table(
+                            ('Name', 'Type', 'Required', 'Description'),
+                            map(lambda a: (a['name'], a['type'], a['required'], a['description']), query_args)
+                        )
+                    if body_args:
+                        md.h5('Expected request body')
+                        md.paragraph("%s (%s)" % (body_args[0]['description'], body_args[0]['type']))
 
-                if responses:
-                    md.h5('Responses')
-                    md.table(
-                        ('Code', 'Description'),
-                        map(lambda r: (r['code'], r['message']), responses)
-                    )
+                    if responses:
+                        md.h5('Responses')
+                        md.table(
+                            ('Code', 'Description'),
+                            map(lambda r: (r['code'], r['message']), responses)
+                        )
     md.h2('Models')
     printed_models = []
     for model, model_desc in model_dict.iteritems():

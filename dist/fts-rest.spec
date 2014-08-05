@@ -21,6 +21,7 @@ BuildRequires:  scipy
 BuildRequires:  m2crypto
 BuildRequires:  python-coverage
 BuildRequires:  python-sqlalchemy
+BuildRequires:  python-requests
 BuildRequires:  pandoc
 
 Requires:     gridsite%{?_isa} >= 1.7

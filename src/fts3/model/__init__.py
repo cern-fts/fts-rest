@@ -23,6 +23,7 @@ from config import *
 from credentials import *
 from file import *
 from job import *
+from oauth2 import *
 from optimizer import *
 from version import *
 

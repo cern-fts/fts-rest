@@ -48,6 +48,10 @@ class ClassEncoder(json.JSONEncoder):
             return super(ClassEncoder, self).default(obj)
 
 
+def to_json(data):
+    return [json.dumps(data, cls=ClassEncoder, indent=2, sort_keys=True)]
+
+
 @decorator
 def jsonify(f, *args, **kwargs):
     """

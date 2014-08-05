@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <title>${site} FTS3 - Applications</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">
+                    <img src="/img/logo.png" width="24"/>
+                    <img src="//grid-deployment.web.cern.ch/grid-deployment/dms/fts3/logo.png" width="24"/>
+                    ${site} FTS3 - Applications
+                </a>
+            </div>
+        </div>
+    </div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+                <p>Identity: <b>${user.user_dn}</b></p>
+            </div>
+		</div>
+		<div class="masthead">
+			<h1 class="text-muted">Register a new app</h1>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading"><h3 class="panel-title">New app</h3></div>
+            <div class="panel-body">
+			    <form id="update-form" method="POST">
+					<div class="form-group">
+						<label class="control-label" for="name">Name</label>
+						<input type="text" required name="name" class="form-control" id="name"/>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="description">Description</label>
+						<textarea name="description" id="description" class="form-control"></textarea>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="app-website">Application web site</label>
+						<input type="url" required name="website" class="form-control" id="app-website"/>
+					</div>
+					<div class="form-group">
+						<label class="control-label" for="redirect_to">Redirect URLs (one per line)</label>
+						<textarea required name="redirect_to" class="form-control" id="redirect_to"></textarea>
+						<small>Any authorization request with a redirect not contained in this list will be denied. Only HTTPS.</small>
+					</div>
+
+                    <div class="form-group">
+                        <a href="apps" class="btn btn-default"><i class="glyphicon glyphicon-remove"></i> Cancel</a>
+                        <button type="submit" class="btn btn-primary"><i class="glyphicon glyphicon-ok"></i> Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
