@@ -2,15 +2,15 @@
 
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -129,7 +129,7 @@ def get_controller_from_module(module, cname):
     """
     Extract classes that inherit from BaseController
     """
-    controller_classname = cname.title() + 'Controller'
+    controller_classname = cname[0].upper() + cname[1:] + 'Controller'
     controller_class = module.__dict__.get(controller_classname, None)
     return controller_class
 
@@ -174,7 +174,10 @@ def generate_resources(routes, controllers):
         if cname:
             if cname not in resources:
                 resource_root = get_root_from_route(r)
-                doc = controllers[str(cname)].__doc__
+                if str(cname) in controllers:
+                    doc = controllers[str(cname)].__doc__
+                else:
+                    doc = None
                 if doc:
                     doc = doc.strip()
                 resources[cname] = {
@@ -355,7 +358,7 @@ def generate_apis_and_models(routes, controllers):
     all_models = {}
     for route in routes:
         cname = route.defaults.get('controller', None)
-        if cname:
+        if cname and str(cname) in controllers:
             controller = controllers[str(cname)]
 
             resource_root = get_root_from_route(route)
