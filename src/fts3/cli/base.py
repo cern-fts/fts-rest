@@ -16,7 +16,7 @@
 #   limitations under the License.
 
 from ConfigParser import SafeConfigParser
-from optparse import OptionParser
+from optparse import OptionParser, IndentedHelpFormatter
 import logging
 import os
 import sys
@@ -37,6 +37,20 @@ CONFIG_DEFAULTS = {
     'ukey': 'None',
     'ucert': 'None'
 }
+
+
+class _Formatter(IndentedHelpFormatter):
+    def format_epilog(self, epilog):
+        if not epilog:
+            return ""
+        else:
+            lines = ['Example:']
+            indent = (self.current_indent + self.indent_increment) * " "
+            for l in epilog.splitlines():
+                nl = l.strip() % {'prog': sys.argv[0]}
+                if len(nl) > 0:
+                    lines.append(indent + nl)
+            return '\n' + '\n'.join(lines) + '\n\n'
 
 
 class Base(object):
@@ -69,7 +83,7 @@ class Base(object):
         if opt_ucert == 'None':
             opt_ucert = None
 
-        self.opt_parser = OptionParser(usage=usage, description=description, epilog=example)
+        self.opt_parser = OptionParser(usage=usage, description=description, epilog=example, formatter=_Formatter())
 
         self.opt_parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
                                    help='verbose output.', default=config.getboolean(section, 'verbose'))
