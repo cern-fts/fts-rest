@@ -15,6 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import pylons
 import re
 import urllib
 from M2Crypto import EVP
@@ -140,6 +141,9 @@ class UserCredentials(object):
         """
         The user will be the one who gave the bearer token
         """
+        if not pylons.config.get('fts3.oauth2', False):
+            return False
+
         res_provider = FTS3OAuth2ResourceProvider(env)
         creds = res_provider.get_credentials()
         if creds is None:

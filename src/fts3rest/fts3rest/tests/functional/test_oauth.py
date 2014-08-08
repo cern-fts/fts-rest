@@ -14,6 +14,7 @@
 #   limitations under the License.
 
 import json
+import pylons
 import time
 import urlparse
 
@@ -45,7 +46,7 @@ class TestOAuth2(TestController):
 
     def tearDown(self):
         Session.query(OAuth2Application).delete()
-
+        pylons.config['fts3.oauth2'] = True
 
     def test_register(self):
         """
