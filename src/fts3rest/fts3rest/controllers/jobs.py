@@ -191,6 +191,24 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
 
     return files
 
+def _build_internal_job_params(params):
+    """
+    Generates the value for job.internal_job_params depending on the
+    received protocol parameters
+    """
+    param_list = list()
+    if 'nostreams' in params:
+        param_list.append("nostreams:%d" % int(params['nostreams']))
+    if 'timeout' in params:
+        param_list.append("timeout:%d" % int(params['timeout']))
+    if 'buffer_size' in params:
+        param_list.append("buffersize:%d" % int(params['buffer_size']))
+    if 'strict_copy' in params:
+        param_list.append("strict")
+    if len(param_list) == 0:
+        return None
+    else:
+        return ','.join(param_list)
 
 def _setup_job_from_dict(job_dict, user):
     """
@@ -233,7 +251,8 @@ def _setup_job_from_dict(job_dict, user):
             copy_pin_lifetime=int(params['copy_pin_lifetime']),
             checksum_method=params['verify_checksum'],
             bring_online=params['bring_online'],
-            job_metadata=params['job_metadata']
+            job_metadata=params['job_metadata'],
+            internal_job_params=_build_internal_job_params(params)
         )
 
         if 'credential' in params:

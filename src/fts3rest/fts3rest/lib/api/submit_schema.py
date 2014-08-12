@@ -80,6 +80,22 @@ paramSchema = {
         'retry': {'type': ['integer', 'null']},
         'multihop': {
             'type': ['boolean', 'null']
+        },
+        'timeout': {
+            'type': ['integer', 'null'],
+            'title': 'Timeout in seconds'
+        },
+        'nostreams': {
+            'type': ['integer', 'null'],
+            'title': 'Number of streams'
+        },
+        'buffer_size': {
+            'type': ['integer', 'null'],
+            'title': 'Buffer size'
+        },
+        'strict_copy': {
+            'type': ['boolean', 'null'],
+            'title': 'Disable all checks, just copy the file'
         }
     },
 }
