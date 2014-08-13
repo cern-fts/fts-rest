@@ -17,12 +17,14 @@
 
 import json
 import logging
+import os
+import shlex
 import types
 
 from datetime import datetime
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPNotFound
 from M2Crypto import X509, RSA, EVP, BIO
-from pylons import request
+from pylons import config, request
 from pylons.templating import render_mako as render
 
 from fts3.model import CredentialCache, Credential
@@ -31,6 +33,7 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.helpers import voms
 from fts3rest.lib.http_exceptions import HTTPMethodFailure
+from fts3rest.lib.middleware.fts3auth import require_certificate
 
 
 log = logging.getLogger(__name__)
@@ -74,7 +77,7 @@ def _generate_proxy_request():
     x509_request.set_version(0)
     x509_request.sign(pkey, 'md5')
 
-    return (x509_request, pkey)
+    return x509_request, pkey
 
 
 def _read_X509_list(x509_pem):
@@ -159,6 +162,24 @@ class DelegationController(BaseController):
     Operations to perform the delegation of credentials
     """
 
+    def __init__(self):
+        """
+        Constructor
+        """
+        vomses_dir = '/etc/vomses'
+        self.vo_list = set()
+        try:
+            vomses = os.listdir(vomses_dir)
+            for voms in vomses:
+                voms_cfg = os.path.join(vomses_dir, voms)
+                for l in open(voms_cfg).readlines():
+                    l = l.strip()
+                    if len(l) and l[0] != '#':
+                        self.vo_list.add(shlex.split(l)[0])
+            self.vo_list = list(sorted(self.vo_list))
+        except:
+            pass
+
     @doc.return_type('dateTime')
     @jsonify
     def view(self, dlg_id, start_response):
@@ -176,10 +197,10 @@ class DelegationController(BaseController):
         else:
             return {'termination_time': cred.termination_time}
 
-
     @doc.response(403, 'The requested delegation ID does not belong to the user')
     @doc.response(404, 'The credentials do not exist')
     @doc.response(204, 'The credentials were deleted successfully')
+    @require_certificate
     def delete(self, dlg_id, start_response):
         """
         Delete the delegated credentials from the database
@@ -202,10 +223,10 @@ class DelegationController(BaseController):
             start_response('204 No Content', [])
             return ['']
 
-
     @doc.response(403, 'The requested delegation ID does not belong to the user')
     @doc.response(200, 'The request was generated succesfully')
     @doc.return_type('PEM encoded certificate request')
+    @require_certificate
     def request(self, dlg_id, start_response):
         """
         First step of the delegation process: get a certificate request
@@ -245,6 +266,7 @@ class DelegationController(BaseController):
     @doc.response(403, 'The requested delegation ID does not belong to the user')
     @doc.response(400, 'The proxy failed the validation process')
     @doc.response(201, 'The proxy was stored successfully')
+    @require_certificate
     def credential(self, dlg_id, start_response):
         """
         Second step of the delegation process: put the generated certificate
@@ -295,6 +317,7 @@ class DelegationController(BaseController):
     @doc.response(400, 'Could not understand the request')
     @doc.response(424, 'The obtention of the VOMS extensions failed')
     @doc.response(203, 'The obtention of the VOMS extensions succeeded')
+    @require_certificate
     def voms(self, dlg_id, start_response):
         """
         Generate VOMS extensions for the delegated proxy
@@ -342,9 +365,17 @@ class DelegationController(BaseController):
         start_response('203 Non-Authoritative Information', [('Content-Type', 'text/plain')])
         return [str(new_termination_time)]
 
+    @require_certificate
     def delegation_page(self):
         """
         Render an HTML form to delegate the credentials
         """
         user = request.environ['fts3.User.Credentials']
-        return render('/delegation.html', extra_vars={'user': user})
+        return render(
+            '/delegation.html', extra_vars={
+                'user': user,
+                'vos': self.vo_list,
+                'certificate': request.environ.get('SSL_CLIENT_CERT', None),
+                'site': config['fts3.SiteName']
+            }
+        )

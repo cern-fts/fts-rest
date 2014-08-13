@@ -41,6 +41,7 @@ def make_map(config):
 
     # Whoami
     map.connect('/whoami', controller='misc', action='whoami')
+    map.connect('/whoami/certificate', controller='misc', action='certificate')
 
     # Delegation
     map.connect('/delegation/{dlg_id}', controller='delegation', action='view',
@@ -53,6 +54,10 @@ def make_map(config):
                 conditions=dict(method=['PUT', 'POST']))
     map.connect('/delegation/{dlg_id}/voms', controller='delegation', action='voms',
                 conditions=dict(method=['POST']))
+
+    # Delegation HTML view
+    map.connect('/delegation', controller='delegation', action='delegation_page',
+                conditions=dict(method=['GET']))
 
     # Jobs
     map.connect('/jobs', controller='jobs', action='index',

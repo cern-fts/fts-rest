@@ -1,0 +1,83 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <title>${site} FTS3 Delegation</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="/js/proxy.js/yahoo-min.js"></script>
+
+    <script src="/js/proxy.js/glib/core-min.js"></script>
+    <script src="/js/proxy.js/glib/sha1.js"></script>
+    <script src="/js/proxy.js/glib/enc-base64-min.js"></script>
+
+    <script src="/js/proxy.js/jsrsasign-4.7.0-all-min.js"></script>
+
+    <script src="/js/proxy.js/base64E.js"></script>
+    <script src="/js/proxy.js/asn11.js"></script>
+
+    <script src="/js/proxy.js/ProxyCertInfo.js"></script>
+    <script src="/js/proxy.js/proxy-util.js"></script>
+    <script src="/js/proxy.js/proxy.js"></script>
+
+    <script src="/js/delegate.js"></script>
+</head>
+<body>
+    <div class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">
+                    <img src="/img/logo.png" width="24"/>
+                    ${site} FTS3 Delegation
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+				<h2 class="panel-title">Delegate credentials</h2>
+			</div>
+            <div class="panel-body">
+                <div class="alert alert-success">
+                    The private RSA key can be obtained from the p12 certificate you have installed in your browser by using:
+                    openssl pkcs12 -in yourCert.p12 -nocerts -nodes | openssl rsa
+                </div>
+                <div class="alert alert-warning">
+                    <strong>NOTE:</strong>
+                    the private key WILL NOT BE TRANSMITTED ANYWHERE.
+                    It is only used locally (within your browser) to generate the proxy.
+                </div>
+                <div>
+                    <p>
+                        <label class="control-label" for="private-key">Private key</label>
+                        <textarea id="private-key" class="field form-control" rows="5" placeholder="RSA private key"></textarea>
+                    </p>
+                    <p>
+                        <label class="control-label" for="lifetime">Lifetime</label>
+                        <input type="number" id="lifetime" value="12"/> hours
+                    </p>
+                    <p>
+                        <label class="control-label" for="vo">Virtual Organization</label>
+                        <small>Please, contact this site support if you wish more Virtual Organizations to be supported</small>
+                        <select class="form-control" id="vo">
+                            <option value="">-- No VO --</option>
+                            % for vo in vos:
+                                <option value="${vo}">${vo}</option>
+                            % endfor
+                        </select>
+                    </p>
+                    <p>
+                        <input type="hidden" id="public-cert" value="${certificate}"/>
+                        <input type="hidden" id="delegation-id" value="${user.delegation_id}"/>
+                        <input type="hidden" id="user-dn" value="${user.user_dn}"/>
+                        <button type="button" class="btn btn-success" onclick="doDelegate()">Delegate</button>
+                        <button type="button" class="btn btn-warning" onclick="cancel()">Cancel</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
