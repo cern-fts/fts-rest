@@ -26,6 +26,7 @@ class CloudStorage(Base):
     app_secret               = Column(String(255))
     service_api_url          = Column(String(1024))
 
+
 class CloudStorageUser(Base):
     __tablename__ = 't_cloudStorageUser'
 
@@ -36,11 +37,8 @@ class CloudStorageUser(Base):
     request_token            = Column(String(255))
     request_token_secret     = Column(String(255))
 
-    def isAccessRequested(self):
-        return not (self.request_token == None or self.request_token_secret == None )
+    def is_access_requested(self):
+        return not (self.request_token is None or self.request_token_secret is None)
 
-    def isRegistered(self):
-        return not (self.access_token == None or self.access_token_secret == None )
-
-
-
+    def is_registered(self):
+        return not (self.access_token is None or self.access_token_secret is None)

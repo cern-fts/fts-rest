@@ -21,30 +21,30 @@ from CSInterface import CSInterface
 
 class CloudstorageController(BaseController):
 
-    def _getUserDN(self):
+    def _get_user_dn(self):
         user = request.environ['fts3.User.Credentials']
         return user.user_dn
 
-    def isCSRegistered(self, service):
-        controller = CSInterface(self._getUserDN(), service)
-        return controller.isCSRegistered()
+    def is_registered(self, service):
+        controller = CSInterface(self._get_user_dn(), service)
+        return controller.is_registered()
 
-    def getCSAccessRequested(self, service):
-        controller = CSInterface(self._getUserDN(), service)
-        return controller.getCSAccessRequested()
+    def get_access_requested(self, service):
+        controller = CSInterface(self._get_user_dn(), service)
+        return controller.get_access_requested()
 
-    def isCSAccessRequested(self, service):
-        controller = CSInterface(self._getUserDN(), service)
-        return controller.isCSAccessRequested()
+    def is_access_requested(self, service):
+        controller = CSInterface(self._get_user_dn(), service)
+        return controller.is_access_requested()
 
-    def getCSAccessGranted(self, service):
-        controller = CSInterface(self._getUserDN(), service)
-        return controller.getCSAccessGranted()
+    def get_access_granted(self, service):
+        controller = CSInterface(self._get_user_dn(), service)
+        return controller.get_access_granted()
 
-    def getCSFolderContent(self, service):
-        controller = CSInterface(self._getUserDN(), service)
-        return controller.getCSFolderContent()
+    def get_folder_content(self, service):
+        controller = CSInterface(self._get_user_dn(), service)
+        return controller.get_folder_content()
 
-    def getCSFileLink(self, service, file_path):
-        controller = CSInterface(self._getUserDN(), service)
-        return controller.getCSFileLink(file_path)
+    def get_file_link(self, service, file_path):
+        controller = CSInterface(self._get_user_dn(), service)
+        return controller.get_file_link(file_path)

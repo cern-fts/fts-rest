@@ -17,7 +17,7 @@
 #
 # Usage: (example of class creation and method call)
 #    var conClass = CSInterface(userDN, serviceName).getInstance()
-#    conClass.isCSRegistered()
+#    conClass.is_registered()
 #
 # Andres Abad Rodriguez <andres.abad.rodriguez@cern.ch>
 #
@@ -28,7 +28,7 @@ from CSdropbox import DropboxConnector
 
 class CSInterface(object):
 
-    def __init__(self, userDN, service):
+    def __init__(self, user_dn, service):
 
        # try:
             # Dynamic load of the class required for this External Storage
@@ -50,7 +50,25 @@ class CSInterface(object):
 
         #except Exception, e:
         #    raise e
-        self.userDN = userDN
+        self.userDN = user_dn
         self.service = service.strip().lower()
         if self.service == "dropbox":
             self.__class__ = DropboxConnector
+
+    def is_registered(self):
+        raise NotImplemented()
+
+    def get_access_requested(self):
+        raise NotImplemented()
+
+    def is_access_requested(self):
+        raise NotImplemented()
+
+    def get_access_granted(self):
+        raise NotImplemented()
+
+    def get_folder_content(self):
+        raise NotImplemented()
+
+    def get_file_link(self, file_path):
+        raise NotImplemented()

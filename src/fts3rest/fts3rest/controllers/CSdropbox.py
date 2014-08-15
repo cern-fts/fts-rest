@@ -18,124 +18,112 @@
 # Andres Abad Rodriguez <andres.abad.rodriguez@cern.ch>
 #
 # Based on https://www.dropbox.com/developers/core/docs
+
 from webob.exc import HTTPNotFound
 from pylons import request
-from webob.exc import HTTPBadRequest
+from webob.exc import HTTPBadRequest, HTTPForbidden
 import urlparse
-
-
-from fts3rest.lib.helpers import jsonify
-from fts3rest.lib.base import BaseController, Session
-from pylons.controllers.util import abort
-from fts3.model import CloudStorage, CloudStorageUser
-
 import urllib
 import urllib2
 
-#Url = 'https://api.dropbox.com'
+from fts3rest.lib.helpers import jsonify
+from fts3rest.lib.base import Session
+from fts3.model import CloudStorage, CloudStorageUser
+
+
 dropboxEndpoint = "https://www.dropbox.com"
 dropboxApiEndpoint = "https://api.dropbox.com"
 
 
 class DropboxConnector(object):
 
-    def __init__(self, userDN, service):
+    def __init__(self, user_dn, service):
         self.service = service.strip().upper()
-        self.userDN = userDN.strip()
-
+        self.user_dn = user_dn.strip()
 
     @jsonify
-    def isCSRegistered(self):
-        info = self._getDropboxUserInfo()
-        return info.isRegistered()
+    def is_registered(self):
+        info = self._get_dropbox_user_info()
+        return info.is_registered()
 
+    def get_access_requested(self):
+        dropbox_info = self._get_dropbox_info()
+        request_tokens = self._make_call(
+            dropboxApiEndpoint + "/1/oauth/request_token",
+            'OAuth oauth_version="1.0", oauth_signature_method="PLAINTEXT",'
+            'oauth_consumer_key="' + dropbox_info.app_key + '", oauth_signature="' + dropbox_info.app_secret + '&"',
+            None
+        )
 
-    def getCSAccessRequested(self):
-        dropboxInfo = self._getDropboxInfo()
-        requestTokens = self._makeCall(dropboxApiEndpoint + "/1/oauth/request_token", 'OAuth oauth_version="1.0", oauth_signature_method="PLAINTEXT", oauth_consumer_key="' + dropboxInfo.app_key + '", oauth_signature="' + dropboxInfo.app_secret + '&"', None)
-        #url = apiUrl + '/1/oauth/request_token'
-        #headers = { 'Authorization' : 'OAuth oauth_version="1.0", oauth_signature_method="PLAINTEXT", oauth_consumer_key="' + app_key + '", oauth_signature="' + app_secret + '"' }
-        #values = {}
-        #data = urllib.urlencode(values)
-        #req = urllib2.Request(url, data, headers)
-        #response = urllib2.urlopen(req)
-        #return response.read()
-
-        #It returns: oauth_token_secret=b9q1n5il4lcc&oauth_token=mh7an9dkrg59
-        rTokens = requestTokens.split('&')
-        newuser = CloudStorageUser(user_dn=self.userDN, cloudStorage_name=dropboxInfo.cloudStorage_name, request_token=rTokens[1].split('=')[1], request_token_secret=rTokens[0].split('=')[1])
+        # It returns: oauth_token_secret=b9q1n5il4lcc&oauth_token=mh7an9dkrg59
+        tokens = request_tokens.split('&')
+        newuser = CloudStorageUser(
+            user_dn=self.user_dn,
+            cloudStorage_name=dropbox_info.cloudStorage_name,
+            request_token=tokens[1].split('=')[1],
+            request_token_secret=tokens[0].split('=')[1]
+        )
         Session.add(newuser)
         Session.commit()
 
-        return requestTokens
+        return request_tokens
 
     @jsonify
-    def isCSAccessRequested(self):
-        info = self._getDropboxUserInfo()
-        if (info is None):
+    def is_access_requested(self):
+        info = self._get_dropbox_user_info()
+        if info is None:
             raise HTTPNotFound('No registered user for the service "%s" has been found' % self.service)
 
-        if info.isRegistered() == True:
-            res = self._getCSContent("/")
+        if info.is_registered():
+            res = self._get_content("/")
             if res.startswith("401"):
                 Session.delete(info)
                 Session.commit()
                 raise HTTPNotFound('No registered user for the service "%s" has been found' % self.service)
 
-        return info;
+        return info
 
+    def get_access_granted(self):
+        dropbox_user_info = self._get_dropbox_user_info()
+        dropbox_info = self._get_dropbox_info()
 
-    def getCSAccessGranted(self):
-        dropboxUserInfo = self._getDropboxUserInfo()
-        dropboxInfo = self._getDropboxInfo()
+        access_tokens = self._make_call(
+            dropboxApiEndpoint + "/1/oauth/access_token",
+            'OAuth oauth_version="1.0", oauth_signature_method="PLAINTEXT", oauth_consumer_key="' +
+            dropbox_info.app_key + '", oauth_token="' + dropbox_user_info.request_token +
+            '", oauth_signature="' + dropbox_info.app_secret + '&' + dropbox_user_info.request_token_secret + '"',
+            None
+        )
 
-        accessTokens = self._makeCall(dropboxApiEndpoint + "/1/oauth/access_token", 'OAuth oauth_version="1.0", oauth_signature_method="PLAINTEXT", oauth_consumer_key="' + dropboxInfo.app_key + '", oauth_token="' + dropboxUserInfo.request_token + '", oauth_signature="' + dropboxInfo.app_secret + '&' + dropboxUserInfo.request_token_secret + '"', None)
-
-        #It returns: oauth_token=<access-token>&oauth_token_secret=<access-token-secret>&uid=<user-id>
-        aTokens = accessTokens.split('&')
-        dropboxUserInfo.access_token = aTokens[1].split('=')[1]
-        dropboxUserInfo.access_token_secret= aTokens[0].split('=')[1]
-        #Resquest tokens are not needed anymore. Store something not None to mark them as done
-        #dropboxUserInfo.request_token = ""
-        #dropboxUserInfo.request_token_secret = ""
-        Session.add(dropboxUserInfo)
+        # It returns: oauth_token=<access-token>&oauth_token_secret=<access-token-secret>&uid=<user-id>
+        access_tokens = access_tokens.split('&')
+        dropbox_user_info.access_token = access_tokens[1].split('=')[1]
+        dropbox_user_info.access_token_secret = access_tokens[0].split('=')[1]
+        Session.add(dropbox_user_info)
         Session.commit()
 
-        return accessTokens
+        return access_tokens
 
-    def getCSFolderContent(self):
-        #If we are receiving "null" means that the user is asking for the root folder
-        #abort(403, 'Correct path?? %s' % urllib.unquote(folderPath))
+    def get_folder_content(self):
         surl = self._get_valid_surl()
+        return self._get_content(surl)
 
-        return self._getCSContent(surl)
-#        if path == None:
-#            path = "/"
-#        else:
-#            path = "/" + urllib.unquote(path)
-#            import logging
-#            log = logging.getLogger(__name__)
-#            log.info("Init folder path received: " + path)
-#            log.info("Transformed folder path: " + urllib.unquote(path))
+    def _get_content(self, surl):
+        return self._make_call(dropboxApiEndpoint + "/1/metadata/dropbox" + surl, self._get_auth_key(), "list=true")
 
-        #if folderPath == "null":
-        #    folderPath = "/"
+    def get_file_link(self, path):
         # "dropbox" could be also "sandbox"
-    def _getCSContent(self, surl):
-        return self._makeCall(dropboxApiEndpoint + "/1/metadata/dropbox" + surl, self._getAuthKey(), "list=true")
-
-
-    def getCSFileLink(self, path):
-        # "dropbox" could be also "sandbox"
-        return self._makeCall(dropboxApiEndpoint + "/1/media/dropbox/" + path, self._getAuthKey())
+        return self._make_call(dropboxApiEndpoint + "/1/media/dropbox/" + path, self._get_auth_key(), None)
 
     #Internal functions
 
-    def _getDropboxUserInfo(self):
-        dropboxUserInfo = Session.query(CloudStorageUser).get((self.userDN, self.service))
-       # if dropboxUserInfo is None:
-       #     abort(403, 'No registration information found for the user "%s" in the service %s' % (self.userDN, self.service))
-        return dropboxUserInfo
+    def _get_dropbox_user_info(self):
+        dropbox_user_info = Session.query(CloudStorageUser).get((self.user_dn, self.service))
+        if dropbox_user_info is None:
+            raise HTTPForbidden(
+                'No registration information found for the user "%s" in the service %s' % (self.user_dn, self.service)
+            )
+        return dropbox_user_info
 
     def _get_valid_surl(self):
         surl = request.params.get('surl')
@@ -146,32 +134,32 @@ class DropboxConnector(object):
             raise HTTPBadRequest('Forbiden SURL scheme')
         return str(surl)
 
-    def _getDropboxInfo(self):
-        dropboxInfo = Session.query(CloudStorage).get(self.service)
-       # if dropboxInfo is None:
-        #    abort(403, 'No registration information found for the service %s' % self.service)
-        return dropboxInfo
+    def _get_dropbox_info(self):
+        dropbox_info = Session.query(CloudStorage).get(self.service)
+        if dropbox_info is None:
+            raise HTTPForbidden('No registration information found for the service %s' % self.service)
+        return dropbox_info
 
+    def _get_auth_key(self):
+        dropbox_user_info = self._get_dropbox_user_info()
+        dropbox_info = self._get_dropbox_info()
+        return 'OAuth oauth_version="1.0", oauth_signature_method="PLAINTEXT",'\
+               'oauth_consumer_key="' + dropbox_info.app_key + '", oauth_token="' + dropbox_user_info.access_token +\
+               ', oauth_signature="' + dropbox_info.app_secret + '&' + dropbox_user_info.access_token_secret + '"'
 
-    def _getAuthKey(self):
-        dropboxUserInfo = self._getDropboxUserInfo()
-        dropboxInfo = self._getDropboxInfo()
-        return 'OAuth oauth_version="1.0", oauth_signature_method="PLAINTEXT", oauth_consumer_key="' + dropboxInfo.app_key + '", oauth_token="' + dropboxUserInfo.access_token + ', oauth_signature="' + dropboxInfo.app_secret + '&' + dropboxUserInfo.access_token_secret + '"'
-
-
-    def _makeCall(self, commandUrl, commandAuthHeaders, parameters):
+    def _make_call(self, command_url, auth_headers, parameters):
         if parameters is not None:
-            commandUrl += '?' + parameters
-        headers = { 'Authorization' : commandAuthHeaders }
+            command_url += '?' + parameters
+        headers = {'Authorization': auth_headers}
         values = {}
 
         try:
             data = urllib.urlencode(values)
-            req = urllib2.Request(commandUrl, data, headers)
+            req = urllib2.Request(command_url, data, headers)
             response = urllib2.urlopen(req)
             res_con = response.read()
             return res_con
-        except Exception, e:
+        except urllib2.HTTPError, e:
             print e.code
             print e.read()
             return str(e.code) + e.read()

@@ -120,19 +120,19 @@ def make_map(config):
     map.connect('/ban/dn', controller='banning', action='unban_dn', conditions=dict(method=['DELETE']))
 
     # Cloud Storage
-    map.connect('/cs/registered/{service}', controller='cloudStorage', action='isCSRegistered',
+    map.connect('/cs/registered/{service}', controller='cloudStorage', action='is_registered',
                 conditions=dict(method=['GET']))
-    map.connect('/cs/access_request/{service}', controller='cloudStorage', action='isCSAccessRequested',
+    map.connect('/cs/access_request/{service}', controller='cloudStorage', action='is_access_requested',
                 conditions=dict(method=['GET']))
-    map.connect('/cs/access_request/{service}/', controller='cloudStorage', action='isCSAccessRequested',
+    map.connect('/cs/access_request/{service}/', controller='cloudStorage', action='is_access_requested',
                 conditions=dict(method=['GET']))
-    map.connect('/cs/access_request/{service}/request', controller='cloudStorage', action='getCSAccessRequested',
+    map.connect('/cs/access_request/{service}/request', controller='cloudStorage', action='get_access_requested',
                 conditions=dict(method=['GET']))
-    map.connect('/cs/access_grant/{service}', controller='cloudStorage', action='getCSAccessGranted',
+    map.connect('/cs/access_grant/{service}', controller='cloudStorage', action='get_access_granted',
                 conditions=dict(method=['GET']))
-    map.connect('/cs/remote_content/{service}', controller='cloudStorage', action='getCSFolderContent',
+    map.connect('/cs/remote_content/{service}', controller='cloudStorage', action='get_folder_content',
                 conditions=dict(method=['GET']))
-    map.connect('/cs/file_urllink/{service}/{path}', controller='cloudStorage', action='getCSFileLink',
+    map.connect('/cs/file_urllink/{service}/{path}', controller='cloudStorage', action='get_file_link',
                 conditions=dict(method=['GET']))
 
     # OAuth 2.0
