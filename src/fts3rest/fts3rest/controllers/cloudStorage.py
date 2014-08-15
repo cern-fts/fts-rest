@@ -17,9 +17,15 @@ from pylons import request
 
 from fts3rest.lib.base import BaseController
 from CSInterface import CSInterface
+from webob.exc import HTTPUnauthorized
 
 
 class CloudstorageController(BaseController):
+
+    def __before__(self):
+        user = request.environ['fts3.User.Credentials']
+        if user.method == 'unauthenticated':
+            raise HTTPUnauthorized
 
     def _get_user_dn(self):
         user = request.environ['fts3.User.Credentials']

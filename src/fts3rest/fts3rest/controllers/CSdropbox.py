@@ -44,7 +44,10 @@ class DropboxConnector(object):
     @jsonify
     def is_registered(self):
         info = self._get_dropbox_user_info()
-        return info.is_registered()
+        if info:
+            return info.is_registered()
+        else:
+            return False
 
     def get_access_requested(self):
         dropbox_info = self._get_dropbox_info()
@@ -85,7 +88,12 @@ class DropboxConnector(object):
 
     def get_access_granted(self):
         dropbox_user_info = self._get_dropbox_user_info()
+        if not dropbox_user_info:
+            raise HTTPBadRequest('No registered user for the service "%s" has been found' % self.service)
+
         dropbox_info = self._get_dropbox_info()
+        if not dropbox_info:
+            raise HTTPNotFound('Dropbox info not found in the databse')
 
         access_tokens = self._make_call(
             dropboxApiEndpoint + "/1/oauth/access_token",
@@ -119,10 +127,6 @@ class DropboxConnector(object):
 
     def _get_dropbox_user_info(self):
         dropbox_user_info = Session.query(CloudStorageUser).get((self.user_dn, self.service))
-        if dropbox_user_info is None:
-            raise HTTPForbidden(
-                'No registration information found for the user "%s" in the service %s' % (self.user_dn, self.service)
-            )
         return dropbox_user_info
 
     def _get_valid_surl(self):

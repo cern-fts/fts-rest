@@ -50,7 +50,7 @@ class CSInterface(object):
 
         #except Exception, e:
         #    raise e
-        self.userDN = user_dn
+        self.user_dn = user_dn
         self.service = service.strip().lower()
         if self.service == "dropbox":
             self.__class__ = DropboxConnector
