@@ -15,15 +15,13 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import pylons
 import re
-import urllib
 from M2Crypto import EVP
 
-from fts3rest.lib.oauth2provider import FTS3OAuth2ResourceProvider
+from methods import do_authentication
 
 
-def _vo_from_fqan(fqan):
+def vo_from_fqan(fqan):
     """
     Get the VO from a full FQAN
 
@@ -41,7 +39,7 @@ def _vo_from_fqan(fqan):
     return '/'.join(groups)
 
 
-def _generate_delegation_id(dn, fqans):
+def generate_delegation_id(dn, fqans):
     """
     Generate a delegation ID from the user DN and FQANS
     Adapted from FTS3
@@ -64,7 +62,7 @@ def _generate_delegation_id(dn, fqans):
     return digest_hex[:16]
 
 
-def _build_vo_from_dn(user_dn):
+def build_vo_from_dn(user_dn):
     """
     Generate an 'anonymous' VO from the user_dn
     """
@@ -85,80 +83,6 @@ class UserCredentials(object):
     """
     Handles the user credentials and privileges
     """
-
-    def _mod_gridsite_authn(self, env):
-        """
-        Retrieve credentials from GRST_ variables set by mod_gridsite
-        """
-        grst_index = 0
-        grst_env = 'GRST_CRED_AURI_%d' % grst_index
-        while grst_env in env:
-            cred = env[grst_env]
-
-            if cred.startswith('dn:'):
-                self.dn.append(urllib.unquote_plus(cred[3:]))
-            elif cred.startswith('fqan:'):
-                fqan = urllib.unquote_plus(cred[5:])
-                vo = _vo_from_fqan(fqan)
-                self.voms_cred.append(fqan)
-                if vo not in self.vos and vo:
-                    self.vos.append(vo)
-
-            grst_index += 1
-            grst_env = 'GRST_CRED_AURI_%d' % grst_index
-        return len(self.dn) > 0
-
-    def _mod_ssl_authn(self, env):
-        """
-        Retrieve credentials from SSL_ variables set by mod_ssl
-        """
-        if 'SSL_CLIENT_S_DN' in env:
-            self.dn.append(urllib.unquote_plus(env['SSL_CLIENT_S_DN']))
-            return True
-        return False
-
-
-    def _ssl_authn(self, env):
-        """
-        Try with a proxy or certificate, via mod_gridsite or mod_ssl
-        """
-        got_creds = self._mod_gridsite_authn(env) or self._mod_ssl_authn(env)
-        if not got_creds:
-            return False
-        # If more than one dn, pick first one
-        if len(self.dn) > 0:
-            self.user_dn = self.dn[0]
-        # Generate the delegation ID
-        if self.user_dn is not None:
-            self.delegation_id = _generate_delegation_id(self.user_dn, self.voms_cred)
-        # If no vo information is available, build a 'virtual vo' for this user
-        if not self.vos and self.user_dn:
-            self.vos.append(_build_vo_from_dn(self.user_dn))
-        self.method = 'certificate'
-        return True
-
-    def _oauth2_authn(self, env):
-        """
-        The user will be the one who gave the bearer token
-        """
-        if not pylons.config.get('fts3.oauth2', False):
-            return False
-
-        res_provider = FTS3OAuth2ResourceProvider(env)
-        creds = res_provider.get_credentials()
-        if creds is None:
-            return False
-        self.dn.append(creds.dn)
-        self.user_dn = creds.dn
-        self.delegation_id = creds.dlg_id
-        if creds.voms_attrs:
-            for fqan in creds.voms_attrs.split('\n'):
-                self.voms_cred.append(fqan)
-                self.vos.append(_vo_from_fqan(fqan))
-        else:
-            self.vos.append(_build_vo_from_dn(self.user_dn))
-        self.method = 'oauth2'
-        return True
 
     def _anonymous(self):
         """
@@ -186,11 +110,7 @@ class UserCredentials(object):
         self.method    = None
 
         # Try certificate-based authentication
-        got_creds = self._ssl_authn(env)
-
-        # If no luck, try with OAuth2
-        if not got_creds:
-            got_creds = self._oauth2_authn(env)
+        got_creds = do_authentication(self, env)
 
         # Last resort: anonymous access
         if not got_creds:

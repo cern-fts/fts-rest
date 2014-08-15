@@ -313,22 +313,6 @@ class TestOAuth2(TestController):
             status=403
         )
 
-    def test_oauth2_disable_with_token(self):
-        """
-        Get a bearer token, disable OAUth2 in the configuration,
-        access must be denied
-        """
-        client_id, access_token, refresh_token, expires = self.test_get_token()
-        del self.app.extra_environ['GRST_CRED_AURI_0']
-        pylons.config['fts3.oauth2'] = False
-        response = self.app.get(
-            url="/whoami",
-            headers={'Authorization': str('Bearer %s' % access_token)},
-            status=200
-        )
-        whoami = json.loads(response.body)
-        self.assertEqual('unauthenticated', whoami['method'])
-
     def test_expired(self):
         """
         Get a token, the token expires, so it should be ignored
@@ -356,4 +340,3 @@ class TestOAuth2(TestController):
         )
         whoami = json.loads(response.body)
         self.assertEqual('unauthenticated', whoami['method'])
-

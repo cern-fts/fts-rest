@@ -15,27 +15,11 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""Routes configuration
 
-The more specific and detailed routes should be defined first so they
-may take precedent over the more generic routes. For more information
-refer to the routes manual at http://routes.groovie.org/docs/
-"""
-from routes import Mapper
-
-
-def make_map(config):
-    """Create, configure and return the routes Mapper"""
-    map = Mapper(directory=config['pylons.paths']['controllers'],
-                 always_scan=config['debug'])
-    map.minimization = False
-    map.explicit = False
-
-    # The ErrorController route (handles 404/500 error pages); it should
-    # likely stay at the top, ensuring it can always be resolved
-    map.connect('/error/{action}', controller='error')
-    map.connect('/error/{action}/{id}', controller='error')
-
+def do_connect(config, map):
+    """
+    Base urls
+    """
     # Root
     map.connect('/', controller='misc', action='api_version')
 
@@ -118,35 +102,3 @@ def make_map(config):
     map.connect('/ban/se', controller='banning', action='unban_se', conditions=dict(method=['DELETE']))
     map.connect('/ban/dn', controller='banning', action='ban_dn', conditions=dict(method=['POST']))
     map.connect('/ban/dn', controller='banning', action='unban_dn', conditions=dict(method=['DELETE']))
-
-    # Cloud Storage
-    map.connect('/cs/registered/{service}', controller='cloudStorage', action='is_registered',
-                conditions=dict(method=['GET']))
-    map.connect('/cs/access_request/{service}', controller='cloudStorage', action='is_access_requested',
-                conditions=dict(method=['GET']))
-    map.connect('/cs/access_request/{service}/', controller='cloudStorage', action='is_access_requested',
-                conditions=dict(method=['GET']))
-    map.connect('/cs/access_request/{service}/request', controller='cloudStorage', action='get_access_requested',
-                conditions=dict(method=['GET']))
-    map.connect('/cs/access_grant/{service}', controller='cloudStorage', action='get_access_granted',
-                conditions=dict(method=['GET']))
-    map.connect('/cs/remote_content/{service}', controller='cloudStorage', action='get_folder_content',
-                conditions=dict(method=['GET']))
-    map.connect('/cs/file_urllink/{service}/{path}', controller='cloudStorage', action='get_file_link',
-                conditions=dict(method=['GET']))
-
-    # OAuth 2.0
-    map.redirect('/oauth2', '/oauth2/apps')
-    map.connect('/oauth2/apps', controller='oauth2', action='get_my_apps', conditions=dict(method=['GET']))
-    map.connect('/oauth2/register', controller='oauth2', action='register_form', conditions=dict(method=['GET']))
-    map.connect('/oauth2/register', controller='oauth2', action='register', conditions=dict(method=['POST']))
-    map.connect('/oauth2/apps/{client_id}', controller='oauth2', action='get_app', conditions=dict(method=['GET']))
-    map.connect('/oauth2/apps/{client_id}', controller='oauth2', action='update_app', conditions=dict(method=['POST']))
-    map.connect('/oauth2/apps/{client_id}', controller='oauth2', action='delete_app', conditions=dict(method=['DELETE']))
-
-    map.connect('/oauth2/authorize', controller='oauth2', action='authorize', conditions=dict(method=['GET']))
-    map.connect('/oauth2/authorize', controller='oauth2', action='confirm', conditions=dict(method=['POST']))
-    map.connect('/oauth2/token', controller='oauth2', action='get_token', conditions=dict(method=['GET', 'POST']))
-    map.connect('/oauth2/revoke/{client_id}', controller='oauth2', action='revoke_token', conditions=dict(method=['GET']))
-
-    return map
