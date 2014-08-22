@@ -140,6 +140,7 @@ class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
 
 class FTS3ResourceAuthorization(ResourceAuthorization):
     dlg_id = None
+    credentials = None
 
 
 class FTS3OAuth2ResourceProvider(ResourceProvider):
@@ -170,18 +171,12 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         authorization.token = token.access_token
         authorization.dlg_id = token.dlg_id
         if authorization.expires_in > timedelta(seconds=0):
-            authorization.is_valid=True
-        else:
-            authorization.error = 'Token expired'
+            authorization.credentials = self._get_credentials(token.dlg_id)
+            if authorization.credentials:
+                authorization.is_valid=True
 
-    def get_credentials(self):
+    def _get_credentials(self, dlg_id):
         """
         Get the user credentials bound to the authorization token
         """
-        auth = self.get_authorization()
-        if not auth or not auth.is_valid:
-            return None
-        creds = Session.query(CredentialCache).filter(CredentialCache.dlg_id == auth.dlg_id).first()
-        if not creds:
-            return None
-        return creds
+        return Session.query(CredentialCache).filter(CredentialCache.dlg_id == dlg_id).first()

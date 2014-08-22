@@ -16,7 +16,7 @@
 #   limitations under the License.
 
 from fts3rest.lib.oauth2provider import FTS3OAuth2ResourceProvider
-from fts3rest.lib.middleware.fts3auth.credentials import vo_from_fqan, build_vo_from_dn
+from fts3rest.lib.middleware.fts3auth.credentials import vo_from_fqan, build_vo_from_dn, InvalidCredentials
 
 
 def do_authentication(credentials, env):
@@ -24,14 +24,19 @@ def do_authentication(credentials, env):
     The user will be the one who gave the bearer token
     """
     res_provider = FTS3OAuth2ResourceProvider(env)
-    db_creds = res_provider.get_credentials()
-    if db_creds is None:
+    authn = res_provider.get_authorization()
+    if authn is None:
         return False
-    credentials.dn.append(db_creds.dn)
-    credentials.user_dn = db_creds.dn
-    credentials.delegation_id = db_creds.dlg_id
-    if db_creds.voms_attrs:
-        for fqan in db_creds.voms_attrs.split('\n'):
+    if not authn.is_valid:
+        if authn.error == 'access_denied':
+            raise InvalidCredentials()
+        return False
+
+    credentials.dn.append(authn.credentials.dn)
+    credentials.user_dn = authn.credentials.dn
+    credentials.delegation_id = authn.credentials.dlg_id
+    if authn.credentials.voms_attrs:
+        for fqan in authn.credentials.voms_attrs.split('\n'):
             credentials.voms_cred.append(fqan)
             credentials.vos.append(vo_from_fqan(fqan))
     else:

@@ -315,7 +315,7 @@ class TestOAuth2(TestController):
 
     def test_expired(self):
         """
-        Get a token, the token expires, so it should be ignored
+        Get a token, the token expires, so it should be denied
         """
         client_id, access_token, refresh_token, expires = self.test_get_token()
         del self.app.extra_environ['GRST_CRED_AURI_0']
@@ -336,7 +336,5 @@ class TestOAuth2(TestController):
         response = self.app.get(
             url="/whoami",
             headers={'Authorization': str('Bearer %s' % access_token)},
-            status=200
+            status=403
         )
-        whoami = json.loads(response.body)
-        self.assertEqual('unauthenticated', whoami['method'])

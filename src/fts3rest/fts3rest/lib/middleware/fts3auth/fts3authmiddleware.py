@@ -19,7 +19,7 @@ import logging
 
 from fts3rest.lib.base import Session
 from fts3.model import BannedDN
-from credentials import UserCredentials
+from credentials import UserCredentials, InvalidCredentials
 from webob.exc import HTTPUnauthorized, HTTPForbidden
 
 
@@ -37,7 +37,10 @@ class FTS3AuthMiddleware(object):
         self.config = config
 
     def __call__(self, environ, start_response):
-        credentials = UserCredentials(environ, self.config['fts3.Roles'])
+        try:
+            credentials = UserCredentials(environ, self.config['fts3.Roles'])
+        except InvalidCredentials:
+            return HTTPForbidden('Invalid credentials')(environ, start_response)
 
         if not credentials.user_dn:
             return HTTPUnauthorized('A valid X509 certificate or proxy is needed')(environ, start_response)

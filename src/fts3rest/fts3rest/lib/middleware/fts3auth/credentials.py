@@ -79,6 +79,13 @@ def build_vo_from_dn(user_dn):
     return uname + '@' + '.'.join(reversed(domain))
 
 
+class InvalidCredentials(Exception):
+    """
+    Credentials have been provided, but they are invalid
+    """
+    pass
+
+
 class UserCredentials(object):
     """
     Handles the user credentials and privileges
@@ -92,6 +99,7 @@ class UserCredentials(object):
         """
         self.user_dn = 'anon'
         self.method = 'unauthenticated'
+        self.dn.append(self.user_dn)
 
     def __init__(self, env, role_permissions=None):
         """
