@@ -89,8 +89,8 @@ class RequestFactory(object):
             handle.setopt(pycurl.SSLKEY, self.ukey)
         if self.capath:
             handle.setopt(pycurl.CAPATH, self.capath)
-        #if self.cafile:
-            #handle.setopt(pycurl.CAINFO, self.cafile)
+        if self.cafile:
+            handle.setopt(pycurl.CAINFO, self.cafile)
         if self.passwd:
             handle.setopt(pycurl.SSLKEYPASSWD, self.passwd)
 
@@ -114,7 +114,7 @@ class RequestFactory(object):
             handle.setopt(pycurl.HTTPHEADER, map(lambda (k, v): "%s: %s" % (k, v), _headers.iteritems()))
 
         handle.setopt(pycurl.URL, str(url))
-        handle.setopt(pycurl.VERBOSE, 1)
+        #handle.setopt(pycurl.VERBOSE, 1)
 
         self._response = ''
         handle.setopt(pycurl.WRITEFUNCTION, self._receive)
