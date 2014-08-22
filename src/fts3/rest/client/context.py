@@ -23,6 +23,7 @@ import json
 import logging
 import os
 import sys
+import urllib
 
 from exceptions import *
 from request import RequestFactory
@@ -114,12 +115,22 @@ class Context(object):
             raise BadEndpoint("%s (%s)" % (self.endpoint, str(e))), None, sys.exc_info()[2]
         return endpoint_info
 
-    def __init__(self, endpoint, ucert=None, ukey=None, verify=True):
+    def __init__(self, endpoint, ucert=None, ukey=None, verify=True, access_token=None, no_creds=False):
         self.passwd = None
 
         self._set_endpoint(endpoint)
-        self._set_x509(ucert, ukey)
-        self._requester = RequestFactory(self.ucert, self.ukey, passwd=self.passwd, verify=verify)
+        if no_creds:
+            self.ucert = self.ukey = self.access_token = None
+        else:
+            self.access_token = access_token
+            if self.access_token:
+                self.ucert = None
+                self.ukey = None
+            else:
+                self._set_x509(ucert, ukey)
+        self._requester = RequestFactory(
+            self.ucert, self.ukey, passwd=self.passwd, verify=verify, access_token=self.access_token
+        )
         self.endpoint_info = self._validate_endpoint()
         # Log obtained information
         log.debug("Using endpoint: %s" % self.endpoint_info['url'])
@@ -130,7 +141,10 @@ class Context(object):
     def get_endpoint_info(self):
         return self.endpoint_info
 
-    def get(self, path):
+    def get(self, path, args=None):
+        if args:
+            query = '&'.join(map(lambda (k, v): "%s=%s" % (k, urllib.quote(v)), args.iteritems()))
+            path += '?' + query
         return self._requester.method('GET',
                                       "%s/%s" % (self.endpoint, path))
 

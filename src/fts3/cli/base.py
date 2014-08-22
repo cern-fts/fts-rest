@@ -98,6 +98,9 @@ class Base(object):
                                    help='the user certificate.', default=opt_ucert)
         self.opt_parser.add_option('--insecure', dest='verify', default=True, action='store_false',
                                    help='do not validate the server certificate')
+        self.opt_parser.add_option('--access-token', dest='access_token',
+                                   help='OAuth2 access token (supported only by some endpoints, takes precedence)',
+                                   default=None)
 
     def __call__(self, argv=sys.argv[1:]):
         (self.options, self.args) = self.opt_parser.parse_args(argv)
@@ -123,5 +126,6 @@ class Base(object):
 
     def _create_context(self):
         return Context(
-            self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert, verify=self.options.verify
+            self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert, verify=self.options.verify,
+            access_token=self.options.access_token
         )
