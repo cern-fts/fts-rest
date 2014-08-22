@@ -22,6 +22,7 @@ from sqlalchemy.exc import IntegrityError
 from pylons.templating import render_mako as render
 from pylons.controllers.util import redirect
 from routes import url_for
+from urlparse import urlparse
 
 from fts3.model.oauth2 import OAuth2Application, OAuth2Token, OAuth2Code
 from fts3rest.lib.oauth2provider import FTS3OAuth2AuthorizationProvider
@@ -259,14 +260,15 @@ class Oauth2Controller(BaseController):
         if not app:
             raise OAuth2Error('Invalid client id')
 
-        redirections = app.redirect_to.split('\n')
+        redirections = [r.strip() for r in app.redirect_to.split('\n')]
         if auth['redirect_uri']:
             if auth['redirect_uri'] not in redirections:
                 raise OAuth2Error('Redirection endpoint unknown!')
         else:
             auth['redirect_uri'] = redirections[0]
 
-        if not auth['redirect_uri'].startswith('https://'):
+        redirect_parsed = urlparse(auth['redirect_uri'])
+        if redirect_parsed.hostname != 'localhost' and redirect_parsed.scheme != 'https':
             raise OAuth2Error('Redirection endpoint is not https!')
 
         # Populate state from unused query args
