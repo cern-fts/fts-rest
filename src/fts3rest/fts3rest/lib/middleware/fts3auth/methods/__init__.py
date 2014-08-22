@@ -19,15 +19,22 @@ import pkgutil
 import sys
 
 
-def do_authentication(credentials, env):
-    """
-    Iterate through pluggable authentication modules
-    """
-    current_module = sys.modules[__name__]
-    prefix = current_module.__name__ + '.'
-    for importer, modname, ispkg in pkgutil.iter_modules(current_module.__path__, prefix):
-        authnmod = importer.find_module(modname).load_module(modname)
-        if hasattr(authnmod, 'do_authentication'):
+class Authenticator(object):
+
+    def __init__(self):
+        _current_module = sys.modules[__name__]
+        _prefix = _current_module.__name__ + '.'
+        self._auth_modules = list()
+        for importer, modname, ispkg in pkgutil.iter_modules(_current_module.__path__, _prefix):
+            _authnmod = importer.find_module(modname).load_module(modname)
+            if hasattr(_authnmod, 'do_authentication'):
+                self._auth_modules.append(_authnmod)
+
+    def __call__(self, credentials, env):
+        """
+        Iterate through pluggable authentication modules
+        """
+        for authnmod in self._auth_modules:
             if authnmod.do_authentication(credentials, env):
                 return True
-    return False
+        return False

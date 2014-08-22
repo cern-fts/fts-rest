@@ -18,7 +18,7 @@
 import re
 from M2Crypto import EVP
 
-from methods import do_authentication
+from methods import Authenticator
 
 
 def vo_from_fqan(fqan):
@@ -84,6 +84,8 @@ class UserCredentials(object):
     Handles the user credentials and privileges
     """
 
+    authenticator = Authenticator()
+
     def _anonymous(self):
         """
         Not authenticated access
@@ -109,8 +111,7 @@ class UserCredentials(object):
         self.delegation_id = None
         self.method    = None
 
-        # Try certificate-based authentication
-        got_creds = do_authentication(self, env)
+        got_creds = self.authenticator(self, env)
 
         # Last resort: anonymous access
         if not got_creds:
