@@ -294,17 +294,28 @@ class Oauth2Controller(BaseController):
                 extra_vars={'reason': str(e), 'site': pylons.config['fts3.SiteName']}
             )
 
-        csrftoken = random_ascii_string(32)
-        pylons.response.set_cookie('fts3oauth2_csrf', csrftoken, max_age=300)
-        return render(
-            '/authz_confirm.html',
-            extra_vars={
-                'app': app,
-                'user': user,
-                'site': pylons.config['fts3.SiteName'],
-                'CSRFToken': csrftoken
-            }
-        )
+        authorized = self.oauth2_provider.is_already_authorized(user.delegation_id, app.client_id)
+        if authorized:
+            response = self.oauth2_provider.get_authorization_code(
+                    auth['response_type'], auth['client_id'],
+                    auth['redirect_uri'], **auth['state']
+            )
+            for (k, v) in response.headers.iteritems():
+                pylons.response.headers[str(k)] = str(v)
+            pylons.response.status_int = response.status_code
+            return response.raw
+        else:
+            csrftoken = random_ascii_string(32)
+            pylons.response.set_cookie('fts3oauth2_csrf', csrftoken, max_age=300)
+            return render(
+                '/authz_confirm.html',
+                extra_vars={
+                    'app': app,
+                    'user': user,
+                    'site': pylons.config['fts3.SiteName'],
+                    'CSRFToken': csrftoken
+                }
+            )
 
     @require_certificate
     def confirm(self):

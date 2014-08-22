@@ -63,8 +63,7 @@ class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
             return None
         return {'dlg_id': code.dlg_id}
 
-    def persist_authorization_code(self, client_id, code, scope):
-        user = pylons.request.environ['fts3.User.Credentials']
+    def _insert_user(self, user):
         # We will need the user in t_credential_cache at least!
         cred = Session.query(CredentialCache).filter(CredentialCache.dlg_id == user.delegation_id).first()
         if not cred:
@@ -76,6 +75,10 @@ class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
                     voms_attrs='\n'.join(user.voms_cred)
             )
             Session.merge(cred)
+
+    def persist_authorization_code(self, client_id, code, scope):
+        user = pylons.request.environ['fts3.User.Credentials']
+        self._insert_user(user)
         # Remove previous codes
         Session.query(OAuth2Code).filter(
             (OAuth2Code.client_id == client_id) & (OAuth2Code.dlg_id == user.delegation_id)
@@ -89,6 +92,18 @@ class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
         )
         Session.merge(code)
         Session.commit()
+
+    def is_already_authorized(self, dlg_id, client_id, scope=None):
+        code = Session.query(OAuth2Token).filter(
+            (OAuth2Token.client_id == client_id) & (OAuth2Token.dlg_id == dlg_id)
+        )
+        if scope:
+            code = code.filter(OAuth2Token.scope == scope)
+        code = code.all()
+        if len(code) > 0:
+            return True
+        else:
+            return None
 
     def persist_token_information(self, client_id, scope, access_token,
                                   token_type, expires_in, refresh_token,
