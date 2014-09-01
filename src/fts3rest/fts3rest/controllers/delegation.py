@@ -195,7 +195,10 @@ class DelegationController(BaseController):
         if not cred:
             return None
         else:
-            return {'termination_time': cred.termination_time}
+            return {
+                'termination_time': cred.termination_time,
+                'voms_attrs': cred.voms_attrs.split('\n')
+            }
 
     @doc.response(403, 'The requested delegation ID does not belong to the user')
     @doc.response(404, 'The credentials do not exist')
