@@ -70,3 +70,14 @@ def authorize(op, env=None):
             abort(403, 'Not enough permissions')
         return f(*args, **kwargs)
     return authorize_inner
+
+
+@decorator
+def require_certificate(f, *args, **kwargs):
+    """
+    If the authentication method is not via certificate, deny access
+    """
+    user = pylons.request.environ['fts3.User.Credentials']
+    if user.method != 'certificate':
+        abort(403, 'Certificate required')
+    return f(*args, **kwargs)

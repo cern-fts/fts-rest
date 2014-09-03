@@ -1,26 +1,27 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from M2Crypto import EVP
 import re
-import urllib
+from M2Crypto import EVP
+
+from methods import Authenticator
 
 
-def _vo_from_fqan(fqan):
+def vo_from_fqan(fqan):
     """
     Get the VO from a full FQAN
 
@@ -38,7 +39,7 @@ def _vo_from_fqan(fqan):
     return '/'.join(groups)
 
 
-def _generate_delegation_id(dn, fqans):
+def generate_delegation_id(dn, fqans):
     """
     Generate a delegation ID from the user DN and FQANS
     Adapted from FTS3
@@ -61,7 +62,7 @@ def _generate_delegation_id(dn, fqans):
     return digest_hex[:16]
 
 
-def _build_vo_from_dn(user_dn):
+def build_vo_from_dn(user_dn):
     """
     Generate an 'anonymous' VO from the user_dn
     """
@@ -78,10 +79,27 @@ def _build_vo_from_dn(user_dn):
     return uname + '@' + '.'.join(reversed(domain))
 
 
+class InvalidCredentials(Exception):
+    """
+    Credentials have been provided, but they are invalid
+    """
+    pass
+
+
 class UserCredentials(object):
     """
     Handles the user credentials and privileges
     """
+
+    authenticator = Authenticator()
+
+    def _anonymous(self):
+        """
+        Not authenticated access
+        """
+        self.user_dn = 'anon'
+        self.method = 'unauthenticated'
+        self.dn.append(self.user_dn)
 
     def __init__(self, env, role_permissions=None):
         """
@@ -96,47 +114,21 @@ class UserCredentials(object):
         self.dn        = []
         self.voms_cred = []
         self.vos       = []
+        self.roles     = []
+        self.level     = []
         self.delegation_id = None
+        self.method    = None
 
-        # Try first GRST_ variables as set by mod_gridsite
-        grst_index = 0
-        grst_env = 'GRST_CRED_AURI_%d' % grst_index
-        while grst_env in env:
-            cred = env[grst_env]
+        got_creds = self.authenticator(self, env)
 
-            if cred.startswith('dn:'):
-                self.dn.append(urllib.unquote_plus(cred[3:]))
-            elif cred.startswith('fqan:'):
-                fqan = urllib.unquote_plus(cred[5:])
-                vo   = _vo_from_fqan(fqan)
-                self.voms_cred.append(fqan)
-                if vo not in self.vos and vo:
-                    self.vos.append(vo)
-
-            grst_index += 1
-            grst_env = 'GRST_CRED_AURI_%d' % grst_index
-
-        # If not, try with regular SSL_ as set by mod_ssl
-        if len(self.dn) == 0 and 'SSL_CLIENT_S_DN' in env:
-            self.dn.append(urllib.unquote_plus(env['SSL_CLIENT_S_DN']))
-
-        # Pick first one
-        if len(self.dn) > 0:
-            self.user_dn = self.dn[0]
-
-        # Generate the delegation ID
-        if self.user_dn is not None:
-            self.delegation_id = _generate_delegation_id(self.user_dn, self.voms_cred)
-
-        # If no vo information is available, build a 'virtual vo' for this user
-        if not self.vos and self.user_dn:
-            self.vos.append(_build_vo_from_dn(self.user_dn))
-
-        # Populate roles
-        self.roles = self._populate_roles()
-
-        # And granted level
-        self.level = self._granted_level(role_permissions)
+        # Last resort: anonymous access
+        if not got_creds:
+            self._anonymous()
+        else:
+            # Populate roles
+            self.roles = self._populate_roles()
+            # And granted level
+            self.level = self._granted_level(role_permissions)
 
     def _populate_roles(self):
         """
@@ -147,7 +139,6 @@ class UserCredentials(object):
             match = re.match('(/.+)*/Role=(\\w+)(/.*)?', fqan, re.IGNORECASE)
             if match and match.group(2).upper() != 'NULL':
                 roles.append(match.group(2))
-
         return roles
 
     def _granted_level(self, role_permissions):

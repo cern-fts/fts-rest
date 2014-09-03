@@ -11,3 +11,4 @@ endif (NOT DEFINED PYTHON_SITE_PACKAGES)
 
 # Subdirectories
 add_subdirectory (src)
+add_subdirectory (docs)

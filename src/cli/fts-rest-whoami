@@ -5,11 +5,12 @@ import sys
 import traceback
 
 
-try:
-	whoami = WhoAmI(sys.argv[1:])
-	whoami()
-except Exception, e:
-	logging.critical(str(e))
-	if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
-		traceback.print_exc()
-	sys.exit(1)
+if __name__ == "__main__":
+    try:
+        whoami = WhoAmI()
+        whoami(sys.argv[1:])
+    except Exception, e:
+        logging.critical(str(e))
+        if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+            traceback.print_exc()
+        sys.exit(1)

@@ -15,19 +15,26 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import json
+import logging
+import os
+import shlex
+import types
+
 from datetime import datetime
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPNotFound
+from M2Crypto import X509, RSA, EVP, BIO
+from pylons import config, request
+from pylons.templating import render_mako as render
+
 from fts3.model import CredentialCache, Credential
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.helpers import voms
 from fts3rest.lib.http_exceptions import HTTPMethodFailure
-from M2Crypto import X509, RSA, EVP, BIO
-from pylons import request
-import json
-import logging
-import types
+from fts3rest.lib.middleware.fts3auth import require_certificate
+
 
 log = logging.getLogger(__name__)
 
@@ -70,7 +77,7 @@ def _generate_proxy_request():
     x509_request.set_version(0)
     x509_request.sign(pkey, 'md5')
 
-    return (x509_request, pkey)
+    return x509_request, pkey
 
 
 def _read_X509_list(x509_pem):
@@ -155,6 +162,24 @@ class DelegationController(BaseController):
     Operations to perform the delegation of credentials
     """
 
+    def __init__(self):
+        """
+        Constructor
+        """
+        vomses_dir = '/etc/vomses'
+        self.vo_list = set()
+        try:
+            vomses = os.listdir(vomses_dir)
+            for voms in vomses:
+                voms_cfg = os.path.join(vomses_dir, voms)
+                for l in open(voms_cfg).readlines():
+                    l = l.strip()
+                    if len(l) and l[0] != '#':
+                        self.vo_list.add(shlex.split(l)[0])
+            self.vo_list = list(sorted(self.vo_list))
+        except:
+            pass
+
     @doc.return_type('dateTime')
     @jsonify
     def view(self, dlg_id, start_response):
@@ -170,12 +195,15 @@ class DelegationController(BaseController):
         if not cred:
             return None
         else:
-            return {'termination_time': cred.termination_time}
-
+            return {
+                'termination_time': cred.termination_time,
+                'voms_attrs': cred.voms_attrs.split('\n')
+            }
 
     @doc.response(403, 'The requested delegation ID does not belong to the user')
     @doc.response(404, 'The credentials do not exist')
     @doc.response(204, 'The credentials were deleted successfully')
+    @require_certificate
     def delete(self, dlg_id, start_response):
         """
         Delete the delegated credentials from the database
@@ -198,10 +226,10 @@ class DelegationController(BaseController):
             start_response('204 No Content', [])
             return ['']
 
-
     @doc.response(403, 'The requested delegation ID does not belong to the user')
     @doc.response(200, 'The request was generated succesfully')
     @doc.return_type('PEM encoded certificate request')
+    @require_certificate
     def request(self, dlg_id, start_response):
         """
         First step of the delegation process: get a certificate request
@@ -217,14 +245,14 @@ class DelegationController(BaseController):
         credential_cache = Session.query(CredentialCache)\
             .get((user.delegation_id, user.user_dn))
 
-        if credential_cache is None:
+        if credential_cache is None or credential_cache.cert_request is None:
             (x509_request, private_key) = _generate_proxy_request()
             credential_cache = CredentialCache(dlg_id=user.delegation_id, dn=user.user_dn,
                                                cert_request=x509_request.as_pem(),
                                                priv_key=private_key.as_pem(cipher=None),
                                                voms_attrs=' '.join(user.voms_cred))
             try:
-                Session.add(credential_cache)
+                Session.merge(credential_cache)
                 Session.commit()
             except Exception:
                 Session.rollback()
@@ -235,12 +263,13 @@ class DelegationController(BaseController):
 
         start_response('200 Ok', [('X-Delegation-ID', credential_cache.dlg_id),
                                   ('Content-Type', 'text/plain')])
-        return credential_cache.cert_request
+        return [credential_cache.cert_request]
 
     @doc.input('Signed certificate', 'PEM encoded certificate')
     @doc.response(403, 'The requested delegation ID does not belong to the user')
     @doc.response(400, 'The proxy failed the validation process')
     @doc.response(201, 'The proxy was stored successfully')
+    @require_certificate
     def credential(self, dlg_id, start_response):
         """
         Second step of the delegation process: put the generated certificate
@@ -291,6 +320,7 @@ class DelegationController(BaseController):
     @doc.response(400, 'Could not understand the request')
     @doc.response(424, 'The obtention of the VOMS extensions failed')
     @doc.response(203, 'The obtention of the VOMS extensions succeeded')
+    @require_certificate
     def voms(self, dlg_id, start_response):
         """
         Generate VOMS extensions for the delegated proxy
@@ -337,3 +367,18 @@ class DelegationController(BaseController):
 
         start_response('203 Non-Authoritative Information', [('Content-Type', 'text/plain')])
         return [str(new_termination_time)]
+
+    @require_certificate
+    def delegation_page(self):
+        """
+        Render an HTML form to delegate the credentials
+        """
+        user = request.environ['fts3.User.Credentials']
+        return render(
+            '/delegation.html', extra_vars={
+                'user': user,
+                'vos': self.vo_list,
+                'certificate': request.environ.get('SSL_CLIENT_CERT', None),
+                'site': config['fts3.SiteName']
+            }
+        )

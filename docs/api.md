@@ -2,6 +2,104 @@ API
 ===
 This document has been generated automatically
 
+### /cs
+### /oauth2
+#### GET /oauth2/token
+Get an access token
+
+#### POST /oauth2/token
+Get an access token
+
+#### GET /oauth2/apps
+Returns the list of registered apps
+
+##### Returns
+Array of [OAuth2Application](#oauth2application)
+
+#### GET /oauth2/register
+Registration form
+
+#### POST /oauth2/register
+Register a new third party application
+
+##### Returns
+client_id
+
+##### Responses
+
+|Code|Description                                                     |
+|----|----------------------------------------------------------------|
+|403 |Tried to update an application that does not belong to the user |
+|400 |Bad request                                                     |
+|303 |Application registered, follow redirection (when html requested)|
+|201 |Application registered                                          |
+
+#### GET /oauth2/authorize
+Perform OAuth2 authorization step
+
+#### POST /oauth2/authorize
+Triggered by user action. Confirm, or reject, access.
+
+#### GET /oauth2/apps/{client_id}
+Return information about a given app
+
+##### Returns
+[OAuth2Application](#oauth2application)
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
+##### Responses
+
+|Code|Description                                |
+|----|-------------------------------------------|
+|404 |Application not found                      |
+|403 |The application does not belong to the user|
+
+#### POST /oauth2/apps/{client_id}
+Update an application
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
+##### Responses
+
+|Code|Description                                |
+|----|-------------------------------------------|
+|404 |Application not found                      |
+|403 |The application does not belong to the user|
+
+#### DELETE /oauth2/apps/{client_id}
+Delete an application from the database
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
+##### Responses
+
+|Code|Description                                |
+|----|-------------------------------------------|
+|404 |Application not found                      |
+|403 |The application does not belong to the user|
+
+#### GET /oauth2/revoke/{client_id}
+Current user revokes all tokens for a given application
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
 ### /whoami
 #### GET /whoami
 Returns the active credentials of the user
@@ -150,6 +248,103 @@ Stat a remote file
 |403 |Permission denied                                    |
 |400 |Protocol not supported OR the SURL is not a directory|
 
+### OAuth2.0 controller
+#### GET /oauth2/token
+Get an access token
+
+#### POST /oauth2/token
+Get an access token
+
+#### GET /oauth2/apps
+Returns the list of registered apps
+
+##### Returns
+Array of [OAuth2Application](#oauth2application)
+
+#### GET /oauth2/register
+Registration form
+
+#### POST /oauth2/register
+Register a new third party application
+
+##### Returns
+client_id
+
+##### Responses
+
+|Code|Description                                                     |
+|----|----------------------------------------------------------------|
+|403 |Tried to update an application that does not belong to the user |
+|400 |Bad request                                                     |
+|303 |Application registered, follow redirection (when html requested)|
+|201 |Application registered                                          |
+
+#### GET /oauth2/authorize
+Perform OAuth2 authorization step
+
+#### POST /oauth2/authorize
+Triggered by user action. Confirm, or reject, access.
+
+#### GET /oauth2/apps/{client_id}
+Return information about a given app
+
+##### Returns
+[OAuth2Application](#oauth2application)
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
+##### Responses
+
+|Code|Description                                |
+|----|-------------------------------------------|
+|404 |Application not found                      |
+|403 |The application does not belong to the user|
+
+#### POST /oauth2/apps/{client_id}
+Update an application
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
+##### Responses
+
+|Code|Description                                |
+|----|-------------------------------------------|
+|404 |Application not found                      |
+|403 |The application does not belong to the user|
+
+#### DELETE /oauth2/apps/{client_id}
+Delete an application from the database
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
+##### Responses
+
+|Code|Description                                |
+|----|-------------------------------------------|
+|404 |Application not found                      |
+|403 |The application does not belong to the user|
+
+#### GET /oauth2/revoke/{client_id}
+Current user revokes all tokens for a given application
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
 ### Operations on archived jobs and transfers
 #### GET /archive/{job_id}/{field}
 Get a specific field from the job identified by id
@@ -202,6 +397,7 @@ Array of [Job](#job)
 
 |Name     |Type  |Required|Description                                                         |
 |---------|------|--------|--------------------------------------------------------------------|
+|limit    |string|False   |Limit the number of results                                         |
 |dest_se  |string|False   |Destination storage element                                         |
 |source_se|string|False   |Source storage element                                              |
 |state_in |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
@@ -226,6 +422,7 @@ Array of [Job](#job)
 
 |Name     |Type  |Required|Description                                                         |
 |---------|------|--------|--------------------------------------------------------------------|
+|limit    |string|False   |Limit the number of results                                         |
 |dest_se  |string|False   |Destination storage element                                         |
 |source_se|string|False   |Source storage element                                              |
 |state_in |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
@@ -279,6 +476,9 @@ Submission description (SubmitSchema)
 |419 |The credentials need to be re-delegated           |
 |403 |The user doesn't have enough permissions to submit|
 |400 |The submission request could not be understood    |
+
+#### OPTIONS /jobs
+Answer the OPTIONS method over /jobs
 
 #### GET /jobs/{job_id}/files
 Get the files within a job
@@ -339,6 +539,15 @@ Returns the canceled job with its current status. CANCELED if it was canceled,<b
 |----|---------------------------------------|
 |413 |The user doesn't have enough privileges|
 |404 |The job doesn't exist                  |
+
+#### OPTIONS /jobs/{job_id}
+Answers the OPTIONS method over /jobs/job-id
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|job_id|string|
 
 #### GET /jobs/{job_id}/{field}
 Get a specific field from the job identified by id
@@ -568,6 +777,15 @@ Models
 |agent_dn            |string  |
 |reason_class        |string  |
 
+### FileRetryLog
+
+|Field   |Type    |
+|--------|--------|
+|reason  |string  |
+|attempt |integer |
+|file_id |integer |
+|datetime|dateTime|
+
 ### OptimizerEvolution
 
 |Field     |Type    |
@@ -582,14 +800,17 @@ Models
 |active    |integer |
 |source_se |string  |
 
-### FileRetryLog
+### OAuth2Application
 
-|Field   |Type    |
-|--------|--------|
-|reason  |string  |
-|attempt |integer |
-|file_id |integer |
-|datetime|dateTime|
+|Field        |Type  |
+|-------------|------|
+|website      |string|
+|name         |string|
+|redirect_to  |string|
+|client_id    |string|
+|owner        |string|
+|client_secret|string|
+|description  |string|
 
 ### ArchivedJob
 

@@ -61,3 +61,23 @@ You can check the service is up and running just opening with your browser <http
   ]
 }
 ```
+
+Optional components
+===================
+
+There are two optional components that are shipped in differen packages, since most FTS3 instances will not likely be interested in them. Making them two separate packages instead of just configuration options allows to run the service without even having the code installed.
+
+## fts-rest-cloud-storage
+This package adds support for non-grid storage integration. For the moment being, just Dropbox is supported.
+Installing this rpm will add support for the OAuth negotiation required to get read and write authorization
+to the user's folders.
+This functionallity is required by WebFTS.
+
+## fts-rest-oauth2
+Installing the package will enable the FTS3 server to act as a OAuth2 provider. This is, external third-party
+applications can be developed so they use the FTS3 REST API in name of a user that grant them access.
+This allows the development of additional tools that use FTS3 as their workhorse, without worrying with credential
+delegation, proxy support (the built-in one can be used instead), etc.
+
+
+

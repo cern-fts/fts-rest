@@ -130,6 +130,8 @@ class DatamanagementController(BaseController):
             return m(surl)
         except Gfal2Error, e:
             _raise_http_error_from_gfal2_error(e)
+        finally:
+            os.unlink(proxy.name)
 
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
@@ -151,3 +153,5 @@ class DatamanagementController(BaseController):
             return m(surl)
         except Gfal2Error, e:
             _raise_http_error_from_gfal2_error(e)
+        finally:
+            os.unlink(proxy.name)

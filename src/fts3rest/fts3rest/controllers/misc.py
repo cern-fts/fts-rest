@@ -17,8 +17,9 @@
 
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
+from fts3rest.lib.middleware.fts3auth import require_certificate
 from fts3.model import CredentialVersion, SchemaVersion
-from pylons import request
+from pylons import request, response
 
 
 class _Version:
@@ -75,6 +76,14 @@ class MiscController(BaseController):
                 'fts:archive':  {'href': '/archive/', 'title': 'Archive'}
             }
         }
+
+    @require_certificate
+    def certificate(self):
+        """
+        Returns the user certificate
+        """
+        response.headers['Content-Type'] = 'application/x-pem-file'
+        return request.environ.get('SSL_CLIENT_CERT', None)
 
     @jsonify
     def whoami(self):
