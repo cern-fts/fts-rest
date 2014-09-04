@@ -257,6 +257,8 @@ def _setup_job_from_dict(job_dict, user):
 
         if 'credential' in params:
             job['user_cred'] = params['credential']
+        elif 'credentials' in params:
+            job['user_cred'] = params['credentials']
         job['cred_id'] = user.delegation_id
 
         # If reuse is enabled, generate one single "hash" for all files
