@@ -51,8 +51,8 @@ class CSInterface(object):
         #except Exception, e:
         #    raise e
         self.user_dn = user_dn
-        self.service = service.strip().lower()
-        if self.service == "dropbox":
+        self.service = service.strip().upper()
+        if self.service == 'DROPBOX':
             self.__class__ = DropboxConnector
 
     def is_registered(self):
