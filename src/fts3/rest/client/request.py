@@ -41,6 +41,21 @@ class RequestFactory(object):
         else:
             self.capath = '/etc/grid-security/certificates'
 
+        self.curl_handle = pycurl.Curl()
+        self.curl_handle.setopt(pycurl.SSL_VERIFYPEER, self.verify)
+        if self.verify:
+            self.curl_handle.setopt(pycurl.SSL_VERIFYHOST, 2)
+        if self.ucert:
+            self.curl_handle.setopt(pycurl.SSLCERT, self.ucert)
+        if self.ukey:
+            self.curl_handle.setopt(pycurl.SSLKEY, self.ukey)
+        if self.capath:
+            self.curl_handle.setopt(pycurl.CAPATH, self.capath)
+        if self.cafile:
+            self.curl_handle.setopt(pycurl.CAINFO, self.cafile)
+        if self.passwd:
+            self.curl_handle.setopt(pycurl.SSLKEYPASSWD, self.passwd)
+
     def _handle_error(self, url, code, response_body=None):
         # Try parsing the response, maybe we can get the error message
         message = None
@@ -79,31 +94,16 @@ class RequestFactory(object):
             self._input.seek(0)
 
     def method(self, method, url, body=None, headers=None):
-        handle = pycurl.Curl()
-        handle.setopt(pycurl.SSL_VERIFYPEER, self.verify)
-        if self.verify:
-            handle.setopt(pycurl.SSL_VERIFYHOST, 2)
-        if self.ucert:
-            handle.setopt(pycurl.SSLCERT, self.ucert)
-        if self.ukey:
-            handle.setopt(pycurl.SSLKEY, self.ukey)
-        if self.capath:
-            handle.setopt(pycurl.CAPATH, self.capath)
-        if self.cafile:
-            handle.setopt(pycurl.CAINFO, self.cafile)
-        if self.passwd:
-            handle.setopt(pycurl.SSLKEYPASSWD, self.passwd)
-
         if method == 'GET':
-            handle.setopt(pycurl.HTTPGET, True)
+            self.curl_handle.setopt(pycurl.HTTPGET, True)
         elif method == 'HEAD':
-            handle.setopt(pycurl.NOBODY, True)
+            self.curl_handle.setopt(pycurl.NOBODY, True)
         elif method == 'POST':
-            handle.setopt(pycurl.POST, True)
+            self.curl_handle.setopt(pycurl.POST, True)
         elif method == 'PUT':
-            handle.setopt(pycurl.UPLOAD, True)
+            self.curl_handle.setopt(pycurl.UPLOAD, True)
         else:
-            handle.setopt(pycurl.CUSTOMREQUEST, method)
+            self.curl_handle.setopt(pycurl.CUSTOMREQUEST, method)
 
         _headers = {}
         if headers:
@@ -111,23 +111,23 @@ class RequestFactory(object):
         if self.access_token:
             _headers['Authorization'] = 'Bearer ' + self.access_token
         if len(_headers) > 0:
-            handle.setopt(pycurl.HTTPHEADER, map(lambda (k, v): "%s: %s" % (k, v), _headers.iteritems()))
+            self.curl_handle.setopt(pycurl.HTTPHEADER, map(lambda (k, v): "%s: %s" % (k, v), _headers.iteritems()))
 
-        handle.setopt(pycurl.URL, str(url))
-        #handle.setopt(pycurl.VERBOSE, 1)
+        self.curl_handle.setopt(pycurl.URL, str(url))
+        #self.curl_handle.setopt(pycurl.VERBOSE, 1)
 
         self._response = ''
-        handle.setopt(pycurl.WRITEFUNCTION, self._receive)
+        self.curl_handle.setopt(pycurl.WRITEFUNCTION, self._receive)
 
         if body is not None:
             self._input = StringIO(body)
-            handle.setopt(pycurl.INFILESIZE, len(body))
-            handle.setopt(pycurl.POSTFIELDSIZE, len(body))
-            handle.setopt(pycurl.READFUNCTION, self._send)
-            handle.setopt(pycurl.IOCTLFUNCTION, self._ioctl)
+            self.curl_handle.setopt(pycurl.INFILESIZE, len(body))
+            self.curl_handle.setopt(pycurl.POSTFIELDSIZE, len(body))
+            self.curl_handle.setopt(pycurl.READFUNCTION, self._send)
+            self.curl_handle.setopt(pycurl.IOCTLFUNCTION, self._ioctl)
 
-        handle.perform()
+        self.curl_handle.perform()
 
-        self._handle_error(url, handle.getinfo(pycurl.HTTP_CODE), self._response)
+        self._handle_error(url, self.curl_handle.getinfo(pycurl.HTTP_CODE), self._response)
 
         return self._response
