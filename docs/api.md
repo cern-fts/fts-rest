@@ -104,6 +104,9 @@ Current user revokes all tokens for a given application
 #### GET /whoami
 Returns the active credentials of the user
 
+#### GET /whoami/certificate
+Returns the user certificate
+
 ### API documentation
 #### GET /api-docs
 Auto-generated API documentation
@@ -511,6 +514,12 @@ Get the job with the given ID
 |------|------|
 |job_id|string|
 
+##### Query arguments
+
+|Name |Type  |Required|Description                                                  |
+|-----|------|--------|-------------------------------------------------------------|
+|files|string|False   |Comma separated list of file fields to retrieve in this query|
+
 ##### Responses
 
 |Code|Description                            |
@@ -665,6 +674,9 @@ The returned certificate request must be signed with the user's original<br/>cre
 |----|-------------------------------------------------------|
 |200 |The request was generated succesfully                  |
 |403 |The requested delegation ID does not belong to the user|
+
+#### GET /delegation
+Render an HTML form to delegate the credentials
 
 #### PUT /delegation/{dlg_id}/credential
 Second step of the delegation process: put the generated certificate

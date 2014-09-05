@@ -437,6 +437,7 @@ class JobsController(BaseController):
         else:
             return jobs.all()
 
+    @doc.query_arg('files', 'Comma separated list of file fields to retrieve in this query')
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
@@ -446,6 +447,21 @@ class JobsController(BaseController):
         Get the job with the given ID
         """
         job = JobsController._get_job(job_id)
+
+        if 'files' in request.GET:
+            fields = request.GET['files'].split(',')
+            files = list()
+            log.info('XXX')
+            for file in Session.query(File).filter(File.job_id == job.job_id).all():
+                fd = dict()
+                for field in fields:
+                    try:
+                        fd[field] = getattr(file, field)
+                    except:
+                        pass
+                files.append(fd)
+            job.__dict__['files'] = files
+
         return job
 
     @doc.response(404, 'The job or the field doesn\'t exist')

@@ -397,3 +397,26 @@ class TestJobListing(TestController):
         self.assertEqual(1, len(retries))
         self.assertEqual(1, retries[0]['attempt'])
         self.assertEqual('Blahblahblah', retries[0]['reason'])
+
+    def test_get_files_in_job(self):
+        """
+        Users may want to get information about nested files in one go, so let them ask for
+        some of their fields.
+        See FTS-137
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        job_id = self._submit()
+
+        answer = self.app.get(url="/jobs/%s?files=start_time,source_surl" % job_id, status=200)
+        job = json.loads(answer.body)
+
+        self.assertIn('files', job)
+        self.assertEqual(1, len(job['files']))
+        f = job['files'][0]
+        self.assertIn('start_time', f)
+        self.assertIn('source_surl', f)
+        self.assertNotIn('finish_time', f)
+        self.assertNotIn('dest_surl', f)
+
+        self.assertEqual('root://source.es/file', f['source_surl'])
