@@ -60,13 +60,17 @@ def _set_job_source_and_destination(job, files):
     Iterates through the files that belong to the job, and determines the
     'overall' job source and destination Storage Elements
     """
-    job['source_se'] = files[0]['source_se']
-    job['dest_se'] = files[0]['dest_se']
-    for f in files:
-        if f['source_se'] != job['source_se']:
-            job['source_se'] = None
-        if f['dest_se'] != job['dest_se']:
-            job['dest_se'] = None
+    if job['reuse_job'] == 'H':
+        job['source_se'] = files[0]['source_se']
+        job['dest_se'] = files[-1]['dest_se']
+    else:
+        job['source_se'] = files[0]['source_se']
+        job['dest_se'] = files[0]['dest_se']
+        for f in files:
+            if f['source_se'] != job['source_se']:
+                job['source_se'] = None
+            if f['dest_se'] != job['dest_se']:
+                job['dest_se'] = None
 
 
 def _get_storage_element(uri):
@@ -485,11 +489,10 @@ class JobsController(BaseController):
         """
         Get the files within a job
         """
-        owner = Session.query(Job.user_dn, Job.vo_name).filter(Job.job_id == job_id).all()
-        if owner is None or len(owner) < 1:
+        owner = Session.query(Job.user_dn, Job.vo_name).filter(Job.job_id == job_id).first()
+        if owner is None:
             raise HTTPNotFound('No job with the id "%s" has been found' % job_id)
-        if not authorized(TRANSFER,
-                          resource_owner=owner[0][0], resource_vo=owner[0][1]):
+        if not authorized(TRANSFER, resource_owner=owner[0], resource_vo=owner[1]):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         files = Session.query(File).filter(File.job_id == job_id).options(noload(File.retries))
         return files.all()
