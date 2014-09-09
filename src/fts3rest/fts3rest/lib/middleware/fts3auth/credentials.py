@@ -92,6 +92,7 @@ class UserCredentials(object):
     """
 
     authenticator = Authenticator()
+    role_regex = re.compile('(/.+)*/Role=(\\w+)(/.*)?', re.IGNORECASE)
 
     def _anonymous(self):
         """
@@ -136,7 +137,7 @@ class UserCredentials(object):
         """
         roles = []
         for fqan in self.voms_cred:
-            match = re.match('(/.+)*/Role=(\\w+)(/.*)?', fqan, re.IGNORECASE)
+            match = UserCredentials.role_regex.match(fqan)
             if match and match.group(2).upper() != 'NULL':
                 roles.append(match.group(2))
         return roles
