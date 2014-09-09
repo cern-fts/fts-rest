@@ -17,9 +17,15 @@
 
 from datetime import datetime
 from M2Crypto import X509, RSA, EVP, BIO
-from M2Crypto.ASN1 import UTC
+try:
+    from M2Crypto.ASN1 import UTC
+except:
+    from pytz import utc as UTC
 import getpass
-import json
+try:
+    import json
+except:
+    import simplejson as json
 import logging
 import os
 import sys
@@ -43,6 +49,10 @@ def _get_x509_list(cert):
             cert = X509.load_cert_bio(fd)
     except X509.X509Error:
         # When there are no more certs, this is what we get, so it is fine
+        pass
+    except BIO.BIOError:
+        # When there are no more certs, this is what we get, so it is fine
+        # Python 2.4
         pass
 
     del fd
@@ -76,7 +86,17 @@ class Context(object):
             self.x509_list = _get_x509_list(ucert)
             self.x509 = self.x509_list[0]
             not_after = self.x509.get_not_after()
-            if not_after.get_datetime() < datetime.now(UTC):
+            try:
+                not_after = not_after.get_time()
+            except:
+                # Ugly hack for Python 2.4
+                import time
+                not_after = datetime.fromtimestamp(
+                    time.mktime(time.strptime(str(not_after), "%b %d %H:%M:%S %Y %Z")),
+                    tz=UTC
+                )
+
+            if not_after < datetime.now(UTC):
                 raise Exception("Proxy expired!")
 
             try:

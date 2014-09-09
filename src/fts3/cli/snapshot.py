@@ -13,7 +13,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
+try:
+    import json
+except:
+    import simplejson as json
 
 from base import Base
 from fts3.rest.client import Inquirer

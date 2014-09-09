@@ -83,7 +83,10 @@ class Base(object):
         if opt_ucert == 'None':
             opt_ucert = None
 
-        self.opt_parser = OptionParser(usage=usage, description=description, epilog=example, formatter=_Formatter())
+        if sys.version_info < (2, 6):
+            self.opt_parser = OptionParser(usage=usage, description=description, formatter=_Formatter())
+        else:
+            self.opt_parser = OptionParser(usage=usage, description=description, epilog=example, formatter=_Formatter())
 
         self.opt_parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
                                    help='verbose output.', default=config.getboolean(section, 'verbose'))

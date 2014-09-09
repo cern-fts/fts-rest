@@ -15,7 +15,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
+try:
+    import json
+except:
+    import simplejson as json
 import urllib
 
 from exceptions import *
@@ -57,9 +60,18 @@ class Inquirer(object):
         return json.loads(self.context.get("/whoami"))
 
     def get_snapshot(self, vo=None, source=None, destination=None):
-        vo = urllib.quote(vo, '') if vo else ''
-        source = urllib.quote(source, '') if source else ''
-        destination = urllib.quote(destination, '') if destination else ''
+        if vo:
+            vo = urllib.quote(vo, '')
+        else:
+            vo = ''
+        if source:
+            source = urllib.quote(source, '')
+        else:
+            source = ''
+        if destination:
+            destination = urllib.quote(destination, '')
+        else:
+            destination = ''
         return json.loads(
             self.context.get("/snapshot?vo_name=%s&source_se=%s&dest_se=%s" % (vo, source, destination))
         )

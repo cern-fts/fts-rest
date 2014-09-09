@@ -16,7 +16,10 @@
 #   limitations under the License.
 
 from datetime import timedelta
-import json
+try:
+    import json
+except:
+    import simplejson as json
 import logging
 import sys
 import time

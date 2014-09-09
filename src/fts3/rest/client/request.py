@@ -14,16 +14,44 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
-import json
+try:
+    import json
+except:
+    import simplejson as json
 import pycurl
 from exceptions import *
 from StringIO import StringIO
 
+_PYCURL_SSL = pycurl.version_info()[5].split('/')[0]
+
 
 class RequestFactory(object):
 
-    def __init__(self, ucert, ukey, cafile=None, capath=None, passwd=None, verify=True, access_token=None):
+    def _set_ssl(self):
+        self.curl_handle.setopt(pycurl.SSL_VERIFYPEER, self.verify)
+        if self.verify:
+            self.curl_handle.setopt(pycurl.SSL_VERIFYHOST, 2)
+
+        if self.ucert:
+            self.curl_handle.setopt(pycurl.SSLCERT, self.ucert)
+        if self.ukey:
+            self.curl_handle.setopt(pycurl.SSLKEY, self.ukey)
+        if self.capath:
+            self.curl_handle.setopt(pycurl.CAPATH, self.capath)
+        if self.passwd:
+            self.curl_handle.setopt(pycurl.SSLKEYPASSWD, self.passwd)
+
+
+        if _PYCURL_SSL == 'GnuTL':
+            pass
+        elif _PYCURL_SSL == 'NSS':
+            if self.ucert:
+                self.curl_handle.setopt(pycurl.CAINFO, self.ucert)
+        else:
+            pass
+
+
+    def __init__(self, ucert, ukey, capath=None, passwd=None, verify=True, access_token=None):
         self.ucert = ucert
         self.ukey  = ukey
         self.passwd = passwd
@@ -31,30 +59,13 @@ class RequestFactory(object):
 
         self.verify = verify
 
-        if cafile:
-            self.cafile = cafile
-        else:
-            self.cafile = ucert
-
         if capath:
             self.capath = capath
         else:
             self.capath = '/etc/grid-security/certificates'
 
         self.curl_handle = pycurl.Curl()
-        self.curl_handle.setopt(pycurl.SSL_VERIFYPEER, self.verify)
-        if self.verify:
-            self.curl_handle.setopt(pycurl.SSL_VERIFYHOST, 2)
-        if self.ucert:
-            self.curl_handle.setopt(pycurl.SSLCERT, self.ucert)
-        if self.ukey:
-            self.curl_handle.setopt(pycurl.SSLKEY, self.ukey)
-        if self.capath:
-            self.curl_handle.setopt(pycurl.CAPATH, self.capath)
-        if self.cafile:
-            self.curl_handle.setopt(pycurl.CAINFO, self.cafile)
-        if self.passwd:
-            self.curl_handle.setopt(pycurl.SSLKEYPASSWD, self.passwd)
+        self._set_ssl()
 
     def _handle_error(self, url, code, response_body=None):
         # Try parsing the response, maybe we can get the error message
@@ -131,3 +142,6 @@ class RequestFactory(object):
         self._handle_error(url, self.curl_handle.getinfo(pycurl.HTTP_CODE), self._response)
 
         return self._response
+
+
+__all__ = ['RequestFactory']
