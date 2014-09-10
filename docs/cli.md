@@ -4,7 +4,7 @@ FTS3 RESTful CLI
 Installation
 ------------
 ### EPEL
-Currently we do not ship our REST API in EPEL, so the only way of obtaining it is through our continuous build repository:
+You can install the stable clients from EPEL repositories, or the release candidate from our continuous build repository.
 
 ```ini
 [fts3-prod-el6]
@@ -17,7 +17,7 @@ protect=0
 
 The package needed is ```fts-rest-cli```
 
-### Getting the code
+### Checking out the code
 These clients are pure Python, so they can be checked out directly from the repository, or downloaded from the proper release tag.
 
 In both cases you will need to install ```python-pycurl``` and ```m2crypto```
@@ -52,6 +52,26 @@ fts-rest-delegate -s https://fts3-devel.cern.ch:8446 -v
 ```
 
 Please, note than in EPEL5 the X509v3 extension support has been disabled.
+
+### Using [pip](https://pypi.python.org/pypi/pip)
+Starting with fts-rest 3.2.28 we provide a setup.py script that allows easy installation using pip in a virtual environment.
+
+```bash
+virtualenv fts-rest
+cd fts-rest/
+. ./bin/activate
+pip install "git+https://github.com/cern-it-sdc-id/fts3-rest.git"
+fts-rest-whoami -s "https://fts3-devel.cern.ch:8446"
+User DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=aalvarez/CN=678984/CN=Alejandro Alvarez Ayllon
+VO: dteam
+Delegation id: xxxxxxxxxxxxxxxx
+```
+
+Note that some native packages will be required (libcurl, libcurl development, swig), and in EL6 some manual
+tinkering is required: see the comments in [setupy.py](../setup.py).
+
+Of course, you can get the code from a branch or a tag if you wish. Just check [pip's documentation](http://pip.readthedocs.org/en/latest/reference/pip_install.html#git).
+
 
 Usage
 -----
