@@ -16,7 +16,7 @@ if dist[0] == 'redhat':
 base_dir = os.path.dirname(__file__)
 
 setup(
-    name='fts3',
+    name='fts3-rest',
     version='3.2.28',
     description='FTS3 Python Libraries',
     author='FTS3 Developers',
