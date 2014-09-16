@@ -135,4 +135,5 @@ def submit(context, job, delegation_lifetime=timedelta(hours=7), force_delegatio
     """
     delegate(context, delegation_lifetime, force_delegation)
     submitter = Submitter(context)
-    return submitter.submit(job['files'], **job['params'])
+    params = job.get('params', {})
+    return submitter.submit(job['files'], **params)
