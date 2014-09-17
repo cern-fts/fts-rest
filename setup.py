@@ -1,16 +1,52 @@
 import os
 import platform
+import tempfile
 from distutils.core import setup
 from glob import glob
+from pip.commands.install import InstallCommand
+
+
+# On Scientific Linux, installing M2Crypto may give this error
+# "This openssl-devel package does not work your architecture?"
+# To work around that, set the environment variable
+# export SWIG_FEATURES="-includeall -D__`uname -m`__"
+# and do the installation from here
+def apply_m2crypto_workaround():
+    print "Applying workaround for M2Crypto in RedHat"
+    os.environ['SWIG_FEATURES'] = "-includeall -D__%s__" % platform.machine()
+    tmp_dir = tempfile.mkdtemp()
+    os.system('pip install --build %s  M2Crypto>=0.16' % tmp_dir)
+
+
+# On EL6, you will probably have trouble installing pycurl due to this:
+# http://stackoverflow.com/questions/7391638/pycurl-installed-but-not-found
+# If so, modify pycurl's setup.py and replace --static-libs with --libs
+#
+# pip uninstall pycurl
+# pip install pycurl==7.19.0 --no-clean --no-install
+# sed -i s/--static-libs/--libs/g build/pycurl/setup.py
+# pip install build/pycurl
+def apply_pycurl_workaround():
+    print "Applying workaround for pycurl in EL6"
+    tmp_dir = tempfile.mkdtemp()
+    is_pycurl_installed = (os.system('pip list | grep pycurl &> /dev/null') == 0)
+    if not is_pycurl_installed:
+        os.system('pip install --build %s pycurl%s --no-clean --no-install' % (tmp_dir, pycurl_ver))
+        os.system('sed -i s/--static-libs/--libs/g %s/pycurl/setup.py' % tmp_dir)
+        os.system('pip install %s/pycurl' % tmp_dir)
+
 
 # Ugly hack to pick a version that compiles in SLC6
 pycurl_ver = '>=7.19'
 dist = platform.dist()
 if dist[0] == 'redhat':
-    major = dist[1].split('.')[0]
-    if major == '6':
+    apply_m2crypto_workaround()
+
+    os_major = dist[1].split('.')[0]
+    if os_major == '6':
         pycurl_ver = '==7.19.0'
-    elif major == '5':
+        apply_pycurl_workaround()
+    elif os_major == '5':
         pycurl_ver = '==7.15.5'
 
 base_dir = os.path.dirname(__file__)
@@ -36,17 +72,3 @@ setup(
 #   libcurl-openssl-devel
 #   openssl-devel
 #   swig
-#
-# If running Swig you get something like
-# "This openssl-devel package does not work your architecture?"
-# Do
-# export SWIG_FEATURES="-includeall -D__`uname -m`__"
-#
-# On SL6, you will probably have trouble installing pycurl due to this:
-# http://stackoverflow.com/questions/7391638/pycurl-installed-but-not-found
-# If so, modify pycurl's setup.py and replace --static-libs with --libs
-#
-# pip uninstall pycurl
-# pip install pycurl==7.19.0 --no-clean --no-install
-# sed -i s/--static-libs/--libs/g build/pycurl/setup.py
-# pip install build/pycurl
