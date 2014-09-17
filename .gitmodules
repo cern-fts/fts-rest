@@ -1,3 +1,3 @@
 [submodule "src/fts3rest/fts3rest/public/js/proxy.js"]
 	path = src/fts3rest/fts3rest/public/js/proxy.js
-	url = git@github.com:cern-it-sdc-id/proxy.js.git
+	url = https://github.com/cern-it-sdc-id/proxy.js.git
