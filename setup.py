@@ -33,7 +33,7 @@ def apply_pycurl_workaround():
     if not is_pycurl_installed:
         os.system('pip install --build %s pycurl%s --no-clean --no-install' % (tmp_dir, pycurl_ver))
         os.system('sed -i s/--static-libs/--libs/g %s/pycurl/setup.py' % tmp_dir)
-        os.system('pip install %s/pycurl' % tmp_dir)
+        os.system('pip install --build %s %s/pycurl' % (tmp_dir, tmp_dir))
 
 
 # Ugly hack to pick a version that compiles in SLC6
