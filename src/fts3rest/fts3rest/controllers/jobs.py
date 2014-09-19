@@ -513,48 +513,87 @@ class JobsController(BaseController):
         file = Session.query(File.file_id).filter(File.file_id==file_id)
         if not file:
             raise HTTPNotFound('No file with the id "%d" has been found' % file_id)
-        retries = Session.query(FileRetryLog).filter(FileRetryLog.file_id==file_id)
+        retries = Session.query(FileRetryLog).filter(FileRetryLog.file_id == file_id)
         return retries.all()
 
+    @doc.response(207, 'For multiple job requests if there has been any error')
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
     @jsonify
-    def cancel(self, job_id):
+    def cancel(self, job_id_list, start_response):
         """
         Cancel the given job
 
         Returns the canceled job with its current status. CANCELED if it was canceled,
         its final status otherwise
         """
-        job = JobsController._get_job(job_id)
+        requested_job_ids = job_id_list.split(',')
+        cancellable_jobs = list()
+        response = list()
+        multistatus = False
 
-        if job.job_state in JobActiveStates:
-            now = datetime.utcnow()
-
-            job.job_state = 'CANCELED'
-            job.finish_time = now
-            job.job_finished = now
-            job.reason = 'Job canceled by the user'
-
+        # First, check which job ids exist and can be accessed
+        for job_id in requested_job_ids:
+            if not job_id:  # Skip empty
+                continue
             try:
-                Session.query(File).filter(File.job_id == job_id).filter(File.file_state.in_(FileActiveStates))\
+                job = JobsController._get_job(job_id)
+                if job.job_state in JobActiveStates:
+                    cancellable_jobs.append(job)
+                else:
+                    setattr(job, 'http_status', '304 Not Modified')
+                    setattr(job, 'http_message', 'The job is in a terminal state')
+                    log.warning("The job %s can not be canceled, since it is %s" % (job_id, job.job_state))
+                    response.append(job)
+                    multistatus = True
+            except HTTPClientError, e:
+                response.append(dict(
+                    job_id=job_id,
+                    http_status="%s %s" % (e.code, e.title),
+                    http_message=e.detail
+                ))
+                multistatus = True
+
+        # Now, cancel those that can be canceled
+        now = datetime.utcnow()
+        try:
+            for job in cancellable_jobs:
+                job.job_state = 'CANCELED'
+                job.finish_time = now
+                job.job_finished = now
+                job.reason = 'Job canceled by the user'
+
+                Session.query(File).filter(File.job_id == job.job_id).filter(File.file_state.in_(FileActiveStates))\
                     .update({
                         'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
                         'job_finished': now, 'finish_time': now
                     })
-                Session.merge(job)
-                Session.commit()
-            except Exception:
-                Session.rollback()
-                raise
+                job = Session.merge(job)
 
-            job = JobsController._get_job(job_id)
-            log.info("Job %s canceled" % job_id)
-        else:
-            log.warning("The job %s can not be canceled, since it is %s" % (job_id, job.job_state))
+                log.info("Job %s canceled" % job.job_id)
+                setattr(job, 'http_status', "200 Ok")
+                setattr(job, 'http_message', None)
+                response.append(job)
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
 
-        return job
+        # Return 200 if everything is Ok, 207 if there is any errors,
+        # and, if input was only one, do not return an array
+        if len(requested_job_ids) == 1:
+            single = response[0]
+            if isinstance(single, Job):
+                if single.http_status not in ('200 Ok', '304 Not Modified'):
+                    start_response(single.http_status, [('Content-Type', 'application/json')])
+            elif single['http_status'] not in ('200 Ok', '304 Not Modified'):
+                start_response(single['http_status'], [('Content-Type', 'application/json')])
+            return single
+
+        if multistatus:
+            start_response("207 Multi-Status", [('Content-Type', 'application/json')])
+        return response
 
     @doc.input('Submission description', 'SubmitSchema')
     @doc.response(400, 'The submission request could not be understood')

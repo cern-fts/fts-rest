@@ -390,6 +390,29 @@ Just give the operations that can be performed
 Just give the operations that can be performed
 
 ### Operations on jobs and transfers
+#### DELETE /jobs/{job_id_list}
+Cancel the given job
+
+##### Returns
+[Job](#job)
+
+##### Notes
+Returns the canceled job with its current status. CANCELED if it was canceled,<br/>its final status otherwise
+
+##### Path arguments
+
+|Name       |Type  |
+|-----------|------|
+|job_id_list|string|
+
+##### Responses
+
+|Code|Description                                          |
+|----|-----------------------------------------------------|
+|413 |The user doesn't have enough privileges              |
+|404 |The job doesn't exist                                |
+|207 |For multiple job requests if there has been any error|
+
 #### GET /jobs
 Get a list of active jobs, or those that match the filter requirements
 
@@ -483,25 +506,6 @@ Submission description (SubmitSchema)
 #### OPTIONS /jobs
 Answer the OPTIONS method over /jobs
 
-#### GET /jobs/{job_id}/files
-Get the files within a job
-
-##### Returns
-Array of [File](#file)
-
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|job_id|string|
-
-##### Responses
-
-|Code|Description                            |
-|----|---------------------------------------|
-|413 |The user doesn't have enough privileges|
-|404 |The job doesn't exist                  |
-
 #### GET /jobs/{job_id}
 Get the job with the given ID
 
@@ -519,28 +523,6 @@ Get the job with the given ID
 |Name |Type  |Required|Description                                                  |
 |-----|------|--------|-------------------------------------------------------------|
 |files|string|False   |Comma separated list of file fields to retrieve in this query|
-
-##### Responses
-
-|Code|Description                            |
-|----|---------------------------------------|
-|413 |The user doesn't have enough privileges|
-|404 |The job doesn't exist                  |
-
-#### DELETE /jobs/{job_id}
-Cancel the given job
-
-##### Returns
-[Job](#job)
-
-##### Notes
-Returns the canceled job with its current status. CANCELED if it was canceled,<br/>its final status otherwise
-
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|job_id|string|
 
 ##### Responses
 
@@ -591,6 +573,25 @@ Get the retries for a given file
 |----|---------------------------------------|
 |413 |The user doesn't have enough privileges|
 |404 |The job or the file don't exist        |
+
+#### GET /jobs/{job_id}/files
+Get the files within a job
+
+##### Returns
+Array of [File](#file)
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|job_id|string|
+
+##### Responses
+
+|Code|Description                            |
+|----|---------------------------------------|
+|413 |The user doesn't have enough privileges|
+|404 |The job doesn't exist                  |
 
 ### Operations on the config audit
 #### GET /config/audit

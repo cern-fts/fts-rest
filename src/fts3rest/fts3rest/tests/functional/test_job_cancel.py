@@ -139,3 +139,67 @@ class TestJobCancel(TestController):
                 self.assertNotEqual(f.reason, 'Job canceled by the user')
             else:
                 self.assertEqual(f.file_state, 'CANCELED')
+
+    def test_cancel_multiple(self):
+        """
+        Cancel multiple jobs at once
+        """
+        job_ids = list()
+        for i in range(10):
+          job_ids.append(self._submit())
+
+        answer = self.app.delete(url="/jobs/%s" % ','.join(job_ids),
+                                 status=200)
+        jobs = json.loads(answer.body)
+
+        self.assertEqual(len(jobs), 10)
+        for job in jobs:
+            self.assertEqual(job['job_state'], 'CANCELED')
+            self.assertEqual(job['reason'], 'Job canceled by the user')
+
+        for job_id in job_ids:
+            job = Session.query(Job).get(job_id)
+            self.assertEqual(job.job_state, 'CANCELED')
+            self.assertEqual(job.reason, 'Job canceled by the user')
+            for f in job.files:
+                self.assertEqual(f.file_state, 'CANCELED')
+                self.assertEqual(f.reason, 'Job canceled by the user')
+
+    def test_cancel_multiple_one(self):
+        """
+        Use multiple cancellation convention but with only one
+        """
+        job_id = self._submit()
+
+        answer = self.app.delete(url="/jobs/%s," % job_id,
+                                 status=200)
+        jobs = json.loads(answer.body)
+
+        self.assertEqual(len(jobs), 1)
+        self.assertEqual(jobs[0]['job_id'], job_id)
+        self.assertEqual(jobs[0]['job_state'], 'CANCELED')
+        self.assertEqual(jobs[0]['reason'], 'Job canceled by the user')
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.job_state, 'CANCELED')
+        self.assertEqual(job.reason, 'Job canceled by the user')
+
+    def test_cancel_multiple_one_wrong(self):
+        """
+        Cancel multiple jobs, but one does not exist.
+        One status per entry
+        """
+        job_id = self._submit()
+        answer = self.app.delete(url="/jobs/%s,fake-fake-fake" % job_id,
+                                 status=207)
+        jobs = json.loads(answer.body)
+
+        self.assertEqual(len(jobs), 2)
+
+        for job in jobs:
+            if job['job_id'] == job_id:
+                self.assertEqual(job['job_state'], 'CANCELED')
+                self.assertEqual(job['reason'], 'Job canceled by the user')
+                self.assertEqual(job['http_status'], '200 Ok')
+            else:
+                self.assertEqual(job['http_status'], '404 Not Found')

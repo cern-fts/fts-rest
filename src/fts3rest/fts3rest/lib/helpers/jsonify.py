@@ -37,6 +37,7 @@ class ClassEncoder(json.JSONEncoder):
         elif isinstance(obj, set):
             return list(obj)
         elif isinstance(obj, Base) or isinstance(obj, object):
+            str(obj) # Trigger sqlalchemy if needed
             values = {}
             for (k, v) in obj.__dict__.iteritems():
                 if not k.startswith('_') and v not in self.visited:
