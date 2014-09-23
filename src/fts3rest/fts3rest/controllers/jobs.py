@@ -21,7 +21,7 @@ from sqlalchemy.orm import noload
 import hashlib
 import json
 import logging
-import random
+import pylons
 import socket
 import types
 import urllib
@@ -191,6 +191,24 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
 
     return files
 
+def _build_internal_job_params(params):
+    """
+    Generates the value for job.internal_job_params depending on the
+    received protocol parameters
+    """
+    param_list = list()
+    if 'nostreams' in params:
+        param_list.append("nostreams:%d" % int(params['nostreams']))
+    if 'timeout' in params:
+        param_list.append("timeout:%d" % int(params['timeout']))
+    if 'buffer_size' in params:
+        param_list.append("buffersize:%d" % int(params['buffer_size']))
+    if 'strict_copy' in params:
+        param_list.append("strict")
+    if len(param_list) == 0:
+        return None
+    else:
+        return ','.join(param_list)
 
 def _setup_job_from_dict(job_dict, user):
     """
@@ -233,15 +251,13 @@ def _setup_job_from_dict(job_dict, user):
             copy_pin_lifetime=int(params['copy_pin_lifetime']),
             checksum_method=params['verify_checksum'],
             bring_online=params['bring_online'],
-            job_metadata=params['job_metadata']
+            job_metadata=params['job_metadata'],
+            internal_job_params=_build_internal_job_params(params)
         )
 
-        if 'credential' in job_dict:
-            job['user_cred'] = job_dict['credential']
-            job['cred_id'] = str()
-        else:
-            job['user_cred'] = str()
-            job['cred_id'] = user.delegation_id
+        if 'credential' in params:
+            job['user_cred'] = params['credential']
+        job['cred_id'] = user.delegation_id
 
         # If reuse is enabled, generate one single "hash" for all files
         if job['reuse_job']:
@@ -340,12 +356,27 @@ class JobsController(BaseController):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         return job
 
+    def options(self):
+        """
+        Answer the OPTIONS method over /jobs
+        """
+        pylons.response.headers['Allow'] = 'PUT, POST, GET, OPTIONS'
+        return []
+
+    def job_options(self, job_id):
+        """
+        Answers the OPTIONS method over /jobs/job-id
+        """
+        pylons.response.headers['Allow'] = 'GET, DELETE'
+        return []
+
     @doc.query_arg('user_dn', 'Filter by user DN')
     @doc.query_arg('vo_name', 'Filter by VO')
     @doc.query_arg('dlg_id', 'Filter by delegation ID')
     @doc.query_arg('state_in', 'Comma separated list of job states to filter. ACTIVE only by default')
     @doc.query_arg('source_se', 'Source storage element')
     @doc.query_arg('dest_se', 'Destination storage element')
+    @doc.query_arg('limit', 'Limit the number of results')
     @doc.response(403, 'Operation forbidden')
     @doc.response(400, 'DN and delegation ID do not match')
     @doc.return_type(array_of=Job)
@@ -365,6 +396,10 @@ class JobsController(BaseController):
         filter_state = request.params.get('state_in', None)
         filter_source = request.params.get('source_se', None)
         filter_dest = request.params.get('dest_se', None)
+        try:
+            filter_limit = int(request.params.get('limit', 0))
+        except:
+            filter_limit = 0
 
         if filter_dlg_id and filter_dlg_id != user.delegation_id:
             raise HTTPForbidden('The provided delegation id does not match your delegation id')
@@ -372,12 +407,15 @@ class JobsController(BaseController):
             raise HTTPBadRequest('The provided DN and delegation id do not correspond to the same user')
         if not filter_dlg_id and filter_state:
             raise HTTPForbidden('To filter by state, you need to provide dlg_id')
+        if filter_limit < 0 or filter_limit > 500:
+            raise HTTPBadRequest('The limit must be positive and less or equal than 500')
 
         if filter_state:
             filter_state = filter_state.split(',')
-            filter_not_before = datetime.utcnow() - timedelta(hours=1)
             jobs = jobs.filter(Job.job_state.in_(filter_state))
-            jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
+            if not filter_limit:
+                filter_not_before = datetime.utcnow() - timedelta(hours=1)
+                jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
         else:
             jobs = jobs.filter(Job.job_finished == None)
 
@@ -392,7 +430,10 @@ class JobsController(BaseController):
         if filter_dest:
             jobs = jobs.filter(Job.dest_se == filter_dest)
 
-        return jobs.all()
+        if filter_limit:
+            return jobs[:filter_limit]
+        else:
+            return jobs.all()
 
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')

@@ -85,4 +85,9 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
     except NoOptionError:
         fts3cfg['fts3.Optimizer'] = True
 
+    try:
+        fts3cfg['fts3.SiteName'] = parser.get('fts3', 'SiteName')
+    except:
+        fts3cfg['fts3.SiteName'] = ''
+
     return fts3cfg

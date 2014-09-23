@@ -23,10 +23,11 @@ from StringIO import StringIO
 
 class RequestFactory(object):
 
-    def __init__(self, ucert, ukey, cafile=None, capath=None, passwd=None, verify=True):
+    def __init__(self, ucert, ukey, cafile=None, capath=None, passwd=None, verify=True, access_token=None):
         self.ucert = ucert
         self.ukey  = ukey
         self.passwd = passwd
+        self.access_token = access_token
 
         self.verify = verify
 
@@ -51,15 +52,15 @@ class RequestFactory(object):
 
         if code == 400:
             raise ClientError('Bad request: ' + message)
-        elif code >= 401 and code <= 403:
+        elif 401 <= code <= 403:
             raise Unauthorized()
         elif code == 404:
             raise NotFound(url)
         elif code == 419:
-            raise NeedDelegation()
+            raise NeedDelegation('Need delegation')
         elif code == 424:
-            raise FailedDependency()
-        elif code > 404 and code < 500:
+            raise FailedDependency('Failed dependency')
+        elif 404 < code < 500:
             raise ClientError(str(code))
         elif code == 503:
             raise TryAgain(str(code))
@@ -70,8 +71,8 @@ class RequestFactory(object):
         self._response += data
         return len(data)
 
-    def _send(self, len):
-        return self._input.read(len)
+    def _send(self, length):
+        return self._input.read(length)
 
     def _ioctl(self, cmd):
         if cmd == pycurl.IOCMD_RESTARTREAD:
@@ -103,10 +104,17 @@ class RequestFactory(object):
             handle.setopt(pycurl.UPLOAD, True)
         else:
             handle.setopt(pycurl.CUSTOMREQUEST, method)
+
+        _headers = {}
         if headers:
-            handle.setopt(pycurl.HTTPHEADER, map(lambda (k, v): "%s: %s" % (k, v), headers.iteritems()))
+            _headers.update(headers)
+        if self.access_token:
+            _headers['Authorization'] = 'Bearer ' + self.access_token
+        if len(_headers) > 0:
+            handle.setopt(pycurl.HTTPHEADER, map(lambda (k, v): "%s: %s" % (k, v), _headers.iteritems()))
 
         handle.setopt(pycurl.URL, str(url))
+        #handle.setopt(pycurl.VERBOSE, 1)
 
         self._response = ''
         handle.setopt(pycurl.WRITEFUNCTION, self._receive)

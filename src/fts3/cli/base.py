@@ -16,9 +16,10 @@
 #   limitations under the License.
 
 from ConfigParser import SafeConfigParser
-from optparse import OptionParser
+from optparse import OptionParser, IndentedHelpFormatter
 import logging
 import os
+import sys
 
 from fts3.rest.client import Context
 
@@ -38,9 +39,23 @@ CONFIG_DEFAULTS = {
 }
 
 
+class _Formatter(IndentedHelpFormatter):
+    def format_epilog(self, epilog):
+        if not epilog:
+            return ""
+        else:
+            lines = ['Example:']
+            indent = (self.current_indent + self.indent_increment) * " "
+            for l in epilog.splitlines():
+                nl = l.strip() % {'prog': sys.argv[0]}
+                if len(nl) > 0:
+                    lines.append(indent + nl)
+            return '\n' + '\n'.join(lines) + '\n\n'
+
+
 class Base(object):
 
-    def __init__(self, extra_args=None):
+    def __init__(self, extra_args=None, description=None, example=None):
         self.logger = logging.getLogger('fts3')
 
         # Common CLI options
@@ -68,7 +83,7 @@ class Base(object):
         if opt_ucert == 'None':
             opt_ucert = None
 
-        self.opt_parser = OptionParser(usage=usage)
+        self.opt_parser = OptionParser(usage=usage, description=description, epilog=example, formatter=_Formatter())
 
         self.opt_parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
                                    help='verbose output.', default=config.getboolean(section, 'verbose'))
@@ -83,7 +98,34 @@ class Base(object):
                                    help='the user certificate.', default=opt_ucert)
         self.opt_parser.add_option('--insecure', dest='verify', default=True, action='store_false',
                                    help='do not validate the server certificate')
+        self.opt_parser.add_option('--access-token', dest='access_token',
+                                   help='OAuth2 access token (supported only by some endpoints, takes precedence)',
+                                   default=None)
+
+    def __call__(self, argv=sys.argv[1:]):
+        (self.options, self.args) = self.opt_parser.parse_args(argv)
+        if self.options.endpoint is None:
+            self.opt_parser.error('Need an endpoint')
+        if self.options.verbose:
+            self.logger.setLevel(logging.DEBUG)
+        self.validate()
+        self.run()
+
+    def validate(self):
+        """
+        Should be implemented by inheriting classes to validate the command line arguments.
+        The implementation is assumed to call sys.exit() to abort if needed
+        """
+        pass
+
+    def run(self):
+        """
+        Implementation of the command
+        """
+        raise NotImplementedError('Run method not implemented in %s' % type(self).__name__)
 
     def _create_context(self):
-        return Context(self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert, verify=self.options.verify)
-
+        return Context(
+            self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert, verify=self.options.verify,
+            access_token=self.options.access_token
+        )

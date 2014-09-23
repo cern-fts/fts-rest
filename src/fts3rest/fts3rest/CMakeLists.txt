@@ -24,3 +24,11 @@ install (DIRECTORY   model
          DESTINATION ${PYTHON_SITE_PACKAGES}/fts3rest
          PATTERN     "*.pyc" EXCLUDE
 )
+
+install (DIRECTORY templates
+         DESTINATION ${PYTHON_SITE_PACKAGES}/fts3rest
+)
+
+install (DIRECTORY public
+         DESTINATION ${PYTHON_SITE_PACKAGES}/fts3rest
+)

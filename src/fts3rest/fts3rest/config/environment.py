@@ -18,6 +18,7 @@
 """Pylons environment configuration"""
 import os
 
+from mako.lookup import TemplateLookup
 from pylons import config
 from sqlalchemy import engine_from_config
 
@@ -62,6 +63,11 @@ def load_environment(global_conf, app_conf):
     # Setup the SQLAlchemy database engine
     engine = engine_from_config(config, 'sqlalchemy.', pool_recycle = 7200)
     init_model(engine)
+
+    # Mako templating
+    config['pylons.app_globals'].mako_lookup = TemplateLookup(
+        directories=paths['templates'],
+    )
 
     # CONFIGURATION OPTIONS HERE (note: all config options will override
     # any Pylons config options)
