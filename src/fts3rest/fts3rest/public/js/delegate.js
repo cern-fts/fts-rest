@@ -154,6 +154,10 @@ function doDelegate()
             throw "Invalid value in lifetime";
 
         doDelegateInternal(delegationId, userDn, publicCertificate, privateKey, voName, lifetime);
+
+        var delegationDialogBody =  document.getElementById("delegation-dialog-body");
+        delegationDialogBody.innerHTML = '<div class="alert alert-success">Delegated successfully for delegation id ' + delegationId + '</div>';
+
         window.close();
     }
     catch (err) {

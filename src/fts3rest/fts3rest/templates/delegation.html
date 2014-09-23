@@ -35,11 +35,11 @@
         </div>
     </div>
     <div class="container">
-        <div class="panel panel-primary">
+        <div class="panel panel-primary" id="delegation-dialog">
             <div class="panel-heading">
 				<h2 class="panel-title">Delegate credentials</h2>
 			</div>
-            <div class="panel-body">
+            <div class="panel-body" id="delegation-dialog-body">
                 <div class="alert alert-success">
                     The private RSA key can be obtained from the p12 certificate you have installed in your browser by using:
                     openssl pkcs12 -in yourCert.p12 -nocerts -nodes | openssl rsa
