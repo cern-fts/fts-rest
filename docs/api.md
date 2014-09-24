@@ -211,8 +211,56 @@ Unban a user
 |204 |Success                                                 |
 
 ### Data management operations
-#### GET /dm/list
-List the content of a remote directory
+#### POST /dm/unlink
+Remove a remote file
+
+##### Responses
+
+|Code|Description                                          |
+|----|-----------------------------------------------------|
+|500 |Internal error                                       |
+|503 |Try again later                                      |
+|419 |The credentials need to be re-delegated              |
+|404 |The SURL does not exist                              |
+|403 |Permission denied                                    |
+|400 |Protocol not supported OR the SURL is not a directory|
+
+#### POST /dm/rename
+Stat a remote file
+
+##### Query arguments
+
+|Name|Type  |Required|Description|
+|----|------|--------|-----------|
+|surl|string|True    |Remote SURL|
+
+##### Responses
+
+|Code|Description                                          |
+|----|-----------------------------------------------------|
+|500 |Internal error                                       |
+|503 |Try again later                                      |
+|419 |The credentials need to be re-delegated              |
+|404 |The SURL does not exist                              |
+|403 |Permission denied                                    |
+|400 |Protocol not supported OR the SURL is not a directory|
+
+#### POST /dm/rmdir
+Remove a remote folder
+
+##### Responses
+
+|Code|Description                                          |
+|----|-----------------------------------------------------|
+|500 |Internal error                                       |
+|503 |Try again later                                      |
+|419 |The credentials need to be re-delegated              |
+|404 |The SURL does not exist                              |
+|403 |Permission denied                                    |
+|400 |Protocol not supported OR the SURL is not a directory|
+
+#### POST /dm/mkdir
+Create a remote file
 
 ##### Query arguments
 
@@ -233,6 +281,26 @@ List the content of a remote directory
 
 #### GET /dm/stat
 Stat a remote file
+
+##### Query arguments
+
+|Name|Type  |Required|Description|
+|----|------|--------|-----------|
+|surl|string|True    |Remote SURL|
+
+##### Responses
+
+|Code|Description                                          |
+|----|-----------------------------------------------------|
+|500 |Internal error                                       |
+|503 |Try again later                                      |
+|419 |The credentials need to be re-delegated              |
+|404 |The SURL does not exist                              |
+|403 |Permission denied                                    |
+|400 |Protocol not supported OR the SURL is not a directory|
+
+#### GET /dm/list
+List the content of a remote directory
 
 ##### Query arguments
 

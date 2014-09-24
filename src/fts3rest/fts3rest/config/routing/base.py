@@ -93,6 +93,10 @@ def do_connect(config, map):
     # GFAL2 bindings
     map.connect('/dm/list', controller='datamanagement', action='list')
     map.connect('/dm/stat', controller='datamanagement', action='stat')
+    map.connect('/dm/mkdir', controller='datamanagement', action='mkdir', conditions=dict(method=['POST']))
+    map.connect('/dm/unlink', controller='datamanagement', action='unlink', conditions=dict(method=['POST']))
+    map.connect('/dm/rmdir', controller='datamanagement', action='rmdir', conditions=dict(method=['POST']))
+    map.connect('/dm/rename', controller='datamanagement', action='rename', conditions=dict(method=['POST']))
 
     # Snapshot
     map.connect('/snapshot', controller='snapshot', action='snapshot')

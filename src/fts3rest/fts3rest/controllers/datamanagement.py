@@ -24,6 +24,8 @@ import os
 import stat
 import tempfile
 import urlparse
+import urllib
+import json
 
 from fts3.model import Credential
 from fts3rest.lib.api import doc
@@ -105,6 +107,43 @@ def _list_impl(context, surl):
     return listing
 
 
+def _rename_impl(context, rename_dict):
+    if (len(rename_dict['old']) == 0) or (len(rename_dict['new'])) == 0:
+        raise HTTPBadRequest('No old or name specified')
+
+    old_path = rename_dict['old']
+    new_path = rename_dict['new']
+
+    return context.rename(str(old_path), str(new_path))
+
+
+def _unlink_impl(context, unlink_dict):
+    if len(unlink_dict['surl']) == 0:
+        raise HTTPBadRequest('No parameter "surl" specified')
+
+    path = unlink_dict['surl']
+
+    return context.unlink(str(path))
+
+
+def _rmdir_impl(context, rmdir_dict):
+    if len(rmdir_dict['surl']) == 0:
+        raise HTTPBadRequest('No parameter "surl" specified')
+
+    path = rmdir_dict['surl']
+
+    return context.rmdir(str(path))
+
+
+def _mkdir_impl(context, mkdir_dict):
+    if len(mkdir_dict['surl']) == 0:
+        raise HTTPBadRequest('No parameter "surl" specified')
+
+    path = mkdir_dict['surl']
+
+    return context.mkdir(str(path), 0775)
+
+
 class DatamanagementController(BaseController):
     """
     Data management operations
@@ -155,3 +194,162 @@ class DatamanagementController(BaseController):
             _raise_http_error_from_gfal2_error(e)
         finally:
             os.unlink(proxy.name)
+
+    @doc.query_arg('surl', 'Remote SURL', required=True)
+    @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
+    @doc.response(403, 'Permission denied')
+    @doc.response(404, 'The SURL does not exist')
+    @doc.response(419, 'The credentials need to be re-delegated')
+    @doc.response(503, 'Try again later')
+    @doc.response(500, 'Internal error')
+    @jsonify
+    def rename(self):
+        """
+        Stat a remote file
+        """
+        proxy = _get_proxy()
+
+        try:
+
+            if request.method == 'POST':
+                if request.content_type == 'application/json':
+                    unencoded_body = request.body
+                else:
+                    unencoded_body = urllib.unquote_plus(request.body)
+            else:
+                raise HTTPBadRequest('Unsupported method %s' % request.method)
+
+            rename_dict = json.loads(unencoded_body)
+
+            m = Gfal2Wrapper(proxy, _rename_impl)
+            try:
+                return m(rename_dict)
+            except Gfal2Error, e:
+                _raise_http_error_from_gfal2_error(e)
+            finally:
+                os.unlink(proxy.name)
+
+        except ValueError, e:
+            raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
+        except TypeError, e:
+            raise HTTPBadRequest('Malformed request: %s' % str(e))
+        except KeyError, e:
+            raise HTTPBadRequest('Missing parameter: %s' % str(e))
+
+    @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
+    @doc.response(403, 'Permission denied')
+    @doc.response(404, 'The SURL does not exist')
+    @doc.response(419, 'The credentials need to be re-delegated')
+    @doc.response(503, 'Try again later')
+    @doc.response(500, 'Internal error')
+    @jsonify
+    def unlink(self):
+        """
+        Remove a remote file
+        """
+        proxy = _get_proxy()
+
+        try:
+
+            if request.method == 'POST':
+                if request.content_type == 'application/json':
+                    unencoded_body = request.body
+                else:
+                    unencoded_body = urllib.unquote_plus(request.body)
+            else:
+                raise HTTPBadRequest('Unsupported method %s' % request.method)
+
+            unlink_dict = json.loads(unencoded_body)
+
+            m = Gfal2Wrapper(proxy, _unlink_impl)
+            try:
+                return m(unlink_dict)
+            except Gfal2Error, e:
+                _raise_http_error_from_gfal2_error(e)
+            finally:
+                os.unlink(proxy.name)
+
+        except ValueError, e:
+            raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
+        except TypeError, e:
+            raise HTTPBadRequest('Malformed request: %s' % str(e))
+        except KeyError, e:
+            raise HTTPBadRequest('Missing parameter: %s' % str(e))
+
+    @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
+    @doc.response(403, 'Permission denied')
+    @doc.response(404, 'The SURL does not exist')
+    @doc.response(419, 'The credentials need to be re-delegated')
+    @doc.response(503, 'Try again later')
+    @doc.response(500, 'Internal error')
+    @jsonify
+    def rmdir(self):
+        """
+        Remove a remote folder
+        """
+        proxy = _get_proxy()
+
+        try:
+            if request.method == 'POST':
+                if request.content_type == 'application/json':
+                    unencoded_body = request.body
+                else:
+                    unencoded_body = urllib.unquote_plus(request.body)
+            else:
+                raise HTTPBadRequest('Unsupported method %s' % request.method)
+
+            rmdir_dict = json.loads(unencoded_body)
+
+            m = Gfal2Wrapper(proxy, _rmdir_impl)
+            try:
+                return m(rmdir_dict)
+            except Gfal2Error, e:
+                _raise_http_error_from_gfal2_error(e)
+            finally:
+                os.unlink(proxy.name)
+
+        except ValueError, e:
+            raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
+        except TypeError, e:
+            raise HTTPBadRequest('Malformed request: %s' % str(e))
+        except KeyError, e:
+            raise HTTPBadRequest('Missing parameter: %s' % str(e))
+
+    @doc.query_arg('surl', 'Remote SURL', required=True)
+    @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
+    @doc.response(403, 'Permission denied')
+    @doc.response(404, 'The SURL does not exist')
+    @doc.response(419, 'The credentials need to be re-delegated')
+    @doc.response(503, 'Try again later')
+    @doc.response(500, 'Internal error')
+    @jsonify
+    def mkdir(self):
+        """
+        Create a remote file
+        """
+        proxy = _get_proxy()
+
+        try:
+            if request.method == 'POST':
+                if request.content_type == 'application/json':
+                    unencoded_body = request.body
+                else:
+                    unencoded_body = urllib.unquote_plus(request.body)
+            else:
+                raise HTTPBadRequest('Unsupported method %s' % request.method)
+
+            mkdir_dict = json.loads(unencoded_body)
+            m = Gfal2Wrapper(proxy, _mkdir_impl)
+            try:
+                return m(mkdir_dict)
+            except Gfal2Error, e:
+                _raise_http_error_from_gfal2_error(e)
+            finally:
+                os.unlink(proxy.name)
+
+        except ValueError, e:
+            raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
+        except TypeError, e:
+            raise HTTPBadRequest('Malformed request: %s' % str(e))
+        except KeyError, e:
+            raise HTTPBadRequest('Missing parameter: %s' % str(e))
