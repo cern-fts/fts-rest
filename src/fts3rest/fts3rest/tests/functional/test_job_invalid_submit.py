@@ -65,7 +65,7 @@ class TestJobInvalidSubmits(TestController):
         error = json.loads(response.body)
 
         self.assertEquals(error['status'], '400 Bad Request')
-        self.assertEquals(error['message'], 'Missing parameter: \'files\'')
+        self.assertEquals(error['message'], 'No transfers specified')
 
     def test_no_protocol(self):
         """
@@ -191,7 +191,7 @@ class TestJobInvalidSubmits(TestController):
 
     def test_submit_missing_surl(self):
         """
-        Well-formed json, but source url is missing
+        Well-formed json, but files is missing
         """
         self.setup_gridsite_environment()
         self.push_delegation()
@@ -214,7 +214,7 @@ class TestJobInvalidSubmits(TestController):
         error = json.loads(response.body)
 
         self.assertEquals(error['status'], '400 Bad Request')
-        self.assertEquals(error['message'], 'Missing parameter: \'files\'')
+        self.assertEquals(error['message'], 'No transfers specified')
 
     def test_invalid_surl(self):
         """
@@ -470,3 +470,35 @@ class TestJobInvalidSubmits(TestController):
             params=json.dumps(job),
             status=400
         )
+
+    def test_transfer_and_deletion(self):
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['root://source.es/file'],
+                'destinations': ['root://dest.ch/file'],
+                'filesize': 1024,
+            }],
+            'delete': [
+                'root://source.es/file',
+                {'surl': 'root://source.es/file2', 'metadata': {'a': 'b'}}
+            ]
+        }
+
+        self.app.put(url="/jobs",
+                     params=json.dumps(job),
+                     status=400)
+
+    def test_deletion_bad_surl(self):
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'delete': ['xx']
+        }
+
+        self.app.put(url="/jobs",
+                     params=json.dumps(job),
+                     status=400)

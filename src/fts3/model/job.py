@@ -22,7 +22,7 @@ from sqlalchemy.orm import relation, backref
 from base import Base, Flag, TernaryFlag, Json
 
 
-JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING']
+JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING', 'DELETE']
 
 
 class Job(Base):
@@ -60,6 +60,9 @@ class Job(Base):
     retry                    = Column(Integer)
 
     files = relation("File", uselist=True, lazy=True,
+                     backref=backref("job", lazy=True))
+
+    dm = relation("DataManagement", uselist=True, lazy=True,
                      backref=backref("job", lazy=True))
 
     def isFinished(self):

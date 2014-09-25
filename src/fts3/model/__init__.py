@@ -21,6 +21,7 @@ from banned import *
 from cloudStorage import *
 from config import *
 from credentials import *
+from dm import *
 from file import *
 from job import *
 from oauth2 import *

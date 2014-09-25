@@ -69,7 +69,7 @@ Update an application
 |client_id|string|
 
 ##### Responses
-
+f
 |Code|Description                                |
 |----|-------------------------------------------|
 |404 |Application not found                      |

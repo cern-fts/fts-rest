@@ -212,15 +212,20 @@ class TestController(TestCase):
     # Handy asserts not available in the EPEL-6 version
     def assertGreater(self, a, b):
         if not a > b:
-            standardMsg = '%s not greater than %s' % (repr(a), repr(b))
+            standardMsg = "%s not greater than %s" % (repr(a), repr(b))
             self.fail(standardMsg)
 
     def assertIn(self, member, container):
         if member not in container:
-            standardMsg = '%s not in %s' % (member, str(container))
+            standardMsg = "%s not in %s" % (member, str(container))
             self.fail(standardMsg)
 
     def assertNotIn(self, member, container):
         if member in container:
-            standardMsg = '%s in %s' % (member, str(container))
+            standardMsg = "%s in %s" % (member, str(container))
+            self.fail(standardMsg)
+
+    def assertIsNotNone(self, obj):
+        if obj is None:
+            standardMsg = "Unexpected None"
             self.fail(standardMsg)

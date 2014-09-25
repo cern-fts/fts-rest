@@ -41,7 +41,6 @@ class RequestFactory(object):
         if self.passwd:
             self.curl_handle.setopt(pycurl.SSLKEYPASSWD, self.passwd)
 
-
         if _PYCURL_SSL == 'GnuTL':
             pass
         elif _PYCURL_SSL == 'NSS':
@@ -49,7 +48,6 @@ class RequestFactory(object):
                 self.curl_handle.setopt(pycurl.CAINFO, self.ucert)
         else:
             pass
-
 
     def __init__(self, ucert, ukey, capath=None, passwd=None, verify=True, access_token=None):
         self.ucert = ucert
@@ -77,7 +75,10 @@ class RequestFactory(object):
                 pass
 
         if code == 400:
-            raise ClientError('Bad request: ' + message)
+            if message:
+                raise ClientError('Bad request: ' + message)
+            else:
+                raise ClientError('Bad request')
         elif 401 <= code <= 403:
             raise Unauthorized()
         elif code == 404:

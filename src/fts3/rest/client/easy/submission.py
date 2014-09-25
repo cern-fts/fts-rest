@@ -120,6 +120,29 @@ def new_job(transfers=None, verify_checksum=True, reuse=False, overwrite=False, 
     return job
 
 
+def new_delete_job(files, spacetoken=None, metadata=None):
+    """
+    Creates a new dictionary representing a deletion job
+
+    Args:
+        files:      Array of surls to delete. Each item can be either a string or a dictionary with keys surl and metadata
+        spacetoken: Deletion spacetoken
+        metadata:   Metadata to bind to the job
+
+    Returns:
+        An initialized dictionary representing a deletion job
+    """
+    params = dict(
+        source_spacetoken=spacetoken,
+        job_metadata=metadata
+    )
+    job = dict(
+        delete=files,
+        params=params
+    )
+    return job
+
+
 def submit(context, job, delegation_lifetime=timedelta(hours=7), force_delegation=False):
     """
     Submits a job
@@ -136,4 +159,4 @@ def submit(context, job, delegation_lifetime=timedelta(hours=7), force_delegatio
     delegate(context, delegation_lifetime, force_delegation)
     submitter = Submitter(context)
     params = job.get('params', {})
-    return submitter.submit(job['files'], **params)
+    return submitter.submit(files=job.get('files', None), delete=job.get('delete', None), **params)

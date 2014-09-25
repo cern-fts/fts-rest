@@ -100,15 +100,22 @@ paramSchema = {
     },
 }
 
+deleteSchema = {
+    'type': ['object', 'string']
+}
+
 SubmitSchema = {
     'title':      'Job submission',
     'type':       'object',
-    'required':   ['files'],
     'properties': {
         'params': paramSchema,
         'files': {
             'type': 'array',
             'items': fileSchema
+        },
+        'delete': {
+            'type': 'array',
+            'items': deleteSchema
         }
     }
 }

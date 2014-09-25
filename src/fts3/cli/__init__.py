@@ -21,6 +21,7 @@ from jobcanceller import JobCanceller
 from joblister import JobLister
 from jobshower import JobShower
 from jobsubmitter import JobSubmitter
+from jobdeletionsubmitter import JobDeletionSubmitter
 from snapshot import Snapshot
 from whoami import WhoAmI
 import logging

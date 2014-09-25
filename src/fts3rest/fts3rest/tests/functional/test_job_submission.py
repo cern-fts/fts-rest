@@ -98,7 +98,7 @@ class TestJobSubmission(TestController):
                               params=json.dumps(job),
                               status=200)
 
-        # Make sure it was commited to the DB
+        # Make sure it was committed to the DB
         job_id = json.loads(answer.body)['job_id']
         self.assertGreater(job_id, 0)
 

@@ -34,6 +34,7 @@ class Inquirer(object):
             job_info = json.loads(self.context.get("/jobs/%s" % job_id))
             if list_files:
                 job_info['files'] = json.loads(self.context.get("/jobs/%s/files" % job_id))
+                job_info['dm'] = json.loads(self.context.get("/jobs/%s/dm" % job_id))
             return job_info
         except NotFound:
             raise NotFound(job_id)

@@ -29,6 +29,7 @@ import urlparse
 import uuid
 
 from fts3.model import Job, File, JobActiveStates, FileActiveStates
+from fts3.model import DataManagement, DataManagementActiveStates
 from fts3.model import Credential, OptimizerActive, BannedSE, FileRetryLog
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
@@ -169,7 +170,7 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
     if len(files_dict['sources']) > 1 and len(files_dict['destinations']) == 1:
         initial_state='NOT_USED'
         if not shared_hashed_id:
-            shared_hashed_id=_generate_hashed_id(job_id, f_index)
+            shared_hashed_id = _generate_hashed_id(job_id, f_index)
 
     for (s, d) in pairs:
         f = dict(
@@ -214,15 +215,149 @@ def _build_internal_job_params(params):
     else:
         return ','.join(param_list)
 
+
+def _submit_transfer(user, job_dict, params):
+    """
+    Submit a transfer job
+    Returns a pair job, array of File
+    """
+    job_id = str(uuid.uuid1())
+    job = dict(
+        job_id=job_id,
+        job_state='SUBMITTED',
+        reuse_job='H' if params['multihop'] else _yes_or_no(params['reuse']),
+        retry=int(params['retry']),
+        job_params=params['gridftp'],
+        submit_host=socket.getfqdn(),
+        agent_dn='rest',
+        user_dn=user.user_dn,
+        voms_cred=' '.join(user.voms_cred),
+        vo_name=user.vos[0],
+        submit_time=datetime.utcnow(),
+        priority=3,
+        space_token=params['spacetoken'],
+        overwrite_flag=_yes_or_no(params['overwrite']),
+        source_space_token=params['source_spacetoken'],
+        copy_pin_lifetime=int(params['copy_pin_lifetime']),
+        checksum_method=params['verify_checksum'],
+        bring_online=params['bring_online'],
+        job_metadata=params['job_metadata'],
+        internal_job_params=_build_internal_job_params(params)
+    )
+
+    if 'credential' in params:
+        job['user_cred'] = params['credential']
+    elif 'credentials' in params:
+        job['user_cred'] = params['credentials']
+    job['cred_id'] = user.delegation_id
+
+    # If reuse is enabled, generate one single "hash" for all files
+    if job['reuse_job']:
+        shared_hashed_id = _generate_hashed_id(job_id, 0)
+    else:
+        shared_hashed_id = None
+
+    # Files
+    files = []
+    f_index = 0
+    for t in job_dict['files']:
+        files.extend(_populate_files(t, job_id, f_index, job['vo_name'], shared_hashed_id))
+        f_index += 1
+
+    if len(files) == 0:
+        raise HTTPBadRequest('No valid pairs available')
+
+    # If copy_pin_lifetime OR bring_online are specified, go to staging directly
+    if job['copy_pin_lifetime'] > 0 or job['bring_online'] > 0:
+        job['job_state'] = 'STAGING'
+        for t in files:
+            t['file_state'] = 'STAGING'
+
+    # If a checksum is provided, but no checksum is available, 'relaxed' comparison
+    # (Not nice, but need to keep functionality!)
+    has_checksum = False
+    for f in files:
+        if f['checksum'] is not None:
+            has_checksum = len(f['checksum']) > 0
+            break
+    if not job['checksum_method'] and has_checksum:
+        job['checksum_method'] = 'r'
+
+    _set_job_source_and_destination(job, files)
+
+    return job, files
+
+
+def _submit_deletion(user, job_dict, params):
+    """
+    Submit a deletion job.
+    Returns a pair job, array of DataManagement
+    """
+    job_id = str(uuid.uuid1())
+    job = dict(
+        job_id=job_id,
+        job_state='DELETE',
+        reuse_job=None,
+        retry=int(params['retry']),
+        job_params=params['gridftp'],
+        submit_host=socket.getfqdn(),
+        agent_dn='rest',
+        user_dn=user.user_dn,
+        voms_cred=' '.join(user.voms_cred),
+        vo_name=user.vos[0],
+        submit_time=datetime.utcnow(),
+        priority=3,
+        space_token=params['spacetoken'],
+        overwrite_flag='N',
+        source_space_token=params['source_spacetoken'],
+        copy_pin_lifetime=-1,
+        checksum_method=None,
+        bring_online=None,
+        job_metadata=params['job_metadata'],
+        internal_job_params=None
+    )
+
+    if 'credential' in params:
+        job['user_cred'] = params['credential']
+    elif 'credentials' in params:
+        job['user_cred'] = params['credentials']
+    job['cred_id'] = user.delegation_id
+
+    shared_hashed_id = _generate_hashed_id(job_id, 0)
+
+    datamanagement = []
+    for dm in job_dict['delete']:
+        if isinstance(dm, dict):
+            entry = dm
+        elif isinstance(dm, str) or isinstance(dm, unicode):
+            entry = dict(surl=dm)
+        else:
+            raise ValueError("Invalid type for the deletion item (%s)" % type(dm))
+        surl = urlparse.urlparse(entry['surl'])
+        _validate_url(surl)
+        datamanagement.append(dict(
+            job_id=job_id,
+            vo_name=user.vos[0],
+            file_state='DELETE',
+            source_surl=entry['surl'],
+            source_se=_get_storage_element(surl),
+            dest_surl = None,
+            dest_se = None,
+            hashed_id=shared_hashed_id,
+            file_metadata=entry.get('metadata', None)
+        ))
+
+    _set_job_source_and_destination(job, datamanagement)
+
+    return job, datamanagement
+
+
 def _setup_job_from_dict(job_dict, user):
     """
     From the submitted dictionary, create and populate dictionaries
     suitable for insertion
     """
     try:
-        if len(job_dict['files']) == 0:
-            raise HTTPBadRequest('No transfers specified')
-
         # Initialize defaults
         # If the client is giving a NULL for a parameter with a default,
         # use the default
@@ -234,72 +369,18 @@ def _setup_job_from_dict(job_dict, user):
                 if v is None and k in DEFAULT_PARAMS:
                     params[k] = DEFAULT_PARAMS[k]
 
-        # Create the job
-        job_id = str(uuid.uuid1())
-        job = dict(
-            job_id=job_id,
-            job_state='SUBMITTED',
-            reuse_job='H' if params['multihop'] else _yes_or_no(params['reuse']),
-            retry=int(params['retry']),
-            job_params=params['gridftp'],
-            submit_host=socket.getfqdn(),
-            agent_dn='rest',
-            user_dn=user.user_dn,
-            voms_cred=' '.join(user.voms_cred),
-            vo_name=user.vos[0],
-            submit_time=datetime.utcnow(),
-            priority=3,
-            space_token=params['spacetoken'],
-            overwrite_flag=_yes_or_no(params['overwrite']),
-            source_space_token=params['source_spacetoken'],
-            copy_pin_lifetime=int(params['copy_pin_lifetime']),
-            checksum_method=params['verify_checksum'],
-            bring_online=params['bring_online'],
-            job_metadata=params['job_metadata'],
-            internal_job_params=_build_internal_job_params(params)
-        )
-
-        if 'credential' in params:
-            job['user_cred'] = params['credential']
-        elif 'credentials' in params:
-            job['user_cred'] = params['credentials']
-        job['cred_id'] = user.delegation_id
-
-        # If reuse is enabled, generate one single "hash" for all files
-        if job['reuse_job']:
-            shared_hashed_id = _generate_hashed_id(job_id, 0)
+        if job_dict.get('files', None) and job_dict.get('delete', None):
+            raise HTTPBadRequest('Transfer and metadata simultaneous operations not supported')
+        elif job_dict.get('files', None):
+            job, files = _submit_transfer(user, job_dict, params)
+            datamanagement = list()
+        elif job_dict.get('delete', None):
+            job, datamanagement = _submit_deletion(user, job_dict, params)
+            files = list()
         else:
-            shared_hashed_id = None
+            raise HTTPBadRequest('No transfers specified')
 
-        # Files
-        files = []
-        f_index = 0
-        for t in job_dict['files']:
-            files.extend(_populate_files(t, job_id, f_index, job['vo_name'], shared_hashed_id))
-            f_index += 1
-
-        if len(files) == 0:
-            raise HTTPBadRequest('No valid pairs available')
-
-        # If copy_pin_lifetime OR bring_online are specified, go to staging directly
-        if job['copy_pin_lifetime'] > 0 or job['bring_online'] > 0:
-            job['job_state'] = 'STAGING'
-            for t in files:
-                t['file_state'] = 'STAGING'
-
-        # If a checksum is provided, but no checksum is available, 'relaxed' comparison
-        # (Not nice, but need to keep functionality!)
-        has_checksum = False
-        for f in files:
-            if f['checksum'] is not None:
-                has_checksum = len(f['checksum']) > 0
-                break
-        if not job['checksum_method'] and has_checksum:
-            job['checksum_method'] = 'r'
-
-        _set_job_source_and_destination(job, files)
-
-        return job, files
+        return job, files, datamanagement
 
     except ValueError, e:
         raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
@@ -456,11 +537,11 @@ class JobsController(BaseController):
             fields = request.GET['files'].split(',')
             files = list()
             log.info('XXX')
-            for file in Session.query(File).filter(File.job_id == job.job_id).all():
+            for f in Session.query(File).filter(File.job_id == job.job_id).all():
                 fd = dict()
                 for field in fields:
                     try:
-                        fd[field] = getattr(file, field)
+                        fd[field] = getattr(f, field)
                     except:
                         pass
                 files.append(fd)
@@ -510,8 +591,8 @@ class JobsController(BaseController):
         if not authorized(TRANSFER,
                           resource_owner=owner[0][0], resource_vo=owner[0][1]):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
-        file = Session.query(File.file_id).filter(File.file_id==file_id)
-        if not file:
+        f = Session.query(File.file_id).filter(File.file_id == file_id)
+        if not f:
             raise HTTPNotFound('No file with the id "%d" has been found' % file_id)
         retries = Session.query(FileRetryLog).filter(FileRetryLog.file_id == file_id)
         return retries.all()
@@ -565,6 +646,12 @@ class JobsController(BaseController):
                 job.reason = 'Job canceled by the user'
 
                 Session.query(File).filter(File.job_id == job.job_id).filter(File.file_state.in_(FileActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                    })
+                Session.query(DataManagement).filter(DataManagement.job_id == job.job_id)\
+                    .filter(DataManagement.file_state.in_(DataManagementActiveStates))\
                     .update({
                         'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
                         'job_finished': now, 'finish_time': now
@@ -644,12 +731,13 @@ class JobsController(BaseController):
             )
 
         # Populate the job and files
-        job, files = _setup_job_from_dict(submitted_dict, user)
+        job, files, datamanagement = _setup_job_from_dict(submitted_dict, user)
 
         # Reject for SE banning
         # If any SE does not accept submissions, reject the whole job
         # Update wait_timeout and wait_timestamp if WAIT_AS is set
         _apply_banning(files)
+        _apply_banning(datamanagement)
 
         # Validate that there are no bad combinations
         if job['reuse_job'] and _has_multiple_options(files):
@@ -666,12 +754,18 @@ class JobsController(BaseController):
         # Update the database
         try:
             Session.execute(Job.__table__.insert(), [job])
-            Session.execute(File.__table__.insert(), files)
+            if len(files):
+                Session.execute(File.__table__.insert(), files)
+            if len(datamanagement):
+                Session.execute(DataManagement.__table__.insert(), datamanagement)
             Session.commit()
         except:
             Session.rollback()
             raise
 
-        log.info("Job %s submitted with %d transfers" % (job['job_id'], len(files)))
+        if len(files):
+            log.info("Job %s submitted with %d transfers" % (job['job_id'], len(files)))
+        else:
+            log.info("Job %s submitted with %d data management operations" % (job['job_id'], len(datamanagement)))
 
         return {'job_id': job['job_id']}
