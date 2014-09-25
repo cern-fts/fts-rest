@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-delegate
 % fts-devel@cern.ch
-% July 15, 2014
+% September 25, 2014
 # NAME
 
 fts-rest-delegate
@@ -35,6 +35,9 @@ This command can be used to (re)delegate your credentials to the FTS3 server
 
 --insecure
 :	Do not validate the server certificate
+
+--access-token
+:	Oauth2 access token (supported only by some endpoints, takes precedence)
 
 -f/--force
 :	Force the delegation

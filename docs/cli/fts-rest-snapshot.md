@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-snapshot
 % fts-devel@cern.ch
-% July 15, 2014
+% September 25, 2014
 # NAME
 
 fts-rest-snapshot
@@ -37,6 +37,9 @@ It allows to filter by VO, source SE and destination SE
 
 --insecure
 :	Do not validate the server certificate
+
+--access-token
+:	Oauth2 access token (supported only by some endpoints, takes precedence)
 
 --vo
 :	Filter by vo

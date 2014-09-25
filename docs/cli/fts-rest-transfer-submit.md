@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-transfer-submit
 % fts-devel@cern.ch
-% July 15, 2014
+% September 25, 2014
 # NAME
 
 fts-rest-transfer-submit
@@ -37,7 +37,8 @@ format is as follows:
       ],
       "metadata": "file2-metadata",
       "checksum": "ADLER32:4321",
-      "filesize": 2048
+      "filesize": 2048,
+      "activity": "default"
     }
   ]
 }
@@ -66,6 +67,9 @@ format is as follows:
 
 --insecure
 :	Do not validate the server certificate
+
+--access-token
+:	Oauth2 access token (supported only by some endpoints, takes precedence)
 
 -b/--blocking
 :	Blocking mode. Wait until the operation completes. 
@@ -123,6 +127,9 @@ format is as follows:
 
 -m/--multi-hop
 :	Submit a multihop transfer. 
+
+--cloud-credentials
+:	Use cloud credentials for the job (i. E. Dropbox). 
 
 # EXAMPLE
 ```

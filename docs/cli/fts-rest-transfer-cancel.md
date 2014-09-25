@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-transfer-cancel
 % fts-devel@cern.ch
-% July 15, 2014
+% September 25, 2014
 # NAME
 
 fts-rest-transfer-cancel
@@ -38,6 +38,9 @@ this command will return this state.
 
 --insecure
 :	Do not validate the server certificate
+
+--access-token
+:	Oauth2 access token (supported only by some endpoints, takes precedence)
 
 # EXAMPLE
 ```
