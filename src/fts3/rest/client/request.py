@@ -117,7 +117,7 @@ class RequestFactory(object):
         else:
             self.curl_handle.setopt(pycurl.CUSTOMREQUEST, method)
 
-        _headers = {}
+        _headers = {'Accept': 'application/json'}
         if headers:
             _headers.update(headers)
         if self.access_token:
