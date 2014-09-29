@@ -20,7 +20,8 @@ import logging
 from fts3rest.lib.base import Session
 from fts3.model import BannedDN
 from credentials import UserCredentials, InvalidCredentials
-from webob.exc import HTTPUnauthorized, HTTPForbidden
+from sqlalchemy.exc import DatabaseError
+from webob.exc import HTTPUnauthorized, HTTPForbidden, HTTPError
 
 
 log = logging.getLogger(__name__)
@@ -36,25 +37,39 @@ class FTS3AuthMiddleware(object):
         self.app    = wrap_app
         self.config = config
 
-    def __call__(self, environ, start_response):
+    def _get_credentials(self, environ):
         try:
             credentials = UserCredentials(environ, self.config['fts3.Roles'])
         except InvalidCredentials:
-            return HTTPForbidden('Invalid credentials')(environ, start_response)
+            raise HTTPForbidden('Invalid credentials')
 
         if not credentials.user_dn:
-            return HTTPUnauthorized('A valid X509 certificate or proxy is needed')(environ, start_response)
+            raise HTTPUnauthorized('A valid X509 certificate or proxy is needed')
 
         if not self._has_authorized_vo(credentials):
-            return HTTPForbidden('The user does not belong to any authorized vo')(environ, start_response)
+            raise HTTPForbidden('The user does not belong to any authorized vo')
 
         if self._is_banned(credentials):
-            return HTTPForbidden('The user has been banned')(environ, start_response)
+            raise HTTPForbidden('The user has been banned')
 
-        environ['fts3.User.Credentials'] = credentials
-        log.info("%s logged in via %s" % (credentials.user_dn, credentials.method))
+        return credentials
 
-        return self.app(environ, start_response)
+    def __call__(self, environ, start_response):
+        try:
+            credentials = self._get_credentials(environ)
+            environ['fts3.User.Credentials'] = credentials
+            log.info("%s logged in via %s" % (credentials.user_dn, credentials.method))
+        except HTTPError, e:
+            return e(environ, start_response)
+        except DatabaseError, e:
+            log.error("Database error when trying to get user's credentials: %s" % str(e))
+            Session.remove()
+            raise
+        except Exception, e:
+            log.error("Unexpected error when trying to get user's credentials: %s" % str(e))
+            raise
+        else:
+            return self.app(environ, start_response)
 
     def _has_authorized_vo(self, credentials):
         if '*' in self.config['fts3.AuthorizedVO']:
