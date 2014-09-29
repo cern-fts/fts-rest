@@ -123,7 +123,11 @@ class Oauth2Controller(BaseController):
             Session.merge(app)
             Session.commit()
         except IntegrityError:
+            Session.rollback()
             raise HTTPForbidden('The name already exists')
+        except:
+            Session.rollback()
+            raise
 
         log.info("New application registered: %s (%s)" % (req['name'], app_id))
 
@@ -208,19 +212,23 @@ class Oauth2Controller(BaseController):
         else:
             fields = pylons.request.POST
 
-        if 'delete' not in fields:
-            app.description = fields.get('description', '')
-            app.website = fields.get('website', '')
-            app.redirect_to = fields.get('redirect_to', '')
-            Session.merge(app)
-            Session.commit()
-            redirect(url_for(controller='oauth2', action='get_app'), code=HTTPSeeOther.code)
-        else:
-            Session.delete(app)
-            Session.query(OAuth2Token).filter(OAuth2Token.client_id == client_id).delete()
-            Session.query(OAuth2Code).filter(OAuth2Code.client_id == client_id).delete()
-            Session.commit()
-            redirect(url_for(controller='oauth2', action='get_my_apps'), code=HTTPSeeOther.code)
+        try:
+            if 'delete' not in fields:
+                app.description = fields.get('description', '')
+                app.website = fields.get('website', '')
+                app.redirect_to = fields.get('redirect_to', '')
+                Session.merge(app)
+                Session.commit()
+                redirect(url_for(controller='oauth2', action='get_app'), code=HTTPSeeOther.code)
+            else:
+                Session.delete(app)
+                Session.query(OAuth2Token).filter(OAuth2Token.client_id == client_id).delete()
+                Session.query(OAuth2Code).filter(OAuth2Code.client_id == client_id).delete()
+                Session.commit()
+                redirect(url_for(controller='oauth2', action='get_my_apps'), code=HTTPSeeOther.code)
+        except:
+            Session.rollback()
+            raise
 
     @doc.response(403, 'The application does not belong to the user')
     @doc.response(404, 'Application not found')
@@ -235,10 +243,15 @@ class Oauth2Controller(BaseController):
             raise HTTPNotFound('Application not found')
         if app.owner != user.user_dn:
             raise HTTPForbidden()
-        Session.delete(app)
-        Session.query(OAuth2Token).filter(OAuth2Token.client_id == client_id).delete()
-        Session.query(OAuth2Code).filter(OAuth2Code.client_id == client_id).delete()
-        Session.commit()
+
+        try:
+            Session.delete(app)
+            Session.query(OAuth2Token).filter(OAuth2Token.client_id == client_id).delete()
+            Session.query(OAuth2Code).filter(OAuth2Code.client_id == client_id).delete()
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
 
         log.info("Application removed: %s" % client_id)
 
@@ -392,12 +405,16 @@ class Oauth2Controller(BaseController):
         Current user revokes all tokens for a given application
         """
         user = pylons.request.environ['fts3.User.Credentials']
-        Session.query(OAuth2Token).filter(
-            (OAuth2Token.client_id == client_id) & (OAuth2Token.dlg_id == user.delegation_id)
-        ).delete()
-        Session.query(OAuth2Code).filter(
-            (OAuth2Code.client_id == client_id) & (OAuth2Code.dlg_id == user.delegation_id)
-        )
-        Session.commit()
+        try:
+            Session.query(OAuth2Token).filter(
+                (OAuth2Token.client_id == client_id) & (OAuth2Token.dlg_id == user.delegation_id)
+            ).delete()
+            Session.query(OAuth2Code).filter(
+                (OAuth2Code.client_id == client_id) & (OAuth2Code.dlg_id == user.delegation_id)
+            )
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
         log.warning("User %s revoked application %s" % (user.user_dn, client_id))
         redirect(url_for(controller='oauth2', action='get_my_apps'), code=HTTPSeeOther.code)

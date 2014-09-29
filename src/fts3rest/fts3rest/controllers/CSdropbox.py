@@ -66,8 +66,12 @@ class DropboxConnector(object):
             request_token=tokens[1].split('=')[1],
             request_token_secret=tokens[0].split('=')[1]
         )
-        Session.add(newuser)
-        Session.commit()
+        try:
+            Session.add(newuser)
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
 
         return request_tokens
 
@@ -80,8 +84,12 @@ class DropboxConnector(object):
         if info.is_registered():
             res = self._get_content("/")
             if res.startswith("401"):
-                Session.delete(info)
-                Session.commit()
+                try:
+                    Session.delete(info)
+                    Session.commit()
+                except:
+                    Session.rollback()
+                    raise
                 raise HTTPNotFound('No registered user for the service "%s" has been found' % self.service)
 
         return info
@@ -107,8 +115,12 @@ class DropboxConnector(object):
         access_tokens = access_tokens.split('&')
         dropbox_user_info.access_token = access_tokens[1].split('=')[1]
         dropbox_user_info.access_token_secret = access_tokens[0].split('=')[1]
-        Session.add(dropbox_user_info)
-        Session.commit()
+        try:
+            Session.add(dropbox_user_info)
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
 
         return access_tokens
 
