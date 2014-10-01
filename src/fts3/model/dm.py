@@ -28,7 +28,7 @@ class DataManagement(Base):
     file_id              = Column(Integer, primary_key=True)
     job_id               = Column(String(36), ForeignKey('t_job.job_id'))
     file_state           = Column(String(32))
-    dmHost               = Column(String(255))
+    dmHost               = Column('DMHOST', String(255))
     source_surl          = Column(String(900))
     dest_surl            = Column(String(900))
     source_se            = Column(String(150))
