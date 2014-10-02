@@ -46,7 +46,7 @@ class TestJobSubmission(TestController):
         self.assertEqual(job.dest_se, 'root://dest.ch')
         self.assertEqual(job.overwrite_flag, True)
         self.assertEqual(job.verify_checksum, True)
-        self.assertEqual(job.reuse_job, False)
+        self.assertEqual(job.reuse_job, 'N')
 
         self.assertEqual(len(files), 1)
         self.assertEqual(files[0].file_state, 'SUBMITTED')
@@ -134,7 +134,7 @@ class TestJobSubmission(TestController):
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
-        self.assertEqual(job.reuse_job, True)
+        self.assertEqual(job.reuse_job, 'Y')
 
         return job_id
 
@@ -166,7 +166,7 @@ class TestJobSubmission(TestController):
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
-        self.assertEqual(job.reuse_job, True)
+        self.assertEqual(job.reuse_job, 'Y')
 
     def test_submit_post(self):
         """
