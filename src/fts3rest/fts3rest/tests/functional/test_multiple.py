@@ -62,6 +62,8 @@ class TestMultiple(TestController):
         job_id = json.loads(answer.body)['job_id']
         db_job = Session.query(Job).get(job_id)
 
+        self.assertEqual(db_job.reuse_job, 'R')
+
         self.assertEqual(len(db_job.files), 4)
 
         self.assertEqual(db_job.files[0].file_index, 0)
@@ -126,6 +128,8 @@ class TestMultiple(TestController):
         job_id = json.loads(answer.body)['job_id']
         db_job = Session.query(Job).get(job_id)
 
+        self.assertNotEqual(db_job.reuse_job, 'R')
+
         self.assertEqual(len(db_job.files), 2)
 
         self.assertEqual(db_job.verify_checksum, True)
@@ -186,6 +190,8 @@ class TestMultiple(TestController):
         # Validate job in the database
         job_id = json.loads(answer.body)['job_id']
         db_job = Session.query(Job).get(job_id)
+
+        self.assertEqual(db_job.reuse_job, 'R')
 
         self.assertEqual(len(db_job.files), 3)
 
@@ -268,6 +274,9 @@ class TestMultiple(TestController):
 
         job_id = json.loads(answer.body)['job_id']
 
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.reuse_job, 'Y')
+
         # In a reuse job, the hashed ID must be the same for all files!
         # Regression for FTS-20
         files = Session.query(File).filter(File.job_id == job_id)
@@ -307,7 +316,7 @@ class TestMultiple(TestController):
         # Also, the reuse flag must be 'H' in the database
         job = Session.query(Job).get(job_id)
 
-        self.assertEqual('H', job.reuse_job)
+        self.assertEqual(job.reuse_job, 'H')
 
         files = Session.query(File).filter(File.job_id == job_id).all()
         self.assertEquals(2, len(files))
@@ -347,7 +356,7 @@ class TestMultiple(TestController):
         # Also, the reuse flag must be 'H' in the database
         job = Session.query(Job).get(job_id)
 
-        self.assertEqual('H', job.reuse_job)
+        self.assertEqual(job.reuse_job, 'H')
 
         files = Session.query(File).filter(File.job_id == job_id).all()
         self.assertEquals(2, len(files))

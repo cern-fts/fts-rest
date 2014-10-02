@@ -221,11 +221,17 @@ def _submit_transfer(user, job_dict, params):
     Submit a transfer job
     Returns a pair job, array of File
     """
+    reuse_flag = 'N'
+    if params['multihop']:
+        reuse_flag = 'H'
+    elif _yes_or_no(params['reuse']):
+        reuse_flag = 'Y'
+
     job_id = str(uuid.uuid1())
     job = dict(
         job_id=job_id,
         job_state='SUBMITTED',
-        reuse_job='H' if params['multihop'] else _yes_or_no(params['reuse']),
+        reuse_job=reuse_flag,
         retry=int(params['retry']),
         job_params=params['gridftp'],
         submit_host=socket.getfqdn(),
@@ -252,7 +258,7 @@ def _submit_transfer(user, job_dict, params):
     job['cred_id'] = user.delegation_id
 
     # If reuse is enabled, generate one single "hash" for all files
-    if job['reuse_job']:
+    if reuse_flag in ('H', 'Y'):
         shared_hashed_id = _generate_hashed_id(job_id, 0)
     else:
         shared_hashed_id = None
@@ -740,8 +746,10 @@ class JobsController(BaseController):
         _apply_banning(datamanagement)
 
         # Validate that there are no bad combinations
-        if job['reuse_job'] and _has_multiple_options(files):
-            raise HTTPBadRequest('Can not specify reuse and multiple replicas at the same time')
+        if _has_multiple_options(files):
+            if job['reuse_job'] == 'Y':
+                raise HTTPBadRequest('Can not specify reuse and multiple replicas at the same time')
+            job['reuse_job'] = 'R'
 
         # Update the optimizer
         unique_pairs = set(map(lambda f: (f['source_se'], f['dest_se']), files))
