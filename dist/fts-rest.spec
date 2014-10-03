@@ -13,8 +13,11 @@ Source0:        https://grid-deployment.web.cern.ch/grid-deployment/dms/fts3/tar
 
 BuildRequires:  cmake
 BuildRequires:  python-jsonschema
-%if 0%{?el6}
+%if %{?rhel}%{!?rhel:0} == 6
 BuildRequires:  python-nose1.1
+%endif
+%if %{?rhel}%{!?rhel:0} >= 7
+BuildRequires:  python-nose
 %endif
 BuildRequires:  python-pylons
 BuildRequires:  scipy
@@ -112,11 +115,15 @@ fi
 make %{?_smp_mflags}
 
 %check
-%if 0%{?el6}
 pushd src/fts3rest
+%if %{?rhel}%{!?rhel:0} == 6
 PYTHONPATH=../ nosetests1.1 --with-xunit --xunit-file=/tmp/nosetests.xml
-popd
 %endif
+%if %{?rhel}%{!?rhel:0} >= 7
+PYTHONPATH=../ ./setup_pylons_plugin.py install --user 
+PYTHONPATH=../ nosetests --with-xunit --xunit-file=/tmp/nosetests.xml
+%endif
+popd
 
 %install
 mkdir -p %{buildroot}
