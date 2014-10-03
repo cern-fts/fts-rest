@@ -1,14 +1,14 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,7 +54,7 @@ class LinkConfig(Base):
                              'ShareConfig.destination == LinkConfig.destination',
                  foreign_keys=(source, destination),
                  uselist=False,
-                 lazy='eager')
+                 lazy=False)
 
     def __str__(self):
         return "%s => %s" % (self.source, self.destination)
@@ -80,25 +80,25 @@ class Se(Base):
         relation('LinkConfig', backref='source_se',
                  primaryjoin=and_(LinkConfig.source == name,
                                   LinkConfig.destination != '*'),
-                 foreign_keys=name, uselist=True, lazy='dynamic')
+                 foreign_keys=name, uselist=True, lazy=True)
 
     destination_on =\
         relation('LinkConfig', backref='destination_se',
                  primaryjoin=and_(LinkConfig.destination == name,
                                   LinkConfig.source != '*'),
-                 foreign_keys=name, uselist=True, lazy='dynamic')
+                 foreign_keys=name, uselist=True, lazy=True)
 
     standalone_source =\
         relation('LinkConfig', backref=None,
                  primaryjoin=and_(LinkConfig.source == name,
                                   LinkConfig.destination == '*'),
-                 foreign_keys=name, lazy='dynamic')
+                 foreign_keys=name, lazy=True)
 
     standalone_destination =\
         relation('LinkConfig', backref=None,
                  primaryjoin=and_(LinkConfig.destination == name,
                                   LinkConfig.source == '*'),
-                 foreign_keys=name, lazy='dynamic')
+                 foreign_keys=name, lazy=True)
 
     def __str__(self):
         return self.name

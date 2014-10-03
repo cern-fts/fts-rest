@@ -26,7 +26,11 @@ from fts3rest.config import routing
 from sqlalchemy import types
 from sqlalchemy.orm import Mapper
 from sqlalchemy.orm.attributes import InstrumentedAttribute
-from sqlalchemy.orm.properties import ColumnProperty, RelationProperty
+from sqlalchemy.orm.properties import ColumnProperty
+try:
+    from sqlalchemy.orm.properties import RelationProperty
+except:
+    from sqlalchemy.orm.relationships import RelationshipProperty as RelationProperty
 from types import FunctionType
 
 
