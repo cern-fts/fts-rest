@@ -17,9 +17,17 @@
 
 """Pylons environment configuration"""
 import os
+import pylons
+
+from distutils.version import StrictVersion
+is_pylons_0 = (StrictVersion(pylons.__version__) < StrictVersion('1.0'))
+
+if is_pylons_0:
+    from pylons import config as pylons_config
+else:
+    from pylons.configuration import PylonsConfig
 
 from mako.lookup import TemplateLookup
-from pylons import config
 from sqlalchemy import engine_from_config
 
 import fts3rest.lib.app_globals as app_globals
@@ -41,6 +49,10 @@ def load_environment(global_conf, app_conf):
                  templates=[os.path.join(root, 'templates')])
 
     # Initialize config with the basic options
+    if is_pylons_0:
+        config = pylons_config
+    else:
+        config = PylonsConfig()
     config.init_app(global_conf, app_conf, package='fts3rest', paths=paths)
 
     config['routes.map'] = make_map(config)
@@ -53,7 +65,7 @@ def load_environment(global_conf, app_conf):
 
     # If fts3.config is set, load configuration from there
     fts3_config_file = config.get('fts3.config')
-    if config.get('fts3.config'):
+    if fts3_config_file:
         fts3cfg = fts3_config.fts3_config_load(fts3_config_file)
         # Let the database be overriden by fts3rest.ini
         if 'sqlalchemy.url' in config and 'sqlalchemy.url' in fts3cfg:

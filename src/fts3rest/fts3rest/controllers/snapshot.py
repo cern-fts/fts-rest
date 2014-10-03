@@ -75,7 +75,10 @@ class SnapshotController(BaseController):
                 pair_info = dict(vo_name=vo, source_se=source, dest_se=destination)
 
                 # Maximum allowed number of active
-                max_active = Session.query(OptimizerActive.active).get((source, destination))
+                max_active = Session.query(OptimizerActive.active)\
+                    .filter(OptimizerActive.source_se == source)\
+                    .filter(OptimizerActive.dest_se == destination).all()
+                max_active = max_active[0] if len(max_active) else None
                 if max_active:
                     pair_info['max_active'] = max_active[0]
                 else:

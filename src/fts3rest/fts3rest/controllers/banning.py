@@ -107,7 +107,7 @@ def _cancel_transfers(storage=None, vo_name=None):
     # Set each job terminal state if needed
     try:
         for job_id in affected_job_ids:
-            reuse_flag = Session.query(Job.reuse_job).get(job_id)[0]
+            reuse_flag = Session.query(Job.reuse_job).filter(Job.job_id == job_id)[0][0]
             n_files = Session.query(func.count(distinct(File.file_id))).filter(File.job_id == job_id).all()[0][0]
             n_canceled = Session.query(func.count(distinct(File.file_id)))\
                 .filter(File.job_id == job_id).filter(File.file_state == 'CANCELED').all()[0][0]
@@ -153,14 +153,14 @@ def _cancel_jobs(dn):
                 .update({
                     'file_state': 'CANCELED', 'reason': 'User banned',
                     'job_finished': now, 'finish_time': now
-                })
+                }, synchronize_session=False)
             Session.query(Job).filter(Job.job_id == job_id)\
                 .update({
                     'job_state': 'CANCELED', 'reason': 'User banned',
                     'job_finished': now, 'finish_time': now
-                })
-
+                }, synchronize_session=False)
         Session.commit()
+	Session.expire_all()
         return job_ids
     except Exception:
         Session.rollback()
@@ -182,9 +182,10 @@ def _set_to_wait(storage=None, vo_name=None, timeout=0):
     try:
         for job_id in job_ids:
             Session.query(File).filter(File.job_id == job_id).filter(File.file_state.in_(FileActiveStates))\
-                .update({'wait_timestamp': datetime.utcnow(), 'wait_timeout': timeout})
+                .update({'wait_timestamp': datetime.utcnow(), 'wait_timeout': timeout}, synchronize_session=False)
 
         Session.commit()
+	Session.expire_all()
         return job_ids
     except Exception:
         Session.rollback()

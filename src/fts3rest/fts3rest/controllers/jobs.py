@@ -655,13 +655,13 @@ class JobsController(BaseController):
                     .update({
                         'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
                         'job_finished': now, 'finish_time': now
-                    })
+                    }, synchronize_session=False)
                 Session.query(DataManagement).filter(DataManagement.job_id == job.job_id)\
                     .filter(DataManagement.file_state.in_(DataManagementActiveStates))\
                     .update({
                         'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
                         'job_finished': now, 'finish_time': now
-                    })
+                    }, synchronize_session=False)
                 job = Session.merge(job)
 
                 log.info("Job %s canceled" % job.job_id)
@@ -669,6 +669,7 @@ class JobsController(BaseController):
                 setattr(job, 'http_message', None)
                 response.append(job)
             Session.commit()
+            Session.expire_all()
         except:
             Session.rollback()
             raise
