@@ -257,8 +257,8 @@ def _submit_transfer(user, job_dict, params):
         job['user_cred'] = params['credentials']
     job['cred_id'] = user.delegation_id
 
-    # If reuse is enabled, generate one single "hash" for all files
-    if reuse_flag in ('H', 'Y'):
+    # If reuse is enabled, or it is a bring online job, generate one single "hash" for all files
+    if reuse_flag in ('H', 'Y') or job['copy_pin_lifetime'] > 0 or job['bring_online'] > 0:
         shared_hashed_id = _generate_hashed_id(job_id, 0)
     else:
         shared_hashed_id = None
