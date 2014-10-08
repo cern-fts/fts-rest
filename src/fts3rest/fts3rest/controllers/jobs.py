@@ -758,6 +758,8 @@ class JobsController(BaseController):
             optimizer_active = OptimizerActive()
             optimizer_active.source_se = source_se
             optimizer_active.dest_se = dest_se
+            optimizer_active.ema = 0
+            optimizer_active.datetime = datetime.utcnow()
             Session.merge(optimizer_active)
 
         # Update the database

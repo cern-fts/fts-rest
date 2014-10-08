@@ -39,7 +39,11 @@ class OptimizerActive(Base):
 
     source_se = Column(String(255), primary_key=True)
     dest_se   = Column(String(255), primary_key=True)
-    active    = Column(Integer(), default = 5)
+    active    = Column(Integer(), default=2)
+    message   = Column(String(512))
+    datetime  = Column(DateTime(), default=None)
+    ema       = Column(Float(), default=0)
+    fixed     = Column(String(3))
 
 
 class Optimize(Base):

@@ -68,8 +68,10 @@ class TestJobSubmission(TestController):
 
         # Validate optimizer too
         oa = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
-        self.assertTrue(oa is not None)
+        self.assertIsNotNone(oa)
         self.assertGreater(oa.active, 0)
+        self.assertIsNotNone(oa.datetime)
+        self.assertEqual(0, oa.ema)
 
         # Validate submitter
         self.assertEqual(socket.getfqdn(), job.submit_host)
@@ -445,6 +447,7 @@ class TestJobSubmission(TestController):
         Submitting a job with an existing OptimizerActive entry must respect
         the existing value
         """
+        self.test_submit()
         # Set active to 20
         oa = Session.query(OptimizerActive).get(('root://source.es', 'root://dest.ch'))
         oa.active = 20
