@@ -420,3 +420,67 @@ class TestJobListing(TestController):
         self.assertNotIn('dest_surl', f)
 
         self.assertEqual('root://source.es/file', f['source_surl'])
+
+    def test_get_multiple_jobs(self):
+        """
+        Query multiple jobs at once
+        See FTS-147
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        N_JOBS = 5
+        job_ids = list()
+        for i in range(N_JOBS):
+            job_ids.append(self._submit())
+
+        answer = self.app.get(
+            url="/jobs/%s?files=start_time,source_surl,file_state" % ','.join(job_ids), status=200
+        )
+
+        job_list = json.loads(answer.body)
+
+        self.assertEqual(list, type(job_list))
+        self.assertEqual(N_JOBS, len(job_list))
+
+        matches = 0
+        for job in job_list:
+            if job['job_id'] in job_ids:
+                matches += 1
+            for f in job['files']:
+                self.assertIn('start_time', f)
+                self.assertIn('source_surl', f)
+                self.assertNotIn('finish_time', f)
+                self.assertNotIn('dest_surl', f)
+                self.assertIn('file_state', f)
+                self.assertEqual('SUBMITTED', f['file_state'])
+
+        self.assertEqual(N_JOBS, matches)
+
+    def test_get_multiple_jobs_one_missing(self):
+        """
+        Same as test_get_multiple_jobs, but push one missing job
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        N_JOBS = 5
+        job_ids = list()
+        for i in range(N_JOBS):
+            job_ids.append(self._submit())
+        job_ids.append('12345-BADBAD-09876')
+
+        answer = self.app.get(
+            url="/jobs/%s?files=start_time,source_surl,file_state" % ','.join(job_ids), status=207
+        )
+
+        job_list = json.loads(answer.body)
+
+        self.assertEqual(list, type(job_list))
+        self.assertEqual(N_JOBS + 1, len(job_list))
+
+        for job in job_list:
+            if job['job_id'] == '12345-BADBAD-09876':
+                self.assertEqual('404 Not Found', job['http_status'])
+            else:
+                self.assertEqual('200 Ok', job['http_status'])

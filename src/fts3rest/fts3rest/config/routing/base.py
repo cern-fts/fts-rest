@@ -48,7 +48,7 @@ def do_connect(config, map):
                 conditions=dict(method=['GET']))
     map.connect('/jobs/', controller='jobs', action='index',
                 conditions=dict(method=['GET']))
-    map.connect('/jobs/{job_id}', controller='jobs', action='get',
+    map.connect('/jobs/{job_list}', controller='jobs', action='get',
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}/files', controller='jobs', action='get_files',
                 conditions=dict(method=['GET']))

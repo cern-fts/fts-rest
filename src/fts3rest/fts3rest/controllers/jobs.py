@@ -529,31 +529,53 @@ class JobsController(BaseController):
             return jobs.all()
 
     @doc.query_arg('files', 'Comma separated list of file fields to retrieve in this query')
+    @doc.response(200, 'The jobs exist')
+    @doc.response(207, 'Some job had an error')
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
     @jsonify
-    def get(self, job_id):
+    def get(self, job_list, start_response):
         """
         Get the job with the given ID
         """
-        job = JobsController._get_job(job_id)
+        job_ids = job_list.split(',')
+        multistatus = False
+        statuses = list()
 
-        if 'files' in request.GET:
-            fields = request.GET['files'].split(',')
-            files = list()
-            log.info('XXX')
-            for f in Session.query(File).filter(File.job_id == job.job_id).all():
-                fd = dict()
-                for field in fields:
-                    try:
-                        fd[field] = getattr(f, field)
-                    except:
-                        pass
-                files.append(fd)
-            job.__dict__['files'] = files
+        for job_id in filter(len, job_ids):
+            try:
+                job = JobsController._get_job(job_id)
+                if 'files' in request.GET:
+                    fields = request.GET['files'].split(',')
+                    files = list()
+                    for f in Session.query(File).filter(File.job_id == job.job_id).all():
+                        fd = dict()
+                        for field in fields:
+                            try:
+                                fd[field] = getattr(f, field)
+                            except:
+                                pass
+                        files.append(fd)
+                    job.__dict__['files'] = files
+                setattr(job, 'http_status', '200 Ok')
+                statuses.append(job)
+            except HTTPError, e:
+                if len(job_ids) == 1:
+                    raise
+                statuses.append(dict(
+                    job_id=job_id,
+                    http_status="%s %s" % (e.code, e.title),
+                    http_message=e.detail
+                ))
+                multistatus = True
 
-        return job
+        if len(job_ids) == 1:
+            return statuses[0]
+
+        if multistatus:
+            start_response("207 Multi-Status", [('Content-Type', 'application/json')])
+        return statuses
 
     @doc.response(404, 'The job or the field doesn\'t exist')
     @doc.response(413, 'The user doesn\'t have enough privileges')
