@@ -212,7 +212,7 @@ class BanningController(BaseController):
         required=False
     )
     @doc.response(400, 'storage is missing, or any of the others have an invalid value')
-    @doc.response(413, 'The user is not allowed to change the configuration')
+    @doc.response(403, 'The user is not allowed to change the configuration')
     @doc.return_type(array_of=str)
     @jsonify
     def ban_se(self):
@@ -261,8 +261,8 @@ class BanningController(BaseController):
     @authorize(CONFIG)
     @doc.query_arg('user_dn', 'User DN to ban', required=True)
     @doc.response(400, 'dn is missing')
+    @doc.response(403, 'The user is not allowed to change the configuration')
     @doc.response(409, 'The user tried to ban (her|his)self')
-    @doc.response(413, 'The user is not allowed to change the configuration')
     @jsonify
     def ban_dn(self):
         """

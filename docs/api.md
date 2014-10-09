@@ -69,7 +69,7 @@ Update an application
 |client_id|string|
 
 ##### Responses
-f
+
 |Code|Description                                |
 |----|-------------------------------------------|
 |404 |Application not found                      |
@@ -156,7 +156,7 @@ Array of string
 
 |Code|Description                                                   |
 |----|--------------------------------------------------------------|
-|413 |The user is not allowed to change the configuration           |
+|403 |The user is not allowed to change the configuration           |
 |400 |storage is missing, or any of the others have an invalid value|
 
 #### DELETE /ban/se
@@ -189,8 +189,8 @@ Ban a user
 
 |Code|Description                                        |
 |----|---------------------------------------------------|
-|413 |The user is not allowed to change the configuration|
 |409 |The user tried to ban (her|his)self                |
+|403 |The user is not allowed to change the configuration|
 |400 |dn is missing                                      |
 
 #### DELETE /ban/dn
@@ -477,9 +477,36 @@ Returns the canceled job with its current status. CANCELED if it was canceled,<b
 
 |Code|Description                                          |
 |----|-----------------------------------------------------|
-|413 |The user doesn't have enough privileges              |
 |404 |The job doesn't exist                                |
+|403 |The user doesn't have enough privileges              |
 |207 |For multiple job requests if there has been any error|
+
+#### GET /jobs/{job_list}
+Get the job with the given ID
+
+##### Returns
+[Job](#job)
+
+##### Path arguments
+
+|Name    |Type  |
+|--------|------|
+|job_list|string|
+
+##### Query arguments
+
+|Name |Type  |Required|Description                                                  |
+|-----|------|--------|-------------------------------------------------------------|
+|files|string|False   |Comma separated list of file fields to retrieve in this query|
+
+##### Responses
+
+|Code|Description                            |
+|----|---------------------------------------|
+|404 |The job doesn't exist                  |
+|403 |The user doesn't have enough privileges|
+|207 |Some job had an error                  |
+|200 |The jobs exist                         |
 
 #### GET /jobs
 Get a list of active jobs, or those that match the filter requirements
@@ -574,31 +601,6 @@ Submission description (SubmitSchema)
 #### OPTIONS /jobs
 Answer the OPTIONS method over /jobs
 
-#### GET /jobs/{job_id}
-Get the job with the given ID
-
-##### Returns
-[Job](#job)
-
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|job_id|string|
-
-##### Query arguments
-
-|Name |Type  |Required|Description                                                  |
-|-----|------|--------|-------------------------------------------------------------|
-|files|string|False   |Comma separated list of file fields to retrieve in this query|
-
-##### Responses
-
-|Code|Description                            |
-|----|---------------------------------------|
-|413 |The user doesn't have enough privileges|
-|404 |The job doesn't exist                  |
-
 #### OPTIONS /jobs/{job_id}
 Answers the OPTIONS method over /jobs/job-id
 
@@ -622,8 +624,8 @@ Get a specific field from the job identified by id
 
 |Code|Description                            |
 |----|---------------------------------------|
-|413 |The user doesn't have enough privileges|
 |404 |The job or the field doesn't exist     |
+|403 |The user doesn't have enough privileges|
 
 #### GET /jobs/{job_id}/files/{file_id}/retries
 Get the retries for a given file
@@ -639,8 +641,8 @@ Get the retries for a given file
 
 |Code|Description                            |
 |----|---------------------------------------|
-|413 |The user doesn't have enough privileges|
 |404 |The job or the file don't exist        |
+|403 |The user doesn't have enough privileges|
 
 #### GET /jobs/{job_id}/files
 Get the files within a job
@@ -658,8 +660,8 @@ Array of [File](#file)
 
 |Code|Description                            |
 |----|---------------------------------------|
-|413 |The user doesn't have enough privileges|
 |404 |The job doesn't exist                  |
+|403 |The user doesn't have enough privileges|
 
 ### Operations on the config audit
 #### GET /config/audit
@@ -858,15 +860,6 @@ Models
 |agent_dn            |string  |
 |reason_class        |string  |
 
-### FileRetryLog
-
-|Field   |Type    |
-|--------|--------|
-|reason  |string  |
-|attempt |integer |
-|file_id |integer |
-|datetime|dateTime|
-
 ### OptimizerEvolution
 
 |Field     |Type    |
@@ -881,6 +874,15 @@ Models
 |active    |integer |
 |source_se |string  |
 
+### FileRetryLog
+
+|Field   |Type    |
+|--------|--------|
+|reason  |string  |
+|attempt |integer |
+|file_id |integer |
+|datetime|dateTime|
+
 ### OAuth2Application
 
 |Field        |Type  |
@@ -892,6 +894,35 @@ Models
 |owner        |string|
 |client_secret|string|
 |description  |string|
+
+### DataManagement
+
+|Field          |Type    |
+|---------------|--------|
+|dm_token       |string  |
+|tx_duration    |float   |
+|hashed_id      |integer |
+|retry          |integer |
+|job_id         |string  |
+|retry_timestamp|dateTime|
+|job_finished   |dateTime|
+|wait_timestamp |dateTime|
+|source_se      |string  |
+|file_state     |string  |
+|start_time     |dateTime|
+|dest_se        |string  |
+|reason         |string  |
+|wait_timeout   |integer |
+|file_id        |integer |
+|user_filesize  |float   |
+|source_surl    |string  |
+|dest_surl      |string  |
+|finish_time    |dateTime|
+|checksum       |string  |
+|file_metadata  |string  |
+|activity       |string  |
+|dmHost         |string  |
+|vo_name        |string  |
 
 ### ArchivedJob
 
@@ -947,6 +978,7 @@ Models
 |user_cred               |string  |
 |max_time_in_queue       |integer |
 |files                   |array   |
+|dm                      |array   |
 |source_token_description|string  |
 |job_params              |string  |
 |bring_online            |integer |

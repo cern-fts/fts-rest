@@ -531,8 +531,8 @@ class JobsController(BaseController):
     @doc.query_arg('files', 'Comma separated list of file fields to retrieve in this query')
     @doc.response(200, 'The jobs exist')
     @doc.response(207, 'Some job had an error')
+    @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job doesn\'t exist')
-    @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
     @jsonify
     def get(self, job_list, start_response):
@@ -577,8 +577,8 @@ class JobsController(BaseController):
             start_response("207 Multi-Status", [('Content-Type', 'application/json')])
         return statuses
 
+    @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job or the field doesn\'t exist')
-    @doc.response(413, 'The user doesn\'t have enough privileges')
     @jsonify
     def get_field(self, job_id, field):
         """
@@ -590,8 +590,8 @@ class JobsController(BaseController):
         else:
             raise HTTPNotFound('No such field')
 
+    @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job doesn\'t exist')
-    @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(array_of=File)
     @jsonify
     def get_files(self, job_id):
@@ -606,8 +606,8 @@ class JobsController(BaseController):
         files = Session.query(File).filter(File.job_id == job_id).options(noload(File.retries))
         return files.all()
 
+    @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job or the file don\'t exist')
-    @doc.response(413, 'The user doesn\'t have enough privileges')
     @jsonify
     def get_file_retries(self, job_id, file_id):
         """
@@ -626,8 +626,8 @@ class JobsController(BaseController):
         return retries.all()
 
     @doc.response(207, 'For multiple job requests if there has been any error')
+    @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job doesn\'t exist')
-    @doc.response(413, 'The user doesn\'t have enough privileges')
     @doc.return_type(Job)
     @jsonify
     def cancel(self, job_id_list, start_response):
