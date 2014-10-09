@@ -69,13 +69,6 @@ class Oauth2Controller(BaseController):
         super(Oauth2Controller, self).__init__(*args, **kwargs)
         self.oauth2_provider = FTS3OAuth2AuthorizationProvider()
 
-    def __before__(self):
-        """
-        If OAuth2 is disabled, forbid access
-        """
-        if not pylons.config.get('fts3.oauth2', False):
-            raise HTTPForbidden('OAuth2 access disabled')
-
     @require_certificate
     def register_form(self):
         """

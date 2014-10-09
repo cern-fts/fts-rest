@@ -293,26 +293,6 @@ class TestOAuth2(TestController):
             status=403
         )
 
-    def test_oauth2_disable(self):
-        """
-        Disable OAuth2 in the configuration
-        """
-        self.setup_gridsite_environment()
-        pylons.config['fts3.oauth2'] = False
-
-        self.app.get(
-            url="/oauth2/apps",
-            status=403
-        )
-        self.app.get(
-            url="/oauth2/register",
-            status=403
-        )
-        self.app.get(
-            url="/oauth2/authorize",
-            status=403
-        )
-
     def test_expired(self):
         """
         Get a token, the token expires, so it should be denied
