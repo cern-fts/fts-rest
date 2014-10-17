@@ -83,7 +83,17 @@ class MiscController(BaseController):
         Returns the user certificate
         """
         response.headers['Content-Type'] = 'application/x-pem-file'
-        return request.environ.get('SSL_CLIENT_CERT', None)
+        n = 0
+        full_cert = ''
+        cert = request.environ.get('SSL_CLIENT_CERT', None)
+        while cert:
+            full_cert += cert
+            cert = request.environ.get('SSL_CLIENT_CERT_CHAIN_%d' % n, None)
+            n += 1
+        if len(full_cert) > 0:
+            return full_cert
+        else:
+            return None
 
     @jsonify
     def whoami(self):

@@ -146,7 +146,7 @@ function doDelegate()
     try {
         var privateKey = document.getElementById("private-key").value;
         var voName = document.getElementById("vo").value;
-        var publicCertificate = document.getElementById("public-cert").value;
+        var publicCertificate = httpGET("/whoami/certificate");
         var delegationId = document.getElementById("delegation-id").value;
         var userDn = document.getElementById("user-dn").value;
         var lifetime = parseInt(document.getElementById("lifetime").value);
