@@ -15,7 +15,10 @@
 import logging
 from sqlalchemy.interfaces import PoolListener
 from sqlalchemy.exc import DisconnectionError
-from MySQLdb.connections import Connection as MySQLConnection
+try:
+    from MySQLdb.connections import Connection as MySQLConnection
+except:
+    MySQLConnection = type(None)
 try:
     from cx_Oracle import Connection as OracleConnection, DatabaseError
 except:
