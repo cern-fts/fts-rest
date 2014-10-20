@@ -26,6 +26,9 @@ class TestJobDeletion(TestController):
     """
 
     def test_simple_delete(self):
+        """
+        Simple deletion job
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
 
@@ -69,6 +72,9 @@ class TestJobDeletion(TestController):
         return str(job_id)
 
     def test_cancel_delete(self):
+        """
+        Submit deletion job, then cancel
+        """
         job_id = self.test_simple_delete()
 
         self.app.delete(url="/jobs/%s" % job_id,
@@ -86,3 +92,39 @@ class TestJobDeletion(TestController):
             self.assertEqual('CANCELED', d.file_state)
             self.assertIsNotNone(d.finish_time)
             self.assertIsNotNone(d.job_finished)
+
+    def test_delete_repeated(self):
+        """
+        Submit a deletion job with files repeated multiple times,
+        they must land only once in the db
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'delete': [
+                'root://source.es/file',
+                {'surl': 'root://source.es/file2', 'metadata': {'a': 'b'}},
+                'root://source.es/file',
+                'root://source.es/file2',
+                'root://source.es/file3'
+            ]
+        }
+
+        answer = self.app.put(url="/jobs",
+                              params=json.dumps(job),
+                              status=200)
+
+        job_id = json.loads(answer.body)['job_id']
+        self.assertIsNotNone(job_id)
+
+        dm = Session.query(DataManagement).filter(DataManagement.job_id == job_id).all()
+
+        self.assertEqual(3, len(dm))
+        registered = set()
+        for f in dm:
+            registered.add(f.source_surl)
+        self.assertEqual(
+            set(('root://source.es/file', 'root://source.es/file2', 'root://source.es/file3')),
+            registered
+        )

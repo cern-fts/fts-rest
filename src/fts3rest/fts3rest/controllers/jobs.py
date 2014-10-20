@@ -166,9 +166,9 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
             pairs.append((source_url, dest_url))
 
     # Create one File entry per matching pair
-    initial_state='SUBMITTED'
+    initial_state = 'SUBMITTED'
     if len(files_dict['sources']) > 1 and len(files_dict['destinations']) == 1:
-        initial_state='NOT_USED'
+        initial_state = 'NOT_USED'
         if not shared_hashed_id:
             shared_hashed_id = _generate_hashed_id(job_id, f_index)
 
@@ -332,6 +332,7 @@ def _submit_deletion(user, job_dict, params):
     shared_hashed_id = _generate_hashed_id(job_id, 0)
 
     datamanagement = []
+    unique_surls = []  # Avoid surl duplication
     for dm in job_dict['delete']:
         if isinstance(dm, dict):
             entry = dm
@@ -341,17 +342,20 @@ def _submit_deletion(user, job_dict, params):
             raise ValueError("Invalid type for the deletion item (%s)" % type(dm))
         surl = urlparse.urlparse(entry['surl'])
         _validate_url(surl)
-        datamanagement.append(dict(
-            job_id=job_id,
-            vo_name=user.vos[0],
-            file_state='DELETE',
-            source_surl=entry['surl'],
-            source_se=_get_storage_element(surl),
-            dest_surl = None,
-            dest_se = None,
-            hashed_id=shared_hashed_id,
-            file_metadata=entry.get('metadata', None)
-        ))
+
+        if surl not in unique_surls:
+            datamanagement.append(dict(
+                job_id=job_id,
+                vo_name=user.vos[0],
+                file_state='DELETE',
+                source_surl=entry['surl'],
+                source_se=_get_storage_element(surl),
+                dest_surl=None,
+                dest_se=None,
+                hashed_id=shared_hashed_id,
+                file_metadata=entry.get('metadata', None)
+            ))
+            unique_surls.append(surl)
 
     _set_job_source_and_destination(job, datamanagement)
 
