@@ -45,7 +45,7 @@ from fts3.model import Credential, CredentialCache, Job, File, FileRetryLog, Opt
 __all__ = ['environ', 'url', 'TestController']
 
 # Invoke websetup with the current config file
-SetupCommand('setup-app').run([pylons.test.pylonsapp.config['__file__']])
+#SetupCommand('setup-app').run([pylons.test.pylonsapp.config['__file__']])
 
 environ = {}
 
