@@ -98,6 +98,8 @@ if [ "$1" -le "1" ] ; then # First install
 semanage port -a -t http_port_t -p tcp 8446
 setsebool -P httpd_can_network_connect=1
 setsebool -P httpd_setrlimit=1
+semanage fcontext -a -t httpd_log_t "/var/log/fts3rest(/.*)?"
+restorecon -R /var/log/fts3rest/
 fi
 
 %preun selinux
