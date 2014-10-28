@@ -251,7 +251,7 @@ class TestJobSubmission(TestController):
 
         job = {
             'files': [{
-                'sources': ['http://source.es/?SFN=/path/'],
+                'sources': ['srm://source.es/?SFN=/path/'],
                 'destinations': ['http://dest.ch/file'],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',

@@ -275,6 +275,10 @@ def _submit_transfer(user, job_dict, params):
 
     # If copy_pin_lifetime OR bring_online are specified, go to staging directly
     if job['copy_pin_lifetime'] > 0 or job['bring_online'] > 0:
+        n_not_srm = len(filter(lambda f: not f['source_surl'].startswith('srm://'), files))
+        if n_not_srm > 0:
+            raise HTTPBadRequest('Staging operations can only be used with the SRM protocol')
+
         job['job_state'] = 'STAGING'
         for t in files:
             t['file_state'] = 'STAGING'

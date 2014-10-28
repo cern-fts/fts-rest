@@ -108,3 +108,30 @@ class TestJobBringOnline(TestController):
         for f in db_job.files:
             self.assertEqual(f.file_state, 'STAGING')
             self.assertEqual(f.hashed_id, hid)
+
+    def test_staging_no_srm(self):
+        """
+        Anything that is not SRM should not be allowed to be submitted to STAGING
+        Regression for FTS-153
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['root://source.es/file'],
+                'destinations': ['root://dest.ch/file'],
+                'filesize': 1024,
+            }],
+            'params': {
+                'copy_pin_lifetime': 3600
+            }
+        }
+
+        answer=  self.app.put(url="/jobs",
+                              params=json.dumps(job),
+                              status=400)
+
+        error = json.loads(answer.body)
+        # SRM has to be mentioned in the error message
+        self.assertIn('SRM', error['message'])
