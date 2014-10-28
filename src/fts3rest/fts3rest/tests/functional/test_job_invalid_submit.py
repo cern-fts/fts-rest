@@ -472,6 +472,9 @@ class TestJobInvalidSubmits(TestController):
         )
 
     def test_transfer_and_deletion(self):
+        """
+        Jobs must be either deletion or transfer, not both
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
 
@@ -492,6 +495,9 @@ class TestJobInvalidSubmits(TestController):
                      status=400)
 
     def test_deletion_bad_surl(self):
+        """
+        Submit a deletion job with an invalid surl
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
 

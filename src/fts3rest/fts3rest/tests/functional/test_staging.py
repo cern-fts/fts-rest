@@ -105,7 +105,6 @@ class TestSubmitToStaging(TestController):
 
         return job_id
 
-
     def test_multiple_bringonline(self):
         """
         Test a bring online job, with multiple files
