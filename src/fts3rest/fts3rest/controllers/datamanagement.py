@@ -149,7 +149,7 @@ class DatamanagementController(BaseController):
     """
     Data management operations
     """
-    def mkdir_options(self):
+    def options(self):
         """
         Answer the OPTIONS method over /dm POST operations
         """
