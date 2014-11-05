@@ -26,6 +26,7 @@ import tempfile
 import urlparse
 import urllib
 import json
+import pylons
 
 from fts3.model import Credential
 from fts3rest.lib.api import doc
@@ -148,6 +149,12 @@ class DatamanagementController(BaseController):
     """
     Data management operations
     """
+    def options(self):
+        """
+        Answer the OPTIONS method over /dm POST operations
+        """
+        pylons.response.headers['Allow'] = 'POST, OPTIONS'
+        return []
 
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
