@@ -101,7 +101,7 @@ class DropboxConnector(object):
 
         dropbox_info = self._get_dropbox_info()
         if not dropbox_info:
-            raise HTTPNotFound('Dropbox info not found in the databse')
+            raise HTTPNotFound('Dropbox info not found in the database')
 
         access_tokens = self._make_call(
             dropboxApiEndpoint + "/1/oauth/access_token",

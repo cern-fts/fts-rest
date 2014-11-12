@@ -34,7 +34,7 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.http_exceptions import HTTPAuthenticationTimeout
 from fts3rest.lib.gfal2_wrapper import Gfal2Wrapper, Gfal2Error
-
+from fts3rest.controllers.CSdropbox import DropboxConnector;
 
 def _get_valid_surl():
     surl = request.params.get('surl')
@@ -78,6 +78,21 @@ def _http_status_from_errno(e):
 def _raise_http_error_from_gfal2_error(e):
     abort(_http_status_from_errno(e.errno), "[%d] %s" % (e.errno, e.message))
 
+def _is_dropbox(uri):
+    return uri.startswith("dropbox")
+	
+def _set_dropbox_headers(context):
+    # getting the tokens and add them to the context
+    user = request.environ['fts3.User.Credentials']
+    dropbox_con = DropboxConnector(user.user_dn,"dropbox")
+    dropbox_info = dropbox_con._get_dropbox_info()
+    dropbox_user_info = dropbox_con._get_dropbox_user_info();
+    context.set_opt_string("DROPBOX","APP_KEY",dropbox_info.app_key)
+    context.set_opt_string("DROPBOX","APP_SECRET",dropbox_info.app_secret)
+    context.set_opt_string("DROPBOX","ACCESS_TOKEN",dropbox_user_info.access_token)
+    context.set_opt_string("DROPBOX","ACCESS_TOKEN_SECRET",dropbox_user_info.access_token_secret)
+    return context	
+
 
 def _stat_impl(context, surl):
     st_stat = context.stat(surl)
@@ -111,10 +126,13 @@ def _list_impl(context, surl):
 def _rename_impl(context, rename_dict):
     if (len(rename_dict['old']) == 0) or (len(rename_dict['new'])) == 0:
         raise HTTPBadRequest('No old or name specified')
-
+    
     old_path = rename_dict['old']
     new_path = rename_dict['new']
 
+    if _is_dropbox(str(old_path)):
+        context = _set_dropbox_headers(context)
+    
     return context.rename(str(old_path), str(new_path))
 
 
@@ -123,7 +141,10 @@ def _unlink_impl(context, unlink_dict):
         raise HTTPBadRequest('No parameter "surl" specified')
 
     path = unlink_dict['surl']
-
+    
+    if _is_dropbox(str(path)):
+        context = _set_dropbox_headers(context)
+    
     return context.unlink(str(path))
 
 
@@ -133,6 +154,9 @@ def _rmdir_impl(context, rmdir_dict):
 
     path = rmdir_dict['surl']
 
+    if _is_dropbox(str(path)):
+        context = _set_dropbox_headers(context)
+
     return context.rmdir(str(path))
 
 
@@ -141,6 +165,9 @@ def _mkdir_impl(context, mkdir_dict):
         raise HTTPBadRequest('No parameter "surl" specified')
 
     path = mkdir_dict['surl']
+    
+    if _is_dropbox(str(path)):
+	context = _set_dropbox_headers(context)
 
     return context.mkdir(str(path), 0775)
 
