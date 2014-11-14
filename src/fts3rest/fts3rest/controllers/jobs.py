@@ -149,7 +149,7 @@ def _generate_hashed_id(job_id, f_index):
     return int(hashlib.md5(concat).hexdigest()[-4:], 16)
 
 
-def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None):
+def _populate_files(files_dict, job_id, f_index, vo_name, is_bringonline, shared_hashed_id):
     """
     From the dictionary files_dict, generate a list of transfers for a job
     """
@@ -166,17 +166,27 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
             pairs.append((source_url, dest_url))
 
     # Create one File entry per matching pair
-    initial_state = 'SUBMITTED'
+    if is_bringonline:
+        entry_state = 'STAGING'
+    else:
+        entry_state = 'SUBMITTED'
+
+    file_initial_state = entry_state
     if len(files_dict['sources']) > 1 and len(files_dict['destinations']) == 1:
-        initial_state = 'NOT_USED'
+        if is_bringonline:
+            raise HTTPBadRequest('Staging with multiple replicas is not allowed')
+        file_initial_state = 'NOT_USED'
         if not shared_hashed_id:
             shared_hashed_id = _generate_hashed_id(job_id, f_index)
 
     for (s, d) in pairs:
+        if s.scheme != 'srm' and is_bringonline:
+            raise HTTPBadRequest('Staging operations can only be used with the SRM protocol')
+
         f = dict(
             job_id=job_id,
             file_index=f_index,
-            file_state=initial_state,
+            file_state=file_initial_state,
             source_surl=s.geturl(),
             dest_surl=d.geturl(),
             source_se=_get_storage_element(s),
@@ -191,8 +201,8 @@ def _populate_files(files_dict, job_id, f_index, vo_name, shared_hashed_id=None)
         )
         files.append(f)
 
-    if len(files) > 0 and initial_state == 'NOT_USED':
-        files[0]['file_state']='SUBMITTED'
+    if file_initial_state == 'NOT_USED':
+        files[0]['file_state'] = entry_state
 
     return files
 
@@ -227,10 +237,17 @@ def _submit_transfer(user, job_dict, params):
     elif _yes_or_no(params['reuse']):
         reuse_flag = 'Y'
 
+    # Check if this is a bring online job
+    is_bringonline = params['copy_pin_lifetime'] > 0 or params['bring_online'] > 0
+
+    job_initial_state = 'SUBMITTED'
+    if is_bringonline:
+        job_initial_state = 'STAGING'
+
     job_id = str(uuid.uuid1())
     job = dict(
         job_id=job_id,
-        job_state='SUBMITTED',
+        job_state=job_initial_state,
         reuse_job=reuse_flag,
         retry=int(params['retry']),
         job_params=params['gridftp'],
@@ -267,21 +284,11 @@ def _submit_transfer(user, job_dict, params):
     files = []
     f_index = 0
     for t in job_dict['files']:
-        files.extend(_populate_files(t, job_id, f_index, job['vo_name'], shared_hashed_id))
+        files.extend(_populate_files(t, job_id, f_index, job['vo_name'], is_bringonline, shared_hashed_id))
         f_index += 1
 
     if len(files) == 0:
         raise HTTPBadRequest('No valid pairs available')
-
-    # If copy_pin_lifetime OR bring_online are specified, go to staging directly
-    if job['copy_pin_lifetime'] > 0 or job['bring_online'] > 0:
-        n_not_srm = len(filter(lambda f: not f['source_surl'].startswith('srm://'), files))
-        if n_not_srm > 0:
-            raise HTTPBadRequest('Staging operations can only be used with the SRM protocol')
-
-        job['job_state'] = 'STAGING'
-        for t in files:
-            t['file_state'] = 'STAGING'
 
     # If a checksum is provided, but no checksum is available, 'relaxed' comparison
     # (Not nice, but need to keep functionality!)

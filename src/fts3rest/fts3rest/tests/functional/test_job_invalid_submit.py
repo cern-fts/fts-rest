@@ -508,3 +508,51 @@ class TestJobInvalidSubmits(TestController):
         self.app.put(url="/jobs",
                      params=json.dumps(job),
                      status=400)
+
+    def test_multiple_replica_and_bring_online(self):
+        """
+        A multiple replica job with pin lifetime OR bring online timeout must be
+        forbidden
+        https://its.cern.ch/jira/browse/FTS-157
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [
+                {
+                    'sources': ['srm://source.es:8446/file', 'srm://source.fr:8443/file', 'srm://source.ch:8443/file'],
+                    'destinations': ['srm://dest.ch:8447/file'],
+                    'selection_strategy': 'orderly',
+                    'checksum': 'adler32:1234',
+                    'filesize': 1024,
+                    'metadata': {'mykey': 'myvalue'},
+                }
+            ],
+            'params': {
+                'overwrite': True,
+                'verify_checksum': True,
+                'copy_pin_lifetime': 3600
+            }
+        }
+
+        answer = self.app.post(url="/jobs",
+                               content_type='application/json',
+                               params=json.dumps(job),
+                               status=400)
+
+        error = json.loads(answer.body)
+        self.assertIn('multiple replicas', error['message'].lower())
+        self.assertIn('staging', error['message'].lower())
+
+        del job['params']['copy_pin_lifetime']
+        job['params']['bring_online'] = 1234
+
+        answer = self.app.post(url="/jobs",
+                               content_type='application/json',
+                               params=json.dumps(job),
+                               status=400)
+
+        error = json.loads(answer.body)
+        self.assertIn('multiple replicas', error['message'].lower())
+        self.assertIn('staging', error['message'].lower())
