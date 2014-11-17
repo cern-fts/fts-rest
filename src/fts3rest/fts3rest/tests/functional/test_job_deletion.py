@@ -128,3 +128,25 @@ class TestJobDeletion(TestController):
             set(('root://source.es/file', 'root://source.es/file2', 'root://source.es/file3')),
             registered
         )
+
+    def test_delete_file(self):
+        """
+        Submit a deletion job with a file:///
+        Must be denied
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'delete': [
+                'root://source.es/file',
+                {'surl': 'root://source.es/file2', 'metadata': {'a': 'b'}},
+                'root://source.es/file',
+                'root://source.es/file2',
+                'file:///etc/passwd'
+            ]
+        }
+
+        self.app.put(url="/jobs",
+                     params=json.dumps(job),
+                     status=400)
