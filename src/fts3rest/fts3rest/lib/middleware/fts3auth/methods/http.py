@@ -38,7 +38,7 @@ def do_authentication(credentials, env):
         cert = b64decode(cred['cert'])
         sign = b64decode(cred['sign'])
         ts = int(dateutil.parser.parse(cred['ts']).strftime('%s'))
-    except TypeError:
+    except (TypeError, ValueError):
         raise InvalidCredentials()
 
     x509 = X509.load_cert_string(cert, X509.FORMAT_DER)
