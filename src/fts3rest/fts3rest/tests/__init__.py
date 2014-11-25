@@ -84,15 +84,18 @@ class TestController(TestCase):
 
         self.pkey, self.cert = _generate_mock_cert()
 
-    def setup_gridsite_environment(self, no_vo=False):
+    def setup_gridsite_environment(self, no_vo=False, dn=None):
         """
         Add to the test environment mock values of the variables
         set by mod_gridsite.
 
         Args:
             noVo: If True, no VO attributes will be set
+            dn: Override default user DN
         """
-        env = {'GRST_CRED_AURI_0': 'dn:' + TestController.TEST_USER_DN}
+        if dn is None:
+            dn = TestController.TEST_USER_DN
+        env = {'GRST_CRED_AURI_0': 'dn:' + dn}
 
         if not no_vo:
             env.update({

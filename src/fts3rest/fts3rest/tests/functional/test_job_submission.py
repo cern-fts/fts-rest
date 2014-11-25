@@ -30,12 +30,12 @@ class TestJobSubmission(TestController):
     Tests job submission
     """
 
-    def _validate_submitted(self, job, no_vo=False):
+    def _validate_submitted(self, job, no_vo=False, dn=TestController.TEST_USER_DN):
         self.assertNotEqual(job, None)
         files = job.files
         self.assertNotEqual(files, None)
 
-        self.assertEqual(job.user_dn, '/DC=ch/DC=cern/CN=Test User')
+        self.assertEqual(job.user_dn, dn)
         if no_vo:
             self.assertEqual(job.vo_name, 'TestUser@cern.ch')
         else:
@@ -410,6 +410,37 @@ class TestJobSubmission(TestController):
         self.assertGreater(len(job_id), 0)
 
         self._validate_submitted(Session.query(Job).get(job_id), no_vo=True)
+
+    def test_no_vo_proxy(self):
+        """
+        Submit a valid job with no VO data in the credentials, but still being a proxy.
+        The job must be accepted, but assigned to the user's 'virtual' vo.
+        """
+        proxy_dn = self.TEST_USER_DN + '/CN=proxy'
+        self.setup_gridsite_environment(no_vo=True, dn=proxy_dn)
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['root://source.es/file'],
+                'destinations': ['root://dest.ch/file'],
+                'selection_strategy': 'orderly',
+                'checksum': 'adler32:1234',
+                'filesize': 1024,
+                'metadata': {'mykey': 'myvalue'},
+            }],
+            'params': {'overwrite': True, 'verify_checksum': True}
+        }
+
+        answer = self.app.put(url="/jobs",
+                              params=json.dumps(job),
+                              status=200)
+
+        # Make sure it was commited to the DB
+        job_id = json.loads(answer.body)['job_id']
+        self.assertGreater(len(job_id), 0)
+
+        self._validate_submitted(Session.query(Job).get(job_id), no_vo=True, dn=proxy_dn)
 
     def test_retry(self):
         """

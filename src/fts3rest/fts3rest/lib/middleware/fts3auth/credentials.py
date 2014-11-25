@@ -70,7 +70,7 @@ def build_vo_from_dn(user_dn):
     domain = []
     uname = ''
     for key, value in components:
-        if key.upper() == 'CN':
+        if key.upper() == 'CN' and not uname:
             uname = value
         elif key.upper() == 'DC':
             domain.append(value)
