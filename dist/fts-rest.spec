@@ -32,6 +32,7 @@ Requires:     httpd%{?_isa}
 Requires:     mod_wsgi
 Requires:     python-fts = %{version}-%{release}
 Requires:     python-paste-deploy
+Requires:     python-dateutil
 Requires:     python-pylons
 Requires:     gfal2-python
 
