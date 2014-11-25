@@ -19,13 +19,13 @@ BuildRequires:  python-nose1.1
 %if %{?rhel}%{!?rhel:0} >= 7
 BuildRequires:  python-nose
 %endif
+BuildRequires:  python-dateutil
 BuildRequires:  python-pylons
 BuildRequires:  scipy
 BuildRequires:  m2crypto
 BuildRequires:  python-coverage
 BuildRequires:  python-sqlalchemy
 BuildRequires:  python-requests
-BuildRequires:  python-dateutil
 BuildRequires:  pandoc
 
 Requires:     gridsite%{?_isa} >= 1.7
