@@ -31,7 +31,7 @@ def do_authentication(credentials, env):
     log = logging.getLogger(__name__)
 
     # Parse Authorization header into key="value" pairs
-    cred = dict(re.findall(r"(\w+)\s*=\s*\"([^\"]+)\"", env['HTTP_AUTHORIZATION']))
+    cred = dict((k.lower(), v) for k, v in re.findall(r"(\w+)\s*=\s*\"([^\"]+)\"", env['HTTP_AUTHORIZATION']))
 
     if not 'cert' in cred or not 'hash' in cred or not 'sign' in cred or not 'ts' in cred:
         log.info("Wrong format of signed-cert authorization header")
