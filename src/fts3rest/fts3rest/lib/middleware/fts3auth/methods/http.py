@@ -18,7 +18,7 @@
 import re, time, dateutil.parser
 from base64 import b64decode
 from M2Crypto import X509, EVP
-from fts3rest.lib.middleware.fts3auth.credentials import vo_from_fqan, build_vo_from_dn, generate_delegation_id
+from fts3rest.lib.middleware.fts3auth.credentials import InvalidCredentials, vo_from_fqan, build_vo_from_dn, generate_delegation_id
 
 def do_authentication(credentials, env):
     """
