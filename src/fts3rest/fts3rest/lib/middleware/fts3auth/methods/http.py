@@ -15,7 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import re, time, dateutil.parser
+import re, time, dateutil.parser, logging
 from base64 import b64decode
 from M2Crypto import X509, EVP
 from fts3rest.lib.middleware.fts3auth.credentials import InvalidCredentials, vo_from_fqan, build_vo_from_dn, generate_delegation_id
@@ -28,17 +28,26 @@ def do_authentication(credentials, env):
     if not 'HTTP_AUTHORIZATION' in env or not env['HTTP_AUTHORIZATION'].lower().startswith('signed-cert'):
         return False
 
+    log = logging.getLogger(__name__)
+
     # Parse Authorization header into key="value" pairs
     cred = dict(re.findall(r"(\w+)\s*=\s*\"([^\"]+)\"", env['HTTP_AUTHORIZATION']))
 
     if not 'cert' in cred or not 'hash' in cred or not 'sign' in cred or not 'ts' in cred:
+        log.info("Wrong format of signed-cert authorization header")
         return False
 
     try:
         cert = b64decode(cred['cert'])
         sign = b64decode(cred['sign'])
-        ts = int(dateutil.parser.parse(cred['ts']).strftime('%s'))
+        ts = dateutil.parser.parse(cred['ts']).strftime('%s')
     except (TypeError, ValueError):
+        log.info("Cannot decode certificate, signature or timestamp")
+        raise InvalidCredentials()
+
+    td = abs(int(time.mktime(time.gmtime())) - int(ts))
+    if td > 60:
+        log.info("Authorization has expired by " + str(td) + " seconds")
         raise InvalidCredentials()
 
     x509 = X509.load_cert_string(cert, X509.FORMAT_DER)
@@ -49,7 +58,8 @@ def do_authentication(credentials, env):
     verify.verify_init()
     verify.verify_update(cert)
     verify.verify_update(cred['ts'])
-    if not verify.verify_final(sign) or abs(time.time() - ts) > 60:
+    if not verify.verify_final(sign):
+        log.info("Signature verification failed")
         raise InvalidCredentials()
 
     credentials.user_dn = '/'+'/'.join(x509.get_subject().as_text().split(', '))
