@@ -63,6 +63,7 @@ def do_authentication(credentials, env):
         raise InvalidCredentials()
 
     credentials.user_dn = '/'+'/'.join(x509.get_subject().as_text().split(', '))
+    credentials.dn.append(credentials.user_dn)
 
 #   for each VOMS attr:
 #       fqan = #magic
