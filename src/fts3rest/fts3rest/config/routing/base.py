@@ -23,6 +23,10 @@ def do_connect(config, map):
     # Root
     map.connect('/', controller='misc', action='api_version')
 
+    # OPTIONS handler
+    map.connect('/{path:.*?}', controller='api', action='options_handler',
+                conditions=dict(method=['OPTIONS']))
+
     # Whoami
     map.connect('/whoami', controller='misc', action='whoami')
     map.connect('/whoami/certificate', controller='misc', action='certificate')
@@ -61,11 +65,6 @@ def do_connect(config, map):
     map.connect('/jobs', controller='jobs', action='submit',
                 conditions=dict(method=['PUT', 'POST']))
 
-    map.connect('/jobs/{job_id}', controller='jobs', action='job_options',
-                conditions=dict(method=['OPTIONS']))
-    map.connect('/jobs', controller='jobs', action='options',
-                conditions=dict(method=['OPTIONS']))
-
     # Archive
     map.connect('/archive', controller='archive', action='index',
                 conditions=dict(method=['GET']))
@@ -94,13 +93,9 @@ def do_connect(config, map):
     map.connect('/dm/list', controller='datamanagement', action='list')
     map.connect('/dm/stat', controller='datamanagement', action='stat')
     map.connect('/dm/mkdir', controller='datamanagement', action='mkdir', conditions=dict(method=['POST']))
-    map.connect('/dm/mkdir', controller='datamanagement', action='options', conditions=dict(method=['OPTIONS']))
     map.connect('/dm/unlink', controller='datamanagement', action='unlink', conditions=dict(method=['POST']))
-    map.connect('/dm/unlink', controller='datamanagement', action='options', conditions=dict(method=['OPTIONS']))
     map.connect('/dm/rmdir', controller='datamanagement', action='rmdir', conditions=dict(method=['POST']))
-    map.connect('/dm/rmdir', controller='datamanagement', action='options', conditions=dict(method=['OPTIONS']))
     map.connect('/dm/rename', controller='datamanagement', action='rename', conditions=dict(method=['POST']))
-    map.connect('/dm/rename', controller='datamanagement', action='options', conditions=dict(method=['OPTIONS']))
 
     # Snapshot
     map.connect('/snapshot', controller='snapshot', action='snapshot')

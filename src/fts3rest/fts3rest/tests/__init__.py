@@ -35,7 +35,7 @@ from M2Crypto.ASN1 import UTC
 from paste.script.appinstall import SetupCommand
 from pylons import url
 from routes.util import URLGenerator
-from webtest import TestApp
+from webtest import TestApp, TestRequest
 
 from fts3rest.lib.middleware import fts3auth
 from fts3rest.lib.base import Session
@@ -68,6 +68,14 @@ def _generate_mock_cert():
     return pkey, cert
 
 
+def _app_options(self, url, headers=None, status=None, expect_errors=False):
+    """
+    To be injected into TestApp if it doesn't have an options method available
+    """
+    req = TestRequest.blank(path=url, method='OPTIONS', headers=headers, environ=self.extra_environ)
+    return self.do_request(req, status, expect_errors)
+
+
 class TestController(TestCase):
     """
     Base class for the tests
@@ -79,6 +87,12 @@ class TestController(TestCase):
         wsgiapp = pylons.test.pylonsapp
         config = wsgiapp.config
         self.app = TestApp(wsgiapp)
+        # Decorate with an OPTIONS method
+        # The webtest version in el6 does not have it
+        if not hasattr(self.app, 'options'):
+            import types
+            setattr(self.app, 'options', types.MethodType(_app_options, self.app))
+
         url._push_object(URLGenerator(config['routes.map'], environ))
         TestCase.__init__(self, *args, **kwargs)
 
@@ -234,3 +248,13 @@ class TestController(TestCase):
         if obj is None:
             standardMsg = "Unexpected None"
             self.fail(standardMsg)
+
+    def assertItemsEqual(self, iter1, iter2):
+        if iter1 is None and iter2 is None:
+            pass
+        elif iter1 is None and iter2 is not None:
+            self.fail('iter1 is None')
+        elif iter2 is None:
+            self.fail('%s != None' % str(iter1))
+        elif set(iter1) != set(iter1):
+            self.fail('%s != %s' % (str(iter1), str(iter2)))

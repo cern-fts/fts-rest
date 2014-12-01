@@ -1,20 +1,23 @@
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import pylons
+
+from routes import request_config
 from webob.exc import HTTPNotFound
 
 from fts3rest.lib.api import doc
@@ -81,3 +84,19 @@ class ApiController(BaseController):
             'apis': self.apis.get(resource_path, []),
             'models': self.models.get(resource_path, []),
         }
+
+    def options_handler(self, path, environ):
+        """
+        Generates a response for an OPTIONS request
+        """
+        mapper = request_config(original=True).mapper
+        match = mapper.routematch('/' + path)
+        if not match:
+            raise HTTPNotFound()
+        _, route = match
+        allowed = route.conditions.get('method', ['GET', 'OPTIONS'])
+        if 'OPTIONS' not in allowed:
+            allowed.append('OPTIONS')
+
+        pylons.response.headers['Allow'] = ', '.join(allowed)
+        return None

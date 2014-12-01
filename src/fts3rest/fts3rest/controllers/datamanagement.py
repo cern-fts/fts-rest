@@ -80,7 +80,7 @@ def _raise_http_error_from_gfal2_error(e):
 
 def _is_dropbox(uri):
     return uri.startswith("dropbox")
-	
+
 def _set_dropbox_headers(context):
     # getting the tokens and add them to the context
     user = request.environ['fts3.User.Credentials']
@@ -91,7 +91,7 @@ def _set_dropbox_headers(context):
     context.set_opt_string("DROPBOX","APP_SECRET",dropbox_info.app_secret)
     context.set_opt_string("DROPBOX","ACCESS_TOKEN",dropbox_user_info.access_token)
     context.set_opt_string("DROPBOX","ACCESS_TOKEN_SECRET",dropbox_user_info.access_token_secret)
-    return context	
+    return context
 
 
 def _stat_impl(context, surl):
@@ -126,13 +126,13 @@ def _list_impl(context, surl):
 def _rename_impl(context, rename_dict):
     if (len(rename_dict['old']) == 0) or (len(rename_dict['new'])) == 0:
         raise HTTPBadRequest('No old or name specified')
-    
+
     old_path = rename_dict['old']
     new_path = rename_dict['new']
 
     if _is_dropbox(str(old_path)):
         context = _set_dropbox_headers(context)
-    
+
     return context.rename(str(old_path), str(new_path))
 
 
@@ -141,10 +141,10 @@ def _unlink_impl(context, unlink_dict):
         raise HTTPBadRequest('No parameter "surl" specified')
 
     path = unlink_dict['surl']
-    
+
     if _is_dropbox(str(path)):
         context = _set_dropbox_headers(context)
-    
+
     return context.unlink(str(path))
 
 
@@ -165,9 +165,9 @@ def _mkdir_impl(context, mkdir_dict):
         raise HTTPBadRequest('No parameter "surl" specified')
 
     path = mkdir_dict['surl']
-    
+
     if _is_dropbox(str(path)):
-	context = _set_dropbox_headers(context)
+        context = _set_dropbox_headers(context)
 
     return context.mkdir(str(path), 0775)
 
@@ -176,12 +176,6 @@ class DatamanagementController(BaseController):
     """
     Data management operations
     """
-    def options(self):
-        """
-        Answer the OPTIONS method over /dm POST operations
-        """
-        pylons.response.headers['Allow'] = 'POST, OPTIONS'
-        return []
 
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
