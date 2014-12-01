@@ -138,14 +138,27 @@ class ApiController(BaseController):
         """
         Generates a response for an OPTIONS request
         """
-        mapper = request_config(original=True).mapper
-        match = mapper.routematch('/' + path)
-        if not match:
+        mapper = request_config(original=False).mapper
+        mapper.create_regs()
+
+        full_path = '/' + path
+        routes = list()
+        for route in mapper.matchlist:
+            match = route.match(full_path)
+            if isinstance(match, dict) or match:
+                routes.append(route)
+
+        if len(routes) == 0:
             raise HTTPNotFound()
-        _, route = match
-        allowed = route.conditions.get('method', ['GET', 'OPTIONS'])
-        if 'OPTIONS' not in allowed:
-            allowed.append('OPTIONS')
+
+        allowed = set()
+        for route in routes:
+            if route.conditions and 'method' in route.conditions:
+                allowed.update(set(route.conditions['method']))
+
+        # If only this handler matches, consider this a Not Found
+        if allowed == set(['OPTIONS']):
+            raise HTTPNotFound()
 
         pylons.response.headers['Allow'] = ', '.join(allowed)
         return None

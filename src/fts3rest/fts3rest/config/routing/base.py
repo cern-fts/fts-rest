@@ -28,8 +28,10 @@ def do_connect(config, map):
                 conditions=dict(method=['OPTIONS']))
 
     # Delegation and self-identification
-    map.connect('/whoami', controller='delegation', action='whoami')
-    map.connect('/whoami/certificate', controller='delegation', action='certificate')
+    map.connect('/whoami', controller='delegation', action='whoami',
+                conditions=dict(method=['GET']))
+    map.connect('/whoami/certificate', controller='delegation', action='certificate',
+                conditions=dict(method=['GET']))
     map.connect('/delegation/{dlg_id}', controller='delegation', action='view',
                 conditions=dict(method=['GET']))
     map.connect('/delegation/{dlg_id}', controller='delegation', action='delete',
@@ -75,31 +77,48 @@ def do_connect(config, map):
                 conditions=dict(method=['GET']))
 
     # Schema definition
-    map.connect('/api-docs/schema/submit', controller='api', action='submit_schema')
-    map.connect('/api-docs', controller='api', action='api_docs')
-    map.connect('/api-docs/{resource}', controller='api', action='resource_doc')
+    map.connect('/api-docs/schema/submit', controller='api', action='submit_schema',
+                conditions=dict(method=['GET']))
+    map.connect('/api-docs', controller='api', action='api_docs',
+                conditions=dict(method=['GET']))
+    map.connect('/api-docs/{resource}', controller='api', action='resource_doc',
+                conditions=dict(method=['GET']))
 
     # Configuration audit
-    map.connect('/config/audit', controller='config', action='audit')
+    map.connect('/config/audit', controller='config', action='audit',
+                conditions=dict(method=['GET']))
 
     # Optimizer
-    map.connect('/optimizer', controller='optimizer', action='is_enabled')
+    map.connect('/optimizer', controller='optimizer', action='is_enabled',
+                conditions=dict(method=['GET']))
     map.connect('/optimizer/evolution', controller='optimizer',
-                action='evolution')
+                action='evolution',
+                conditions=dict(method=['GET']))
 
     # GFAL2 bindings
-    map.connect('/dm/list', controller='datamanagement', action='list')
-    map.connect('/dm/stat', controller='datamanagement', action='stat')
-    map.connect('/dm/mkdir', controller='datamanagement', action='mkdir', conditions=dict(method=['POST']))
-    map.connect('/dm/unlink', controller='datamanagement', action='unlink', conditions=dict(method=['POST']))
-    map.connect('/dm/rmdir', controller='datamanagement', action='rmdir', conditions=dict(method=['POST']))
-    map.connect('/dm/rename', controller='datamanagement', action='rename', conditions=dict(method=['POST']))
+    map.connect('/dm/list', controller='datamanagement', action='list',
+                conditions=dict(method=['GET']))
+    map.connect('/dm/stat', controller='datamanagement', action='stat',
+                conditions=dict(method=['GET']))
+    map.connect('/dm/mkdir', controller='datamanagement', action='mkdir',
+                conditions=dict(method=['POST']))
+    map.connect('/dm/unlink', controller='datamanagement', action='unlink',
+                conditions=dict(method=['POST']))
+    map.connect('/dm/rmdir', controller='datamanagement', action='rmdir',
+                conditions=dict(method=['POST']))
+    map.connect('/dm/rename', controller='datamanagement', action='rename',
+                conditions=dict(method=['POST']))
 
     # Snapshot
-    map.connect('/snapshot', controller='snapshot', action='snapshot')
+    map.connect('/snapshot', controller='snapshot', action='snapshot',
+                conditions=dict(method=['GET']))
 
     # Banning
-    map.connect('/ban/se', controller='banning', action='ban_se', conditions=dict(method=['POST']))
-    map.connect('/ban/se', controller='banning', action='unban_se', conditions=dict(method=['DELETE']))
-    map.connect('/ban/dn', controller='banning', action='ban_dn', conditions=dict(method=['POST']))
-    map.connect('/ban/dn', controller='banning', action='unban_dn', conditions=dict(method=['DELETE']))
+    map.connect('/ban/se', controller='banning', action='ban_se',
+                conditions=dict(method=['POST']))
+    map.connect('/ban/se', controller='banning', action='unban_se',
+                conditions=dict(method=['DELETE']))
+    map.connect('/ban/dn', controller='banning', action='ban_dn',
+                conditions=dict(method=['POST']))
+    map.connect('/ban/dn', controller='banning', action='unban_dn',
+                conditions=dict(method=['DELETE']))

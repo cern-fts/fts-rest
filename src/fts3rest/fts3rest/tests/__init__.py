@@ -250,11 +250,9 @@ class TestController(TestCase):
             self.fail(standardMsg)
 
     def assertItemsEqual(self, iter1, iter2):
-        if iter1 is None and iter2 is None:
-            pass
-        elif iter1 is None and iter2 is not None:
+        if iter1 is None:
             self.fail('iter1 is None')
         elif iter2 is None:
-            self.fail('%s != None' % str(iter1))
-        elif set(iter1) != set(iter1):
+            self.fail('iter2 is None')
+        elif set(iter1) != set(iter2):
             self.fail('%s != %s' % (str(iter1), str(iter2)))

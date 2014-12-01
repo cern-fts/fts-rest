@@ -118,6 +118,14 @@ class TestOptions(TestController):
         response = self.app.options('/snapshot', status=200)
         self.assertItemsEqual(['GET', 'OPTIONS'], response.allow)
 
+    def test_options_404(self):
+        """
+        Test OPTIONS on a non-existing url
+        """
+        self.setup_gridsite_environment()
+
+        self.app.options('/thiswouldreallysurpriseme', status=404)
+
     def test_entry_point(self):
         """
         Test main entry point
