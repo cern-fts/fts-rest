@@ -20,11 +20,12 @@ import pylons
 from routes import request_config
 from webob.exc import HTTPNotFound
 
+from fts3.model import CredentialVersion, SchemaVersion
+
 from fts3rest.lib.api import doc
-from fts3rest.lib.base import BaseController
+from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib import api
-
 
 class ApiController(BaseController):
     """
@@ -36,6 +37,54 @@ class ApiController(BaseController):
         self.resources.sort(key=lambda res: res['path'])
         for r in self.apis.values():
             r.sort(key=lambda a: a['path'])
+
+    @jsonify
+    def api_version(self):
+        cred_v = Session.query(CredentialVersion).all()
+        cred_v = cred_v[0] if cred_v else None
+        schema_v = Session.query(SchemaVersion).all()
+        schema_v = schema_v[0] if schema_v else None
+        return {
+            'api': dict(major=3, minor=2, revision=31),
+            'schema': cred_v,
+            'delegation': schema_v,
+            '_links': {
+                'curies': [{'name': 'fts', 'href': 'https://svnweb.cern.ch/trac/fts3'}],
+
+                'fts:whoami': {'href': '/whoami', 'title': 'Check user certificate'},
+
+                'fts:joblist': {
+                    'href': '/jobs{?vo_name,user_dn,dlg_id,state_in}',
+                    'title': 'List of active jobs',
+                    'templated': True
+                },
+                'fts:job': {
+                    'href': '/jobs/{id}',
+                    'title': 'Job information',
+                    'templated': True,
+                    'hints': {
+                        'allow': ['GET', 'DELETE']
+                    }
+                },
+
+
+                'fts:configaudit': {'href': '/config/audit', 'title': 'Configuration'},
+
+                'fts:submitschema': {'href': '/api-docs/schema/submit', 'title': 'JSON schema of messages'},
+                'fts:apidocs': {'href': '/api-docs/', 'title': 'API Documentation'},
+                'fts:jobsubmit': {
+                    'href': '/jobs',
+                    'hints': {
+                        'allow': ['POST'],
+                        'representations': ['fts:submitschema']
+                    }
+                },
+
+                'fts:optimizer': {'href': '/optimizer/', 'title': 'Optimizer'},
+
+                'fts:archive':  {'href': '/archive/', 'title': 'Archive'}
+            }
+        }
 
     @jsonify
     def submit_schema(self):

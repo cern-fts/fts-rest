@@ -24,7 +24,7 @@ import types
 from datetime import datetime
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPNotFound
 from M2Crypto import X509, RSA, EVP, BIO
-from pylons import config, request
+from pylons import config, request, response
 from pylons.templating import render_mako as render
 
 from fts3.model import CredentialCache, Credential
@@ -179,6 +179,31 @@ class DelegationController(BaseController):
             self.vo_list = list(sorted(self.vo_list))
         except:
             pass
+
+    @require_certificate
+    def certificate(self):
+        """
+        Returns the user certificate
+        """
+        response.headers['Content-Type'] = 'application/x-pem-file'
+        n = 0
+        full_cert = ''
+        cert = request.environ.get('SSL_CLIENT_CERT', None)
+        while cert:
+            full_cert += cert
+            cert = request.environ.get('SSL_CLIENT_CERT_CHAIN_%d' % n, None)
+            n += 1
+        if len(full_cert) > 0:
+            return full_cert
+        else:
+            return None
+
+    @jsonify
+    def whoami(self):
+        """
+        Returns the active credentials of the user
+        """
+        return request.environ['fts3.User.Credentials']
 
     @doc.return_type('dateTime')
     @jsonify

@@ -13,6 +13,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import json
+
 from fts3rest.tests import TestController
 
 
@@ -115,3 +117,13 @@ class TestOptions(TestController):
 
         response = self.app.options('/snapshot', status=200)
         self.assertItemsEqual(['GET', 'OPTIONS'], response.allow)
+
+    def test_entry_point(self):
+        """
+        Test main entry point
+        """
+        self.setup_gridsite_environment()
+
+        response = self.app.get('/', status=200)
+        json_response = json.loads(response.body)
+        self.assertIn('api', json_response)

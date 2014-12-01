@@ -21,17 +21,15 @@ def do_connect(config, map):
     Base urls
     """
     # Root
-    map.connect('/', controller='misc', action='api_version')
+    map.connect('/', controller='api', action='api_version')
 
     # OPTIONS handler
     map.connect('/{path:.*?}', controller='api', action='options_handler',
                 conditions=dict(method=['OPTIONS']))
 
-    # Whoami
-    map.connect('/whoami', controller='misc', action='whoami')
-    map.connect('/whoami/certificate', controller='misc', action='certificate')
-
-    # Delegation
+    # Delegation and self-identification
+    map.connect('/whoami', controller='delegation', action='whoami')
+    map.connect('/whoami/certificate', controller='delegation', action='certificate')
     map.connect('/delegation/{dlg_id}', controller='delegation', action='view',
                 conditions=dict(method=['GET']))
     map.connect('/delegation/{dlg_id}', controller='delegation', action='delete',
