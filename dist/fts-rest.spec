@@ -11,6 +11,7 @@ License:        ASL 2.0
 URL:            https://svnweb.cern.ch/trac/fts3
 Source0:        https://grid-deployment.web.cern.ch/grid-deployment/dms/fts3/tar/%{name}-%{version}.tar.gz
 
+BuildRequires:  gfal2-python
 BuildRequires:  cmake
 BuildRequires:  python-jsonschema
 %if %{?rhel}%{!?rhel:0} == 6
