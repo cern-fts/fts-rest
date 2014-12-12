@@ -78,7 +78,7 @@ class TestJobCancel(TestController):
         self.assertNotEqual(None, job.finish_time)
         for f in job.files:
             self.assertEqual(f.file_state, 'CANCELED')
-            self.assertNotEqual(None, f.job_finished)
+            self.assertEqual(None, f.job_finished) # Actually expected like this by FTS3 to trigger the KILL
             self.assertNotEqual(None, f.finish_time)
 
     def test_cancel_terminal(self):

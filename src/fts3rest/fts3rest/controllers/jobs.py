@@ -674,11 +674,15 @@ class JobsController(BaseController):
                 job.job_finished = now
                 job.reason = 'Job canceled by the user'
 
+                # FTS3 daemon expects job_finished to be NULL in order to trigger the signal
+                # to fts_url_copy
                 Session.query(File).filter(File.job_id == job.job_id).filter(File.file_state.in_(FileActiveStates))\
                     .update({
                         'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
-                        'job_finished': now, 'finish_time': now
+                        'finish_time': now
                     }, synchronize_session=False)
+                # However, for data management operations there is nothing to signal, so
+                # set job_finished
                 Session.query(DataManagement).filter(DataManagement.job_id == job.job_id)\
                     .filter(DataManagement.file_state.in_(DataManagementActiveStates))\
                     .update({
