@@ -59,6 +59,15 @@ Requires:       fts-rest = %{version}-%{release}
 %description oauth2
 FTS3 Rest OAuth2 provider
 
+%package http-authz-signed-cert
+Summary:        FTS3 Rest HTTP_AUTHORIZATION signed-cert method
+Group:          Application/Internet
+
+Requires:       fts-rest = %{version}-%{release}
+
+%description http-authz-signed-cert
+FTS3 Rest HTTP_AUTHORIZATION signed-cert method
+
 %package cli
 Summary:        FTS3 Rest Interface CLI
 Group:          Applications/Internet
@@ -173,7 +182,6 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %{python_sitelib}/fts3rest/lib/middleware/*.py*
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/*.py*
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/__init__.py*
-%{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/http.py*
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/ssl.py*
 
 %{python_sitelib}/fts3rest/model/
@@ -208,6 +216,9 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %{python_sitelib}/fts3rest/templates/authz_confirm.html
 %{python_sitelib}/fts3rest/templates/authz_failure.html
 %{python_sitelib}/fts3rest/templates/register.html
+
+%files http-authz-signed-cert
+%{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/http.py*
 
 %files cli
 %{_bindir}/fts-rest-*
