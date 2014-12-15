@@ -24,19 +24,19 @@ BuildRequires:  python-dateutil
 BuildRequires:  python-pylons
 BuildRequires:  scipy
 BuildRequires:  m2crypto
+BuildRequires:  python-m2ext
 BuildRequires:  python-coverage
 BuildRequires:  python-sqlalchemy
 BuildRequires:  python-requests
 BuildRequires:  pandoc
 
-Requires:     gridsite%{?_isa} >= 1.7
-Requires:     httpd%{?_isa}
-Requires:     mod_wsgi
-Requires:     python-fts = %{version}-%{release}
-Requires:     python-paste-deploy
-Requires:     python-dateutil
-Requires:     python-pylons
-Requires:     gfal2-python
+Requires:       gridsite%{?_isa} >= 1.7
+Requires:       httpd%{?_isa}
+Requires:       mod_wsgi
+Requires:       python-fts = %{version}-%{release}
+Requires:       python-paste-deploy
+Requires:       python-pylons
+Requires:       gfal2-python
 
 %description
 This package provides the FTS3 REST interface
@@ -63,6 +63,8 @@ FTS3 Rest OAuth2 provider
 Summary:        FTS3 Rest HTTP_AUTHORIZATION signed-cert method
 Group:          Application/Internet
 
+Requires:       python-dateutil
+Requires:       python-m2ext
 Requires:       fts-rest = %{version}-%{release}
 
 %description http-authz-signed-cert

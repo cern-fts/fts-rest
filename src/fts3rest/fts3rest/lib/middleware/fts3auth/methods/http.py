@@ -18,6 +18,7 @@
 import re, time, dateutil.parser, logging, urllib
 from base64 import b64decode
 from M2Crypto import X509, EVP
+from m2ext import SSL
 from fts3rest.lib.middleware.fts3auth.credentials import InvalidCredentials, vo_from_fqan, build_vo_from_dn, generate_delegation_id
 
 def do_authentication(credentials, env):
@@ -60,6 +61,12 @@ def do_authentication(credentials, env):
     verify.verify_update(cred['ts'])
     if not verify.verify_final(sign):
         log.info("Signature verification failed")
+        raise InvalidCredentials()
+
+    ctx = SSL.Context()
+    ctx.load_verify_locations(capath = "/etc/grid-security/certificates");
+    if not ctx.validate_certificate(x509):
+        log.info("Certificate verification failed")
         raise InvalidCredentials()
 
     credentials.user_dn = '/'+'/'.join(x509.get_subject().as_text().split(', '))
