@@ -34,7 +34,12 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.http_exceptions import HTTPAuthenticationTimeout
 from fts3rest.lib.gfal2_wrapper import Gfal2Wrapper, Gfal2Error
-from fts3rest.controllers.CSdropbox import DropboxConnector;
+try:
+	from fts3rest.controllers.CSdropbox import DropboxConnector;
+	dropbox_available = True
+except ImportError,e:
+	dropbox_available = False
+	print e
 
 def _get_valid_surl():
     surl = request.params.get('surl')
@@ -79,7 +84,7 @@ def _raise_http_error_from_gfal2_error(e):
     abort(_http_status_from_errno(e.errno), "[%d] %s" % (e.errno, e.message))
 
 def _is_dropbox(uri):
-    return uri.startswith("dropbox")
+    return uri.startswith("dropbox") and dropbox_available
 
 def _set_dropbox_headers(context):
     # getting the tokens and add them to the context
