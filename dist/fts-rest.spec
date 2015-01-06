@@ -75,6 +75,7 @@ Summary:        FTS3 Rest Interface CLI
 Group:          Applications/Internet
 
 Requires:       python-fts = %{version}-%{release}
+Requires:       python-m2ext
 
 %description cli
 Command line utilities for the FTS3 REST interface
