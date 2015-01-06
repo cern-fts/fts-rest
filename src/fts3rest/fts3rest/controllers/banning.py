@@ -30,7 +30,7 @@ from fts3rest.lib.middleware.fts3auth.constants import *
 log = logging.getLogger(__name__)
 
 
-def _ban_se(storage, vo_name, allow_submit, status, timeout):
+def _ban_se(storage, vo_name, allow_submit, status, timeout, message):
     """
     Mark in the db the given storage as banned
     """
@@ -40,6 +40,7 @@ def _ban_se(storage, vo_name, allow_submit, status, timeout):
     banned.addition_time = datetime.utcnow()
     banned.admin_dn = user.user_dn
     banned.vo = vo_name
+    banned.message = message
     if allow_submit and status == 'WAIT':
         banned.status = 'WAIT_AS'
     else:
@@ -53,7 +54,7 @@ def _ban_se(storage, vo_name, allow_submit, status, timeout):
         raise
 
 
-def _ban_dn(dn):
+def _ban_dn(dn, message):
     """
     Mark in the db the given DN as banned
     """
@@ -62,6 +63,7 @@ def _ban_dn(dn):
     banned.dn = dn
     banned.addition_time = datetime.utcnow()
     banned.admin_dn = user.user_dn
+    banned.message = message
     try:
         Session.merge(banned)
         Session.commit()
@@ -107,7 +109,6 @@ def _cancel_transfers(storage=None, vo_name=None):
     # Set each job terminal state if needed
     try:
         for job_id in affected_job_ids:
-            reuse_flag = Session.query(Job.reuse_job).filter(Job.job_id == job_id)[0][0]
             n_files = Session.query(func.count(distinct(File.file_id))).filter(File.job_id == job_id).all()[0][0]
             n_canceled = Session.query(func.count(distinct(File.file_id)))\
                 .filter(File.job_id == job_id).filter(File.file_state == 'CANCELED').all()[0][0]
@@ -160,7 +161,7 @@ def _cancel_jobs(dn):
                     'job_finished': now, 'finish_time': now
                 }, synchronize_session=False)
         Session.commit()
-	Session.expire_all()
+        Session.expire_all()
         return job_ids
     except Exception:
         Session.rollback()
@@ -185,7 +186,7 @@ def _set_to_wait(storage=None, vo_name=None, timeout=0):
                 .update({'wait_timestamp': datetime.utcnow(), 'wait_timeout': timeout}, synchronize_session=False)
 
         Session.commit()
-	Session.expire_all()
+        Session.expire_all()
         return job_ids
     except Exception:
         Session.rollback()
@@ -211,6 +212,7 @@ class BanningController(BaseController):
         'If status==wait, timeout for the queued jobs. 0 = will not timeout (default)',
         required=False
     )
+    @doc.query_arg('message', 'Explanatory message if desired', required=False)
     @doc.response(400, 'storage is missing, or any of the others have an invalid value')
     @doc.response(403, 'The user is not allowed to change the configuration')
     @doc.return_type(array_of=str)
@@ -248,7 +250,7 @@ class BanningController(BaseController):
         except ValueError:
             raise HTTPBadRequest('timeout expects an integer equal or greater than zero')
 
-        _ban_se(storage, vo_name, allow_submit, status, timeout)
+        _ban_se(storage, vo_name, allow_submit, status, timeout, input_dict.get('message', ''))
 
         if status == 'CANCEL':
             affected = _cancel_transfers(storage=storage, vo_name=vo_name)
@@ -260,6 +262,7 @@ class BanningController(BaseController):
 
     @authorize(CONFIG)
     @doc.query_arg('user_dn', 'User DN to ban', required=True)
+    @doc.query_arg('message', 'Explanatory message if desired', required=False)
     @doc.response(400, 'dn is missing')
     @doc.response(403, 'The user is not allowed to change the configuration')
     @doc.response(409, 'The user tried to ban (her|his)self')
@@ -284,7 +287,7 @@ class BanningController(BaseController):
         if dn == user.user_dn:
             raise HTTPConflict('The user tried to ban (her|his)self')
 
-        _ban_dn(dn)
+        _ban_dn(dn, input_dict.get('message', ''))
         affected = _cancel_jobs(dn=dn)
 
         log.warn("User %s banned, %d jobs affected" % (dn, len(affected)))
@@ -345,6 +348,24 @@ class BanningController(BaseController):
 
         start_response('204 No Content', [])
         return ['']
+
+    @doc.response(403, 'The user is not allowed to check the configuration')
+    @authorize(CONFIG)
+    @jsonify
+    def list_banned_dn(self, start_response):
+        """
+        List banned users
+        """
+        return Session.query(BannedDN).all()
+
+    @doc.response(403, 'The user is not allowed to check the configuration')
+    @authorize(CONFIG)
+    @jsonify
+    def list_banned_se(self, start_response):
+        """
+        List banned storage elements
+        """
+        return Session.query(BannedSE).all()
 
 
 __all__ = ['BanningController']

@@ -100,13 +100,6 @@ Current user revokes all tokens for a given application
 |---------|------|
 |client_id|string|
 
-### /whoami
-#### GET /whoami
-Returns the active credentials of the user
-
-#### GET /whoami/certificate
-Returns the user certificate
-
 ### API documentation
 #### GET /api-docs
 Auto-generated API documentation
@@ -146,6 +139,7 @@ Array of string
 
 |Name        |Type  |Required|Description                                                                                      |
 |------------|------|--------|-------------------------------------------------------------------------------------------------|
+|message     |string|False   |Explanatory message if desired                                                                   |
 |timeout     |string|False   |If status==wait, timeout for the queued jobs. 0 = will not timeout (default)                     |
 |status      |string|False   |What to do with the queued jobs: cancel (default, cancel immediately) or wait(wait for some time)|
 |allow_submit|string|False   |If true, transfers will not run, but submissions will be accepted                                |
@@ -176,14 +170,24 @@ Unban a storage element
 |400 |storage is empty or missing                             |
 |204 |Success                                                 |
 
+#### GET /ban/se
+List banned storage elements
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to check the configuration|
+
 #### POST /ban/dn
 Ban a user
 
 ##### Query arguments
 
-|Name   |Type  |Required|Description   |
-|-------|------|--------|--------------|
-|user_dn|string|True    |User DN to ban|
+|Name   |Type  |Required|Description                   |
+|-------|------|--------|------------------------------|
+|message|string|False   |Explanatory message if desired|
+|user_dn|string|True    |User DN to ban                |
 
 ##### Responses
 
@@ -209,6 +213,15 @@ Unban a user
 |403 |The user is not allowed to perform configuration actions|
 |400 |user_dn is empty or missing                             |
 |204 |Success                                                 |
+
+#### GET /ban/dn
+List banned users
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to check the configuration|
 
 ### Data management operations
 #### POST /dm/unlink
@@ -598,18 +611,6 @@ Submission description (SubmitSchema)
 |403 |The user doesn't have enough permissions to submit|
 |400 |The submission request could not be understood    |
 
-#### OPTIONS /jobs
-Answer the OPTIONS method over /jobs
-
-#### OPTIONS /jobs/{job_id}
-Answers the OPTIONS method over /jobs/job-id
-
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|job_id|string|
-
 #### GET /jobs/{job_id}/{field}
 Get a specific field from the job identified by id
 
@@ -671,129 +672,11 @@ Returns the last 100 entries of the config audit tables
 Array of [ConfigAudit](#configaudit)
 
 ### Operations to perform the delegation of credentials
-#### POST /delegation/{dlg_id}/voms
-Generate VOMS extensions for the delegated proxy
+#### GET /whoami
+Returns the active credentials of the user
 
-##### Notes
-The input must be a json-serialized list of strings, where each strings<br/>is a voms command (i.e. ["dteam", "dteam:/dteam/Role=lcgadmin"])
-
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|dlg_id|string|
-
-##### Expected request body
-List of voms commands (array)
-
-##### Responses
-
-|Code|Description                                            |
-|----|-------------------------------------------------------|
-|203 |The obtention of the VOMS extensions succeeded         |
-|424 |The obtention of the VOMS extensions failed            |
-|400 |Could not understand the request                       |
-|403 |The requested delegation ID does not belong to the user|
-
-#### GET /delegation/{dlg_id}
-Get the termination time of the current delegated credential, if any
-
-##### Returns
-dateTime
-
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|dlg_id|string|
-
-#### DELETE /delegation/{dlg_id}
-Delete the delegated credentials from the database
-
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|dlg_id|string|
-
-##### Responses
-
-|Code|Description                                            |
-|----|-------------------------------------------------------|
-|204 |The credentials were deleted successfully              |
-|404 |The credentials do not exist                           |
-|403 |The requested delegation ID does not belong to the user|
-
-#### GET /delegation/{dlg_id}/request
-First step of the delegation process: get a certificate request
-
-##### Returns
-PEM encoded certificate request
-
-##### Notes
-The returned certificate request must be signed with the user's original<br/>credentials.
-
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|dlg_id|string|
-
-##### Responses
-
-|Code|Description                                            |
-|----|-------------------------------------------------------|
-|200 |The request was generated succesfully                  |
-|403 |The requested delegation ID does not belong to the user|
-
-#### GET /delegation
-Render an HTML form to delegate the credentials
-
-#### PUT /delegation/{dlg_id}/credential
-Second step of the delegation process: put the generated certificate
-
-##### Notes
-The certificate being PUT will have to pass the following validation:<br/>- There is a previous certificate request done<br/>- The certificate subject matches the certificate issuer + '/CN=Proxy'<br/>- The certificate modulus matches the stored private key modulus
-
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|dlg_id|string|
-
-##### Expected request body
-Signed certificate (PEM encoded certificate)
-
-##### Responses
-
-|Code|Description                                            |
-|----|-------------------------------------------------------|
-|201 |The proxy was stored successfully                      |
-|400 |The proxy failed the validation process                |
-|403 |The requested delegation ID does not belong to the user|
-
-#### POST /delegation/{dlg_id}/credential
-Second step of the delegation process: put the generated certificate
-
-##### Notes
-The certificate being PUT will have to pass the following validation:<br/>- There is a previous certificate request done<br/>- The certificate subject matches the certificate issuer + '/CN=Proxy'<br/>- The certificate modulus matches the stored private key modulus
-
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|dlg_id|string|
-
-##### Expected request body
-Signed certificate (PEM encoded certificate)
-
-##### Responses
-
-|Code|Description                                            |
-|----|-------------------------------------------------------|
-|201 |The proxy was stored successfully                      |
-|400 |The proxy failed the validation process                |
-|403 |The requested delegation ID does not belong to the user|
+#### GET /whoami/certificate
+Returns the user certificate
 
 ### Optimizer logging tables
 #### GET /optimizer/evolution

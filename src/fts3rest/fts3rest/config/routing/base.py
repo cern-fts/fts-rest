@@ -118,7 +118,11 @@ def do_connect(config, map):
                 conditions=dict(method=['POST']))
     map.connect('/ban/se', controller='banning', action='unban_se',
                 conditions=dict(method=['DELETE']))
+    map.connect('/ban/se', controller='banning', action='list_banned_se',
+                conditions=dict(method=['GET']))
     map.connect('/ban/dn', controller='banning', action='ban_dn',
                 conditions=dict(method=['POST']))
     map.connect('/ban/dn', controller='banning', action='unban_dn',
                 conditions=dict(method=['DELETE']))
+    map.connect('/ban/dn', controller='banning', action='list_banned_dn',
+                conditions=dict(method=['GET']))
