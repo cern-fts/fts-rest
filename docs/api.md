@@ -2,104 +2,6 @@ API
 ===
 This document has been generated automatically
 
-### /cs
-### /oauth2
-#### GET /oauth2/token
-Get an access token
-
-#### POST /oauth2/token
-Get an access token
-
-#### GET /oauth2/apps
-Returns the list of registered apps
-
-##### Returns
-Array of [OAuth2Application](#oauth2application)
-
-#### GET /oauth2/register
-Registration form
-
-#### POST /oauth2/register
-Register a new third party application
-
-##### Returns
-client_id
-
-##### Responses
-
-|Code|Description                                                     |
-|----|----------------------------------------------------------------|
-|403 |Tried to update an application that does not belong to the user |
-|400 |Bad request                                                     |
-|303 |Application registered, follow redirection (when html requested)|
-|201 |Application registered                                          |
-
-#### GET /oauth2/authorize
-Perform OAuth2 authorization step
-
-#### POST /oauth2/authorize
-Triggered by user action. Confirm, or reject, access.
-
-#### GET /oauth2/apps/{client_id}
-Return information about a given app
-
-##### Returns
-[OAuth2Application](#oauth2application)
-
-##### Path arguments
-
-|Name     |Type  |
-|---------|------|
-|client_id|string|
-
-##### Responses
-
-|Code|Description                                |
-|----|-------------------------------------------|
-|404 |Application not found                      |
-|403 |The application does not belong to the user|
-
-#### POST /oauth2/apps/{client_id}
-Update an application
-
-##### Path arguments
-
-|Name     |Type  |
-|---------|------|
-|client_id|string|
-
-##### Responses
-
-|Code|Description                                |
-|----|-------------------------------------------|
-|404 |Application not found                      |
-|403 |The application does not belong to the user|
-
-#### DELETE /oauth2/apps/{client_id}
-Delete an application from the database
-
-##### Path arguments
-
-|Name     |Type  |
-|---------|------|
-|client_id|string|
-
-##### Responses
-
-|Code|Description                                |
-|----|-------------------------------------------|
-|404 |Application not found                      |
-|403 |The application does not belong to the user|
-
-#### GET /oauth2/revoke/{client_id}
-Current user revokes all tokens for a given application
-
-##### Path arguments
-
-|Name     |Type  |
-|---------|------|
-|client_id|string|
-
 ### API documentation
 #### GET /api-docs
 Auto-generated API documentation
@@ -127,6 +29,47 @@ Auto-generated API documentation for a specific resource
 |Code|Description                  |
 |----|-----------------------------|
 |404 |The resource can not be found|
+
+### Operations on archived jobs and transfers
+#### GET /archive/{job_id}/{field}
+Get a specific field from the job identified by id
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|job_id|string|
+|field |string|
+
+##### Responses
+
+|Code|Description                       |
+|----|----------------------------------|
+|404 |The job or the field doesn't exist|
+
+#### GET /archive/{job_id}
+Get the job with the given ID
+
+##### Returns
+[ArchivedJob](#archivedjob)
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|job_id|string|
+
+##### Responses
+
+|Code|Description          |
+|----|---------------------|
+|404 |The job doesn't exist|
+
+#### GET /archive
+Just give the operations that can be performed
+
+#### GET /archive
+Just give the operations that can be performed
 
 ### Banning API
 #### POST /ban/se
@@ -222,6 +165,13 @@ List banned users
 |Code|Description                                       |
 |----|--------------------------------------------------|
 |403 |The user is not allowed to check the configuration|
+
+### Operations on the config audit
+#### GET /config/audit
+Returns the last 100 entries of the config audit tables
+
+##### Returns
+Array of [ConfigAudit](#configaudit)
 
 ### Data management operations
 #### POST /dm/unlink
@@ -332,143 +282,136 @@ List the content of a remote directory
 |403 |Permission denied                                    |
 |400 |Protocol not supported OR the SURL is not a directory|
 
-### OAuth2.0 controller
-#### GET /oauth2/token
-Get an access token
+### Operations to perform the delegation of credentials
+#### GET /whoami
+Returns the active credentials of the user
 
-#### POST /oauth2/token
-Get an access token
+#### GET /delegation
+Render an HTML form to delegate the credentials
 
-#### GET /oauth2/apps
-Returns the list of registered apps
+#### PUT /delegation/{dlg_id}/credential
+Second step of the delegation process: put the generated certificate
 
-##### Returns
-Array of [OAuth2Application](#oauth2application)
-
-#### GET /oauth2/register
-Registration form
-
-#### POST /oauth2/register
-Register a new third party application
-
-##### Returns
-client_id
-
-##### Responses
-
-|Code|Description                                                     |
-|----|----------------------------------------------------------------|
-|403 |Tried to update an application that does not belong to the user |
-|400 |Bad request                                                     |
-|303 |Application registered, follow redirection (when html requested)|
-|201 |Application registered                                          |
-
-#### GET /oauth2/authorize
-Perform OAuth2 authorization step
-
-#### POST /oauth2/authorize
-Triggered by user action. Confirm, or reject, access.
-
-#### GET /oauth2/apps/{client_id}
-Return information about a given app
-
-##### Returns
-[OAuth2Application](#oauth2application)
-
-##### Path arguments
-
-|Name     |Type  |
-|---------|------|
-|client_id|string|
-
-##### Responses
-
-|Code|Description                                |
-|----|-------------------------------------------|
-|404 |Application not found                      |
-|403 |The application does not belong to the user|
-
-#### POST /oauth2/apps/{client_id}
-Update an application
-
-##### Path arguments
-
-|Name     |Type  |
-|---------|------|
-|client_id|string|
-
-##### Responses
-
-|Code|Description                                |
-|----|-------------------------------------------|
-|404 |Application not found                      |
-|403 |The application does not belong to the user|
-
-#### DELETE /oauth2/apps/{client_id}
-Delete an application from the database
-
-##### Path arguments
-
-|Name     |Type  |
-|---------|------|
-|client_id|string|
-
-##### Responses
-
-|Code|Description                                |
-|----|-------------------------------------------|
-|404 |Application not found                      |
-|403 |The application does not belong to the user|
-
-#### GET /oauth2/revoke/{client_id}
-Current user revokes all tokens for a given application
-
-##### Path arguments
-
-|Name     |Type  |
-|---------|------|
-|client_id|string|
-
-### Operations on archived jobs and transfers
-#### GET /archive/{job_id}/{field}
-Get a specific field from the job identified by id
+##### Notes
+The certificate being PUT will have to pass the following validation:<br/>- There is a previous certificate request done<br/>- The certificate subject matches the certificate issuer + '/CN=Proxy'<br/>- The certificate modulus matches the stored private key modulus
 
 ##### Path arguments
 
 |Name  |Type  |
 |------|------|
-|job_id|string|
-|field |string|
+|dlg_id|string|
+
+##### Expected request body
+Signed certificate (PEM encoded certificate)
 
 ##### Responses
 
-|Code|Description                       |
-|----|----------------------------------|
-|404 |The job or the field doesn't exist|
+|Code|Description                                            |
+|----|-------------------------------------------------------|
+|201 |The proxy was stored successfully                      |
+|400 |The proxy failed the validation process                |
+|403 |The requested delegation ID does not belong to the user|
 
-#### GET /archive/{job_id}
-Get the job with the given ID
+#### POST /delegation/{dlg_id}/credential
+Second step of the delegation process: put the generated certificate
 
-##### Returns
-[ArchivedJob](#archivedjob)
+##### Notes
+The certificate being PUT will have to pass the following validation:<br/>- There is a previous certificate request done<br/>- The certificate subject matches the certificate issuer + '/CN=Proxy'<br/>- The certificate modulus matches the stored private key modulus
 
 ##### Path arguments
 
 |Name  |Type  |
 |------|------|
-|job_id|string|
+|dlg_id|string|
+
+##### Expected request body
+Signed certificate (PEM encoded certificate)
 
 ##### Responses
 
-|Code|Description          |
-|----|---------------------|
-|404 |The job doesn't exist|
+|Code|Description                                            |
+|----|-------------------------------------------------------|
+|201 |The proxy was stored successfully                      |
+|400 |The proxy failed the validation process                |
+|403 |The requested delegation ID does not belong to the user|
 
-#### GET /archive
-Just give the operations that can be performed
+#### GET /delegation/{dlg_id}/request
+First step of the delegation process: get a certificate request
 
-#### GET /archive
-Just give the operations that can be performed
+##### Returns
+PEM encoded certificate request
+
+##### Notes
+The returned certificate request must be signed with the user's original<br/>credentials.
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|dlg_id|string|
+
+##### Responses
+
+|Code|Description                                            |
+|----|-------------------------------------------------------|
+|200 |The request was generated succesfully                  |
+|403 |The requested delegation ID does not belong to the user|
+
+#### POST /delegation/{dlg_id}/voms
+Generate VOMS extensions for the delegated proxy
+
+##### Notes
+The input must be a json-serialized list of strings, where each strings<br/>is a voms command (i.e. ["dteam", "dteam:/dteam/Role=lcgadmin"])
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|dlg_id|string|
+
+##### Expected request body
+List of voms commands (array)
+
+##### Responses
+
+|Code|Description                                            |
+|----|-------------------------------------------------------|
+|203 |The obtention of the VOMS extensions succeeded         |
+|424 |The obtention of the VOMS extensions failed            |
+|400 |Could not understand the request                       |
+|403 |The requested delegation ID does not belong to the user|
+
+#### GET /delegation/{dlg_id}
+Get the termination time of the current delegated credential, if any
+
+##### Returns
+dateTime
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|dlg_id|string|
+
+#### DELETE /delegation/{dlg_id}
+Delete the delegated credentials from the database
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|dlg_id|string|
+
+##### Responses
+
+|Code|Description                                            |
+|----|-------------------------------------------------------|
+|204 |The credentials were deleted successfully              |
+|404 |The credentials do not exist                           |
+|403 |The requested delegation ID does not belong to the user|
+
+#### GET /whoami/certificate
+Returns the user certificate
 
 ### Operations on jobs and transfers
 #### DELETE /jobs/{job_id_list}
@@ -664,19 +607,102 @@ Array of [File](#file)
 |404 |The job doesn't exist                  |
 |403 |The user doesn't have enough privileges|
 
-### Operations on the config audit
-#### GET /config/audit
-Returns the last 100 entries of the config audit tables
+### OAuth2.0 controller
+#### GET /oauth2/token
+Get an access token
+
+#### POST /oauth2/token
+Get an access token
+
+#### GET /oauth2/apps
+Returns the list of registered apps
 
 ##### Returns
-Array of [ConfigAudit](#configaudit)
+Array of [OAuth2Application](#oauth2application)
 
-### Operations to perform the delegation of credentials
-#### GET /whoami
-Returns the active credentials of the user
+#### GET /oauth2/register
+Registration form
 
-#### GET /whoami/certificate
-Returns the user certificate
+#### POST /oauth2/register
+Register a new third party application
+
+##### Returns
+client_id
+
+##### Responses
+
+|Code|Description                                                     |
+|----|----------------------------------------------------------------|
+|403 |Tried to update an application that does not belong to the user |
+|400 |Bad request                                                     |
+|303 |Application registered, follow redirection (when html requested)|
+|201 |Application registered                                          |
+
+#### GET /oauth2/authorize
+Perform OAuth2 authorization step
+
+#### POST /oauth2/authorize
+Triggered by user action. Confirm, or reject, access.
+
+#### GET /oauth2/apps/{client_id}
+Return information about a given app
+
+##### Returns
+[OAuth2Application](#oauth2application)
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
+##### Responses
+
+|Code|Description                                |
+|----|-------------------------------------------|
+|404 |Application not found                      |
+|403 |The application does not belong to the user|
+
+#### POST /oauth2/apps/{client_id}
+Update an application
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
+##### Responses
+
+|Code|Description                                |
+|----|-------------------------------------------|
+|404 |Application not found                      |
+|403 |The application does not belong to the user|
+
+#### DELETE /oauth2/apps/{client_id}
+Delete an application from the database
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
+
+##### Responses
+
+|Code|Description                                |
+|----|-------------------------------------------|
+|404 |Application not found                      |
+|403 |The application does not belong to the user|
+
+#### GET /oauth2/revoke/{client_id}
+Current user revokes all tokens for a given application
+
+##### Path arguments
+
+|Name     |Type  |
+|---------|------|
+|client_id|string|
 
 ### Optimizer logging tables
 #### GET /optimizer/evolution
@@ -743,6 +769,15 @@ Models
 |agent_dn            |string  |
 |reason_class        |string  |
 
+### FileRetryLog
+
+|Field   |Type    |
+|--------|--------|
+|reason  |string  |
+|attempt |integer |
+|file_id |integer |
+|datetime|dateTime|
+
 ### OptimizerEvolution
 
 |Field     |Type    |
@@ -756,15 +791,6 @@ Models
 |timeout   |integer |
 |active    |integer |
 |source_se |string  |
-
-### FileRetryLog
-
-|Field   |Type    |
-|--------|--------|
-|reason  |string  |
-|attempt |integer |
-|file_id |integer |
-|datetime|dateTime|
 
 ### OAuth2Application
 

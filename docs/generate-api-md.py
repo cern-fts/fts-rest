@@ -54,7 +54,7 @@ class MarkDown(object):
 
     def _h(self, n, msg):
         self.stream.write('#' * n + ' ')
-        self.stream.write(msg.strip())
+        self.stream.write(msg.strip().replace('\n', ' '))
         self.stream.write('\n')
 
     def h3(self, msg):
@@ -111,14 +111,14 @@ def write_markdown(resources, apis, models, md):
     md.h1('API')
     md.paragraph('This document has been generated automatically')
 
-    for resource in sorted(resources):
-        path = resource.get('path')
+    for resource in sorted(resources, key=lambda r: r.get('id')):
+        id = resource.get('id')
         description = resource.get('description', None)
         if not description:
-            description = path
-        md.h3(description)
-        if path in apis:
-            for call in apis[path]:
+            description = id
+        if id in apis:
+            md.h3(description)
+            for call in apis[id]:
                 path = call['path']
                 for operation in call['operations']:
                     md.h4("%s %s" % (operation['method'], path))

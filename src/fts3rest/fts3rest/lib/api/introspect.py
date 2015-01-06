@@ -163,10 +163,6 @@ def get_routes(mapper):
                   itertools.chain.from_iterable(mapper.maxkeys.values()))
 
 
-def get_root_from_route(route):
-    return '/' + route.routelist[0].strip('/').split('/')[0]
-
-
 def generate_resources(routes, controllers):
     """
     Generate the dictionary documenting the resources.
@@ -177,15 +173,12 @@ def generate_resources(routes, controllers):
         cname = r.defaults.get('controller', None)
         if cname:
             if cname not in resources:
-                resource_root = get_root_from_route(r)
                 if str(cname) in controllers:
-                    doc = controllers[str(cname)].__doc__
+                    doc = controllers[str(cname)].__doc__.strip()
                 else:
                     doc = None
-                if doc:
-                    doc = doc.strip()
                 resources[cname] = {
-                    'path': resource_root,
+                    'id': cname,
                     'description': doc
                 }
             else:
@@ -365,10 +358,9 @@ def generate_apis_and_models(routes, controllers):
         if cname and str(cname) in controllers:
             controller = controllers[str(cname)]
 
-            resource_root = get_root_from_route(route)
-            if resource_root not in all_apis:
-                all_apis[resource_root] = {}
-                all_models[resource_root] = {}
+            if cname not in all_apis:
+                all_apis[cname] = {}
+                all_models[cname] = {}
 
             raw_path = route2path(route.routelist)
             params = route2parameters(route.routelist)
@@ -396,11 +388,11 @@ def generate_apis_and_models(routes, controllers):
                     'operations': operations
                 }
 
-                if path in all_apis[resource_root]:
-                    all_apis[resource_root][path]['operations'].extend(api['operations'])
+                if path in all_apis[cname]:
+                    all_apis[cname][path]['operations'].extend(api['operations'])
                 else:
-                    all_apis[resource_root][path] = api
-                all_models[resource_root].update(models)
+                    all_apis[cname][path] = api
+                all_models[cname].update(models)
 
                 methods = map(lambda o: o['method'], api['operations'])
 

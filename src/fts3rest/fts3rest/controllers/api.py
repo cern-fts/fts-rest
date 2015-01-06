@@ -34,9 +34,12 @@ class ApiController(BaseController):
 
     def __init__(self):
         self.resources, self.apis, self.models = api.introspect()
-        self.resources.sort(key=lambda res: res['path'])
+        self.resources.sort(key=lambda res: res['id'])
         for r in self.apis.values():
             r.sort(key=lambda a: a['path'])
+        # Add path to each resource
+        for r in self.resources:
+            r['path'] = '/' + r['id']
 
     @jsonify
     def api_version(self):
@@ -121,8 +124,7 @@ class ApiController(BaseController):
         """
         Auto-generated API documentation for a specific resource
         """
-        resource_path = '/' + resource
-        if resource_path not in self.apis:
+        if resource not in self.apis:
             raise HTTPNotFound('API not found: ' + resource)
         return {
             'basePath': '/',
@@ -130,8 +132,8 @@ class ApiController(BaseController):
             'produces': ['application/json'],
             'resourcePath': '/' + resource,
             'authorizations': {},
-            'apis': self.apis.get(resource_path, []),
-            'models': self.models.get(resource_path, []),
+            'apis': self.apis.get(resource, []),
+            'models': self.models.get(resource, []),
         }
 
     def options_handler(self, path, environ):
