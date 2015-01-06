@@ -173,6 +173,33 @@ Returns the last 100 entries of the config audit tables
 ##### Returns
 Array of [ConfigAudit](#configaudit)
 
+#### POST /config/debug
+Sets the debug level status for a storage
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to change the configuration|
+
+#### DELETE /config/debug
+Removes a debug entry
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to change the configuration|
+
+#### GET /config/debug
+Return the debug settings
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+
 ### Data management operations
 #### POST /dm/unlink
 Remove a remote file

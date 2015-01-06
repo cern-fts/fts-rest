@@ -15,10 +15,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from sqlalchemy import Column, DateTime, ForeignKey, ForeignKeyConstraint
+from sqlalchemy import Column, DateTime, ForeignKeyConstraint
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relation
-from sqlalchemy import or_, and_
+from sqlalchemy import and_
 
 from base import Base
 
@@ -138,3 +138,14 @@ class Member(Base):
 
     def __str__(self):
         return "%s/%s" % (self.groupname, self.member)
+
+
+class DebugConfig(Base):
+    __tablename__ = 't_debug'
+
+    source_se = Column(String(150), primary_key=True)
+    dest_se   = Column(String(150), primary_key=True)
+    debug_level = Column(Integer, default=1)
+
+    def __str__(self):
+        return "%s:%s %d" % (self.source_se, self.dest_se, self.debug_level)

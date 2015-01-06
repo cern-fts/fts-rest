@@ -88,6 +88,14 @@ def do_connect(config, map):
     map.connect('/config/audit', controller='config', action='audit',
                 conditions=dict(method=['GET']))
 
+    # Debug level
+    map.connect('/config/debug', controller='config', action='set_debug',
+                conditions=dict(method=['POST']))
+    map.connect('/config/debug', controller='config', action='delete_debug',
+                conditions=dict(method=['DELETE']))
+    map.connect('/config/debug', controller='config', action='list_debug',
+                conditions=dict(method=['GET']))
+
     # Optimizer
     map.connect('/optimizer', controller='optimizer', action='is_enabled',
                 conditions=dict(method=['GET']))
