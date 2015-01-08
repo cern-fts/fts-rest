@@ -43,10 +43,10 @@ class TestOptions(TestController):
         self.setup_gridsite_environment()
 
         response = self.app.options('/ban/se', status=200)
-        self.assertItemsEqual(['POST', 'DELETE', 'OPTIONS'], response.allow)
+        self.assertItemsEqual(['POST', 'GET', 'OPTIONS', 'DELETE'], response.allow)
 
         response = self.app.options('/ban/dn', status=200)
-        self.assertItemsEqual(['POST', 'DELETE', 'OPTIONS'], response.allow)
+        self.assertItemsEqual(['POST', 'GET', 'OPTIONS', 'DELETE'], response.allow)
 
     def test_options_dm(self):
         """

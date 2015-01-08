@@ -96,6 +96,50 @@ def do_connect(config, map):
     map.connect('/config/debug', controller='config', action='list_debug',
                 conditions=dict(method=['GET']))
 
+    # Global settings
+    map.connect('/config/global', controller='config', action='set_global_config',
+                conditions=dict(method=['POST']))
+    map.connect('/config/global', controller='config', action='get_global_config',
+                conditions=dict(method=['GET']))
+
+    # Optimizer mode
+    map.connect('/config/optimizer_mode', controller='config', action='set_optimizer_mode',
+                conditions=dict(method='POST'))
+    map.connect('/config/optimizer_mode', controller='config', action='get_optimizer_mode',
+                conditions=dict(method='GET'))
+
+    # Groups and group members
+    map.connect('/config/groups', controller='config', action='add_to_group',
+                conditions=dict(method=['POST']))
+    map.connect('/config/groups', controller='config', action='get_all_groups',
+                conditions=dict(method=['GET']))
+    map.connect('/config/groups/{group_name}', controller='config', action='get_group',
+                conditions=dict(method=['GET']))
+    map.connect('/config/groups/{group_name}', controller='config', action='delete_from_group',
+                conditions=dict(method=['DELETE']))
+
+    # Link config (SE or Group)
+    map.connect('/config/links', controller='config', action='set_link_config',
+                conditions=dict(method=['POST']))
+    map.connect('/config/links', controller='config', action='get_all_link_configs',
+                conditions=dict(method=['GET']))
+    map.connect('/config/links/{sym_name}', controller='config', action='get_link_config',
+                conditions=dict(method=['GET']))
+    map.connect('/config/links/{sym_name}', controller='config', action='delete_link_config',
+                conditions=dict(method=['DELETE']))
+
+    # Fixed number of actives
+    map.connect('/config/fixed', controller='config', action='fix_active',
+                conditions=dict(method=['POST']))
+    map.connect('/config/fixed', controller='config', action='get_fixed_active',
+                conditions=dict(method=['GET']))
+
+    # Per SE
+    map.connect('/config/se', controller='config', action='set_se_config',
+                conditions=dict(method=['POST']))
+    map.connect('/config/se', controller='config', action='get_se_config',
+                conditions=dict(method=['GET']))
+
     # Optimizer
     map.connect('/optimizer', controller='optimizer', action='is_enabled',
                 conditions=dict(method=['GET']))

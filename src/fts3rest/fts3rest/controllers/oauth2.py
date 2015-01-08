@@ -129,7 +129,7 @@ class Oauth2Controller(BaseController):
         else:
             pylons.response.status_int = HTTPCreated.code
             pylons.response.headers['Content-Type'] = 'application/json'
-            return to_json(app.client_id)
+            return [to_json(app.client_id)]
 
     @doc.return_type(array_of=OAuth2Application)
     @require_certificate
@@ -164,7 +164,7 @@ class Oauth2Controller(BaseController):
                     'expires': auth.expires
                 })
             response['authorized'] = authorized
-            return to_json(response)
+            return [to_json(response)]
 
     @doc.return_type(OAuth2Application)
     @doc.response(403, 'The application does not belong to the user')
@@ -185,7 +185,7 @@ class Oauth2Controller(BaseController):
             return render('/app.html', extra_vars={'app': app, 'user': user, 'site': pylons.config['fts3.SiteName']})
         else:
             pylons.response.headers['Content-Type'] = 'application/json'
-            return to_json(app)
+            return [to_json(app)]
 
     @doc.response(403, 'The application does not belong to the user')
     @doc.response(404, 'Application not found')

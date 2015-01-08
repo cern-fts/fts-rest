@@ -17,21 +17,21 @@
 
 from sqlalchemy import Column, DateTime, Float, Integer, String
 
-from base import Base
+from base import Base, Flag
 
 
 class OptimizerEvolution(Base):
     __tablename__ = 't_optimizer_evolution'
 
-    datetime   = Column(DateTime(), primary_key=True)
-    source_se  = Column(String(), primary_key=True)
-    dest_se    = Column(String(), primary_key=True)
-    nostreams  = Column(Integer())
-    timeout    = Column(Integer())
-    active     = Column(Integer())
-    throughput = Column(Float())
-    branch     = Column(Integer(), name='buffer')
-    success    = Column(Float(), name='filesize')
+    datetime   = Column(DateTime, primary_key=True)
+    source_se  = Column(String, primary_key=True)
+    dest_se    = Column(String, primary_key=True)
+    nostreams  = Column(Integer)
+    timeout    = Column(Integer)
+    active     = Column(Integer)
+    throughput = Column(Float)
+    branch     = Column(Integer, name='buffer')
+    success    = Column(Float, name='filesize')
 
 
 class OptimizerActive(Base):
@@ -39,17 +39,20 @@ class OptimizerActive(Base):
 
     source_se = Column(String(255), primary_key=True)
     dest_se   = Column(String(255), primary_key=True)
-    active    = Column(Integer(), default=2)
+    active    = Column(Integer, default=2)
     message   = Column(String(512))
-    datetime  = Column(DateTime(), default=None)
-    ema       = Column(Float(), default=0)
-    fixed     = Column(String(3))
+    datetime  = Column(DateTime, default=None)
+    ema       = Column(Float, default=0)
+    fixed     = Column(Flag(negative='off', positive='on'), default='off')
 
 
 class Optimize(Base):
     __tablename__ = 't_optimize'
 
-    source_se = Column(String(), primary_key=True)
-    dest_se   = Column(String(), primary_key=True)
-    active    = Column(Integer())
-    throughput = Column(Float())
+    auto_number = Column(Integer, autoincrement=True, primary_key=True)
+    source_se  = Column(String, nullable=True)
+    dest_se    = Column(String, nullable=True)
+    active     = Column(Integer)
+    throughput = Column(Float)
+    udt        = Column(Flag(negative='off', positive='on'))
+    ipv6       = Column(Flag(negative='off', positive='on'), default='off')

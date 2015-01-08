@@ -27,6 +27,7 @@ setup-app`) and provides the base testing objects.
 import os
 import pylons.test
 import time
+import types
 
 from datetime import datetime, timedelta
 from unittest import TestCase
@@ -76,6 +77,17 @@ def _app_options(self, url, headers=None, status=None, expect_errors=False):
     return self.do_request(req, status, expect_errors)
 
 
+def _app_post_json(self, url, params, **kwargs):
+    """
+    To be injected into TestApp if it doesn't have an post_json method available
+    """
+    from json import dumps
+
+    params = dumps(params)
+    kwargs['content_type'] = 'application/json'
+    return self.post(url, params=params, **kwargs)
+
+
 class TestController(TestCase):
     """
     Base class for the tests
@@ -90,8 +102,12 @@ class TestController(TestCase):
         # Decorate with an OPTIONS method
         # The webtest version in el6 does not have it
         if not hasattr(self.app, 'options'):
-            import types
             setattr(self.app, 'options', types.MethodType(_app_options, self.app))
+
+        # Decorate with a post_json method
+        # Same thing, version in el6 does not have it
+        if not hasattr(self.app, 'post_json'):
+            setattr(self.app, 'post_json', types.MethodType(_app_post_json, self.app))
 
         url._push_object(URLGenerator(config['routes.map'], environ))
         TestCase.__init__(self, *args, **kwargs)

@@ -20,7 +20,7 @@ from sqlalchemy import Integer, String
 from sqlalchemy.orm import relation
 from sqlalchemy import and_
 
-from base import Base
+from base import Base, Flag
 
 
 class  ConfigAudit(Base):
@@ -40,13 +40,12 @@ class LinkConfig(Base):
 
     source            = Column(String, primary_key=True)
     destination       = Column(String, primary_key=True)
-    state             = Column(String)
-    symbolicname      = Column(String)
+    state             = Column(Flag(negative='off', positive='on'))
+    symbolicname      = Column(String, unique=True)
     nostreams         = Column(Integer)
     tcp_buffer_size   = Column(Integer)
     urlcopy_tx_to     = Column(Integer)
-    no_tx_activity_to = Column(Integer)
-    auto_protocol     = Column(String(3))
+    auto_tuning       = Column(Flag(negative='off', positive='on'))
 
     share_config =\
         relation('ShareConfig', backref='link_config',
@@ -149,3 +148,35 @@ class DebugConfig(Base):
 
     def __str__(self):
         return "%s:%s %d" % (self.source_se, self.dest_se, self.debug_level)
+
+    __mapper_args__ = {
+        'allow_null_pks': True
+    }
+
+
+class ServerConfig(Base):
+    __tablename__ = 't_server_config'
+
+    retry          = Column(Integer, default=0)
+    max_time_queue = Column(Integer, default=0)
+    global_timeout = Column(Integer, default=0)
+    sec_per_mb     = Column(Integer, default=0)
+    vo_name        = Column(String(100), primary_key=True)
+    show_user_dn   = Column(Flag(negative='off', positive='on'), default='off')
+    max_per_se     = Column(Integer, default=0)
+    max_per_link   = Column(Integer, default=0)
+
+
+class OptimizerConfig(Base):
+    __tablename__ = 't_optimize_mode'
+
+    mode = Column(Integer, default=1, primary_key=True, name='mode_opt')
+
+
+class OperationConfig(Base):
+    __tablename__ = 't_stage_req'
+
+    vo_name        = Column(String(255), primary_key=True)
+    host           = Column(String(255), primary_key=True)
+    concurrent_ops = Column(Integer, default=0)
+    operation      = Column(String(150), primary_key=True)
