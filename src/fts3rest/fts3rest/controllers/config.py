@@ -594,3 +594,79 @@ class ConfigController(BaseController):
             response[op.host] = config
 
         return response
+
+
+    @doc.response(403, 'The user is not allowed to modify the configuration')
+    @authorize(CONFIG)
+    @jsonify
+    def add_authz(self):
+        """
+        Give special access to someone
+        """
+        input_dict = _get_input_as_dict(request)
+        dn = input_dict.get('dn')
+        op = input_dict.get('operation')
+        if not dn or not op:
+            raise HTTPBadRequest('Missing dn and/or operation')
+
+        try:
+            authz = AuthorizationByDn(dn=dn, operation=op)
+            _audit_configuration('authorize', '%s granted to "%s"' % (op, dn))
+            Session.merge(authz)
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
+
+        return authz
+
+    @doc.query_arg('dn', 'Filter by DN')
+    @doc.query_arg('operation', 'Filter by operation')
+    @doc.response(403, 'The user is not allowed to query the configuration')
+    @authorize(CONFIG)
+    @jsonify
+    def list_authz(self):
+        """
+        List granted accesses
+        """
+        input_dict = _get_input_as_dict(request, from_query=True)
+        dn = input_dict.get('dn')
+        op = input_dict.get('operation')
+        authz = Session.query(AuthorizationByDn)
+        if dn:
+            authz = authz.filter(AuthorizationByDn.dn == dn)
+        if op:
+            authz = authz.filter(AuthorizationByDn.operation == op)
+        return authz.all()
+
+    @doc.query_arg('dn', 'The user DN to be removed', required=True)
+    @doc.query_arg('operation', 'The operation to be removed', required=False)
+    @doc.response(403, 'The user is not allowed to modify the configuration')
+    @authorize(CONFIG)
+    def remove_authz(self, start_response):
+        """
+        Revoke access for a DN for a given operation, or all
+        """
+        input_dict = _get_input_as_dict(request, from_query=True)
+        dn = input_dict.get('dn')
+        op = input_dict.get('operation')
+        if not dn:
+            raise HTTPBadRequest('Missing DN parameter')
+
+        to_be_removed = Session.query(AuthorizationByDn).filter(AuthorizationByDn.dn == dn)
+        if op:
+            to_be_removed = to_be_removed.filter(AuthorizationByDn.operation == op)
+
+        try:
+            to_be_removed.delete()
+            if op:
+                _audit_configuration('revoke', '%s revoked for "%s"' % (op, dn))
+            else:
+                _audit_configuration('revoke', 'All revoked for "%s"' % (dn))
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
+
+        start_response('204 No Content', [])
+        return ['']

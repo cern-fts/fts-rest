@@ -140,6 +140,14 @@ def do_connect(config, map):
     map.connect('/config/se', controller='config', action='get_se_config',
                 conditions=dict(method=['GET']))
 
+    # Grant special permissions to given DNs
+    map.connect('/config/authorize', controller='config', action='add_authz',
+                conditions=dict(method=['POST']))
+    map.connect('/config/authorize', controller='config', action='list_authz',
+                conditions=dict(method=['GET']))
+    map.connect('/config/authorize', controller='config', action='remove_authz',
+                conditions=dict(method=['DELETE']))
+
     # Optimizer
     map.connect('/optimizer', controller='optimizer', action='is_enabled',
                 conditions=dict(method=['GET']))

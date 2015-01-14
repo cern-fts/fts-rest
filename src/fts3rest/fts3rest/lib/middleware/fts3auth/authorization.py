@@ -15,10 +15,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from fts3.model import AuthorizationByDn
+from fts3rest.lib.base import Session
 from constants import *
 from decorator import decorator
 from pylons.controllers.util import abort
+import logging
 import pylons
+
+log = logging.getLogger(__name__)
 
 
 def authorized(op, resource_owner=None, resource_vo=None, env=None):
@@ -51,7 +56,12 @@ def authorized(op, resource_owner=None, resource_vo=None, env=None):
     elif granted_level == PRIVATE:
         return resource_owner is None or resource_owner == user.user_dn
     else:
-        return False
+        # Give it a last try querying the DB for admin dns
+        authz_entry = Session.query(AuthorizationByDn).get((user.user_dn, op))
+        if authz_entry is not None:
+            log.info('%s granted to "%s" because it is configured in the database' % (op, user.user_dn))
+            return True
+    return False
 
 
 def authorize(op, env=None):
