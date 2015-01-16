@@ -780,15 +780,16 @@ Array of [Job](#job)
 
 ##### Query arguments
 
-|Name     |Type  |Required|Description                                                         |
-|---------|------|--------|--------------------------------------------------------------------|
-|limit    |string|False   |Limit the number of results                                         |
-|dest_se  |string|False   |Destination storage element                                         |
-|source_se|string|False   |Source storage element                                              |
-|state_in |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
-|dlg_id   |string|False   |Filter by delegation ID                                             |
-|vo_name  |string|False   |Filter by VO                                                        |
-|user_dn  |string|False   |Filter by user DN                                                   |
+|Name       |Type  |Required|Description                                                         |
+|-----------|------|--------|--------------------------------------------------------------------|
+|time_window|string|False   |For terminal states, limit results to N hours into the past         |
+|limit      |string|False   |Limit the number of results                                         |
+|dest_se    |string|False   |Destination storage element                                         |
+|source_se  |string|False   |Source storage element                                              |
+|state_in   |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
+|dlg_id     |string|False   |Filter by delegation ID                                             |
+|vo_name    |string|False   |Filter by VO                                                        |
+|user_dn    |string|False   |Filter by user DN                                                   |
 
 ##### Responses
 
@@ -805,15 +806,16 @@ Array of [Job](#job)
 
 ##### Query arguments
 
-|Name     |Type  |Required|Description                                                         |
-|---------|------|--------|--------------------------------------------------------------------|
-|limit    |string|False   |Limit the number of results                                         |
-|dest_se  |string|False   |Destination storage element                                         |
-|source_se|string|False   |Source storage element                                              |
-|state_in |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
-|dlg_id   |string|False   |Filter by delegation ID                                             |
-|vo_name  |string|False   |Filter by VO                                                        |
-|user_dn  |string|False   |Filter by user DN                                                   |
+|Name       |Type  |Required|Description                                                         |
+|-----------|------|--------|--------------------------------------------------------------------|
+|time_window|string|False   |For terminal states, limit results to N hours into the past         |
+|limit      |string|False   |Limit the number of results                                         |
+|dest_se    |string|False   |Destination storage element                                         |
+|source_se  |string|False   |Source storage element                                              |
+|state_in   |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
+|dlg_id     |string|False   |Filter by delegation ID                                             |
+|vo_name    |string|False   |Filter by VO                                                        |
+|user_dn    |string|False   |Filter by user DN                                                   |
 
 ##### Responses
 

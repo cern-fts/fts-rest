@@ -471,6 +471,7 @@ class JobsController(BaseController):
     @doc.query_arg('source_se', 'Source storage element')
     @doc.query_arg('dest_se', 'Destination storage element')
     @doc.query_arg('limit', 'Limit the number of results')
+    @doc.query_arg('time_window', 'For terminal states, limit results to N hours into the past')
     @doc.response(403, 'Operation forbidden')
     @doc.response(400, 'DN and delegation ID do not match')
     @doc.return_type(array_of=Job)
@@ -494,6 +495,10 @@ class JobsController(BaseController):
             filter_limit = int(request.params.get('limit', 0))
         except:
             filter_limit = 0
+        try:
+            filter_hours = int(request.params.get('time_window', 0))
+        except:
+            filter_hours = 0
 
         if filter_dlg_id and filter_dlg_id != user.delegation_id:
             raise HTTPForbidden('The provided delegation id does not match your delegation id')
@@ -508,8 +513,11 @@ class JobsController(BaseController):
             filter_state = filter_state.split(',')
             jobs = jobs.filter(Job.job_state.in_(filter_state))
             if not filter_limit:
-                filter_not_before = datetime.utcnow() - timedelta(hours=1)
-                jobs = jobs.filter((Job.job_finished == None) | (Job.job_finished >= filter_not_before))
+                if filter_hours > 0:
+                    filter_not_before = datetime.utcnow() - timedelta(hours=filter_hours)
+                    jobs = jobs.filter(Job.job_finished >= filter_not_before)
+                else:
+                    jobs = jobs.filter(Job.job_finished == None)
         else:
             jobs = jobs.filter(Job.job_finished == None)
 
