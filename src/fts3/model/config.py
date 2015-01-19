@@ -15,10 +15,12 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+from distutils.version import StrictVersion
 from sqlalchemy import Column, DateTime, ForeignKeyConstraint
 from sqlalchemy import Integer, String
-from sqlalchemy.orm import relation
 from sqlalchemy import and_
+from sqlalchemy import __version__ as sqlalchemy_version
+from sqlalchemy.orm import relation
 
 from base import Base, Flag
 
@@ -149,9 +151,14 @@ class DebugConfig(Base):
     def __str__(self):
         return "%s:%s %d" % (self.source_se, self.dest_se, self.debug_level)
 
-    __mapper_args__ = {
-        'allow_null_pks': True
-    }
+    if StrictVersion(sqlalchemy_version) < StrictVersion('0.6'):
+        __mapper_args__ = {
+            'allow_null_pks': True
+        }
+    else:
+        __mapper_args__ = {
+            'allow_partial_pks': True
+        }
 
 
 class ServerConfig(Base):
