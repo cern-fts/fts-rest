@@ -787,23 +787,24 @@ class JobsController(BaseController):
                 raise HTTPBadRequest('Can not specify reuse and multiple replicas at the same time')
             job['reuse_job'] = 'R'
 
-        # Update the optimizer
-        unique_pairs = set(map(lambda f: (f['source_se'], f['dest_se']), files))
-        for (source_se, dest_se) in unique_pairs:
-            optimizer_active = OptimizerActive()
-            optimizer_active.source_se = source_se
-            optimizer_active.dest_se = dest_se
-            optimizer_active.ema = 0
-            optimizer_active.datetime = datetime.utcnow()
-            Session.merge(optimizer_active)
-
-        # Update the database
         try:
+            # Insert the job
             Session.execute(Job.__table__.insert(), [job])
             if len(files):
                 Session.execute(File.__table__.insert(), files)
             if len(datamanagement):
                 Session.execute(DataManagement.__table__.insert(), datamanagement)
+
+            # Update the optimizer
+            unique_pairs = set(map(lambda f: (f['source_se'], f['dest_se']), files))
+            for (source_se, dest_se) in unique_pairs:
+                optimizer_active = OptimizerActive()
+                optimizer_active.source_se = source_se
+                optimizer_active.dest_se = dest_se
+                optimizer_active.ema = 0
+                optimizer_active.datetime = datetime.utcnow()
+                Session.merge(optimizer_active)
+
             Session.commit()
         except:
             Session.rollback()
