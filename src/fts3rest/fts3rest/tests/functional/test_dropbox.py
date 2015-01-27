@@ -119,3 +119,13 @@ class TestDropbox(TestController):
         self.assertTrue(csu is not None)
         self.assertEqual('cafesilvousplait', csu.access_token)
         self.assertEqual('blahblahsecret', csu.access_token_secret)
+
+    def test_delete_token(self):
+        """
+        Remove the stored token
+        """
+        self.test_access_granted()
+        self.app.delete(url="/cs/access_grant/dropbox", status=204)
+
+        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX'))
+        self.assertTrue(csu is None)

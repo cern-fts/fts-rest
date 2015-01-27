@@ -35,6 +35,12 @@ class CloudstorageController(BaseController):
         controller = CSInterface(self._get_user_dn(), service)
         return controller.is_registered()
 
+    def remove_token(self, service, start_response):
+        controller = CSInterface(self._get_user_dn(), service)
+        controller.remove_token()
+        start_response('204 No Content', [])
+        return ['']
+
     def get_access_requested(self, service):
         controller = CSInterface(self._get_user_dn(), service)
         return controller.get_access_requested()

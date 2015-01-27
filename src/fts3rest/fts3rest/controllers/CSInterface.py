@@ -58,6 +58,9 @@ class CSInterface(object):
     def is_registered(self):
         raise NotImplemented()
 
+    def remove_token(self):
+        raise NotImplemented()
+
     def get_access_requested(self):
         raise NotImplemented()
 

@@ -26,6 +26,8 @@ def do_connect(config, map):
                 conditions=dict(method=['GET']))
     map.connect('/cs/access_request/{service}/', controller='cloudStorage', action='is_access_requested',
                 conditions=dict(method=['GET']))
+    map.connect('/cs/access_grant/{service}', controller='cloudStorage', action='remove_token',
+                conditions=dict(method=['DELETE']))
     map.connect('/cs/access_request/{service}/request', controller='cloudStorage', action='get_access_requested',
                 conditions=dict(method=['GET']))
     map.connect('/cs/access_grant/{service}', controller='cloudStorage', action='get_access_granted',

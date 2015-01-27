@@ -94,6 +94,17 @@ class DropboxConnector(object):
 
         return info
 
+    def remove_token(self):
+        info = self._get_dropbox_user_info()
+        if info is None:
+            raise HTTPNotFound('No registered user for the service "%s" has been found' % self.service)
+        try:
+            Session.delete(info)
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
+
     def get_access_granted(self):
         dropbox_user_info = self._get_dropbox_user_info()
         if not dropbox_user_info:
