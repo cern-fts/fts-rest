@@ -166,6 +166,136 @@ List banned users
 |----|--------------------------------------------------|
 |403 |The user is not allowed to check the configuration|
 
+### Cloud storage support
+#### GET /cs/remote_content/{service}
+Get the content of the given directory
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|service|string|
+
+##### Query arguments
+
+|Name|Type  |Required|Description|
+|----|------|--------|-----------|
+|surl|string|False   |The folder |
+
+##### Responses
+
+|Code|Description                   |
+|----|------------------------------|
+|403 |No token for the given storage|
+
+#### GET /cs/access_request/{service}/request
+First authorization step: obtain a request token
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|service|string|
+
+##### Responses
+
+|Code|Description          |
+|----|---------------------|
+|200 |Got the request token|
+
+#### GET /cs/access_request/{service}
+Returns the status of the authorization
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|service|string|
+
+##### Responses
+
+|Code|Description                                      |
+|----|-------------------------------------------------|
+|404 |The user has not registered for the given service|
+
+#### GET /cs/access_request/{service}
+Returns the status of the authorization
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|service|string|
+
+##### Responses
+
+|Code|Description                                      |
+|----|-------------------------------------------------|
+|404 |The user has not registered for the given service|
+
+#### GET /cs/file_urllink/{service}/{path}
+Get the final HTTP url from the logical file_path inside the cloud storage
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|service|string|
+|path   |string|
+
+##### Responses
+
+|Code|Description                   |
+|----|------------------------------|
+|403 |No token for the given storage|
+
+#### DELETE /cs/access_grant/{service}
+Remove the token associated with the given service
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|service|string|
+
+##### Responses
+
+|Code|Description          |
+|----|---------------------|
+|404 |No token for the user|
+|204 |Token deleted        |
+
+#### GET /cs/access_grant/{service}
+Third authorization step: get a valid access token
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|service|string|
+
+##### Responses
+
+|Code|Description                                 |
+|----|--------------------------------------------|
+|404 |The storage has not been properly configured|
+|400 |Previous steps failed or didn' happen       |
+
+#### GET /cs/registered/{service}
+Return a boolean indicating if the user has a token registered
+
+##### Returns
+boolean
+
+##### Notes
+for the given certificate
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|service|string|
+
 ### Operations on the config audit
 #### POST /config/debug
 Sets the debug level status for a storage

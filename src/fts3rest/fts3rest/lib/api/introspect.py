@@ -17,6 +17,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import logging
 import imp
 import itertools
 import os
@@ -36,6 +37,8 @@ from types import FunctionType
 
 root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 controllers_path = os.path.join(root_path, 'controllers')
+
+log = logging.getLogger(__name__)
 
 
 def get_column_type_description(sql_type):
@@ -133,7 +136,7 @@ def get_controller_from_module(module, cname):
     """
     Extract classes that inherit from BaseController
     """
-    controller_classname = cname[0].upper() + cname[1:] + 'Controller'
+    controller_classname = cname[0].upper() + cname[1:].lower() + 'Controller'
     controller_class = module.__dict__.get(controller_classname, None)
     return controller_class
 
@@ -151,7 +154,10 @@ def get_controllers():
             module = imp.load_source('fts3rest.controllers.' + cname, path)
             controller = get_controller_from_module(module, cname)
             if controller:
+                log.debug('Found controller %s' % cname)
                 controllers[cname] = controller
+            else:
+                log.debug('Could not get controller %s' % cname)
     return controllers
 
 

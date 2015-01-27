@@ -19,6 +19,7 @@
 
 import os
 import sys
+import logging
 
 
 def _add_to_syspath(base_dir, components):
@@ -184,5 +185,8 @@ def write_markdown(resources, apis, models, md):
 
 
 if __name__ == '__main__':
+    log = logging.getLogger()
+    log.setLevel(logging.DEBUG)
+    log.addHandler(logging.StreamHandler(sys.stderr))
     resources, apis, models = api.introspect()
     write_markdown(resources, apis, models, MarkDown(sys.stdout))
