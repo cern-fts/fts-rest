@@ -17,6 +17,8 @@
 #
 # Andres Abad Rodriguez <andres.abad.rodriguez@cern.ch>
 #
+# Andrea Manzi <andrea.manzi@cern.ch>
+#
 # Based on https://www.dropbox.com/developers/core/docs
 
 from webob.exc import HTTPNotFound
@@ -92,7 +94,7 @@ class DropboxConnector(object):
                     raise
                 raise HTTPNotFound('No registered user for the service "%s" has been found' % self.service)
 
-        return info
+        return info.cloudStorage_name
 
     def remove_token(self):
         info = self._get_dropbox_user_info()
