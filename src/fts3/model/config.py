@@ -49,13 +49,13 @@ class LinkConfig(Base):
     urlcopy_tx_to     = Column(Integer)
     auto_tuning       = Column(Flag(negative='off', positive='on'))
 
-    share_config =\
-        relation('ShareConfig', backref='link_config',
-                 primaryjoin='ShareConfig.source == LinkConfig.source and '
-                             'ShareConfig.destination == LinkConfig.destination',
-                 foreign_keys=(source, destination),
-                 uselist=False,
-                 lazy=False)
+#    share_config =\
+#        relation('ShareConfig', backref='link_config',
+#                 primaryjoin='ShareConfig.source == LinkConfig.source and '
+#                             'ShareConfig.destination == LinkConfig.destination',
+#                 foreign_keys=(source, destination),
+#                 uselist=False,
+#                 lazy=False)
 
     def __str__(self):
         return "%s => %s" % (self.source, self.destination)
@@ -111,7 +111,7 @@ class ShareConfig(Base):
     source      = Column(String, primary_key=True)
     destination = Column(String, primary_key=True)
     vo          = Column(String, primary_key=True)
-    active      = Column(Integer)
+    share       = Column(Integer, name='active')
 
     __table_args__ = (ForeignKeyConstraint(['source', 'destination'],
                                            [LinkConfig.source,

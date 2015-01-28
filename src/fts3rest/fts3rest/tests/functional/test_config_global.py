@@ -123,10 +123,10 @@ class TestConfigGlobal(TestController):
         """
         Set the optimizer mode
         """
-        self.app.post_json(url="/config/optimizer_mode",
-            params = 22,
+        self.app.post_json(url="/config/global",
+            params={'optimizer_mode': 2},
             status=200
         )
 
         opt = Session.query(OptimizerConfig).first()
-        self.assertEqual(22, opt.mode)
+        self.assertEqual(2, opt.mode)

@@ -5,3 +5,5 @@
 *.rpm
 *.pyc
 *.pyo
+*.sublime-workspace
+

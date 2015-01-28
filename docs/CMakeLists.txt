@@ -20,6 +20,9 @@ foreach(md ${md_files})
     add_dependencies(man_pages "${man_name}.1")
 endforeach()
 
+if (NOT SHARE_INSTALL_PREFIX)
+    set (SHARE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/share")
+endif (NOT SHARE_INSTALL_PREFIX)
 
 install(DIRECTORY
             "${MAN_INPUT_DIR}"

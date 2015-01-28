@@ -32,3 +32,12 @@ install (DIRECTORY templates
 install (DIRECTORY public
          DESTINATION ${PYTHON_SITE_PACKAGES}/fts3rest
 )
+
+# Minify Javascript
+find_program (SLIMIT slimit)
+if (SLIMIT)
+    message (STATUS "Found slimit: ${SLIMIT}")
+    install(SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/MinifyJS.cmake"
+        CODE "MINIFY(\"${SLIMIT}\" \"\$ENV{DESTDIR}/${PYTHON_SITE_PACKAGES}/fts3rest/public/js\")"
+    )
+endif (SLIMIT)

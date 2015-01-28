@@ -25,9 +25,9 @@ BuildRequires:  python-pylons
 BuildRequires:  scipy
 BuildRequires:  m2crypto
 BuildRequires:  python-m2ext
-BuildRequires:  python-coverage
 BuildRequires:  python-sqlalchemy
 BuildRequires:  python-requests
+BuildRequires:  python-slimit
 BuildRequires:  pandoc
 
 Requires:       gridsite%{?_isa} >= 1.7
@@ -165,6 +165,7 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 
 %{python_sitelib}/fts3rest/controllers/api.py*
 %{python_sitelib}/fts3rest/controllers/archive.py*
+%{python_sitelib}/fts3rest/controllers/autocomplete.py*
 %{python_sitelib}/fts3rest/controllers/banning.py*
 %{python_sitelib}/fts3rest/controllers/config.py*
 %{python_sitelib}/fts3rest/controllers/datamanagement.py*
@@ -191,6 +192,7 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 
 %{python_sitelib}/fts3rest/public/
 %{python_sitelib}/fts3rest/templates/delegation.html
+%{python_sitelib}/fts3rest/templates/config/
 
 %{_libexecdir}/fts3
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.ini

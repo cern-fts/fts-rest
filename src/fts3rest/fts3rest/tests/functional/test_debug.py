@@ -37,7 +37,7 @@ class TestDebug(TestController):
         Set the debug level of a storage as a source
         """
         self.app.post_json(url="/config/debug",
-            params = {'source': 'gsiftp://nowhere', 'level': 5},
+            params = {'source_se': 'gsiftp://nowhere', 'debug_level': 5},
             status=200
         )
 
@@ -46,7 +46,7 @@ class TestDebug(TestController):
         self.assertEqual(debug.dest_se, '')
         self.assertEqual(debug.source_se, 'gsiftp://nowhere')
 
-        self.app.delete(url="/config/debug?source=gsiftp://nowhere", status=204)
+        self.app.delete(url="/config/debug?source_se=gsiftp://nowhere", status=204)
         debug = Session.query(DebugConfig).get(('gsiftp://nowhere', ''))
         self.assertEqual(None, debug)
 
@@ -58,7 +58,7 @@ class TestDebug(TestController):
         Set the debug level of a storage as a destination
         """
         self.app.post_json(url="/config/debug",
-            params = {'destination': 'gsiftp://nowhere', 'level': 6},
+            params = {'dest_se': 'gsiftp://nowhere', 'debug_level': 6},
             status=200
         )
 
@@ -67,7 +67,7 @@ class TestDebug(TestController):
         self.assertEqual(debug.source_se, '')
         self.assertEqual(debug.dest_se, 'gsiftp://nowhere')
 
-        self.app.delete(url="/config/debug?destination=gsiftp://nowhere", status=204)
+        self.app.delete(url="/config/debug?dest_se=gsiftp://nowhere", status=204)
         debug = Session.query(DebugConfig).get(('', 'gsiftp://nowhere'))
         self.assertEqual(None, debug)
 
@@ -79,11 +79,11 @@ class TestDebug(TestController):
         Set the debug level both as source and destination
         """
         self.app.post_json(url="/config/debug",
-            params = {'source': 'gsiftp://nowhere', 'level': 5},
+            params = {'source_se': 'gsiftp://nowhere', 'debug_level': 5},
             status=200
         )
         self.app.post_json(url="/config/debug",
-            params = {'destination': 'gsiftp://nowhere', 'level': 6},
+            params = {'dest_se': 'gsiftp://nowhere', 'debug_level': 6},
             status=200
         )
 
@@ -93,7 +93,7 @@ class TestDebug(TestController):
         debug = Session.query(DebugConfig).get(('gsiftp://nowhere', ''))
         self.assertIsNotNone(debug)
 
-        self.app.delete(url="/config/debug?destination=gsiftp://nowhere", status=204)
+        self.app.delete(url="/config/debug?dest_se=gsiftp://nowhere", status=204)
 
         debug = Session.query(DebugConfig).get(('', 'gsiftp://nowhere'))
         self.assertEqual(None, debug)
@@ -101,7 +101,7 @@ class TestDebug(TestController):
         debug = Session.query(DebugConfig).get(('gsiftp://nowhere', ''))
         self.assertIsNotNone(debug)
 
-        self.app.delete(url="/config/debug?source=gsiftp://nowhere", status=204)
+        self.app.delete(url="/config/debug?source_se=gsiftp://nowhere", status=204)
         debug = Session.query(DebugConfig).get(('gsiftp://nowhere', ''))
         self.assertEqual(None, debug)
 
@@ -113,11 +113,11 @@ class TestDebug(TestController):
         Set the debug level, then reset to a new one
         """
         self.app.post_json(url="/config/debug",
-            params = {'source': 'gsiftp://nowhere', 'level': 5},
+            params = {'source_se': 'gsiftp://nowhere', 'debug_level': 5},
             status=200
         )
         self.app.post_json(url="/config/debug",
-            params = {'source': 'gsiftp://nowhere', 'level': 60},
+            params = {'source_se': 'gsiftp://nowhere', 'debug_level': 60},
             status=200
         )
         debug = Session.query(DebugConfig).get(('gsiftp://nowhere', ''))
@@ -131,11 +131,11 @@ class TestDebug(TestController):
         Set the debug level, then reset to a new one
         """
         self.app.post_json(url="/config/debug",
-            params = {'destination': 'gsiftp://nowhere', 'level': 5},
+            params = {'dest_se': 'gsiftp://nowhere', 'debug_level': 5},
             status=200
         )
         self.app.post_json(url="/config/debug",
-            params = {'destination': 'gsiftp://nowhere', 'level': 60},
+            params = {'dest_se': 'gsiftp://nowhere', 'debug_level': 60},
             status=200
         )
         debug = Session.query(DebugConfig).get(('', 'gsiftp://nowhere'))
@@ -149,13 +149,13 @@ class TestDebug(TestController):
         Equivalent to delete
         """
         self.app.post_json(url="/config/debug",
-            params = {'source': 'gsiftp://nowhere', 'level': 5},
+            params = {'source_se': 'gsiftp://nowhere', 'debug_level': 5},
             status=200
         )
         debug = Session.query(DebugConfig).get(('gsiftp://nowhere', ''))
         self.assertIsNotNone(debug)
         self.app.post_json(url="/config/debug",
-            params = {'source': 'gsiftp://nowhere', 'level': 0},
+            params = {'source_se': 'gsiftp://nowhere', 'debug_level': 0},
             status=200
         )
         debug = Session.query(DebugConfig).get(('gsiftp://nowhere', ''))
@@ -169,13 +169,13 @@ class TestDebug(TestController):
         Equivalent to delete
         """
         self.app.post_json(url="/config/debug",
-            params = {'destination': 'gsiftp://nowhere', 'level': 5},
+            params = {'dest_se': 'gsiftp://nowhere', 'debug_level': 5},
             status=200
         )
         debug = Session.query(DebugConfig).get(('', 'gsiftp://nowhere'))
         self.assertIsNotNone(debug)
         self.app.post_json(url="/config/debug",
-            params = {'destination': 'gsiftp://nowhere', 'level': 0},
+            params = {'dest_se': 'gsiftp://nowhere', 'debug_level': 0},
             status=200
         )
         debug = Session.query(DebugConfig).get(('', 'gsiftp://nowhere'))
@@ -189,15 +189,18 @@ class TestDebug(TestController):
         Set debug, and then list
         """
         self.app.post_json(url="/config/debug",
-            params = {'source': 'gsiftp://nowhere', 'level': 5},
+            params = {'source_se': 'gsiftp://nowhere', 'debug_level': 5},
             status=200
         )
         self.app.post_json(url="/config/debug",
-            params = {'destination': 'gsiftp://nowhere', 'level': 6},
+            params = {'dest_se': 'gsiftp://nowhere', 'debug_level': 6},
             status=200
         )
 
-        response = self.app.get(url="/config/debug", status=200)
+        response = self.app.get(url="/config/debug",
+            headers = {'Accept': 'application/json'},
+            status=200
+        )
         debugs = json.loads(response.body)
 
         self.assertEqual(2, len(debugs))

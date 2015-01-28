@@ -140,7 +140,7 @@ class TestConfigSe(TestController):
         """
         self.test_set_se_config()
 
-        response = self.app.get("/config/se?se=test.cern.ch", status=200)
+        response = self.app.get_json("/config/se?se=test.cern.ch", status=200)
         cfg = json.loads(response.body)
 
         self.assertIn('test.cern.ch', cfg.keys())

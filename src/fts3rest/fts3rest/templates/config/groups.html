@@ -1,0 +1,44 @@
+<%include file="header.html" args="page='/config/groups', subtitle='Groups'"/>
+
+<div class="container">
+	<h1>Storage groups</h1>
+
+    <p>
+        Link configuration also allow using group names instead of individual storage elements.
+        This allows to easily apply the same configuration to a group of endpoints that could belong
+        to the same site, or having similar characteristics.
+    </p>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th style="width: 5em"></th>
+				<th>Group name</th>
+				<th>Member</th>
+			</tr>
+		</thead>
+		<tbody id="group-list">
+		</tbody>
+		<tbody id="group-add">
+			<tr>
+			<form id="group-add-frm" method="POST">
+				<td>
+                    <button class="btn btn-link" type="submit">
+                        <i class="glyphicon glyphicon-plus"></i>
+                    </button>
+				</td>
+				<td>
+					<input type="text" name="groupname" id="group-add-field-groupname" class="form-control"/>
+				</td>
+				<td>
+					<input type="text" name="member" id="group-add-field-member" class="form-control"/>
+				</td>
+			</form>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+<script src="/js/config/groups.js" onload="setupGroups()"></script>
+
+<%include file="footer.html"/>

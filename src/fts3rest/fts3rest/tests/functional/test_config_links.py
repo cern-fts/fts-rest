@@ -89,17 +89,17 @@ class TestConfigLinks(TestController):
         Get the list of links configured
         """
         self.test_config_link_se()
-        response = self.app.get("/config/links")
+        response = self.app.get_json("/config/links")
         links = json.loads(response.body)
         self.assertEqual(1, len(links))
-        self.assertEqual('test-link', links[0])
+        self.assertEqual('test-link', links[0]['symbolicname'])
 
     def test_get_link(self):
         """
         Get the configuration for a given link
         """
         self.test_config_link_se()
-        response = self.app.get("/config/links/test-link")
+        response = self.app.get_json("/config/links/test-link")
         link = json.loads(response.body)
         self.assertEqual('test.cern.ch', link['source'])
         self.assertEqual('test2.cern.ch', link['destination'])
@@ -119,7 +119,7 @@ class TestConfigLinks(TestController):
         links = Session.query(LinkConfig).all()
         self.assertEqual(0, len(links))
 
-        self.app.get("/config/links/test-link", status=404)
+        self.app.get_json("/config/links/test-link", status=404)
 
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(2, len(audits))
@@ -129,8 +129,8 @@ class TestConfigLinks(TestController):
         Set the fixed number of actives for a pair
         """
         self.app.post_json("/config/fixed", params={
-            'source': 'test.cern.ch',
-            'destination': 'test2.cern.ch',
+            'source_se': 'test.cern.ch',
+            'dest_se': 'test2.cern.ch',
             'active': 5
         }, status=200)
 
@@ -148,8 +148,8 @@ class TestConfigLinks(TestController):
         """
         self.test_set_fixed_active()
         self.app.post_json("/config/fixed", params={
-            'source': 'test.cern.ch',
-            'destination': 'test2.cern.ch',
+            'source_se': 'test.cern.ch',
+            'dest_se': 'test2.cern.ch',
             'active': -1
         }, status=200)
 
@@ -165,20 +165,20 @@ class TestConfigLinks(TestController):
         """
         Get the fixed number of active
         """
-        response = self.app.get("/config/fixed", status=200)
+        response = self.app.get_json("/config/fixed", status=200)
         pairs = json.loads(response.body)
         self.assertEqual(0, len(pairs))
 
         self.test_set_fixed_active()
 
-        response = self.app.get("/config/fixed", status=200)
+        response = self.app.get_json("/config/fixed", status=200)
         pairs = json.loads(response.body)
         self.assertEqual(1, len(pairs))
         self.assertEqual('test.cern.ch', pairs[0]['source_se'])
         self.assertEqual('test2.cern.ch', pairs[0]['dest_se'])
         self.assertEqual(5, pairs[0]['active'])
 
-        response = self.app.get("/config/fixed?source_se=test.cern.ch&dest_se=test2.cern.ch", status=200)
+        response = self.app.get_json("/config/fixed?source_se=test.cern.ch&dest_se=test2.cern.ch", status=200)
         pairs = json.loads(response.body)
         self.assertEqual(1, len(pairs))
         self.assertEqual('test.cern.ch', pairs[0]['source_se'])

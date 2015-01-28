@@ -1,0 +1,48 @@
+<%!
+from datetime import datetime, timedelta
+%>
+
+<%include file="header.html" args="page='/config',subtitle='Overview'"/>
+
+<div class="container">
+    <div class="jumbotron">
+        <h1>FTS3 Configuration</h1>
+        <p>
+            Welcome to the Web FTS3 configuration interface. Here you will be able to modify the
+            internal settings of the FTS3 service.
+        </p>
+        <p>You are logged in as</p>
+        <p><small><em>${user.user_dn | h}</em></small></p>
+    </div>
+
+    <h2>Quick service overview</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Host name</th>
+                <th>Service name</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="server-statuses">
+        </tbody>
+    </table>
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <dl class="dl-horizontal">
+                <dt><span class="label label-success">Ok</span></dt>
+                <dd>The server is running fine</dd>
+                <dt><span class="label label-warning">Draining</span></dt>
+                <dd>The server does not accept any new assignments</dd>
+                <dt><span class="label label-danger">Offline</span></dt>
+                <dd>The server has stopped</dd>
+            </dl>
+        </div>
+    </div>
+</div>
+
+<script src="/js/config/index.js"
+        onload="setupOverview()"></script>
+
+<%include file="footer.html"/>

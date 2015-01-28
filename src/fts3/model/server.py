@@ -1,5 +1,5 @@
 #   Copyright notice:
-#   Copyright  Members of the EMI Collaboration, 2013.
+#   Copyright CERN, 2014.
 #
 #   See www.eu-emi.eu for details on the copyright holders
 #
@@ -15,24 +15,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import sqlalchemy
+from sqlalchemy import Column, DateTime, Integer, String
+
 from base import Base
-from banned import *
-from cloudStorage import *
-from config import *
-from credentials import *
-from dm import *
-from file import *
-from job import *
-from oauth2 import *
-from optimizer import *
-from server import *
-from version import *
 
 
-# Convenience method
-def connect(connectString):
-    engine = sqlalchemy.create_engine(connectString)
-    Session = sqlalchemy.orm.sessionmaker(bind=engine)
-    #Base.metadata.create_all(engine)
-    return Session()
+class Host(Base):
+    __tablename__ = 't_hosts'
+
+    hostname     = Column(String(64), primary_key=True)
+    service_name = Column(String(64), primary_key=True)
+    beat         = Column(DateTime)
+    drain        = Column(Integer)

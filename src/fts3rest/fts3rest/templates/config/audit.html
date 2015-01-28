@@ -1,0 +1,28 @@
+<%include file="header.html" args="page='/config/audit', subtitle='Config Audit'"/>
+
+<div class="container">
+    <h2>Configuration audit</h2>
+    <table class="table table-striped-tbody">
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Timestamp</th>
+                <th>User</th>
+            </tr>
+        </thead>
+        % for audit in data:
+            <tbody>
+                <tr>
+                    <td><kbd>${audit.action | h}</kbd></td>
+                    <td>${audit.datetime | h}</td>
+                    <td class="monospace">${audit.dn | h}</td>
+                </tr>
+                <tr>
+                    <td colspan="3"><code>${audit.config | h}</code></td>
+                </tr>
+            </tbody>
+        % endfor
+    </table>
+</div>
+
+<%include file="footer.html"/>

@@ -1,0 +1,23 @@
+.monospace {
+	font-family: monospace;
+}
+
+
+.table>tbody>tr>td {
+	vertical-align: middle;
+}
+
+
+.table-striped-tbody>tbody:nth-child(odd) {
+	background-color: #DDD;
+}
+
+
+.table-striped-tbody>tbody:hover {
+	background-color: #CCC;	
+}
+
+
+.panel-collapse>.panel-body {
+    display: none;
+}

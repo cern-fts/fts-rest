@@ -21,7 +21,14 @@ import json
 import types
 
 
-Base = declarative_base()
+class BaseAsDict(object):
+    def __getitem__(self, item):
+        if hasattr(self, item):
+            return getattr(self, item)
+        else:
+            raise KeyError()
+
+Base = declarative_base(cls=BaseAsDict)
 
 
 class Json(TypeDecorator):

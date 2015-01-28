@@ -109,11 +109,10 @@ class TestConfigGroup(TestController):
         """
         self.test_add_two_members()
 
-        response = self.app.get("/config/groups", status=200)
+        response = self.app.get_json("/config/groups", status=200)
         group_list = json.loads(response.body)
 
-        self.assertEqual(1, len(group_list))
-        self.assertIn('bahbah', group_list)
+        self.assertEqual(2, len(group_list))
 
     def test_list_members(self):
         """
@@ -121,7 +120,7 @@ class TestConfigGroup(TestController):
         """
         self.test_add_two_members()
 
-        response = self.app.get("/config/groups/bahbah", status=200)
+        response = self.app.get_json("/config/groups/bahbah", status=200)
         member_list = json.loads(response.body)
 
         self.assertEqual(2, len(member_list))
@@ -132,4 +131,4 @@ class TestConfigGroup(TestController):
         """
         Try to list members of a non existing group
         """
-        self.app.get("/config/groups/bahbah", status=404)
+        self.app.get_json("/config/groups/bahbah", status=404)

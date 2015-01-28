@@ -63,7 +63,7 @@ class TestConfigAuthz(TestController):
         List special authorizations
         """
         self.test_add_authz()
-        response = self.app.get("/config/authorize", status=200)
+        response = self.app.get_json("/config/authorize", status=200)
         authz = json.loads(response.body)
 
         self.assertEqual(1, len(authz))

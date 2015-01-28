@@ -88,6 +88,16 @@ def _app_post_json(self, url, params, **kwargs):
     return self.post(url, params=params, **kwargs)
 
 
+def _app_get_json(self, url, *args, **kwargs):
+    """
+    Add get_json to TestApp for convenience
+    """
+    headers = kwargs.pop('headers', dict())
+    headers['Accept'] = 'application/json'
+    kwargs['headers'] = headers
+    return self.get(url, *args, **kwargs)
+
+
 class TestController(TestCase):
     """
     Base class for the tests
@@ -108,6 +118,10 @@ class TestController(TestCase):
         # Same thing, version in el6 does not have it
         if not hasattr(self.app, 'post_json'):
             setattr(self.app, 'post_json', types.MethodType(_app_post_json, self.app))
+
+        # Decorate with a get_json method
+        if not hasattr(self.app, 'get_json'):
+            setattr(self.app, 'get_json', types.MethodType(_app_get_json, self.app))
 
         url._push_object(URLGenerator(config['routes.map'], environ))
         TestCase.__init__(self, *args, **kwargs)

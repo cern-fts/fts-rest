@@ -1,0 +1,116 @@
+<%include file="header.html" args="page='/config/links', subtitle='Link configuration'"/>
+
+<div class="container">
+    <h2>Link configuration</h2>
+
+    <p>
+        Parameters per link. If only source or only destination is specified, it applies to any
+        transfer from/to that storage.
+    </p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Symbolic name</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>Autotuning</th>
+                <th>N.streams</th>
+                <th>TCP buffer size</th>
+                <th>Timeout</th>
+            </tr>
+        </thead>
+        <tbody id="link-config-list">
+        </tbody>
+        <tbody id="link-config-add">
+            <tr>
+            <form id="link-config-add-frm">
+                <td>
+                    <button class="btn btn-link" type="submit">
+                        <i class="glyphicon glyphicon-plus"></i>
+                    </button>
+                </td>
+                <td>
+                    <input class="form-control" type="text" placeholder="Symbolic name" name="symbolicname"/>
+                </td>
+                <td>
+                    <input class="form-control" type="text" placeholder="Source" name="source"
+                        id="link-add-field-source"/>
+                </td>
+                <td>
+                    <input class="form-control" type="text" placeholder="Destination" name="destination"
+                        id="link-add-field-destination"/>
+                </td>
+                <td>
+                    <input type="checkbox" checked="checked" name="state"/>
+                </td>
+                <td>
+                    <input class="form-control" type="number" placeholder="Streams" name="nostreams"
+                        min="0" max="100"/>
+                </td>
+                <td>
+                    <input class="form-control" type="number" placeholder="TCP buffer size" name="tcp_buffer_size"
+                        min="0" max="999999"/>
+                </td>
+                <td>
+                    <input class="form-control" type="number" placeholder="Timeout" name="urlcopy_tx_to"
+                        min="0" max="999999"/>
+                </td>
+            </form>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Share configuration</h2>
+    <p>
+        Based on these values FTS3 will split the load between the different VOS configured per link.
+        Note that the values are normalized to a percentage.
+    </p>
+    <p>
+        When configuring shares, do not forget the <kbd>public</kbd> "VO", so any other VO can have access too.
+    </p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 5em"></th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>VO</th>
+                <th>Share</th>
+            </tr>
+        </thead>
+        <tbody id="share-list">
+        </tbody>
+        <tbody id="share-add">
+            <tr>
+            <form id="share-add-frm">
+                <td>
+                    <button class="btn btn-link" type="submit">
+                        <i class="glyphicon glyphicon-plus"></i>
+                    </button>
+                </td>
+                <td>
+                    <input type="text" name="source" placeholder="Source" class="form-control"
+                        id="share-add-field-source"/>
+                </td>
+                <td>
+                    <input type="text" name="destination" placeholder="Destination" class="form-control"
+                        id="share-add-field-destination"/>
+                </td>
+                <td>
+                    <input type="text" name="vo" placeholder="VO" class="form-control"/>
+                </td>
+                <td>
+                    <input type="number" name="share" placeholder="Share" class="form-control" min="0" max="100"/>
+                </td>
+            </form>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="/js/config/links.js" onload="setupLinks()"></script>
+
+<%include file="footer.html"/>

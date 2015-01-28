@@ -1,0 +1,150 @@
+<%include file="header.html" args="page='/config/global', subtitle='Server Configuration'"/>
+
+<div class="container">
+    <h2>Server-wide configuration</h2>
+
+    <h3>Retries</h3>
+    <p>
+        These settings apply to all transfers belonging to the same Virtual Organization.
+    </p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 5em"></th>
+                <th>VO</th>
+                <th title="The retry of a transfer also depends on the error code">
+                    Retries
+                    <i class="glyphicon glyphicon-question-sign"></i>
+                </th>
+            </tr>
+        </thead>
+        <tbody id="vo-config-list">
+        </tbody>
+        <tbody id="vo-config-add">
+            <tr>
+                <form method="POST" id="vo-config-add-frm">
+                <td>
+                    <button class="btn btn-link" type="submit">
+                        <i class="glyphicon glyphicon-plus"></i>
+                    </button>
+                </td>
+                <td>
+                    <input type="text" name="vo_name" placeholder="VO name" class="form-control"
+                        id="vo-config-add-field-vo"/>
+                </td>
+                <td>
+                    <input type="number" name="retry" value="1" min="1" max="10" class="form-control"/>
+                </td>
+                </form>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Global configuration</h3>
+    <p>
+        These settings apply to all transfers equally.
+    </p>
+
+    <form method="POST" id="global-config-frm">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="form-group">
+                    <label for="global_timeout">
+                        Timeout
+                        <i class="glyphicon glyphicon-question-sign"
+                           title="Default timeout. Can be overriden per job"></i>
+                    </label>
+                    <span class="input-group">
+                        <input type="number" id="global_timeout" name="global_timeout" class="form-control"
+                               value="${data['*']['global_timeout']}"/>
+                        <span class="input-group-addon"> seconds</span>
+                    </span>
+                </p>
+                <p class="form-group">
+                    <label for="max_per_link">Max. transfers per link</label>
+                    <span class="input-group">
+                        <input type="number" id="max_per_link" name="max_per_link" class="form-control"
+                               value="${data['*']['max_per_link']}"/>
+                        <span class="input-group-addon"> transfers</span>
+                    </span>
+                </p>
+                <p class="form-group">
+                    <label for="max_per_se">Max. transfers per storage</label>
+                    <span class="input-group">
+                        <input type="number" id="max_per_se" name="max_per_se" class="form-control"
+                               value="${data['*']['max_per_se']}"/>
+                        <span class="input-group-addon"> transfers</span>
+                    </span>
+                </p>
+                <p class="form-group">
+                    <label for="max_time_queue">Max. time in the queue</label>
+                    <span class="input-group">
+                        <input type="number" id="max_time_queue" name="max_time_queue" class="form-control"
+                               value="${data['*']['max_time_queue']}"/>
+                        <span class="input-group-addon"> seconds</span>
+                    </span>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <p class="form-group">
+                    <label for="optimizer_mode">Optimizer mode</label>
+                    <span class="input-group">
+                        <select id="optimizer_mode" name="optimizer_mode" class="form-control" value="3" class="form-control">
+                            % if not data['*']['optimizer_mode']:
+                            <option>-- Default --</option>
+                            % endif
+                            % for value, label in enumerate([('Conservative', 'text-primary'), ('Normal', 'text-success'), ('Aggressive', 'text-danger')], 1):
+                            % if value == data['*']['optimizer_mode']:
+                                <option value="${value}" class="${label[1]}" selected="selected">${label[0]}</option>
+                            % else:
+                                <option value="${value}" class="${label[1]}">${label[0]}</option>
+                            % endif
+                            % endfor
+                        </select>
+                    </span>
+                </p>
+                <p class="form-group">
+                    <label for="sec_per_mb">
+                        Add seconds per MiB
+                        <i class="glyphicon glyphicon-question-sign"
+                           title="FTS3 will correct the timeout depending on the file size and this parameter"></i>
+                    </label>
+                    <span class="input-group">
+                        <input type="number" id="sec_per_mb" name="sec_per_mb" class="form-control"
+                               value="${data['*']['sec_per_mb']}"/>
+                        <span class="input-group-addon"> seconds</span>
+                    </span>
+                </p>
+                <div class="form-group">
+                    <label for="show_user_dn">
+                        Show the user's DN
+                        <i class="glyphicon glyphicon-question-sign"
+                           title="It is recommended to keep this to false, since distributing the users' dn publicly may be forbidden by certain regulations"></i>
+                    </label>
+                    <select name="show_user_dn" id="show_user_dn" class="form-control">
+                        % if data['*']['show_user_dn']:
+                        <option value="true" selected>Yes</option>
+                        <option value="false">No</option>
+                        % else:
+                        <option value="true">Yes</option>
+                        <option value="false" selected>No</option>
+                        % endif
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-right">
+                <button class="btn btn-primary" type="submit">
+                    <i class="glyphicon glyphicon-ok"></i>
+                    Save
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="/js/config/global.js" onload="setupGlobalConfig()"></script>
+
+<%include file="footer.html"/>

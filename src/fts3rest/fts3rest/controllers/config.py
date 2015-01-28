@@ -24,10 +24,12 @@ from pylons import request
 from fts3.model import *
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
-from fts3rest.lib.helpers import jsonify, to_json
+from fts3rest.lib.helpers import jsonify, to_json, accept
 from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.middleware.fts3auth import authorize
 from fts3rest.lib.middleware.fts3auth.constants import *
+from routes import url_for
+from urlparse import urlparse
 
 
 log = logging.getLogger(__name__)
@@ -58,8 +60,10 @@ def _get_input_as_dict(request, from_query=False):
             input_dict = json.loads(request.body)
         except Exception:
             raise HTTPBadRequest('Malformed input')
+    elif request.content_type.startswith('application/x-www-form-urlencoded'):
+        input_dict = dict(request.params)
     else:
-        raise HTTPBadRequest('Expecting application/json')
+        raise HTTPBadRequest('Expecting application/json or application/x-www-form-urlencoded')
 
     if not hasattr(input_dict, '__getitem__'):
         raise HTTPBadRequest('Expecting a dictionary')
@@ -84,7 +88,18 @@ def _validate_type(Type, key, value):
 
     expected_type = type_map.get(type(column.type), str)
     if not isinstance(value, expected_type):
-        raise HTTPBadRequest('Field %s is expected to be %s' % (key, expected_type.__name__))
+        # Attempt to cast if a string
+        if isinstance(value, basestring):
+            try:
+                if expected_type == bool:
+                    value = value.lower() in ['true', 'yes', 'on']
+                else:
+                    value = expected_type(value)
+            except:
+                raise HTTPBadRequest('Field %s is expected to be %s' % (key, expected_type.__name__))
+        else:
+            raise HTTPBadRequest('Field %s is expected to be %s' % (key, expected_type.__name__))
+    return value
 
 
 class ConfigController(BaseController):
@@ -92,14 +107,51 @@ class ConfigController(BaseController):
     Operations on the config audit
     """
 
-    @doc.return_type(array_of=ConfigAudit)
+    @authorize(CONFIG)
+    @accept(html_template='/config/index.html')
+    def index(self):
+        """
+        Entry point. Only makes sense with html
+        """
+        return Session.query(Host).order_by(Host.hostname, Host.service_name).all()
+
+    @doc.response(400, 'Bad request. Invalid host or invalid drain value')
+    @doc.response(403, 'The user is not allowed to change the configuration')
     @authorize(CONFIG)
     @jsonify
+    def set_drain(self):
+        """
+        Set the drain status of a server
+        """
+        input_dict = _get_input_as_dict(request)
+
+        hostname = input_dict.get('hostname')
+        try:
+            drain = input_dict.get('drain', 'true').lower() == 'true'
+        except:
+            raise HTTPBadRequest('Invalid drain value')
+
+        entries = Session.query(Host).filter(Host.hostname == hostname).all()
+        if not entries:
+            raise HTTPBadRequest('Host not found')
+
+        try:
+            for entry in entries:
+                entry.drain = drain
+                Session.merge(entry)
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
+
+    @doc.return_type(array_of=ConfigAudit)
+    @authorize(CONFIG)
+    @accept(html_template='/config/audit.html')
     def audit(self):
         """
         Returns the last 100 entries of the config audit tables
         """
-        return Session.query(ConfigAudit).limit(100).all()
+        return Session.query(ConfigAudit).order_by(ConfigAudit.datetime.desc()).limit(100).all()
 
     @doc.response(403, 'The user is not allowed to change the configuration')
     @authorize(CONFIG)
@@ -110,15 +162,19 @@ class ConfigController(BaseController):
         """
         input_dict = _get_input_as_dict(request)
 
-        source = input_dict.get('source', None)
-        destin = input_dict.get('destination', None)
+        source = input_dict.get('source_se', None)
+        destin = input_dict.get('dest_se', None)
         try:
-            level  = int(input_dict.get('level', 1))
+            level  = int(input_dict.get('debug_level', 1))
         except:
             raise HTTPBadRequest('Invalid parameters')
 
         if source:
-            source = str(source)
+            source = urlparse(source)
+            if not source.scheme or not source.hostname:
+                raise HTTPBadRequest('Invalid storage')
+            source = "%s://%s" % (source.scheme, source.hostname)
+
             if level:
                 src_debug = DebugConfig(
                     source_se=source,
@@ -135,7 +191,11 @@ class ConfigController(BaseController):
                     'debug', 'Delete debug for source %s' % (source)
                 )
         if destin:
-            destin = str(destin)
+            destin = urlparse(destin)
+            if not destin.scheme or not destin.hostname:
+                raise HTTPBadRequest('Invalid storage')
+            destin = "%s://%s" % (destin.scheme, destin.hostname)
+
             if level:
                 dst_debug = DebugConfig(
                     source_se='',
@@ -165,19 +225,21 @@ class ConfigController(BaseController):
         """
         input_dict = _get_input_as_dict(request, from_query=True)
 
-        source = input_dict.get('source', None)
-        destin = input_dict.get('destination', None)
+        source = input_dict.get('source_se', None)
+        destin = input_dict.get('dest_se', None)
 
         if source:
             source = str(source)
             debug = Session.query(DebugConfig).get((source, ''))
-            Session.delete(debug)
-            _audit_configuration('debug', 'Delete debug for source %s' % (source))
+            if debug:
+                Session.delete(debug)
+                _audit_configuration('debug', 'Delete debug for source %s' % (source))
         if destin:
             destin = str(destin)
             debug = Session.query(DebugConfig).get(('', destin))
-            Session.delete(debug)
-            _audit_configuration('debug', 'Delete debug for destination %s' % (destin))
+            if debug:
+                Session.delete(debug)
+                _audit_configuration('debug', 'Delete debug for destination %s' % (destin))
 
         try:
             Session.commit()
@@ -190,7 +252,7 @@ class ConfigController(BaseController):
 
     @doc.response(403, 'The user is not allowed to query the configuration')
     @authorize(CONFIG)
-    @jsonify
+    @accept(html_template='/config/debug.html')
     def list_debug(self):
         """
         Return the debug settings
@@ -213,11 +275,17 @@ class ConfigController(BaseController):
             db_cfg = ServerConfig(vo_name=vo_name)
 
         if vo_name == '*' and 'optimizer_mode' in cfg:
-            opt = OptimizerConfig(mode=cfg.pop('optimizer_mode'))
-            Session.merge(opt)
+            try:
+                opt_mode = int(cfg.pop('optimizer_mode'))
+                if opt_mode > 0 and opt_mode < 4:
+                    Session.query(OptimizerConfig).delete()
+                    opt = OptimizerConfig(mode=opt_mode)
+                    Session.merge(opt)
+            except:
+                raise HTTPBadRequest('Invalid optimizer_mode value')
 
         for key, value in cfg.iteritems():
-            _validate_type(ServerConfig, key, value)
+            value = _validate_type(ServerConfig, key, value)
             setattr(db_cfg, key, value)
 
         Session.merge(db_cfg)
@@ -233,56 +301,45 @@ class ConfigController(BaseController):
     @doc.response(400, 'Invalid values passed in the request')
     @doc.response(403, 'The user is not allowed to query the configuration')
     @authorize(CONFIG)
-    @jsonify
+    @accept(html_template='/config/global.html')
     def get_global_config(self):
         """
         Get the global configuration
         """
         # Only retry, is bound to VO, the others are global (no VO)
         rows = Session.query(ServerConfig).all()
-        result = dict()
+        result = {'*': ServerConfig()}
         for r in rows:
             if r:
                 if r.vo_name in (None, '*'):
                     result['*'] = r
                 else:
                     result[r.vo_name] = dict(retry=r.retry)
+        opt = Session.query(OptimizerConfig).first()
+        setattr(result['*'], 'optimizer_mode', opt.mode if opt else None)
         return result
 
     @doc.response(400, 'Invalid values passed in the request')
-    @doc.response(403, 'The user is not allowed to modify the configuration')
+    @doc.response(403, 'The user is not allowed to query the configuration')
     @authorize(CONFIG)
     @jsonify
-    def set_optimizer_mode(self):
+    def delete_vo_global_config(self, start_response):
         """
-        Set the optimizer mode
+        Delete the global configuration for the given VO
         """
+        input_dict = _get_input_as_dict(request, from_query=True)
+        vo_name = input_dict.get('vo_name')
+        if not vo_name or vo_name == '*':
+            raise HTTPBadRequest('Missing VO name')
+
         try:
-            mode = int(request.body)
-        except:
-            raise HTTPBadRequest('Expecting an integer')
-        Session.query(OptimizerConfig).delete()
-        opt = OptimizerConfig(mode=mode)
-        Session.merge(opt)
-        try:
+            Session.query(ServerConfig).filter(ServerConfig.vo_name == vo_name).delete()
             Session.commit()
         except:
             Session.rollback()
             raise
-        return mode
 
-    @doc.response(403, 'The user is not allowed to query the configuration')
-    @authorize(CONFIG)
-    @jsonify
-    def get_optimizer_mode(self):
-        """
-        Get the optimizer mode
-        """
-        opt = Session.query(OptimizerConfig).first()
-        if not opt:
-            return None
-        else:
-            return opt.mode
+        start_response('204 No Content', [])
 
     @doc.response(400, 'Invalid values passed in the request')
     @doc.response(403, 'The user is not allowed to query the configuration')
@@ -300,6 +357,11 @@ class ConfigController(BaseController):
         if not member or not groupname:
             raise HTTPBadRequest('Missing values')
 
+        # Check the member is in t_se
+        if not Session.query(Se).get(member):
+            se = Se(name=member)
+            Session.merge(se)
+
         new_member = Member(groupname=groupname, member=member)
         _audit_configuration('member-add', 'Added member %s to %s' % (member, groupname))
         try:
@@ -312,12 +374,12 @@ class ConfigController(BaseController):
 
     @doc.response(403, 'The user is not allowed to query the configuration')
     @authorize(CONFIG)
-    @jsonify
+    @accept(html_template='/config/groups.html')
     def get_all_groups(self):
         """
         Get a list with all group names
         """
-        return [g.groupname for g in Session.query(Group).all()]
+        return Session.query(Member).order_by(Member.groupname).all()
 
     @doc.response(403, 'The user is not allowed to query the configuration')
     @doc.response(404, 'The group does not exist')
@@ -378,7 +440,7 @@ class ConfigController(BaseController):
         if source == '*' and destination == '*':
             raise HTTPBadRequest('Can not use wildcard for both source and destination')
 
-        link_cfg = Session.query(LinkConfig).get((source, destination))
+        link_cfg = Session.query(LinkConfig).filter(LinkConfig.symbolicname == symbolicname).first()
         if not link_cfg:
             link_cfg = LinkConfig(
                 source=source,
@@ -387,7 +449,7 @@ class ConfigController(BaseController):
             )
 
         for key, value in input_dict.iteritems():
-            _validate_type(LinkConfig, key, value)
+            value = _validate_type(LinkConfig, key, value)
             setattr(link_cfg, key, value)
 
         _audit_configuration('link', json.dumps(input_dict))
@@ -403,13 +465,12 @@ class ConfigController(BaseController):
 
     @doc.response(403, 'The user is not allowed to query the configuration')
     @authorize(CONFIG)
-    @jsonify
+    @accept(html_template='/config/links.html')
     def get_all_link_configs(self):
         """
         Get a list of all the links configured
         """
-        links = Session.query(LinkConfig).all()
-        return [l.symbolicname for l in links]
+        return Session.query(LinkConfig).all()
 
     @doc.response(403, 'The user is not allowed to query the configuration')
     @doc.response(404, 'The group or the member does not exist')
@@ -446,18 +507,104 @@ class ConfigController(BaseController):
     @doc.response(403, 'The user is not allowed to modify the configuration')
     @authorize(CONFIG)
     @jsonify
+    def set_share(self, start_response):
+        """
+        Add or modify a share
+        """
+        input_dict = _get_input_as_dict(request, from_query=True)
+        source = input_dict.get('source')
+        destination = input_dict.get('destination')
+        vo = input_dict.get('vo')
+        try:
+            share = int(input_dict.get('share'))
+        except:
+            raise HTTPBadRequest('Bad share value')
+
+        if not source or not destination or not vo or not share:
+            raise HTTPBadRequest('Missing source, destination, vo and/or share')
+
+        source = urlparse(source)
+        if not source.scheme or not source.hostname:
+            raise HTTPBadRequest('Invalid source')
+        source = "%s://%s" % (source.scheme, source.hostname)
+
+        destination = urlparse(destination)
+        if not destination.scheme or not destination.hostname:
+            raise HTTPBadRequest('Invalid source')
+        destination = "%s://%s" % (destination.scheme, destination.hostname)
+
+        try:
+            share_cfg = ShareConfig(
+                source=source, destination=destination, vo=vo, share=share
+            )
+            Session.merge(share_cfg)
+            _audit_configuration(
+                'share-set', 'Share %s, %s, %s has been set to %d' % (source, destination, vo, share)
+            )
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
+
+        return share
+
+    @doc.response(403, 'The user is not allowed to query the configuration')
+    @authorize(CONFIG)
+    @jsonify
+    def get_shares(self):
+        """
+        List the existing shares
+        """
+        return Session.query(ShareConfig).all()
+
+    @doc.response(403, 'The user is not allowed to modify the configuration')
+    @authorize(CONFIG)
+    @jsonify
+    def delete_share(self, start_response):
+        """
+        Delete a share
+        """
+        input_dict = _get_input_as_dict(request, from_query=True)
+        source = input_dict.get('source')
+        destination = input_dict.get('destination')
+        vo = input_dict.get('vo')
+
+        if not source or not destination or not vo:
+            raise HTTPBadRequest('Missing source, destination and/or vo')
+
+        try:
+            share = Session.query(ShareConfig).get((source, destination, vo))
+            if share:
+                Session.delete(share)
+                _audit_configuration(
+                    'share-delete', 'Share %s, %s, %s has been deleted' % (source, destination, vo)
+                )
+                Session.commit()
+        except:
+            Session.rollback()
+            raise
+
+        start_response('204 No Content', [])
+        return ['']
+
+    @doc.response(403, 'The user is not allowed to modify the configuration')
+    @authorize(CONFIG)
+    @jsonify
     def fix_active(self):
         """
         Fixes the number of actives for a pair
         """
         input_dict = _get_input_as_dict(request)
-        source = input_dict.get('source')
-        destination = input_dict.get('destination')
-        active = input_dict.get('active')
+        source = input_dict.get('source_se')
+        destination = input_dict.get('dest_se')
+        try:
+            active = int(input_dict.get('active', 0))
+        except Exception, e:
+            raise HTTPBadRequest('Active must be an integer (%s)' % str(e))
 
         if not source or not destination:
             raise HTTPBadRequest('Missing source and/or destination')
-        if not active:
+        if active is None:
             raise HTTPBadRequest('Missing active')
 
         opt_active = Session.query(OptimizerActive).get((source, destination))
@@ -485,14 +632,14 @@ class ConfigController(BaseController):
 
     @doc.response(403, 'The user is not allowed to query the configuration')
     @authorize(CONFIG)
-    @jsonify
+    @accept(html_template='/config/fixed.html')
     def get_fixed_active(self):
         """
         Gets the fixed pairs
         """
         input_dict = _get_input_as_dict(request, from_query=True)
-        source = input_dict.get('source')
-        destination = input_dict.get('destination')
+        source = input_dict.get('source_se')
+        destination = input_dict.get('dest_se')
 
         fixed = Session.query(OptimizerActive).filter(OptimizerActive.fixed == True)
         if source:
@@ -521,7 +668,7 @@ class ConfigController(BaseController):
                     if not as_source:
                         as_source = Optimize(source_se=storage)
                     for key, value in as_source_new.iteritems():
-                        _validate_type(Optimize, key, value)
+                        value = _validate_type(Optimize, key, value)
                         setattr(as_source, key, value)
                     _audit_configuration('set-se-config', 'Set config as source %s: %s' % (storage, json.dumps(cfg)))
                     Session.merge(as_source)
@@ -532,7 +679,7 @@ class ConfigController(BaseController):
                     if not as_dest:
                         as_dest = Optimize(dest_se=storage)
                     for key, value in as_dest_new.iteritems():
-                        _validate_type(Optimize, key, value)
+                        value = _validate_type(Optimize, key, value)
                         setattr(as_dest, key, value)
                     _audit_configuration('set-se-config', 'Set config as destination %s: %s' % (storage, json.dumps(cfg)))
                     Session.merge(as_dest)
@@ -542,12 +689,15 @@ class ConfigController(BaseController):
                     for vo, limits in operations.iteritems():
                         for op, limit in limits.iteritems():
                             new_limit = Session.query(OperationConfig).get((vo, storage, op))
-                            if not new_limit:
-                                new_limit = OperationConfig(
-                                    vo_name=vo, host=storage, operation=op
-                                )
-                            new_limit.concurrent_ops = limit
-                            Session.merge(new_limit)
+                            if limit > 0:
+                                if not new_limit:
+                                    new_limit = OperationConfig(
+                                        vo_name=vo, host=storage, operation=op
+                                    )
+                                new_limit.concurrent_ops = limit
+                                Session.merge(new_limit)
+                            elif new_limit:
+                                Session.delete(new_limit)
                     _audit_configuration('set-se-limits', 'Set limits for %s: %s' % (storage, json.dumps(operations)))
             Session.commit()
         except:
@@ -558,7 +708,7 @@ class ConfigController(BaseController):
     @doc.query_arg('se', 'Storage element', required=False)
     @doc.response(403, 'The user is not allowed to query the configuration')
     @authorize(CONFIG)
-    @jsonify
+    @accept(html_template='/config/se.html')
     def get_se_config(self):
         """
         Get the configurations status for a given SE
@@ -595,6 +745,27 @@ class ConfigController(BaseController):
 
         return response
 
+    @doc.query_arg('se', 'Storage element', required=True)
+    @doc.response(403, 'The user is not allowed to modify the configuration')
+    @authorize(CONFIG)
+    def delete_se_config(self, start_response):
+        """
+        Delete the configuration for a given SE
+        """
+        se = request.params.get('se', None)
+        if not se:
+            raise HTTPBadRequest('Missing storage (se)')
+
+        try:
+            Session.query(Optimize).filter((Optimize.source_se == se) | (Optimize.dest_se == se)).delete()
+            Session.query(OperationConfig).filter(OperationConfig.host == se).delete()
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
+
+        start_response('204 No Content', [])
+        return ['']
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
     @authorize(CONFIG)
@@ -610,10 +781,12 @@ class ConfigController(BaseController):
             raise HTTPBadRequest('Missing dn and/or operation')
 
         try:
-            authz = AuthorizationByDn(dn=dn, operation=op)
-            _audit_configuration('authorize', '%s granted to "%s"' % (op, dn))
-            Session.merge(authz)
-            Session.commit()
+            authz = Session.query(AuthorizationByDn).get((dn, op))
+            if not authz:
+                authz = AuthorizationByDn(dn=dn, operation=op)
+                _audit_configuration('authorize', '%s granted to "%s"' % (op, dn))
+                Session.merge(authz)
+                Session.commit()
         except:
             Session.rollback()
             raise
@@ -624,7 +797,7 @@ class ConfigController(BaseController):
     @doc.query_arg('operation', 'Filter by operation')
     @doc.response(403, 'The user is not allowed to query the configuration')
     @authorize(CONFIG)
-    @jsonify
+    @accept(html_template='/config/authz.html')
     def list_authz(self):
         """
         List granted accesses

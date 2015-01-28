@@ -84,6 +84,14 @@ def do_connect(config, map):
     map.connect('/api-docs/{resource}', controller='api', action='resource_doc',
                 conditions=dict(method=['GET']))
 
+    # Config entry point
+    map.connect('/config', controller='config', action='index',
+                conditions=dict(method=['GET']))
+
+    # Set/unset draining mode
+    map.connect('/config/drain', controller='config', action='set_drain',
+                conditions=dict(method=['POST']))
+
     # Configuration audit
     map.connect('/config/audit', controller='config', action='audit',
                 conditions=dict(method=['GET']))
@@ -101,12 +109,8 @@ def do_connect(config, map):
                 conditions=dict(method=['POST']))
     map.connect('/config/global', controller='config', action='get_global_config',
                 conditions=dict(method=['GET']))
-
-    # Optimizer mode
-    map.connect('/config/optimizer_mode', controller='config', action='set_optimizer_mode',
-                conditions=dict(method='POST'))
-    map.connect('/config/optimizer_mode', controller='config', action='get_optimizer_mode',
-                conditions=dict(method='GET'))
+    map.connect('/config/global', controller='config', action='delete_vo_global_config',
+                conditions=dict(method=['DELETE']))
 
     # Groups and group members
     map.connect('/config/groups', controller='config', action='add_to_group',
@@ -128,6 +132,14 @@ def do_connect(config, map):
     map.connect('/config/links/{sym_name}', controller='config', action='delete_link_config',
                 conditions=dict(method=['DELETE']))
 
+    # Shares
+    map.connect('/config/shares', controller='config', action='set_share',
+                conditions=dict(method=['POST']))
+    map.connect('/config/shares', controller='config', action='get_shares',
+                conditions=dict(method=['GET']))
+    map.connect('/config/shares', controller='config', action='delete_share',
+                conditions=dict(method=['DELETE']))
+
     # Fixed number of actives
     map.connect('/config/fixed', controller='config', action='fix_active',
                 conditions=dict(method=['POST']))
@@ -139,6 +151,8 @@ def do_connect(config, map):
                 conditions=dict(method=['POST']))
     map.connect('/config/se', controller='config', action='get_se_config',
                 conditions=dict(method=['GET']))
+    map.connect('/config/se', controller='config', action='delete_se_config',
+                conditions=dict(method=['DELETE']))
 
     # Grant special permissions to given DNs
     map.connect('/config/authorize', controller='config', action='add_authz',
@@ -185,4 +199,18 @@ def do_connect(config, map):
     map.connect('/ban/dn', controller='banning', action='unban_dn',
                 conditions=dict(method=['DELETE']))
     map.connect('/ban/dn', controller='banning', action='list_banned_dn',
+                conditions=dict(method=['GET']))
+
+    # Autocomplete
+    map.connect('/autocomplete/dn', controller='autocomplete', action='autocomplete_dn',
+                conditions=dict(method=['GET']))
+    map.connect('/autocomplete/source', controller='autocomplete', action='autocomplete_source',
+                conditions=dict(method=['GET']))
+    map.connect('/autocomplete/destination', controller='autocomplete', action='autocomplete_destination',
+                conditions=dict(method=['GET']))
+    map.connect('/autocomplete/storage', controller='autocomplete', action='autocomplete_storage',
+                conditions=dict(method=['GET']))
+    map.connect('/autocomplete/vo', controller='autocomplete', action='autocomplete_vo',
+                conditions=dict(method=['GET']))
+    map.connect('/autocomplete/groupname', controller='autocomplete', action='autocomplete_groupname',
                 conditions=dict(method=['GET']))

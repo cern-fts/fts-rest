@@ -29,7 +29,6 @@ from CSdropbox import DropboxConnector
 class CSInterface(object):
 
     def __init__(self, user_dn, service):
-
        # try:
             # Dynamic load of the class required for this External Storage
             #module = __import__("CS" + service.strip().lower())
