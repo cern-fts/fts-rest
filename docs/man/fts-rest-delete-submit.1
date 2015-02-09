@@ -1,0 +1,122 @@
+.TH FTS-REST-CLI 1 "September 25, 2014" "fts-rest-delete-submit"
+.SH NAME
+.PP
+fts-rest-delete-submit
+.SH SYNOPIS
+.PP
+Usage: fts-rest-delete-submit [options] SURL1 [SURL2] [SURL3] [...]
+.SH DESCRIPTION
+.PP
+This command can be used to submit a deletion job to FTS3.
+It supports simple and bulk submissions.
+.SH OPTIONS
+.TP
+.B -h/--help
+Show this help message and exit
+.RS
+.RE
+.TP
+.B -v/--verbose
+Verbose output.
+.RS
+.RE
+.TP
+.B -s/--endpoint
+Fts3 rest endpoint.
+.RS
+.RE
+.TP
+.B -j/--json
+Print the output in json format.
+.RS
+.RE
+.TP
+.B --key
+The user certificate private key.
+.RS
+.RE
+.TP
+.B --cert
+The user certificate.
+.RS
+.RE
+.TP
+.B --insecure
+Do not validate the server certificate
+.RS
+.RE
+.TP
+.B --access-token
+Oauth2 access token (supported only by some endpoints, takes precedence)
+.RS
+.RE
+.TP
+.B -b/--blocking
+Blocking mode.
+Wait until the operation completes.
+.RS
+.RE
+.TP
+.B -i/--interval
+Interval between two poll operations in blocking mode.
+.RS
+.RE
+.TP
+.B -e/--expire
+Expiration time of the delegation in minutes.
+.RS
+.RE
+.TP
+.B --job-metadata
+Transfer job metadata.
+.RS
+.RE
+.TP
+.B --file-metadata
+File metadata.
+.RS
+.RE
+.TP
+.B -S/--spacetoken
+The space token or its description.
+.RS
+.RE
+.TP
+.B --dry-run
+Do not send anything, just print the json message.
+.RS
+.RE
+.TP
+.B -f/--file
+Name of configuration file
+.RS
+.RE
+.TP
+.B --retry
+Number of retries.
+If 0, the server default will be used.
+If negative, there will be no retries.
+.RS
+.RE
+.TP
+.B --cloud-credentials
+Use cloud credentials for the job (i.
+E.
+Dropbox).
+.RS
+.RE
+.SH EXAMPLE
+.IP
+.nf
+\f[C]
+$\ fts-rest-delete-submit\ -s\ https://fts3-devel.cern.ch:8446\ gsiftp://source.host/file1\ gsiftp://source.host/file2
+Job\ successfully\ submitted.
+Job\ id:\ 9fee8c1e-c46d-11e3-8299-02163e00a17a
+
+$\ fts-rest-delete-submit\ -s\ https://fts3-devel.cern.ch:8446\ -f\ bulk.list
+Job\ successfully\ submitted.
+Job\ id:\ 9fee8c1e-c46d-11e3-8299-02163e00a17a
+\f[]
+.fi
+.SH AUTHORS
+fts-devel\@cern.ch.
