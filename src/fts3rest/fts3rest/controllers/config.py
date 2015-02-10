@@ -139,6 +139,9 @@ class ConfigController(BaseController):
             for entry in entries:
                 entry.drain = drain
                 Session.merge(entry)
+                _audit_configuration(
+                    'drain', 'Turning drain %s the drain mode for %s' %(drain, hostname))
+                )
             Session.commit()
         except:
             Session.rollback()
