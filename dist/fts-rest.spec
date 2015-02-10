@@ -27,7 +27,9 @@ BuildRequires:  m2crypto
 BuildRequires:  python-m2ext
 BuildRequires:  python-sqlalchemy
 BuildRequires:  python-requests
+%if %{?rhel}%{!?rhel:0} == 6
 BuildRequires:  python-slimit
+%endif
 BuildRequires:  pandoc
 
 Requires:       gridsite%{?_isa} >= 1.7
