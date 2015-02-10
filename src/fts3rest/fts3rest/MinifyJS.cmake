@@ -9,7 +9,7 @@ function (Minify SLIMIT JSROOT)
     foreach (JS ${JSFILES})
         message ("Minimizing ${JS}")
         execute_process (
-            COMMAND "${SLIMIT}" -mt "${JS}"
+            COMMAND "${SLIMIT}" -m "${JS}"
             OUTPUT_VARIABLE MINJS
         )
         file(WRITE "${JS}" "${MINJS}")
