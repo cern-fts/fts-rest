@@ -2,8 +2,8 @@
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
 
 Name:           fts-rest
-Version:        3.2.32
-Release:        2%{?dist}
+Version:        3.2.33
+Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
@@ -137,7 +137,7 @@ pushd src/fts3rest
 PYTHONPATH=../ nosetests1.1 --with-xunit --xunit-file=/tmp/nosetests.xml
 %endif
 %if %{?rhel}%{!?rhel:0} >= 7
-PYTHONPATH=../ ./setup_pylons_plugin.py install --user 
+PYTHONPATH=../ ./setup_pylons_plugin.py install --user
 PYTHONPATH=../ nosetests --with-xunit --xunit-file=/tmp/nosetests.xml
 %endif
 popd
