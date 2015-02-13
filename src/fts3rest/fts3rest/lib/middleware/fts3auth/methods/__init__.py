@@ -20,6 +20,14 @@ import sys
 
 
 class Authenticator(object):
+    """
+    Wraps different authentication methods installed in this directory.
+    The 'do_authentication' call must:
+        * Return True and set the credentials parameter if
+          the recognised method is used and valid.
+        * Return False if the recognised method is _NOT_ in use
+        * Raise InvalidCredentials is the recognised method _IS_ in use, but invalid
+    """
 
     def __init__(self):
         _current_module = sys.modules[__name__]

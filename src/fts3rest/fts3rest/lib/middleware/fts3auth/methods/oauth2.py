@@ -29,7 +29,7 @@ def do_authentication(credentials, env):
         return False
     if not authn.is_valid:
         if authn.error == 'access_denied':
-            raise InvalidCredentials()
+            raise InvalidCredentials('Invalid OAuth2 credentials')
         return False
 
     credentials.dn.append(authn.credentials.dn)

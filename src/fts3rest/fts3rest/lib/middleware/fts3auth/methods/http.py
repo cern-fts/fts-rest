@@ -44,12 +44,12 @@ def do_authentication(credentials, env):
         ts = dateutil.parser.parse(cred['ts']).strftime('%s')
     except (TypeError, ValueError):
         log.info("Cannot decode certificate, signature or timestamp")
-        raise InvalidCredentials()
+        raise InvalidCredentials("Cannot decode certificate, signature or timestamp")
 
     td = abs(int(time.mktime(time.gmtime())) - int(ts))
     if td > 60:
         log.info("Authorization has expired by " + str(td) + " seconds")
-        raise InvalidCredentials()
+        raise InvalidCredentials("Authorization has expired by " + str(td) + " seconds")
 
     x509 = X509.load_cert_string(cert, X509.FORMAT_DER)
     pubkey = x509.get_pubkey().get_rsa()
@@ -67,7 +67,7 @@ def do_authentication(credentials, env):
     ctx.load_verify_locations(capath = "/etc/grid-security/certificates");
     if not ctx.validate_certificate(x509):
         log.info("Certificate verification failed")
-        raise InvalidCredentials()
+        raise InvalidCredentials("Certificate verification failed")
 
     credentials.user_dn = '/'+'/'.join(x509.get_subject().as_text().split(', '))
     credentials.dn.append(credentials.user_dn)

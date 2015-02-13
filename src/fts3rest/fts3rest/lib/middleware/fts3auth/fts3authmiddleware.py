@@ -40,8 +40,8 @@ class FTS3AuthMiddleware(object):
     def _get_credentials(self, environ):
         try:
             credentials = UserCredentials(environ, self.config['fts3.Roles'])
-        except InvalidCredentials:
-            raise HTTPForbidden('Invalid credentials')
+        except InvalidCredentials, e:
+            raise HTTPForbidden('Invalid credentials (%s)' % str(e))
 
         if not credentials.user_dn:
             raise HTTPUnauthorized('A valid X509 certificate or proxy is needed')
@@ -60,6 +60,7 @@ class FTS3AuthMiddleware(object):
             environ['fts3.User.Credentials'] = credentials
             log.info("%s logged in via %s" % (credentials.user_dn, credentials.method))
         except HTTPError, e:
+            log.error(e.detail)
             return e(environ, start_response)
         except DatabaseError, e:
             log.error("Database error when trying to get user's credentials: %s" % str(e))
