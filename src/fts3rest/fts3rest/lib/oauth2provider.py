@@ -45,7 +45,7 @@ class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
         app = Session.query(OAuth2Application).get(client_id)
         if not app:
             return False
-        return redirect_uri in app.redirect_to.split('\n')
+        return redirect_uri in app.redirect_to.split()
 
     def validate_access(self):
         user = pylons.request.environ['fts3.User.Credentials']
