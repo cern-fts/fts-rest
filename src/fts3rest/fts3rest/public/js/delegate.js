@@ -152,6 +152,8 @@ function doDelegate()
         var lifetime = parseInt(document.getElementById("lifetime").value);
         if (isNaN(lifetime))
             throw "Invalid value in lifetime";
+        if (publicCertificate.length == 0)
+            throw "Could not get the public certificate";
 
         doDelegateInternal(delegationId, userDn, publicCertificate, privateKey, voName, lifetime);
 
@@ -177,4 +179,3 @@ function cancel()
     document.getElementById("vo").value = "";
     window.close();
 }
-
