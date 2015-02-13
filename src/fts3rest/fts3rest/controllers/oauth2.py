@@ -18,11 +18,11 @@ import json
 import logging
 import os
 import pylons
+import urlparse
 from sqlalchemy.exc import IntegrityError
 from pylons.templating import render_mako as render
 from pylons.controllers.util import redirect
 from routes import url_for
-from urlparse import urlparse
 
 from fts3.model.oauth2 import OAuth2Application, OAuth2Token, OAuth2Code
 from fts3rest.lib.oauth2provider import FTS3OAuth2AuthorizationProvider
@@ -33,6 +33,8 @@ from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.middleware.fts3auth import require_certificate
 from fts3rest.lib.oauth2lib.utils import random_ascii_string
 
+
+URN_NO_REDIRECT = 'urn:ietf:wg:oauth:2.0:oob'
 
 log = logging.getLogger(__name__)
 
@@ -273,9 +275,10 @@ class Oauth2Controller(BaseController):
         else:
             auth['redirect_uri'] = redirections[0]
 
-        redirect_parsed = urlparse(auth['redirect_uri'])
-        if redirect_parsed.hostname != 'localhost' and redirect_parsed.scheme != 'https':
-            raise OAuth2Error('Redirection endpoint is not https!')
+        if auth['redirect_uri'] != URN_NO_REDIRECT:
+            redirect_parsed = urlparse.urlparse(auth['redirect_uri'])
+            if redirect_parsed.hostname != 'localhost' and redirect_parsed.scheme != 'https':
+                raise OAuth2Error('Redirection endpoint is not https!')
 
         # Populate state from unused query args
         auth['state'] = dict(
@@ -308,8 +311,20 @@ class Oauth2Controller(BaseController):
             )
             for (k, v) in response.headers.iteritems():
                 pylons.response.headers[str(k)] = str(v)
-            pylons.response.status_int = response.status_code
-            return response.raw
+
+            if auth['redirect_uri'] == URN_NO_REDIRECT:
+                location = pylons.response.headers['Location']
+                del pylons.response.headers['Location']
+                return render(
+                    '/authz_noredirect.html',
+                    extra_vars={
+                        'params': urlparse.parse_qs(urlparse.urlparse(location).query),
+                        'site': pylons.config['fts3.SiteName']
+                    }
+                )
+            else:
+                pylons.response.status_int = response.status_code
+                return response.raw
         else:
             csrftoken = random_ascii_string(32)
             pylons.response.set_cookie('fts3oauth2_csrf', csrftoken, max_age=300)
@@ -352,8 +367,20 @@ class Oauth2Controller(BaseController):
                 )
                 for (k, v) in response.headers.iteritems():
                     pylons.response.headers[str(k)] = str(v)
-                pylons.response.status_int = response.status_code
-                return response.raw
+
+                if auth['redirect_uri'] == URN_NO_REDIRECT:
+                    location = pylons.response.headers['Location']
+                    del pylons.response.headers['Location']
+                    return render(
+                        '/authz_noredirect.html',
+                        extra_vars={
+                            'params': urlparse.parse_qs(urlparse.urlparse(location).query),
+                            'site': pylons.config['fts3.SiteName']
+                        }
+                    )
+                else:
+                    pylons.response.status_int = response.status_code
+                    return response.raw
             else:
                 redirect(url_for(controller='oauth2', action='get_my_apps'), code=HTTPSeeOther.code)
         except OAuth2Error, e:

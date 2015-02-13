@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    % if 'error' in params:
+        <title>Denied error=${params['error'][0]}</title>
+    % else:
+        <title>Success code=${params['code']}</title>
+    % endif
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">
+                    <img src="/img/logo.png" width="24"/>
+                    ${site} FTS3 - Application authorization
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                % if 'error' in params:
+                    <h1 class="panel-title">Authentication failed</h1>
+                % else:
+                    <h1 class="panel-title">Please, copy this token into the application</h1>
+                % endif
+            </div>
+            <div class="panel-body">
+                % if 'error' in params:
+                    <p>${params['error'][0]}</p>
+                % else:
+                    <p>${params['code'][0]}</p>
+                % endif
+            </div>
+        </div>
+    </div>
+</body>
+</html>
