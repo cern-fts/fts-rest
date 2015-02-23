@@ -96,6 +96,10 @@ paramSchema = {
         'strict_copy': {
             'type': ['boolean', 'null'],
             'title': 'Disable all checks, just copy the file'
+        },
+        'priority': {
+            'type': ['integer', 'null'],
+            'title': 'Job priority'
         }
     },
 }
