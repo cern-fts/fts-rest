@@ -222,6 +222,7 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %{python_sitelib}/fts3rest/templates/apps.html
 %{python_sitelib}/fts3rest/templates/authz_confirm.html
 %{python_sitelib}/fts3rest/templates/authz_failure.html
+%{python_sitelib}/fts3rest/templates/authz_noredirect.html
 %{python_sitelib}/fts3rest/templates/register.html
 
 %files http-authz-signed-cert
