@@ -52,7 +52,8 @@ DEFAULT_PARAMS = {
     'multihop': False,
     'source_spacetoken': '',
     'spacetoken': '',
-    'retry': 0
+    'retry': 0,
+    'priority': 3
 }
 
 
@@ -257,7 +258,7 @@ def _submit_transfer(user, job_dict, params):
         voms_cred=' '.join(user.voms_cred),
         vo_name=user.vos[0],
         submit_time=datetime.utcnow(),
-        priority=3,
+        priority=max(min(int(params['priority']), 5), 1),
         space_token=params['spacetoken'],
         overwrite_flag=_yes_or_no(params['overwrite']),
         source_space_token=params['source_spacetoken'],

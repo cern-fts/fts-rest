@@ -47,6 +47,7 @@ class TestJobSubmission(TestController):
         self.assertEqual(job.overwrite_flag, True)
         self.assertEqual(job.verify_checksum, True)
         self.assertEqual(job.reuse_job, 'N')
+        self.assertEqual(job.priority, 3)
 
         self.assertEqual(len(files), 1)
         self.assertEqual(files[0].file_state, 'SUBMITTED')
@@ -669,6 +670,36 @@ class TestJobSubmission(TestController):
         self.assertIn('nostreams:42', params)
         self.assertIn('buffersize:1025', params)
         self.assertIn('strict', params)
+
+    def test_submit_with_priority(self):
+        """
+        Submit a job specifying the priority
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://dest.ch:8447/file'],
+            }],
+            'params': {
+                'priority': 5,
+            }
+        }
+        response = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        )
+
+        self.assertEquals(response.content_type, 'application/json')
+
+        job_id = json.loads(response.body)['job_id']
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.priority, 5)
 
     def test_files_balanced(self):
         """

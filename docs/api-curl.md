@@ -269,7 +269,8 @@ Here you can see an example of a submission file
     "overwrite": false,         // Boolean: Overwrite the destination file.
     "gridftp": null,            // Not used yet. It can be left empty.
     "multihop": false,          // Boolean: If set to true, the transfer will be a multihop transfer
-    "retry": 2                  // Integer: Number of retries, if the error is recoverable
+    "retry": 2,                 // Integer: Number of retries, if the error is recoverable
+    "priority": 3               // Integer: Job priority
   }
 }
 ```
