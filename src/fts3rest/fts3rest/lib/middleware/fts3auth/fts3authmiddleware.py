@@ -21,6 +21,7 @@ from fts3rest.lib.base import Session
 from fts3.model import BannedDN
 from credentials import UserCredentials, InvalidCredentials
 from sqlalchemy.exc import DatabaseError
+from urlparse import urlparse
 from webob.exc import HTTPUnauthorized, HTTPForbidden, HTTPError
 
 
@@ -36,6 +37,23 @@ class FTS3AuthMiddleware(object):
     def __init__(self, wrap_app, config):
         self.app    = wrap_app
         self.config = config
+
+    def _trusted_origin(self, environ, parsed):
+        allow_origin = environ.get('ACCESS_CONTROL_ORIGIN', None)
+        if not allow_origin:
+            return False
+        return parsed.scheme + "://" + parsed.netloc == allow_origin
+
+    def _validate_origin(self, environ):
+        origin = environ.get('HTTP_ORIGIN', None)
+        if not origin:
+            log.debug('No Origin header found')
+            return
+        parsed = urlparse(origin)
+        if parsed.netloc != environ.get('HTTP_HOST'):
+            if not self._trusted_origin(environ, parsed):
+                raise HTTPForbidden('Host and Origin do not match')
+            log.info('Trusted Origin: %s://%s' % (parsed.scheme, parsed.netloc))
 
     def _get_credentials(self, environ):
         try:
@@ -56,6 +74,7 @@ class FTS3AuthMiddleware(object):
 
     def __call__(self, environ, start_response):
         try:
+            self._validate_origin(environ)
             credentials = self._get_credentials(environ)
             environ['fts3.User.Credentials'] = credentials
             log.info("%s logged in via %s" % (credentials.user_dn, credentials.method))
