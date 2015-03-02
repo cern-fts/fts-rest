@@ -1,0 +1,398 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"b",
+				"bulk_size"
+			],
+			[
+				"bulk",
+				"bulk_size"
+			],
+			[
+				"file",
+				"filesize"
+			],
+			[
+				"templa",
+				"template_path"
+			],
+			[
+				"temp",
+				"tempfile"
+			],
+			[
+				"bui",
+				"bulk-size"
+			],
+			[
+				"base",
+				"base_surl"
+			],
+			[
+				"dest",
+				"dest_matches"
+			],
+			[
+				"opera",
+				"operation"
+			],
+			[
+				"gl",
+				"glyphicon-trash"
+			],
+			[
+				"ope",
+				"operation"
+			],
+			[
+				"chi",
+				"children"
+			],
+			[
+				"as",
+				"as_destination"
+			],
+			[
+				"oper",
+				"operations"
+			],
+			[
+				"query",
+				"query_arg"
+			],
+			[
+				"text",
+				"textStatus"
+			],
+			[
+				"res",
+				"responseJSON"
+			],
+			[
+				"sty",
+				"stylesheet"
+			],
+			[
+				"start",
+				"start_response"
+			],
+			[
+				"from",
+				"from_query"
+			],
+			[
+				"for",
+				"form"
+			],
+			[
+				"form",
+				"form-control"
+			],
+			[
+				"html",
+				"html_template"
+			],
+			[
+				"expe",
+				"expected_type"
+			],
+			[
+				"selec",
+				"selected"
+			],
+			[
+				"back",
+				"background-color"
+			],
+			[
+				"data",
+				"dataType"
+			],
+			[
+				"sele",
+				"selected"
+			],
+			[
+				"debug",
+				"debug_level"
+			],
+			[
+				"Ver",
+				"Very"
+			],
+			[
+				"host",
+				"hostname"
+			],
+			[
+				"input",
+				"input_dict"
+			],
+			[
+				"jso",
+				"jsonify"
+			],
+			[
+				"is",
+				"is_access_requested"
+			],
+			[
+				"Drop",
+				"DropboxConnector"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "/home/aalvarez/AFS/www/whitehat/rest.html",
+			"settings":
+			{
+				"buffer_size": 448,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/aalvarez/AFS/deltests/populate.py",
+		"/home/aalvarez/AFS/Source/fts3/test/stress/fts-stress-delete.py",
+		"/home/aalvarez/AFS/Source/fts3/test/functional/lib/cli.py",
+		"/home/aalvarez/AFS/deltests/measure-deletion.py",
+		"/home/aalvarez/AFS/www/whitehat/store_post.php",
+		"/home/aalvarez/AFS/www/whitehat/awesome.html",
+		"/home/aalvarez/AFS/www/whitehat/awesome1.html",
+		"/home/aalvarez/AFS/www/whitehat/.htaccess",
+		"/home/aalvarez/AFS/www/whitehat/store.php",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/public/js/config/se.js",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/public/js/config/groups.js",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/config/routing/base.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/se.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/controllers/autocomplete.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/global.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/links.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/groups.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/debug.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/fixed.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/public/js/config/fixed.js",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/controllers/config.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/authz.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/audit.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/header.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/footer.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/index.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/app.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/MinifyJS.cmake",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/CMakeLists.txt",
+		"/home/aalvarez/AFS/Source/fts-rest/dist/fts-rest.spec",
+		"/home/aalvarez/AFS/Source/fts-rest/docs/developers.md",
+		"/home/aalvarez/AFS/Source/fts-rest/docs/CMakeLists.txt",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/public/js/config/debug.js",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/public/js/config/common.js",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/public/js/config/global.js",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/public/js/config/index.js",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/public/js/config/links.js",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/public/js/config/authz.js",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/public/css/style.css",
+		"/home/aalvarez/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/tests/functional/test_config_links.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/tests/functional/test_config_authz_dn.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/tests/functional/test_config_se.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/lib/helpers/accept.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/tests/functional/test_config_groups.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/tests/functional/test_config_global.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/fix.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3/model/config.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/controllers/banning.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/tests/functional/test_debug.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/authz_list.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/config_footer.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/templates/config/config_header.html",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/controllers/CSInterface.py",
+		"/home/aalvarez/AFS/Source/fts-rest/src/fts3rest/fts3rest/controllers/jobs.py",
+		"/home/aalvarez/AFS/Source/fts-rest/rest.sublime-project"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"ILink",
+			"cov",
+			".fail",
+			"addOpButton",
+			"OperationConfig",
+			"Operations",
+			"background",
+			"handleSeSave",
+			"addOperation",
+			"addOp(",
+			"generateSeForm",
+			"set_se_config",
+			"_se\n\n\n",
+			"Accept",
+			"headers",
+			"Storage(",
+			"redirect",
+			"'level'",
+			"'destination'",
+			"'source'",
+			"_validate_type(",
+			"show_user_dn\nuser_dn",
+			"show_user_dn\nshow_user_dn",
+			"<code",
+			"job("
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"addOpBtn",
+			"addOperation(",
+			"generateSubForm",
+			"'debug_level'",
+			"'dest_se'",
+			"'source_se'"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "/home/aalvarez/AFS/www/whitehat/rest.html",
+					"settings":
+					{
+						"buffer_size": 448,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								256,
+								256
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 33.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 112.0
+	},
+	"replace":
+	{
+		"height": 64.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 351.0,
+	"status_bar_visible": true
+}
