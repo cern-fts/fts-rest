@@ -33,8 +33,8 @@ class RequestLogger(object):
     def __call__(self, environ, start_response):
         self._status_msg = None
         def override_start_response(status, headers, exc_info=None):
-            start_response(status, headers, exc_info)
             self._status_msg = status
+            return start_response(status, headers, exc_info)
 
         response = self.app(environ, override_start_response)
         if hasattr(pylons.response, 'detail'):

@@ -44,8 +44,8 @@ class ErrorAsJson(object):
                     headers
                 )
                 headers.append(('Content-Type', 'application/json'))
-            start_response(status, headers, exc_info)
             self._status_msg = status
+            return start_response(status, headers, exc_info)
 
         response = self.app(environ, override_start_response)
 
