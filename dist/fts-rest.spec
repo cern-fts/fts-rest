@@ -2,8 +2,8 @@
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
 
 Name:           fts-rest
-Version:        3.2.32
-Release:        2%{?dist}
+Version:        3.2.32.1
+Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
