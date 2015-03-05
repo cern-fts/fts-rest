@@ -20,6 +20,10 @@ from decorator import decorator
 from fts3.model.base import Base
 from pylons.decorators.util import get_pylons
 import json
+import logging
+
+
+log = logging.getLogger(__name__)
 
 
 class ClassEncoder(json.JSONEncoder):
@@ -50,7 +54,7 @@ class ClassEncoder(json.JSONEncoder):
 
 
 def to_json(data, indent=2):
-    return json.dumps(data, cls=ClassEncoder, indent=indent, sort_keys=True)
+    return json.dumps(data, cls=ClassEncoder, indent=indent, sort_keys=False)
 
 
 @decorator
@@ -71,4 +75,19 @@ def jsonify(f, *args, **kwargs):
     pylons.response.headers['Content-Type'] = 'application/json'
 
     data = f(*args, **kwargs)
-    return [json.dumps(data, cls=ClassEncoder, indent=2, sort_keys=True)]
+
+    if hasattr(data, '__iter__') and not isinstance(data, dict):
+        def stream_response():
+            log.debug('Yielding json response')
+            comma = False
+            yield '['
+            for item in data:
+                if comma:
+                    yield ','
+                yield json.dumps(item, cls=ClassEncoder, indent=None, sort_keys=False)
+                comma = True
+            yield ']'
+        return stream_response()
+    else:
+        log.debug('Sending directly json response')
+        return [json.dumps(data, cls=ClassEncoder, indent=None, sort_keys=False)]

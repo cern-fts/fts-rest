@@ -207,6 +207,7 @@ def _populate_files(files_dict, job_id, f_index, vo_name, is_bringonline, shared
 
     return files
 
+
 def _build_internal_job_params(params):
     """
     Generates the value for job.internal_job_params depending on the
@@ -704,6 +705,7 @@ class JobsController(BaseController):
                 setattr(job, 'http_status', "200 Ok")
                 setattr(job, 'http_message', None)
                 response.append(job)
+                Session.expunge(job)
             Session.commit()
             Session.expire_all()
         except:
