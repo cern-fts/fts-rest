@@ -801,13 +801,13 @@ class JobsController(BaseController):
             # Update the optimizer
             unique_pairs = set(map(lambda f: (f['source_se'], f['dest_se']), files))
             for (source_se, dest_se) in unique_pairs:
-                optimizer_active = OptimizerActive()
-                optimizer_active.source_se = source_se
-                optimizer_active.dest_se = dest_se
-                optimizer_active.ema = 0
-                optimizer_active.datetime = datetime.utcnow()
-                Session.merge(optimizer_active)
-
+                if not Session.query(OptimizerActive).get((source_se, dest_se)):
+                    optimizer_active = OptimizerActive()
+                    optimizer_active.source_se = source_se
+                    optimizer_active.dest_se = dest_se
+                    optimizer_active.ema = 0
+                    optimizer_active.datetime = datetime.utcnow()
+                    Session.add(optimizer_active)
             Session.commit()
         except:
             Session.rollback()
