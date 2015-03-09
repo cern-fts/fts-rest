@@ -457,12 +457,13 @@ class JobsController(BaseController):
     """
 
     @staticmethod
-    def _get_job(job_id):
+    def _get_job(job_id, env=None):
         job = Session.query(Job).get(job_id)
         if job is None:
             raise HTTPNotFound('No job with the id "%s" has been found' % job_id)
         if not authorized(TRANSFER,
-                          resource_owner=job.user_dn, resource_vo=job.vo_name):
+                          resource_owner=job.user_dn, resource_vo=job.vo_name,
+                          env=env):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         return job
 
@@ -537,7 +538,7 @@ class JobsController(BaseController):
         if filter_limit:
             return jobs[:filter_limit]
         else:
-            return jobs.all()
+            return jobs.yield_per(100)
 
     @doc.query_arg('files', 'Comma separated list of file fields to retrieve in this query')
     @doc.response(200, 'The jobs exist')
@@ -552,23 +553,26 @@ class JobsController(BaseController):
         """
         job_ids = job_list.split(',')
         multistatus = False
-        statuses = list()
 
+        # request is not available inside the generator
+        environ = request.environ
+        fields = request.GET.get('files', '').split(',')
+
+        statuses = list()
         for job_id in filter(len, job_ids):
             try:
-                job = JobsController._get_job(job_id)
-                if 'files' in request.GET:
-                    fields = request.GET['files'].split(',')
-                    files = list()
-                    for f in Session.query(File).filter(File.job_id == job.job_id).all():
-                        fd = dict()
-                        for field in fields:
-                            try:
-                                fd[field] = getattr(f, field)
-                            except:
-                                pass
-                        files.append(fd)
-                    job.__dict__['files'] = files
+                job = JobsController._get_job(job_id, env=environ)
+                if len(fields):
+                    def files():
+                        for f in Session.query(File).filter(File.job_id == job.job_id).yield_per(100):
+                            fd = dict()
+                            for field in fields:
+                                try:
+                                    fd[field] = getattr(f, field)
+                                except:
+                                    pass
+                            yield fd
+                    job.__dict__['files'] = files()
                 setattr(job, 'http_status', '200 Ok')
                 statuses.append(job)
             except HTTPError, e:
@@ -585,7 +589,7 @@ class JobsController(BaseController):
             return statuses[0]
 
         if multistatus:
-            start_response("207 Multi-Status", [('Content-Type', 'application/json')])
+            start_response('207 Multi-Status', [('Content-Type', 'application/json')])
         return statuses
 
     @doc.response(403, 'The user doesn\'t have enough privileges')
@@ -615,7 +619,7 @@ class JobsController(BaseController):
         if not authorized(TRANSFER, resource_owner=owner[0], resource_vo=owner[1]):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         files = Session.query(File).filter(File.job_id == job_id).options(noload(File.retries))
-        return files.all()
+        return files.yield_per(100)
 
     @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job or the file don\'t exist')

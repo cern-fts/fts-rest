@@ -21,6 +21,7 @@ from fts3.model.base import Base
 from pylons.decorators.util import get_pylons
 import json
 import logging
+import types
 
 
 log = logging.getLogger(__name__)
@@ -38,9 +39,9 @@ class ClassEncoder(json.JSONEncoder):
 
         if isinstance(obj, datetime):
             return obj.strftime('%Y-%m-%dT%H:%M:%S%z')
-        elif isinstance(obj, set):
+        elif isinstance(obj, set) or isinstance(obj, types.GeneratorType):
             return list(obj)
-        elif isinstance(obj, Base) or isinstance(obj, object):
+        elif isinstance(obj, Base) or hasattr(obj, '__dict__'):
             str(obj) # Trigger sqlalchemy if needed
             values = {}
             for (k, v) in obj.__dict__.iteritems():
