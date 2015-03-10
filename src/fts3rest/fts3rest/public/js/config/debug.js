@@ -26,8 +26,8 @@ function debugLevelSelect(debug)
 			.text(label)
 			.attr("value", i + 1);
 
-		debug.debug_level = Math.min(1, debug.debug_level);
-		debug.debug_level = Math.max(3, debug.debug_level);
+		debug.debug_level = Math.max(1, debug.debug_level);
+		debug.debug_level = Math.min(3, debug.debug_level);
 
 		if (debug.debug_level == i + 1) {
 			option.attr("selected", "selected");
