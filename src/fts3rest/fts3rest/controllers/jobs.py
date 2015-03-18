@@ -474,7 +474,7 @@ class JobsController(BaseController):
     @doc.query_arg('source_se', 'Source storage element')
     @doc.query_arg('dest_se', 'Destination storage element')
     @doc.query_arg('limit', 'Limit the number of results')
-    @doc.query_arg('time_window', 'For terminal states, limit results to N hours into the past')
+    @doc.query_arg('time_window', 'For terminal states, limit results to hours[:minutes] into the past')
     @doc.response(403, 'Operation forbidden')
     @doc.response(400, 'DN and delegation ID do not match')
     @doc.return_type(array_of=Job)
@@ -495,13 +495,16 @@ class JobsController(BaseController):
         filter_source = request.params.get('source_se', None)
         filter_dest = request.params.get('dest_se', None)
         try:
-            filter_limit = int(request.params.get('limit', 0))
+            filter_limit = int(request.params['limit'])
         except:
-            filter_limit = 0
+            filter_limit = None
         try:
-            filter_hours = int(request.params.get('time_window', 0))
+            components = request.params['time_window'].split(':')
+            hours = components[0]
+            minutes = components[1] if len(components) > 1 else 0
+            filter_time = timedelta(hours=int(hours), minutes=int(minutes))
         except:
-            filter_hours = 0
+            filter_time = None
 
         if filter_dlg_id and filter_dlg_id != user.delegation_id:
             raise HTTPForbidden('The provided delegation id does not match your delegation id')
@@ -509,15 +512,15 @@ class JobsController(BaseController):
             raise HTTPBadRequest('The provided DN and delegation id do not correspond to the same user')
         if not filter_dlg_id and filter_state:
             raise HTTPForbidden('To filter by state, you need to provide dlg_id')
-        if filter_limit < 0 or filter_limit > 500:
+        if filter_limit is not None and filter_limit < 0 or filter_limit > 500:
             raise HTTPBadRequest('The limit must be positive and less or equal than 500')
 
         if filter_state:
             filter_state = filter_state.split(',')
             jobs = jobs.filter(Job.job_state.in_(filter_state))
-            if not filter_limit:
-                if filter_hours > 0:
-                    filter_not_before = datetime.utcnow() - timedelta(hours=filter_hours)
+            if filter_limit is None:
+                if filter_time is not None:
+                    filter_not_before = datetime.utcnow() - filter_time
                     jobs = jobs.filter(Job.job_finished >= filter_not_before)
                 else:
                     jobs = jobs.filter(Job.job_finished == None)

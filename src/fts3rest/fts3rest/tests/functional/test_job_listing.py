@@ -16,9 +16,9 @@
 #   limitations under the License.
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from fts3.model import FileRetryLog
+from fts3.model import FileRetryLog, Job, File
 from fts3rest.lib.base import Session
 from fts3rest.lib.middleware.fts3auth import UserCredentials
 from fts3rest.tests import TestController
@@ -49,6 +49,23 @@ class TestJobListing(TestController):
         # Make sure it was commited to the DB
         job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
+        return job_id
+
+    def _terminal(self, state, window):
+        job_id = self._submit()
+        job = Session.query(Job).get(job_id)
+        files = Session.query(File).filter(File.job_id == job_id)
+        finish_time = datetime.utcnow() - window
+        job.finish_time = finish_time
+        job.job_finished = finish_time
+        job.job_state = state
+        Session.merge(job)
+        for f in files:
+            f.finish_time = finish_time
+            f.job_finished = finish_time
+            f.file_state = state
+            Session.merge(f)
+        Session.commit()
         return job_id
 
     def test_show_job(self):
@@ -484,3 +501,39 @@ class TestJobListing(TestController):
                 self.assertEqual('404 Not Found', job['http_status'])
             else:
                 self.assertEqual('200 Ok', job['http_status'])
+
+    def test_filter_by_time(self):
+        """
+        Filter by time_window
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        creds = self.get_user_credentials()
+
+        job_id = self._terminal('FINISHED', timedelta(minutes=30))
+
+        # Try one hour
+        answer = self.app.get(url="/jobs",
+            params={
+                'dlg_id': creds.delegation_id,
+                'state_in': 'FINISHED',
+                'time_window': '1'},
+            status=200
+        )
+
+        job_list = json.loads(answer.body)
+
+        self.assertIn(job_id, [j['job_id'] for j in job_list])
+
+        # Try 15 minutes
+        answer = self.app.get(url="/jobs",
+            params={
+                'dlg_id': creds.delegation_id,
+                'state_in': 'FINISHED',
+                'time_window': '0:15'},
+            status=200
+        )
+
+        job_list = json.loads(answer.body)
+
+        self.assertNotIn(job_id, [j['job_id'] for j in job_list])
