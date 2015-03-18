@@ -71,6 +71,61 @@ Just give the operations that can be performed
 #### GET /archive
 Just give the operations that can be performed
 
+### Autocomplete API
+#### GET /autocomplete/source
+Autocomplete source SE
+
+##### Query arguments
+
+|Name|Type  |Required|Description                    |
+|----|------|--------|-------------------------------|
+|term|string|False   |Beginning of the source storage|
+
+#### GET /autocomplete/vo
+Autocomplete VO
+
+##### Query arguments
+
+|Name|Type  |Required|Description        |
+|----|------|--------|-------------------|
+|term|string|False   |Beginning of the VO|
+
+#### GET /autocomplete/storage
+Autocomplete a storage, regardless of it being source or destination
+
+##### Query arguments
+
+|Name|Type  |Required|Description                         |
+|----|------|--------|------------------------------------|
+|term|string|False   |Beginning of the destination storage|
+
+#### GET /autocomplete/destination
+Autocomplete destination SE
+
+##### Query arguments
+
+|Name|Type  |Required|Description                         |
+|----|------|--------|------------------------------------|
+|term|string|False   |Beginning of the destination storage|
+
+#### GET /autocomplete/dn
+Autocomplete for users' dn
+
+##### Query arguments
+
+|Name|Type  |Required|Description        |
+|----|------|--------|-------------------|
+|term|string|False   |Beginning of the DN|
+
+#### GET /autocomplete/groupname
+Autocomplete group names
+
+##### Query arguments
+
+|Name|Type  |Required|Description                |
+|----|------|--------|---------------------------|
+|term|string|False   |Beginning of the group name|
+
 ### Banning API
 #### POST /ban/se
 Ban a storage element. Returns affected jobs ids.
@@ -342,6 +397,45 @@ Gets the fixed pairs
 |----|--------------------------------------------------|
 |403 |The user is not allowed to query the configuration|
 
+#### GET /config/groups/{group_name}
+Get the members of a group
+
+##### Path arguments
+
+|Name      |Type  |
+|----------|------|
+|group_name|string|
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|404 |The group does not exist                          |
+|403 |The user is not allowed to query the configuration|
+
+#### DELETE /config/groups/{group_name}
+Delete a member from a group. If the group is left empty, the group will be removed
+
+##### Path arguments
+
+|Name      |Type  |
+|----------|------|
+|group_name|string|
+
+##### Query arguments
+
+|Name  |Type  |Required|Description                                         |
+|------|------|--------|----------------------------------------------------|
+|member|string|False   |Storage to remove. All group if left empty or absent|
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|404 |The group or the member does not exist            |
+|403 |The user is not allowed to query the configuration|
+|204 |Member removed                                    |
+
 #### POST /config/se
 Set the configuration parameters for a given SE
 
@@ -366,6 +460,21 @@ Get the configurations status for a given SE
 |Code|Description                                       |
 |----|--------------------------------------------------|
 |403 |The user is not allowed to query the configuration|
+
+#### DELETE /config/se
+Delete the configuration for a given SE
+
+##### Query arguments
+
+|Name|Type  |Required|Description    |
+|----|------|--------|---------------|
+|se  |string|True    |Storage element|
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
 
 #### POST /config/authorize
 Give special access to someone
@@ -460,72 +569,8 @@ Get a list with all group names
 |----|--------------------------------------------------|
 |403 |The user is not allowed to query the configuration|
 
-#### P /config/optimizer_mode
-Set the optimizer mode
-
-##### Responses
-
-|Code|Description                                        |
-|----|---------------------------------------------------|
-|403 |The user is not allowed to modify the configuration|
-|400 |Invalid values passed in the request               |
-
-#### O /config/optimizer_mode
-Set the optimizer mode
-
-##### Responses
-
-|Code|Description                                        |
-|----|---------------------------------------------------|
-|403 |The user is not allowed to modify the configuration|
-|400 |Invalid values passed in the request               |
-
-#### S /config/optimizer_mode
-Set the optimizer mode
-
-##### Responses
-
-|Code|Description                                        |
-|----|---------------------------------------------------|
-|403 |The user is not allowed to modify the configuration|
-|400 |Invalid values passed in the request               |
-
-#### T /config/optimizer_mode
-Set the optimizer mode
-
-##### Responses
-
-|Code|Description                                        |
-|----|---------------------------------------------------|
-|403 |The user is not allowed to modify the configuration|
-|400 |Invalid values passed in the request               |
-
-#### G /config/optimizer_mode
-Get the optimizer mode
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-
-#### E /config/optimizer_mode
-Get the optimizer mode
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-
-#### T /config/optimizer_mode
-Get the optimizer mode
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
+#### GET /config
+Entry point. Only makes sense with html
 
 #### POST /config/global
 Set the global configuration
@@ -547,50 +592,58 @@ Get the global configuration
 |403 |The user is not allowed to query the configuration|
 |400 |Invalid values passed in the request              |
 
+#### DELETE /config/global
+Delete the global configuration for the given VO
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+|400 |Invalid values passed in the request              |
+
+#### POST /config/shares
+Add or modify a share
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
+
+#### GET /config/shares
+List the existing shares
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+
+#### DELETE /config/shares
+Delete a share
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
+
 #### GET /config/audit
 Returns the last 100 entries of the config audit tables
 
 ##### Returns
 Array of [ConfigAudit](#configaudit)
 
-#### GET /config/groups/{group_name}
-Get the members of a group
-
-##### Path arguments
-
-|Name      |Type  |
-|----------|------|
-|group_name|string|
+#### POST /config/drain
+Set the drain status of a server
 
 ##### Responses
 
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|404 |The group does not exist                          |
-|403 |The user is not allowed to query the configuration|
-
-#### DELETE /config/groups/{group_name}
-Delete a member from a group. If the group is left empty, the group will be removed
-
-##### Path arguments
-
-|Name      |Type  |
-|----------|------|
-|group_name|string|
-
-##### Query arguments
-
-|Name  |Type  |Required|Description                                         |
-|------|------|--------|----------------------------------------------------|
-|member|string|False   |Storage to remove. All group if left empty or absent|
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|404 |The group or the member does not exist            |
-|403 |The user is not allowed to query the configuration|
-|204 |Member removed                                    |
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to change the configuration|
+|400 |Bad request. Invalid host or invalid drain value   |
 
 #### POST /config/links
 Set the configuration for a given link
