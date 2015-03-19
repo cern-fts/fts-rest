@@ -48,7 +48,7 @@ class ApiController(BaseController):
         schema_v = Session.query(SchemaVersion).all()
         schema_v = schema_v[0] if schema_v else None
         return {
-            'api': dict(major=3, minor=2, patch=32),
+            'api': dict(major=3, minor=2, patch=33),
             'schema': cred_v,
             'delegation': schema_v,
             '_links': {
