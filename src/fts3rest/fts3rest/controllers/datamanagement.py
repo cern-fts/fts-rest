@@ -35,11 +35,11 @@ from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.http_exceptions import HTTPAuthenticationTimeout
 from fts3rest.lib.gfal2_wrapper import Gfal2Wrapper, Gfal2Error
 try:
-	from fts3rest.controllers.CSdropbox import DropboxConnector;
-	dropbox_available = True
+    from fts3rest.controllers.CSdropbox import DropboxConnector
+    dropbox_available = True
 except ImportError,e:
-	dropbox_available = False
-	print e
+    dropbox_available = False
+    print e
 
 def _get_valid_surl():
     surl = request.params.get('surl')
