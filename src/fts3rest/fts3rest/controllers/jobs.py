@@ -475,6 +475,7 @@ class JobsController(BaseController):
     @doc.query_arg('dest_se', 'Destination storage element')
     @doc.query_arg('limit', 'Limit the number of results')
     @doc.query_arg('time_window', 'For terminal states, limit results to hours[:minutes] into the past')
+    @doc.query_arg('fields', 'Return only a subset of the fields')
     @doc.response(403, 'Operation forbidden')
     @doc.response(400, 'DN and delegation ID do not match')
     @doc.return_type(array_of=Job)
@@ -494,6 +495,7 @@ class JobsController(BaseController):
         filter_state = request.params.get('state_in', None)
         filter_source = request.params.get('source_se', None)
         filter_dest = request.params.get('dest_se', None)
+        filter_fields = request.params.get('fields', None)
         try:
             filter_limit = int(request.params['limit'])
         except:
@@ -539,9 +541,23 @@ class JobsController(BaseController):
             jobs = jobs.filter(Job.dest_se == filter_dest)
 
         if filter_limit:
-            return jobs[:filter_limit]
+            jobs = jobs[:filter_limit]
         else:
-            return jobs.yield_per(100)
+            jobs = jobs.yield_per(100)
+
+        if filter_fields:
+            original_jobs = jobs
+            def _field_subset():
+                fields = filter_fields.split(',')
+                for job in original_jobs:
+                    entry = dict()
+                    for field in fields:
+                        if hasattr(job, field):
+                            entry[field] = getattr(job, field)
+                    yield entry
+            jobs = _field_subset()
+
+        return jobs
 
     @doc.query_arg('files', 'Comma separated list of file fields to retrieve in this query')
     @doc.response(200, 'The jobs exist')
