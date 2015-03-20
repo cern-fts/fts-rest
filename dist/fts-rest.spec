@@ -219,11 +219,11 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %{python_sitelib}/fts3rest/lib/oauth2provider.py*
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/oauth2.py*
 %{python_sitelib}/fts3rest/templates/app.html
+%{python_sitelib}/fts3rest/templates/app_register.html
 %{python_sitelib}/fts3rest/templates/apps.html
 %{python_sitelib}/fts3rest/templates/authz_confirm.html
 %{python_sitelib}/fts3rest/templates/authz_failure.html
 %{python_sitelib}/fts3rest/templates/authz_noredirect.html
-%{python_sitelib}/fts3rest/templates/register.html
 
 %files http-authz-signed-cert
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/http.py*
