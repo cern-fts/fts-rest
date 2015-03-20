@@ -21,7 +21,7 @@ import urlparse
 from datetime import datetime, timedelta
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import OAuth2Application, OAuth2Token
+from fts3.model import OAuth2Application, OAuth2Code, OAuth2Token, AuthorizationByDn
 from Cookie import SimpleCookie as Cookie
 
 
@@ -44,20 +44,29 @@ class TestOAuth2(TestController):
         else:
             return None
 
-    def tearDown(self):
-        Session.query(OAuth2Application).delete()
+    def setUp(self):
+        super(TestOAuth2, self).setUp()
         pylons.config['fts3.oauth2'] = True
 
-    def test_register(self):
+    def tearDown(self):
+        super(TestOAuth2, self).tearDown()
+        Session.query(OAuth2Application).delete()
+        Session.query(OAuth2Token).delete()
+        Session.query(OAuth2Code).delete()
+        Session.query(AuthorizationByDn).delete()
+        Session.commit()
+
+    def test_register(self, scope='transfer', no_vo=False):
         """
         Test the registration of an app
         """
-        self.setup_gridsite_environment()
+        self.setup_gridsite_environment(no_vo=no_vo)
         req = {
             'name': 'MyApp',
             'description': 'Blah blah blah',
             'website': 'https://example.com',
-            'redirect_to': 'https://mysite.com/callback'
+            'redirect_to': 'https://mysite.com/callback',
+            'scope': scope
         }
         response = self.app.post(
             url="/oauth2/register",
@@ -75,6 +84,7 @@ class TestOAuth2(TestController):
         self.assertEqual('https://example.com', app.website)
         self.assertEqual('https://mysite.com/callback', app.redirect_to)
         self.assertEqual('/DC=ch/DC=cern/CN=Test User', app.owner)
+        self.assertEqual(set(scope.split(',')), app.scope)
 
         return client_id
 
@@ -149,21 +159,22 @@ class TestOAuth2(TestController):
             status=403
         )
 
-    def test_get_code(self):
+    def test_get_code(self, scope='transfer', no_vo=False, client_id=None):
         """
         Get a OAuth2 code (second step, after redirection)
         """
-        client_id = self.test_register()
+        if not client_id:
+            client_id = self.test_register(scope=scope, no_vo=no_vo)
 
         response = self.app.get(
-            url="/oauth2/authorize?client_id=%s&redirect_to=https://mysite.com/callback&something=else" % str(client_id),
+            url="/oauth2/authorize?client_id=%s&redirect_to=https://mysite.com/callback&something=else&scope=%s" % (str(client_id), scope),
             status=200
         )
         csrf = self.get_cookie(response, 'fts3oauth2_csrf')
         self.assertTrue(csrf is not None)
 
         response = self.app.post(
-            url="/oauth2/authorize?client_id=%s&redirect_to=https://mysite.com/callback&something=else" % str(client_id),
+            url="/oauth2/authorize?client_id=%s&redirect_to=https://mysite.com/callback&something=else&scope=%s" % (str(client_id), scope),
             params={'accept': True, 'CSRFToken': csrf},
             status=302
         )
@@ -175,6 +186,17 @@ class TestOAuth2(TestController):
         self.assertIn('code', args.keys())
         return client_id, args['code'][0]
 
+    def test_get_code_invalid_scope(self):
+        """
+        Try to get a OAuth2 code (second step) with a scope that wasn't registered
+        """
+        client_id = self.test_register(scope='transfer')
+
+        self.app.get(
+            url="/oauth2/authorize?client_id=%s&redirect_to=https://mysite.com/callback&something=else&scope=transfer,copy" % str(client_id),
+            status=400
+        )
+
     def _get_client_secret(self, client_id):
         response = self.app.get(
             url="/oauth2/apps/%s" % client_id,
@@ -183,11 +205,11 @@ class TestOAuth2(TestController):
         app = json.loads(response.body)
         return app['client_secret']
 
-    def test_get_token(self):
+    def test_get_token(self, scope='transfer', no_vo=False, client_id=None):
         """
         Get a OAuth2 token (third step)
         """
-        client_id, code = self.test_get_code()
+        client_id, code = self.test_get_code(scope=scope, no_vo=no_vo, client_id=client_id)
         response = self.app.post(
             url="/oauth2/token",
             params={
@@ -195,7 +217,8 @@ class TestOAuth2(TestController):
                 'client_id': client_id,
                 'client_secret': self._get_client_secret(client_id),
                 'code': code,
-                'redirect_uri': 'https://mysite.com/callback'
+                'redirect_uri': 'https://mysite.com/callback',
+                'scope': scope
             },
             status=200
         )
@@ -206,11 +229,29 @@ class TestOAuth2(TestController):
 
         return client_id, auth['access_token'], auth['refresh_token'], datetime.utcnow() + timedelta(seconds=auth['expires_in'])
 
+    def test_get_token_invalid_scope(self):
+        """
+        Get a OAuth2 token (third step) but requesting a token that is not registered
+        """
+        client_id, code = self.test_get_code(scope='transfer')
+        self.app.post(
+            url="/oauth2/token",
+            params={
+                'grant_type': 'authorization_code',
+                'client_id': client_id,
+                'client_secret': self._get_client_secret(client_id),
+                'code': code,
+                'redirect_uri': 'https://mysite.com/callback',
+                'scope': 'transfer,config'
+            },
+            status=400
+        )
+
     def test_refresh_token(self):
         """
         Refresh a token
         """
-        client_id, access_token, refresh_token, expires = self.test_get_token()
+        client_id, access_token, refresh_token, expires = self.test_get_token('transfer')
         response = self.app.post(
             url="/oauth2/token",
             params={
@@ -218,6 +259,7 @@ class TestOAuth2(TestController):
                 'client_id': client_id,
                 'client_secret': self._get_client_secret(client_id),
                 'refresh_token': refresh_token,
+                'scope': 'transfer'
             },
             status=200
         )
@@ -313,8 +355,81 @@ class TestOAuth2(TestController):
         Session.merge(token)
         Session.commit()
 
-        response = self.app.get(
+        self.app.get(
             url="/whoami",
+            headers={'Authorization': str('Bearer %s' % access_token)},
+            status=403
+        )
+
+    def test_with_no_config_scope(self):
+        """
+        Get a token but only for transfer, trying to configure even if the user
+        is allowed must fail
+        """
+        AuthorizationByDn(dn=self.TEST_USER_DN, operation='config')
+
+        client_id, access_token, refresh_token, expires = self.test_get_token()
+        del self.app.extra_environ['GRST_CRED_AURI_0']
+
+        self.app.get(
+            url="/config/fixed",
+            headers={'Authorization': str('Bearer %s' % access_token)},
+            status=403
+        )
+
+    def test_with_config_scope(self):
+        """
+        Get a token including config, try to configure
+        """
+        AuthorizationByDn(dn=self.TEST_USER_DN, operation='config')
+
+        client_id, access_token, refresh_token, expires = self.test_get_token(scope='transfer,config')
+        del self.app.extra_environ['GRST_CRED_AURI_0']
+
+        self.app.get(
+            url="/config/fixed",
+            headers={'Authorization': str('Bearer %s' % access_token)},
+            status=200
+        )
+
+    def test_with_config_scope_no_authorized(self):
+        """
+        Even if the scope is present, if the user has no permission it should be forbidden
+        """
+        client_id, access_token, refresh_token, expires = self.test_get_token(scope='transfer,config', no_vo=True)
+        del self.app.extra_environ['GRST_CRED_AURI_0']
+
+        self.app.get(
+            url="/config/fixed",
+            headers={'Authorization': str('Bearer %s' % access_token)},
+            status=403
+        )
+
+    def test_with_config_scope_auth(self):
+        """
+        Even being authorized and having the config scope, adding new authorizations must be denied
+        """
+        AuthorizationByDn(dn=self.TEST_USER_DN, operation='config')
+
+        client_id, access_token, refresh_token, expires = self.test_get_token(scope='transfer,config')
+
+        self.app.post_json(
+            url="/config/authorize",
+            headers={'Authorization': str('Bearer %s' % access_token)},
+            params={'dn': '/DC=ky/DC=pirates/CN=badguy', 'operation': 'config'},
+            status=403
+        )
+
+    def test_rogue_app(self):
+        """
+        Register an application with transfer and config, grant only transfer, config must be forbidden
+        """
+        client_id = self.test_register(scope='transfer,config')
+        client_id, access_token, refresh_token, expires = self.test_get_token(scope='transfer', client_id=client_id)
+        del self.app.extra_environ['GRST_CRED_AURI_0']
+
+        self.app.get(
+            url="/config/fixed",
             headers={'Authorization': str('Bearer %s' % access_token)},
             status=403
         )

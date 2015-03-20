@@ -58,7 +58,7 @@
                             [<a href="revoke/${app.client_id}">revoke</a>]<br/>
                             <small class="text-muted">${app.description}</small><br/>
                             <small class="text-muted">Expires: ${app.expires}</small><br/>
-                            <small class="text-muted">Scopes: ${app.scope}</small><br/>
+                            <small class="text-muted">Scopes: ${','.join(app.scope)}</small><br/>
                         </li>
                     % endfor
 				</ul>

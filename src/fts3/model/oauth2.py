@@ -13,7 +13,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from base import Base
+from base import Base, Set
 from sqlalchemy import Column, String, DateTime, ForeignKey
 
 
@@ -27,6 +27,7 @@ class OAuth2Application(Base):
     name          = Column(String(128), nullable=False, unique=True)
     description   = Column(String(512))
     website       = Column(String(1024))
+    scope         = Column(Set(512), nullable=True)
     redirect_to   = Column(String(4096))
 
 
@@ -35,7 +36,7 @@ class OAuth2Code(Base):
 
     client_id = Column(String(64), nullable=False)
     code      = Column(String(128), nullable=False, primary_key=True)
-    scope     = Column(String(512), nullable=True)
+    scope     = Column(Set(512), nullable=True)
     dlg_id    = Column(String(100), nullable=False)
 
 
@@ -44,7 +45,7 @@ class OAuth2Token(Base):
 
     client_id     = Column(String(64), ForeignKey(OAuth2Application.client_id), nullable=False, primary_key=True)
     dlg_id        = Column(String(100), nullable=False)
-    scope         = Column(String(512), nullable=True)
+    scope         = Column(Set(512), nullable=True)
     access_token  = Column(String(128), nullable=False)
     token_type    = Column(String(64), nullable=False)
     expires       = Column(DateTime, nullable=False)

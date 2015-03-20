@@ -15,8 +15,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import types
 from fts3rest.lib.oauth2provider import FTS3OAuth2ResourceProvider
 from fts3rest.lib.middleware.fts3auth.credentials import vo_from_fqan, build_vo_from_dn, InvalidCredentials
+
+
+def _oauth2_get_granted_level_for(self, operation):
+    if operation not in self.oauth2_scope:
+        return None
+    return self.get_granted_level_for_overriden(operation)
 
 
 def do_authentication(credentials, env):
@@ -42,4 +49,10 @@ def do_authentication(credentials, env):
     else:
         credentials.vos.append(build_vo_from_dn(credentials.user_dn))
     credentials.method = 'oauth2'
+
+    # Override get_granted_level_for so we can filter by the scope
+    setattr(credentials, 'oauth2_scope', authn.scope)
+    setattr(credentials, 'get_granted_level_for_overriden', credentials.get_granted_level_for)
+    setattr(credentials, 'get_granted_level_for', types.MethodType(_oauth2_get_granted_level_for, credentials))
+
     return True

@@ -31,6 +31,7 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import to_json
 from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.middleware.fts3auth import require_certificate
+from fts3rest.lib.middleware.fts3auth.constants import VALID_OPERATIONS
 from fts3rest.lib.oauth2lib.utils import random_ascii_string
 
 
@@ -77,7 +78,7 @@ class Oauth2Controller(BaseController):
         Registration form
         """
         user = pylons.request.environ['fts3.User.Credentials']
-        return render('/register.html', extra_vars={'user': user, 'site': pylons.config['fts3.SiteName']})
+        return render('/app_register.html', extra_vars={'user': user, 'site': pylons.config['fts3.SiteName']})
 
     @doc.response(201, 'Application registered')
     @doc.response(303, 'Application registered, follow redirection (when html requested)')
@@ -91,8 +92,13 @@ class Oauth2Controller(BaseController):
         """
         if pylons.request.content_type.split(';')[0].strip() == 'application/json':
             req = json.loads(pylons.request.body)
+            scopes = req.get('scope', list())
         else:
             req = pylons.request.POST
+            scopes = req.getall('scope')
+
+        if isinstance(scopes, basestring):
+            scopes = scopes.split(',')
 
         if not req.get('name', None):
             raise HTTPBadRequest('Missing application name')
@@ -100,6 +106,9 @@ class Oauth2Controller(BaseController):
             raise HTTPBadRequest('Missing application website')
         if not req.get('redirect_to', None):
             raise HTTPBadRequest('Missing redirect urls')
+        for s in scopes:
+            if str(s) not in VALID_OPERATIONS:
+                raise HTTPBadRequest('Invalid scope (%s)' % s)
 
         user = pylons.request.environ['fts3.User.Credentials']
 
@@ -110,6 +119,7 @@ class Oauth2Controller(BaseController):
             name=req['name'],
             description=req.get('description', ''),
             website=req['website'],
+            scope=scopes,
             redirect_to=req['redirect_to'],
             owner=user.user_dn
         )
@@ -144,7 +154,8 @@ class Oauth2Controller(BaseController):
 
         authorized_apps = Session.query(
             OAuth2Application.client_id, OAuth2Application.name, OAuth2Application.website,
-            OAuth2Application.description, OAuth2Token.refresh_token, OAuth2Token.scope, OAuth2Token.expires
+            OAuth2Application.description, OAuth2Token.refresh_token, OAuth2Token.scope, OAuth2Token.expires,
+            OAuth2Application.scope
         ).filter((OAuth2Token.dlg_id == user.delegation_id) & (OAuth2Token.client_id == OAuth2Application.client_id))
 
         response = {'apps': my_apps, 'authorized': authorized_apps}
@@ -204,14 +215,24 @@ class Oauth2Controller(BaseController):
             raise HTTPForbidden()
         if pylons.request.headers['Content-Type'].startswith('application/json'):
             fields = json.loads(pylons.request.body)
+            scopes = fields.get('scope', list())
         else:
             fields = pylons.request.POST
+            scopes = fields.getall('scope')
+
+        if isinstance(scopes, basestring):
+            scopes = scopes.split(',')
+
+        for s in scopes:
+            if str(s) not in VALID_OPERATIONS:
+                raise HTTPBadRequest('Invalid scope (%s)' % s)
 
         try:
             if 'delete' not in fields:
                 app.description = fields.get('description', '')
                 app.website = fields.get('website', '')
                 app.redirect_to = fields.get('redirect_to', '')
+                app.scope = scopes
                 Session.merge(app)
                 Session.commit()
                 redirect(url_for(controller='oauth2', action='get_app'), code=HTTPSeeOther.code)
@@ -258,7 +279,7 @@ class Oauth2Controller(BaseController):
             response_type=req.get('response_type', 'code'),
             client_id=req.get('client_id', None),
             state=None,
-            redirect_uri=req.get('redirect_uri', None)
+            redirect_uri=req.get('redirect_uri', None),
         )
 
         if not auth['client_id']:
@@ -287,12 +308,16 @@ class Oauth2Controller(BaseController):
                 req.iteritems()
             )
         )
+        if 'scope' in auth['state']:
+            auth['state']['scope'] = set(auth['state']['scope'].split(','))
+        else:
+            raise OAuth2Error('Missing scope')
         return auth, app
 
     @require_certificate
     def authorize(self):
         """
-        Perform OAuth2 authorization step
+        Perform the OAuth2 authorization step
         """
         user = pylons.request.environ['fts3.User.Credentials']
         try:
@@ -303,7 +328,7 @@ class Oauth2Controller(BaseController):
                 extra_vars={'reason': str(e), 'site': pylons.config['fts3.SiteName']}
             )
 
-        authorized = self.oauth2_provider.is_already_authorized(user.delegation_id, app.client_id)
+        authorized = self.oauth2_provider.is_already_authorized(user.delegation_id, app.client_id, auth['state']['scope'])
         if authorized:
             response = self.oauth2_provider.get_authorization_code(
                     auth['response_type'], auth['client_id'],
@@ -326,6 +351,16 @@ class Oauth2Controller(BaseController):
                 pylons.response.status_int = response.status_code
                 return response.raw
         else:
+            if not self.oauth2_provider.validate_scope(app.client_id, auth['state']['scope']):
+                pylons.response.status_int = HTTPBadRequest.code
+                return render(
+                    '/authz_failure.html',
+                    extra_vars={
+                        'site': pylons.config['fts3.SiteName'],
+                        'reason': 'The application asked for an invalid scope, or for one that it didn\'t originally requested'
+                    }
+                )
+
             csrftoken = random_ascii_string(32)
             pylons.response.set_cookie('fts3oauth2_csrf', csrftoken, max_age=300)
             return render(
@@ -334,6 +369,7 @@ class Oauth2Controller(BaseController):
                     'app': app,
                     'user': user,
                     'site': pylons.config['fts3.SiteName'],
+                    'scope': auth['state']['scope'],
                     'CSRFToken': csrftoken
                 }
             )
@@ -359,7 +395,9 @@ class Oauth2Controller(BaseController):
                     log.critical("Referer: %s" % pylons.request.headers.get('Referer'))
                     raise OAuth2Error('Cross-site request forgery token mismatch! Authorization denied')
 
-                log.info("User %s authorized application %s" % (user.user_dn, auth['client_id']))
+                log.info(
+                    "User %s authorized application %s with scope %s" % (user.user_dn, auth['client_id'], auth['state']['scope'])
+                )
 
                 response = self.oauth2_provider.get_authorization_code(
                     auth['response_type'], auth['client_id'],
@@ -400,17 +438,19 @@ class Oauth2Controller(BaseController):
             req = pylons.request.POST
 
         if req.get('grant_type', None) == 'authorization_code':
-            for field in ['grant_type', 'client_id', 'client_secret', 'redirect_uri', 'code']:
+            for field in ['grant_type', 'client_id', 'client_secret', 'redirect_uri', 'code', 'scope']:
                 if field not in req:
                     raise HTTPBadRequest("%s missing" % field)
+            req['scope'] = set(req['scope'].split(','))
             response = self.oauth2_provider.get_token(**req)
             log.info(
                 "Application %s got a a new access token from code %s" % (req['client_id'], req['code'])
             )
         else:
-            for field in ['grant_type', 'client_id', 'client_secret', 'refresh_token']:
+            for field in ['grant_type', 'client_id', 'client_secret', 'refresh_token', 'scope']:
                 if field not in req:
                     raise HTTPBadRequest("%s missing" % field)
+            req['scope'] = set(req['scope'].split(','))
             response = self.oauth2_provider.refresh_token(**req)
             log.info("Application %s refreshed the token %s" % (req['client_id'], req['refresh_token']))
 

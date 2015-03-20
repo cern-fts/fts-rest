@@ -39,6 +39,15 @@
 						<label class="control-label" for="description">Description</label>
 						<textarea name="description" id="description" class="form-control"></textarea>
 					</div>
+                    <div class="form-group">
+                        <label class="control-label">Scopes</label>
+                        <select multiple="multiple" name="scope" class="form-control">
+                            <option value="transfer">Transfer</option>
+                            <option value="deleg">Delegation</option>
+                            <option value="config">Configuration</option>
+                            <option value="datamanagement">Data management</option>
+                        </select>
+                    </div>
 					<div class="form-group">
 						<label class="control-label" for="app-website">Application web site</label>
 						<input type="url" required name="website" class="form-control" id="app-website"/>

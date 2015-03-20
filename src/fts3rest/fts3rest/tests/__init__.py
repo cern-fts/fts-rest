@@ -139,14 +139,18 @@ class TestController(TestCase):
         """
         if dn is None:
             dn = TestController.TEST_USER_DN
-        env = {'GRST_CRED_AURI_0': 'dn:' + dn}
+        self.app.extra_environ['GRST_CRED_AURI_0'] = 'dn:' + dn
 
         if not no_vo:
-            env.update({
+            self.app.extra_environ.update({
                 'GRST_CRED_AURI_1': 'fqan:/testvo/Role=NULL/Capability=NULL',
-                'GRST_CRED_AURI_2': 'fqan:/testvo/Role=myrole/Capability=NULL'
+                'GRST_CRED_AURI_2': 'fqan:/testvo/Role=myrole/Capability=NULL',
+                'GRST_CRED_AURI_3': 'fqan:/testvo/Role=lcgadmin/Capability=NULL',
             })
-        self.app.extra_environ.update(env)
+        else:
+            for grst in ['GRST_CRED_AURI_1', 'GRST_CRED_AURI_2', 'GRST_CRED_AURI_3']:
+                if grst in self.app.extra_environ:
+                    del self.app.extra_environ[grst]
 
     def get_user_credentials(self):
         """

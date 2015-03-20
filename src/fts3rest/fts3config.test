@@ -13,4 +13,5 @@ CleanRecordsHost=false
 
 
 [roles]
-Public=vo:transfer;all:config;:deleg
+Public=vo:transfer
+lcgadmin=all:config

@@ -43,21 +43,32 @@
                        <li class="list-group-item">
                             <i class="glyphicon glyphicon-user"></i> Read your identity
                         </li>
-                        <li class="list-group-item">
-                            <i class="glyphicon glyphicon-list"></i> Read your transfers
-                        </li>
-                        <li class="list-group-item">
-                            <i class="glyphicon glyphicon-cloud"></i> Submit transfers in your name
-                        </li>
-                        <li class="list-group-item">
-                            <i class="glyphicon glyphicon-cog"></i> Manage your transfers
-                        </li>
-                        <li class="list-group-item">
-                            <i class="glyphicon glyphicon-folder-open"></i> Perform namespace operations
-                        </li>
-                        <li class="list-group-item">
-                            <i class="glyphicon glyphicon-wrench"></i> Perform configurations if your dn has configuration rights
-                        </li>
+                        % if 'deleg' in scope:
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-lock"></i> Delete your credentials (never read them)
+                            </li>
+                        % endif
+                        % if 'transfer' in scope:
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-list"></i> Read your transfers
+                            </li>
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-cloud"></i> Submit transfers in your name
+                            </li>
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-cog"></i> Manage your transfers
+                            </li>
+                        % endif
+                        % if 'datamanagement' in scope:
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-folder-open"></i> Perform namespace operations
+                            </li>
+                        % endif
+                        % if 'config' in scope:
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-wrench"></i> Perform configurations if your dn has configuration rights
+                            </li>
+                        % endif
                     </ul>
                 </div>
 
@@ -66,6 +77,33 @@
                         <span class="panel-title">This application will <b>not</b> be able to</span>
                     </p>
                     <ul class="list-group panel-body">
+                        % if 'deleg' not in scope:
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-lock"></i> Delete your credentials (never read them)
+                            </li>
+                        % endif
+                        % if 'transfer' not in scope:
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-list"></i> Read your transfers
+                            </li>
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-cloud"></i> Submit transfers in your name
+                            </li>
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-cog"></i> Manage your transfers
+                            </li>
+                        % endif
+                        % if 'datamanagement' not in scope:
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-folder-open"></i> Perform namespace operations
+                            </li>
+                        % endif
+                        % if 'config' not in scope:
+                            <li class="list-group-item">
+                                <i class="glyphicon glyphicon-wrench"></i> Perform configurations if your dn has configuration rights
+                            </li>
+                        % endif
+
                         <li class="list-group-item">
                             <i class="glyphicon glyphicon-briefcase"></i> Access your own applications
                         </li>

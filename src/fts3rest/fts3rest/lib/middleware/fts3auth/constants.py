@@ -25,3 +25,6 @@ NONE    = None
 DELEGATION = 'deleg'
 TRANSFER   = 'transfer'
 CONFIG     = 'config'
+DATAMANAGEMENT = 'datamanagement'
+
+VALID_OPERATIONS = [DELEGATION, TRANSFER, CONFIG, DATAMANAGEMENT]

@@ -17,6 +17,7 @@ import pylons
 
 from datetime import datetime, timedelta
 from fts3rest.lib.base import Session
+from fts3rest.lib.middleware.fts3auth.constants import VALID_OPERATIONS
 from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceProvider, ResourceAuthorization
 from fts3.model.credentials import CredentialCache
 from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
@@ -38,7 +39,10 @@ class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
         return app.client_secret == client_secret
 
     def validate_scope(self, client_id, scope):
-        # We do not have scopes yet
+        app = Session.query(OAuth2Application).get(client_id)
+        for s in scope:
+            if s not in VALID_OPERATIONS or s not in app.scope:
+                return False
         return True
 
     def validate_redirect_uri(self, client_id, redirect_uri):
@@ -93,7 +97,7 @@ class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
         Session.merge(code)
         Session.commit()
 
-    def is_already_authorized(self, dlg_id, client_id, scope=None):
+    def is_already_authorized(self, dlg_id, client_id, scope):
         code = Session.query(OAuth2Token).filter(
             (OAuth2Token.client_id == client_id) & (OAuth2Token.dlg_id == dlg_id)
         )
@@ -141,6 +145,7 @@ class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
 class FTS3ResourceAuthorization(ResourceAuthorization):
     dlg_id = None
     credentials = None
+    scope = None
 
 
 class FTS3OAuth2ResourceProvider(ResourceProvider):
@@ -170,6 +175,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         authorization.expires_in = token.expires - datetime.utcnow()
         authorization.token = token.access_token
         authorization.dlg_id = token.dlg_id
+        authorization.scope = token.scope
         if authorization.expires_in > timedelta(seconds=0):
             authorization.credentials = self._get_credentials(token.dlg_id)
             if authorization.credentials:

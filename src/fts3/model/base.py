@@ -105,3 +105,18 @@ class TernaryFlag(TypeDecorator):
             return True
         else:
             return value
+
+
+class Set(TypeDecorator):
+    impl = String
+
+    def process_bind_param(self, value, dialect):
+        return ','.join([str(v) for v in value])
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        try:
+            return set(value.split(','))
+        except ValueError:
+            return set()

@@ -198,7 +198,6 @@ class BanningController(BaseController):
     Banning API
     """
 
-    @authorize(CONFIG)
     @doc.query_arg('storage', 'Storage to ban', required=True)
     @doc.query_arg('vo_name', 'Limit the banning to a given VO', required=False)
     @doc.query_arg('allow_submit', 'If true, transfers will not run, but submissions will be accepted', required=False)
@@ -216,6 +215,7 @@ class BanningController(BaseController):
     @doc.response(400, 'storage is missing, or any of the others have an invalid value')
     @doc.response(403, 'The user is not allowed to change the configuration')
     @doc.return_type(array_of=str)
+    @authorize(CONFIG)
     @jsonify
     def ban_se(self):
         """
@@ -260,12 +260,12 @@ class BanningController(BaseController):
         log.warn("Storage %s banned (%s), %d jobs affected" % (storage, status, len(affected)))
         return affected
 
-    @authorize(CONFIG)
     @doc.query_arg('user_dn', 'User DN to ban', required=True)
     @doc.query_arg('message', 'Explanatory message if desired', required=False)
     @doc.response(400, 'dn is missing')
     @doc.response(403, 'The user is not allowed to change the configuration')
     @doc.response(409, 'The user tried to ban (her|his)self')
+    @authorize(CONFIG)
     @jsonify
     def ban_dn(self):
         """

@@ -26,7 +26,6 @@ import tempfile
 import urlparse
 import urllib
 import json
-import pylons
 
 from fts3.model import Credential
 from fts3rest.lib.api import doc
@@ -34,6 +33,8 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.http_exceptions import HTTPAuthenticationTimeout
 from fts3rest.lib.gfal2_wrapper import Gfal2Wrapper, Gfal2Error
+from fts3rest.lib.middleware.fts3auth import authorize
+from fts3rest.lib.middleware.fts3auth.constants import DATAMANAGEMENT
 try:
     from fts3rest.controllers.CSdropbox import DropboxConnector
     dropbox_available = True
@@ -189,6 +190,7 @@ class DatamanagementController(BaseController):
     @doc.response(419, 'The credentials need to be re-delegated')
     @doc.response(503, 'Try again later')
     @doc.response(500, 'Internal error')
+    @authorize(DATAMANAGEMENT)
     @jsonify
     def list(self):
         """
@@ -212,6 +214,7 @@ class DatamanagementController(BaseController):
     @doc.response(419, 'The credentials need to be re-delegated')
     @doc.response(503, 'Try again later')
     @doc.response(500, 'Internal error')
+    @authorize(DATAMANAGEMENT)
     @jsonify
     def stat(self):
         """
@@ -235,6 +238,7 @@ class DatamanagementController(BaseController):
     @doc.response(419, 'The credentials need to be re-delegated')
     @doc.response(503, 'Try again later')
     @doc.response(500, 'Internal error')
+    @authorize(DATAMANAGEMENT)
     @jsonify
     def rename(self):
         """
@@ -275,6 +279,7 @@ class DatamanagementController(BaseController):
     @doc.response(419, 'The credentials need to be re-delegated')
     @doc.response(503, 'Try again later')
     @doc.response(500, 'Internal error')
+    @authorize(DATAMANAGEMENT)
     @jsonify
     def unlink(self):
         """
@@ -315,6 +320,7 @@ class DatamanagementController(BaseController):
     @doc.response(419, 'The credentials need to be re-delegated')
     @doc.response(503, 'Try again later')
     @doc.response(500, 'Internal error')
+    @authorize(DATAMANAGEMENT)
     @jsonify
     def rmdir(self):
         """
@@ -355,6 +361,7 @@ class DatamanagementController(BaseController):
     @doc.response(419, 'The credentials need to be re-delegated')
     @doc.response(503, 'Try again later')
     @doc.response(500, 'Internal error')
+    @authorize(DATAMANAGEMENT)
     @jsonify
     def mkdir(self):
         """
