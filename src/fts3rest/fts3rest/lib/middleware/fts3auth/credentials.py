@@ -15,6 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import copy
 import re
 from M2Crypto import EVP
 
@@ -151,13 +152,13 @@ class UserCredentials(object):
             return {}
 
         if 'public' in role_permissions:
-            granted_level = role_permissions['public']
+            granted_level = copy.deepcopy(role_permissions['public'])
         else:
-            granted_level = {}
+            granted_level = dict()
 
         for role in self.roles:
             if role in role_permissions:
-                granted_level.update(role_permissions[role])
+                granted_level.update(copy.deepcopy(role_permissions[role]))
         return granted_level
 
     def get_granted_level_for(self, operation):
