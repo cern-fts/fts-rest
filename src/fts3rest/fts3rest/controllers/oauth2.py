@@ -314,15 +314,22 @@ class Oauth2Controller(BaseController):
             raise OAuth2Error('Missing scope')
         return auth, app
 
+    @doc.query_arg('response_type', 'Must be \'code\'', required=True)
+    @doc.query_arg('client_id', 'Application client id', required=True)
+    @doc.query_arg('redirect_uri', 'One of the registered urls', required=True)
+    @doc.query_arg('scope', 'Comma-separated set of scopes', required=True)
+    @doc.response(400, 'Missing or invalid parameters')
+    @doc.return_type('Confirmation form or error message')
     @require_certificate
     def authorize(self):
         """
-        Perform the OAuth2 authorization step
+        Perform the OAuth2 authorization step. The user must be redirected here.
         """
         user = pylons.request.environ['fts3.User.Credentials']
         try:
             auth, app = self._auth_fields()
         except OAuth2Error, e:
+            pylons.response.status_int = HTTPBadRequest.code
             return render(
                 '/authz_failure.html',
                 extra_vars={'reason': str(e), 'site': pylons.config['fts3.SiteName']}
@@ -374,6 +381,7 @@ class Oauth2Controller(BaseController):
                 }
             )
 
+    @doc.response(303, 'Redirect to the redirect_uri passed by the application')
     @require_certificate
     def confirm(self):
         """
@@ -428,6 +436,15 @@ class Oauth2Controller(BaseController):
                 extra_vars={'reason': str(e), 'site': pylons.config['fts3.SiteName']}
             )
 
+    @doc.query_arg('grant_type', 'Must be \'authorization_code\' or \'refresh_token\'')
+    @doc.query_arg('client_id', 'Application client id', required=True)
+    @doc.query_arg('client_secret', 'Application secret key', required=True)
+    @doc.query_arg('code', 'Code passed from FTS3 via redirection', required=False)
+    @doc.query_arg('refresh_token', 'Refresh token obtained when the initial token was obtained', required=False)
+    @doc.query_arg('redirect_uri', 'One of the registered urls', required=True)
+    @doc.query_arg('scope', 'Comma-separated set of scopes', required=True)
+    @doc.response(400, 'Missing field, or invalid value')
+    @doc.return_type('A JSON with the access_token, token_type, expires_in and refresh_token')
     def get_token(self):
         """
         Get an access token

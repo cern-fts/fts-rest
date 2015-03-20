@@ -965,7 +965,8 @@ Array of [Job](#job)
 
 |Name       |Type  |Required|Description                                                         |
 |-----------|------|--------|--------------------------------------------------------------------|
-|time_window|string|False   |For terminal states, limit results to N hours into the past         |
+|fields     |string|False   |Return only a subset of the fields                                  |
+|time_window|string|False   |For terminal states, limit results to hours[:minutes] into the past |
 |limit      |string|False   |Limit the number of results                                         |
 |dest_se    |string|False   |Destination storage element                                         |
 |source_se  |string|False   |Source storage element                                              |
@@ -991,7 +992,8 @@ Array of [Job](#job)
 
 |Name       |Type  |Required|Description                                                         |
 |-----------|------|--------|--------------------------------------------------------------------|
-|time_window|string|False   |For terminal states, limit results to N hours into the past         |
+|fields     |string|False   |Return only a subset of the fields                                  |
+|time_window|string|False   |For terminal states, limit results to hours[:minutes] into the past |
 |limit      |string|False   |Limit the number of results                                         |
 |dest_se    |string|False   |Destination storage element                                         |
 |source_se  |string|False   |Source storage element                                              |
@@ -1104,8 +1106,50 @@ Array of [File](#file)
 #### GET /oauth2/token
 Get an access token
 
+##### Returns
+A JSON with the access_token, token_type, expires_in and refresh_token
+
+##### Query arguments
+
+|Name         |Type  |Required|Description                                               |
+|-------------|------|--------|----------------------------------------------------------|
+|scope        |string|True    |Comma-separated set of scopes                             |
+|redirect_uri |string|True    |One of the registered urls                                |
+|refresh_token|string|False   |Refresh token obtained when the initial token was obtained|
+|code         |string|False   |Code passed from FTS3 via redirection                     |
+|client_secret|string|True    |Application secret key                                    |
+|client_id    |string|True    |Application client id                                     |
+|grant_type   |string|False   |Must be 'authorization_code' or 'refresh_token'           |
+
+##### Responses
+
+|Code|Description                    |
+|----|-------------------------------|
+|400 |Missing field, or invalid value|
+
 #### POST /oauth2/token
 Get an access token
+
+##### Returns
+A JSON with the access_token, token_type, expires_in and refresh_token
+
+##### Query arguments
+
+|Name         |Type  |Required|Description                                               |
+|-------------|------|--------|----------------------------------------------------------|
+|scope        |string|True    |Comma-separated set of scopes                             |
+|redirect_uri |string|True    |One of the registered urls                                |
+|refresh_token|string|False   |Refresh token obtained when the initial token was obtained|
+|code         |string|False   |Code passed from FTS3 via redirection                     |
+|client_secret|string|True    |Application secret key                                    |
+|client_id    |string|True    |Application client id                                     |
+|grant_type   |string|False   |Must be 'authorization_code' or 'refresh_token'           |
+
+##### Responses
+
+|Code|Description                    |
+|----|-------------------------------|
+|400 |Missing field, or invalid value|
 
 #### GET /oauth2/apps
 Returns the list of registered apps
@@ -1132,10 +1176,34 @@ client_id
 |201 |Application registered                                          |
 
 #### GET /oauth2/authorize
-Perform OAuth2 authorization step
+Perform the OAuth2 authorization step. The user must be redirected here.
+
+##### Returns
+Confirmation form or error message
+
+##### Query arguments
+
+|Name         |Type  |Required|Description                  |
+|-------------|------|--------|-----------------------------|
+|scope        |string|True    |Comma-separated set of scopes|
+|redirect_uri |string|True    |One of the registered urls   |
+|client_id    |string|True    |Application client id        |
+|response_type|string|True    |Must be 'code'               |
+
+##### Responses
+
+|Code|Description                  |
+|----|-----------------------------|
+|400 |Missing or invalid parameters|
 
 #### POST /oauth2/authorize
 Triggered by user action. Confirm, or reject, access.
+
+##### Responses
+
+|Code|Description                                           |
+|----|------------------------------------------------------|
+|303 |Redirect to the redirect_uri passed by the application|
 
 #### GET /oauth2/apps/{client_id}
 Return information about a given app
@@ -1293,6 +1361,7 @@ Models
 |name         |string|
 |redirect_to  |string|
 |client_id    |string|
+|scope        |string|
 |owner        |string|
 |client_secret|string|
 |description  |string|
