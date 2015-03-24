@@ -6,4 +6,6 @@
 *.pyc
 *.pyo
 *.sublime-workspace
+coverage.xml
+nosetests.xml
 

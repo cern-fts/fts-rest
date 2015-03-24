@@ -20,7 +20,7 @@ import os
 import pylons
 
 from distutils.version import StrictVersion
-is_pylons_0 = (StrictVersion(pylons.__version__) < StrictVersion('1.0'))
+is_pylons_0 = '(not installed)' != pylons.__version__ and (StrictVersion(pylons.__version__) < StrictVersion('1.0'))
 
 if is_pylons_0:
     from pylons import config as pylons_config
