@@ -27,6 +27,20 @@ echo "Activating"
 
 # Install dependencies
 echo "Installing dependencies"
+
+# In SL6, we need this workaround :(
+grep -q "[56]\." /etc/redhat-release
+if [ $? -eq 0 ]; then
+	echo "Ugly workaround for M2Crypto in RHEL5/6"
+	rm -rf "${VIRTUALENV}/tmp/build/M2Crypto"
+	export SWIG_FEATURES="-includeall -D__`uname -m`__"
+	pip install --build "${VIRTUALENV}/tmp/build" "M2Crypto>=0.16"
+	if [ $? -ne 0 ]; then
+		echo "Workaround for M2Crypto failed"
+		exit 1
+	fi
+fi
+
 pip install --upgrade WebTest==1.4.3 WebOb==1.1.1 Pylons==1.0, nose==1.2 nose-cov==1.2 sqlalchemy M2Crypto m2ext python-dateutil requests jsonschema
 if [ $? -ne 0 ]; then
     echo "pip install failed"

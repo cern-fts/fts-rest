@@ -1,0 +1,9 @@
+Downloading/unpacking M2Crypto
+  
+pip can't proceed with requirement 'M2Crypto' due to a pre-existing build directory.
+ location: /tmp/qa-env/tmp/build/M2Crypto
+This is likely due to a previous installation that failed.
+pip is being responsible and not assuming it can delete this.
+Please delete it and try again.
+
+Cleaning up...
