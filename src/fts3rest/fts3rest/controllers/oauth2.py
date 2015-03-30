@@ -341,7 +341,7 @@ class Oauth2Controller(BaseController):
                     auth['response_type'], auth['client_id'],
                     auth['redirect_uri'], **auth['state']
             )
-            for (k, v) in response.headers.iteritems():
+            for k, v in response.headers.iteritems():
                 pylons.response.headers[str(k)] = str(v)
 
             if auth['redirect_uri'] == URN_NO_REDIRECT:
@@ -411,7 +411,7 @@ class Oauth2Controller(BaseController):
                     auth['response_type'], auth['client_id'],
                     auth['redirect_uri'], **auth['state']
                 )
-                for (k, v) in response.headers.iteritems():
+                for k, v in response.headers.iteritems():
                     pylons.response.headers[str(k)] = str(v)
 
                 if auth['redirect_uri'] == URN_NO_REDIRECT:
@@ -471,7 +471,7 @@ class Oauth2Controller(BaseController):
             response = self.oauth2_provider.refresh_token(**req)
             log.info("Application %s refreshed the token %s" % (req['client_id'], req['refresh_token']))
 
-        for (k, v) in response.headers.iteritems():
+        for k, v in response.headers.iteritems():
             pylons.response.headers[str(k)] = str(v)
         pylons.response.status_int = response.status_code
         return response.raw

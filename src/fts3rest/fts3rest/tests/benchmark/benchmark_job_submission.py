@@ -2,15 +2,15 @@
 
 #   Copyright notice:
 #   Copyright  Members of the EMI Collaboration, 2013.
-# 
+#
 #   See www.eu-emi.eu for details on the copyright holders
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         log.info("Jobs per second:  %.2f" % jobs_per_sec)
         log.info("Files per second: %.2f" % files_per_sec)
         log.info("Query count:")
-        for (query, count) in query_counter:
+        for query, count in query_counter:
             log.info("\t{0: <8}\t{1}".format(query, count))
     except SQLAlchemyError, e:
         log.error("SQLAlchemy error: " + str(e))

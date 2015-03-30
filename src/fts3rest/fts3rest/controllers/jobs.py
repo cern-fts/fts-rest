@@ -398,7 +398,7 @@ class JobsController(BaseController):
 
             # Insert into the optimizer
             unique_pairs = set(map(lambda f: (f['source_se'], f['dest_se']), populated.files))
-            for (source_se, dest_se) in unique_pairs:
+            for source_se, dest_se in unique_pairs:
                 if not Session.query(OptimizerActive).get((source_se, dest_se)):
                     optimizer_active = OptimizerActive()
                     optimizer_active.source_se = source_se

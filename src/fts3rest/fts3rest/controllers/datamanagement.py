@@ -20,6 +20,7 @@ from pylons import request
 from pylons.controllers.util import abort
 from webob.exc import HTTPBadRequest
 import errno
+import logging
 import os
 import stat
 import tempfile
@@ -35,12 +36,17 @@ from fts3rest.lib.http_exceptions import HTTPAuthenticationTimeout
 from fts3rest.lib.gfal2_wrapper import Gfal2Wrapper, Gfal2Error
 from fts3rest.lib.middleware.fts3auth import authorize
 from fts3rest.lib.middleware.fts3auth.constants import DATAMANAGEMENT
+
+log = logging.getLogger(__name__)
+
+
 try:
     from fts3rest.controllers.CSdropbox import DropboxConnector
     dropbox_available = True
-except ImportError,e:
+except ImportError, e:
     dropbox_available = False
-    print e
+    log.warning(str(e))
+
 
 def _get_valid_surl():
     surl = request.params.get('surl')
@@ -68,24 +74,26 @@ def _get_proxy():
     return tmp_file
 
 
-def _http_status_from_errno(e):
-    if e in (errno.EPERM, errno.EACCES):
+def _http_status_from_errno(err_code):
+    if err_code in (errno.EPERM, errno.EACCES):
         return 403
-    elif e == errno.ENOENT:
+    elif err_code == errno.ENOENT:
         return 404
-    elif e in (errno.EAGAIN, errno.EBUSY, errno.ETIMEDOUT):
+    elif err_code in (errno.EAGAIN, errno.EBUSY, errno.ETIMEDOUT):
         return 503
-    elif e in (errno.ENOTDIR, errno.EPROTONOSUPPORT):
+    elif err_code in (errno.ENOTDIR, errno.EPROTONOSUPPORT):
         return 400
     else:
         return 500
 
 
-def _raise_http_error_from_gfal2_error(e):
-    abort(_http_status_from_errno(e.errno), "[%d] %s" % (e.errno, e.message))
+def _http_error_from_gfal2_error(error):
+    abort(_http_status_from_errno(error.errno), "[%d] %s" % (error.errno, error.message))
+
 
 def _is_dropbox(uri):
     return uri.startswith("dropbox") and dropbox_available
+
 
 def _set_dropbox_headers(context):
     # getting the tokens and add them to the context
@@ -93,10 +101,10 @@ def _set_dropbox_headers(context):
     dropbox_con = DropboxConnector(user.user_dn,"dropbox")
     dropbox_info = dropbox_con._get_dropbox_info()
     dropbox_user_info = dropbox_con._get_dropbox_user_info();
-    context.set_opt_string("DROPBOX","APP_KEY",dropbox_info.app_key)
-    context.set_opt_string("DROPBOX","APP_SECRET",dropbox_info.app_secret)
-    context.set_opt_string("DROPBOX","ACCESS_TOKEN",dropbox_user_info.access_token)
-    context.set_opt_string("DROPBOX","ACCESS_TOKEN_SECRET",dropbox_user_info.access_token_secret)
+    context.set_opt_string("DROPBOX", "APP_KEY", dropbox_info.app_key)
+    context.set_opt_string("DROPBOX", "APP_SECRET", dropbox_info.app_secret)
+    context.set_opt_string("DROPBOX", "ACCESS_TOKEN", dropbox_user_info.access_token)
+    context.set_opt_string("DROPBOX", "ACCESS_TOKEN_SECRET", dropbox_user_info.access_token_secret)
     return context
 
 
@@ -113,9 +121,9 @@ def _stat_impl(context, surl):
 
 
 def _list_impl(context, surl):
-    dir = context.opendir(surl)
+    dir_handle = context.opendir(surl)
     listing = {}
-    (entry, st_stat) = dir.readpp()
+    (entry, st_stat) = dir_handle.readpp()
     while entry:
         d_name = entry.d_name
         if stat.S_ISDIR(st_stat.st_mode):
@@ -125,12 +133,12 @@ def _list_impl(context, surl):
             'mode': st_stat.st_mode,
             'mtime': st_stat.st_mtime
         }
-        (entry, st_stat) = dir.readpp()
+        (entry, st_stat) = dir_handle.readpp()
     return listing
 
 
 def _rename_impl(context, rename_dict):
-    if (len(rename_dict['old']) == 0) or (len(rename_dict['new'])) == 0:
+    if len(rename_dict['old']) == 0 or len(rename_dict['new']) == 0:
         raise HTTPBadRequest('No old or name specified')
 
     old_path = rename_dict['old']
@@ -203,7 +211,7 @@ class DatamanagementController(BaseController):
         try:
             return m(surl)
         except Gfal2Error, e:
-            _raise_http_error_from_gfal2_error(e)
+            _http_error_from_gfal2_error(e)
         finally:
             os.unlink(proxy.name)
 
@@ -227,7 +235,7 @@ class DatamanagementController(BaseController):
         try:
             return m(surl)
         except Gfal2Error, e:
-            _raise_http_error_from_gfal2_error(e)
+            _http_error_from_gfal2_error(e)
         finally:
             os.unlink(proxy.name)
 
@@ -262,7 +270,7 @@ class DatamanagementController(BaseController):
             try:
                 return m(rename_dict)
             except Gfal2Error, e:
-                _raise_http_error_from_gfal2_error(e)
+                _http_error_from_gfal2_error(e)
             finally:
                 os.unlink(proxy.name)
 
@@ -303,7 +311,7 @@ class DatamanagementController(BaseController):
             try:
                 return m(unlink_dict)
             except Gfal2Error, e:
-                _raise_http_error_from_gfal2_error(e)
+                _http_error_from_gfal2_error(e)
             finally:
                 os.unlink(proxy.name)
 
@@ -343,7 +351,7 @@ class DatamanagementController(BaseController):
             try:
                 return m(rmdir_dict)
             except Gfal2Error, e:
-                _raise_http_error_from_gfal2_error(e)
+                _http_error_from_gfal2_error(e)
             finally:
                 os.unlink(proxy.name)
 
@@ -383,7 +391,7 @@ class DatamanagementController(BaseController):
             try:
                 return m(mkdir_dict)
             except Gfal2Error, e:
-                _raise_http_error_from_gfal2_error(e)
+                _http_error_from_gfal2_error(e)
             finally:
                 os.unlink(proxy.name)
 

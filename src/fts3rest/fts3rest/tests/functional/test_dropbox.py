@@ -31,19 +31,19 @@ def _oauth_header_dict(raw_header):
 
 
 def _mocked_dropbox_make_call(self, command_url, auth_headers, parameters):
-    assert(command_url.startswith('https://api.dropbox.com/'))
+    assert command_url.startswith('https://api.dropbox.com/')
+    assert auth_headers.startswith('OAuth ')
 
-    assert(auth_headers.startswith('OAuth '))
     oauth_headers = _oauth_header_dict(auth_headers)
 
     command_path = command_url[23:]
     if command_path == '/1/oauth/request_token':
-        assert(oauth_headers['oauth_consumer_key'] == '"1234"')
-        assert(oauth_headers['oauth_signature'] == '"sssh&"')
+        assert oauth_headers['oauth_consumer_key'] == '"1234"'
+        assert oauth_headers['oauth_signature'] == '"sssh&"'
         return 'oauth_token_secret=1234&oauth_token=abcd'
     elif command_path == '/1/oauth/access_token':
-        assert(oauth_headers['oauth_consumer_key'] == '"1234"')
-        assert(oauth_headers['oauth_signature'] == '"sssh&1234"')
+        assert oauth_headers['oauth_consumer_key'] == '"1234"'
+        assert oauth_headers['oauth_signature'] == '"sssh&1234"'
         return 'oauth_token_secret=blahblahsecret&oauth_token=cafesilvousplait'
     else:
         return '404 Not Found'

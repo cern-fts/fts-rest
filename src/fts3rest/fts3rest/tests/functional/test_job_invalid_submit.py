@@ -258,9 +258,6 @@ class TestJobInvalidSubmits(TestController):
         )
 
         self.assertEquals(response.content_type, 'application/json')
-
-        print response.body
-
         error = json.loads(response.body)
 
         self.assertEquals(error['status'], '403 Forbidden')

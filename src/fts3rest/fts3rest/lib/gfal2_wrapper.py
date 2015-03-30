@@ -58,7 +58,7 @@ class Gfal2Wrapper(object):
         if pid == 0:
             os.close(pipe_read)
             self._child(os.fdopen(pipe_write, 'w'), args, kwargs)
-            assert(False)
+            raise AssertionError('This line must never be reached')
         else:
             os.close(pipe_write)
             return self._parent(pid, os.fdopen(pipe_read, 'r'))

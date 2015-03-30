@@ -62,7 +62,7 @@ def _validate_url(url):
         raise ValueError('Can not transfer local files (%s)' % url.geturl())
     if not url.path or (url.path == '/' and not url.query):
         raise ValueError('Missing path (%s)' % url.geturl())
-    if not url.hostname or url.hostname == '':
+    if not url.hostname:
         raise ValueError('Missing host (%s)' % url.geturl())
 
 
@@ -260,7 +260,7 @@ class JobBuilder(object):
             if shared_hashed_id is None:
                 shared_hashed_id = _generate_hashed_id()
 
-        for (source, destination) in pairs:
+        for source, destination in pairs:
             if source.scheme != 'srm' and self.is_bringonline:
                 raise HTTPBadRequest('Staging operations can only be used with the SRM protocol')
 

@@ -71,7 +71,7 @@ class SnapshotController(BaseController):
             if filter_dest:
                 pairs = pairs.filter(File.dest_se == filter_dest)
 
-            for (source, destination) in pairs:
+            for source, destination in pairs:
                 pair_info = dict(vo_name=vo, source_se=source, dest_se=destination)
 
                 # Maximum allowed number of active
@@ -131,7 +131,7 @@ class SnapshotController(BaseController):
                 # Average throughput for last 60, 30, 15 and 5 minutes
                 avg_thr = dict()
                 now = datetime.utcnow()
-                for min in (60, 30, 15, 5):
+                for min in 60, 30, 15, 5:
                     tail = filter(
                         lambda f: f[2] and f[6] is None or f[6] >= now - timedelta(minutes=min),
                         finished

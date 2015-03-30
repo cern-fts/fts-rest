@@ -55,7 +55,7 @@ def _populated_x509_name(components):
     Generates a populated X509_Name with the entries passed in components
     """
     x509_name = X509.X509_Name()
-    for (field, value) in components:
+    for field, value in components:
         x509_name.add_entry_by_txt(field, 0x1000, value,
                                    len=-1, loc=-1, set=0)
     return x509_name
@@ -80,7 +80,7 @@ def _generate_proxy_request():
     return x509_request, pkey
 
 
-def _read_X509_list(x509_pem):
+def _read_x509_list(x509_pem):
     """
     Loads the list of certificates contained in x509_pem
     """
@@ -109,7 +109,7 @@ def _validate_proxy(proxy_pem, private_key_pem):
     Raises:
         ProxyException: If the validation fails
     """
-    x509_list = _read_X509_list(proxy_pem)
+    x509_list = _read_x509_list(proxy_pem)
     if len(x509_list) < 2:
         raise ProxyException("Malformed proxy")
     x509_proxy = x509_list[0]
@@ -152,7 +152,7 @@ def _build_full_proxy(x509_pem, privkey_pem):
     Returns:
         A full proxy
     """
-    x509_list = _read_X509_list(x509_pem)
+    x509_list = _read_x509_list(x509_pem)
     x509_chain = ''.join(map(lambda x: x.as_pem(), x509_list[1:]))
     return x509_list[0].as_pem() + privkey_pem + x509_chain
 

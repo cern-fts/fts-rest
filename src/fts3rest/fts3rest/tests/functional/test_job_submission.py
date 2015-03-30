@@ -16,7 +16,7 @@
 #   limitations under the License.
 
 import json
-import scipy.stats
+#import scipy.stats
 import socket
 from nose.plugins.skip import SkipTest
 

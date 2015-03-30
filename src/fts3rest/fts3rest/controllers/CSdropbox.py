@@ -189,6 +189,4 @@ class DropboxConnector(object):
             res_con = response.read()
             return res_con
         except urllib2.HTTPError, e:
-            print e.code
-            print e.read()
             return str(e.code) + e.read()

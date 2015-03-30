@@ -30,7 +30,6 @@ class TestOptions(TestController):
         self.setup_gridsite_environment()
 
         response = self.app.options('/whoami')#, status=200)
-        print response.body
         self.assertItemsEqual(['GET', 'OPTIONS'], response.allow)
 
         response = self.app.options('/whoami/certificate', status=200)

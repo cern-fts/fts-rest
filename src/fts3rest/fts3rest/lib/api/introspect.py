@@ -175,20 +175,16 @@ def generate_resources(routes, controllers):
     One resource per controller
     """
     resources = {}
-    for r in routes:
-        cname = r.defaults.get('controller', None)
-        if cname:
-            if cname not in resources:
-                if str(cname) in controllers:
-                    doc = controllers[str(cname)].__doc__.strip()
-                else:
-                    doc = None
-                resources[cname] = {
-                    'id': cname,
-                    'description': doc
-                }
+    for cname in filter(lambda cname: cname, map(lambda route: route.defaults.get('controller', None), routes)):
+        if cname not in resources:
+            if str(cname) in controllers:
+                doc = controllers[str(cname)].__doc__.strip()
             else:
-                pass
+                doc = None
+            resources[cname] = {
+                'id': cname,
+                'description': doc
+            }
 
     return resources.values()
 
@@ -228,7 +224,7 @@ def get_function_parameters(function):
     using api.decorators.query_arg
     """
     parameters = []
-    for (name, description, return_type, required) in getattr(function, 'doc_query', []):
+    for name, description, return_type, required in getattr(function, 'doc_query', []):
         parameters.append({
             'name': name,
             'description': description,
@@ -263,7 +259,7 @@ def get_function_responses(function):
     api.decorators.response
     """
     responses = []
-    for (code, description) in getattr(function, 'doc_responses', []):
+    for code, description in getattr(function, 'doc_responses', []):
         responses.append({
             'code': code,
             'message': description
@@ -346,7 +342,7 @@ def actions_from_controller(controller):
     methods that do not start with _
     """
     actions = []
-    for (name, value) in controller.__dict__.iteritems():
+    for name, value in controller.__dict__.iteritems():
         if isinstance(value, FunctionType) and not name.startswith('_'):
             actions.append(name)
     return actions

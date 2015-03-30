@@ -3,7 +3,7 @@ def timedelta_to_seconds(td):
     """
     Returns timedelta td total number of seconds
     """
-    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10**6) / 10**6
+    return (td.microseconds + ((td.seconds + (td.days * 24 * 3600)) * 10**6)) / float(10**6)
 
 
 def average(iterable, start=None, transform=None):

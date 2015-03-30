@@ -382,9 +382,6 @@ class TestJobListing(TestController):
 
         answer = self.app.get(url="/jobs/%s/files/%d/retries" % (job_id, file_id), status=200)
         retries = json.loads(answer.body)
-
-        print retries
-
         self.assertEqual(0, len(retries))
 
     def test_get_retries(self):

@@ -27,7 +27,7 @@ def accept(html_template=None, html_redirect=None, json=True):
     Depending on the Accept headers returns a different representation of the data
     returned by the decorated method
     """
-    assert((html_template and not html_redirect) or (not html_template and html_redirect))
+    assert (html_template and not html_redirect) or (not html_template and html_redirect)
 
     offers = ['text/html']
     if json:
