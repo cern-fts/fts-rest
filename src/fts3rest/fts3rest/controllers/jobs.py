@@ -96,14 +96,14 @@ def _yes_or_no(value):
 
 def _has_multiple_options(files):
     """
-    Returns True if the set of transfers defines different options
-    for the same destination.
-    This sort of transfers can not be accepted when reuse is enabled
+    Returns a tuple (Boolean, Integer)
+    Boolean is True if there are multiple replica entries, and Integer holds the number
+    of unique files.
     """
     ids = map(lambda f: f['file_index'], files)
     id_count = len(ids)
     unique_id_count = len(set(ids))
-    return unique_id_count != id_count
+    return  unique_id_count != id_count, unique_id_count
 
 
 def _valid_third_party_transfer(src_scheme, dst_scheme):
@@ -785,9 +785,12 @@ class JobsController(BaseController):
         _apply_banning(datamanagement)
 
         # Validate that there are no bad combinations
-        if _has_multiple_options(files):
+        is_multiple, unique_files = _has_multiple_options(files)
+        if is_multiple:
             if job['reuse_job'] == 'Y':
                 raise HTTPBadRequest('Can not specify reuse and multiple replicas at the same time')
+            if unique_files > 1:
+                raise HTTPBadRequest('Multiple replicas jobs can only have one unique file')
             job['reuse_job'] = 'R'
 
         try:

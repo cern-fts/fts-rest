@@ -155,7 +155,9 @@ class TestMultiple(TestController):
     def test_submit_combination(self):
         """
         Submit a job with two related transfers (alternatives) and
-        a third independent one
+        a third independent one.
+        This was originally allowed, but starting with 3.2.33 it was decided to be dropped, as it gives
+        more trouble than it solves.
         """
         self.setup_gridsite_environment()
         self.push_delegation()
@@ -182,44 +184,10 @@ class TestMultiple(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
-
-        # Validate job in the database
-        job_id = json.loads(answer.body)['job_id']
-        db_job = Session.query(Job).get(job_id)
-
-        self.assertEqual(db_job.reuse_job, 'R')
-
-        self.assertEqual(len(db_job.files), 3)
-
-        self.assertEqual(db_job.files[0].file_index, 0)
-        self.assertEqual(db_job.files[0].source_surl, 'srm://source.es:8446/file')
-        self.assertEqual(db_job.files[0].dest_surl, 'srm://dest.ch:8447/file')
-        self.assertEqual(db_job.files[0].checksum, 'adler32:1234')
-        self.assertEqual(db_job.files[0].user_filesize, 1024)
-        self.assertEqual(db_job.files[0].file_metadata['mykey'], 'myvalue')
-
-        self.assertEqual(db_job.files[1].file_index, 0)
-        self.assertEqual(db_job.files[1].source_surl, 'srm://source.fr:8443/file')
-        self.assertEqual(db_job.files[1].dest_surl, 'srm://dest.ch:8447/file')
-        self.assertEqual(db_job.files[1].checksum, 'adler32:1234')
-        self.assertEqual(db_job.files[1].user_filesize, 1024)
-        self.assertEqual(db_job.files[0].file_metadata['mykey'], 'myvalue')
-
-        self.assertEqual(db_job.files[2].file_index, 1)
-        self.assertEqual(db_job.files[2].source_surl, 'https://host.com/another/file')
-        self.assertEqual(db_job.files[2].dest_surl, 'https://dest.net/another/destination')
-        self.assertEqual(db_job.files[2].checksum, 'adler32:56789')
-        self.assertEqual(db_job.files[2].user_filesize, 512)
-        self.assertEqual(db_job.files[2].file_metadata['flag'], True)
-
-        # In this case, files with the same file_index must have same
-        # hashed id, but different file_index means different hashed_id
-        self.assertEqual(db_job.files[0].hashed_id, db_job.files[1].hashed_id)
-        self.assertNotEqual(db_job.files[0].hashed_id, db_job.files[2].hashed_id)
+        self.app.post(url="/jobs",
+                      content_type='application/json',
+                      params=json.dumps(job),
+                      status=400)
 
     def test_submit_alternatives_with_reuse(self):
         """
