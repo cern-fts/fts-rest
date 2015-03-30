@@ -185,6 +185,7 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %{python_sitelib}/fts3rest/lib/helpers/
 %{python_sitelib}/fts3rest/lib/http_exceptions.py*
 %{python_sitelib}/fts3rest/lib/__init__.py*
+%{python_sitelib}/fts3rest/lib/JobBuilder.py*
 %{python_sitelib}/fts3rest/lib/middleware/*.py*
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/*.py*
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/__init__.py*
