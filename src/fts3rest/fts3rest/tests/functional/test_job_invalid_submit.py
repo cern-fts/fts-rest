@@ -65,7 +65,7 @@ class TestJobInvalidSubmits(TestController):
         error = json.loads(response.body)
 
         self.assertEquals(error['status'], '400 Bad Request')
-        self.assertEquals(error['message'], 'No transfers specified')
+        self.assertEquals(error['message'], 'No transfers or namespace operations specified')
 
     def test_no_protocol(self):
         """
@@ -214,7 +214,7 @@ class TestJobInvalidSubmits(TestController):
         error = json.loads(response.body)
 
         self.assertEquals(error['status'], '400 Bad Request')
-        self.assertEquals(error['message'], 'No transfers specified')
+        self.assertEquals(error['message'], 'No transfers or namespace operations specified')
 
     def test_invalid_surl(self):
         """
@@ -391,7 +391,7 @@ class TestJobInvalidSubmits(TestController):
         error = json.loads(response.body)
 
         self.assertEqual(error['status'], '400 Bad Request')
-        self.assertEqual(error['message'], 'No transfers specified')
+        self.assertEqual(error['message'], 'No valid pairs available')
 
     def test_invalid_files(self):
         """
