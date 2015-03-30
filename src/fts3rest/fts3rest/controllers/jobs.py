@@ -386,8 +386,7 @@ class JobsController(BaseController):
             )
 
         # Populate the job and files
-        populated = JobBuilder(**submitted_dict)
-        populated.set_user(user)
+        populated = JobBuilder(user, **submitted_dict)
 
         try:
             # Insert the job

@@ -109,13 +109,14 @@ def _has_multiple_options(files):
     return unique_id_count != id_count, unique_id_count
 
 
-def _select_best_replica(files, entry_state='SUBMITTED'):
+def _select_best_replica(files, vo_name, entry_state='SUBMITTED'):
     """
     Given a list of files (that must be multiple replicas for the same file) mark as submitted
     the best one
     """
     source_se_list = map(lambda f: f['source_se'], files)
     queue_sizes = Session.query(File.source_se, func.count(File.source_se))\
+        .filter(File.vo_name == vo_name)\
         .filter(File.file_state == 'SUBMITTED')\
         .filter(File.dest_se == files[0]['dest_se'])\
         .filter(File.source_se.in_(source_se_list))\
@@ -286,7 +287,7 @@ class JobBuilder(object):
         On multiple-replica jobs, select the adecuate file to go active
         """
         if self.files[0].get('selection_strategy', 'auto') == 'auto':
-            _select_best_replica(self.files)
+            _select_best_replica(self.files, self.user.vos[0])
         else:
             self.files[0]['file_state'] = 'STAGING' if self.is_bringonline else 'SUBMITTED'
 
@@ -438,11 +439,25 @@ class JobBuilder(object):
 
         self._set_job_source_and_destination(self.datamanagement)
 
-    def __init__(self, **kwargs):
+    def _set_user(self):
+        """
+        Set the user that triggered the action
+        """
+        self.job['user_dn'] = self.user.user_dn
+        self.job['cred_id'] = self.user.delegation_id
+        self.job['voms_cred'] = ' '.join(self.user.voms_cred)
+        self.job['vo_name'] = self.user.vos[0]
+        for file in self.files:
+            file['vo_name'] = self.user.vos[0]
+        for dm in self.datamanagement:
+            dm['vo_name'] = self.user.vos[0]
+
+    def __init__(self, user, **kwargs):
         """
         Constructor
         """
         try:
+            self.user = user
             # Get the job parameters
             self.params = self._get_params(kwargs.pop('params', dict()))
 
@@ -463,6 +478,8 @@ class JobBuilder(object):
             elif datamg_list is not None:
                 self._populate_deletion(datamg_list)
 
+            self._set_user()
+
             # Reject for SE banning
             # If any SE does not accept submissions, reject the whole job
             # Update wait_timeout and wait_timestamp if WAIT_AS is set
@@ -476,15 +493,3 @@ class JobBuilder(object):
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
 
-    def set_user(self, user):
-        """
-        Set the user that triggered the action
-        """
-        self.job['user_dn'] = user.user_dn
-        self.job['cred_id'] = user.delegation_id
-        self.job['voms_cred'] = ' '.join(user.voms_cred)
-        self.job['vo_name'] = user.vos[0]
-        for file in self.files:
-            file['vo_name'] = user.vos[0]
-        for dm in self.datamanagement:
-            dm['vo_name'] = user.vos[0]
