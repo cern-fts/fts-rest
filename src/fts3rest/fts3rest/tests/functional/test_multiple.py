@@ -90,6 +90,87 @@ class TestMultiple(TestController):
         uniq_hashes = set(map(lambda f: f.hashed_id, db_job.files))
         self.assertEqual(len(uniq_hashes), 1)
 
+    def test_submit_with_alternatives_auto(self):
+        """
+        Submit one multi-replica job. The pair with less queued transfers must be picked.
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        # Fill queue
+        for i in range(0, 10):
+            self.app.post(
+                url="/jobs",
+                content_type='application/json',
+                params=json.dumps({
+                    'files': [{
+                        'sources': ['http://site01.es/file%d' % i],
+                        'destinations': ['http://dest.ch/file%d' % i],
+                        'selection_strategy': 'orderly'
+                    }]
+                }),
+                status=200
+            )
+            self.app.post(
+                url="/jobs",
+                content_type='application/json',
+                params=json.dumps({
+                    'files': [{
+                        'sources': ['http://site02.ch/file%d' % i],
+                        'destinations': ['http://dest.ch/file%d' % i],
+                        'selection_strategy': 'orderly'
+                    }]
+                }),
+                status=200
+            )
+
+        # Submit job
+        job = {
+            'files': [
+                {
+                    'sources': ['http://site01.es/file', 'http://site02.ch/file', 'http://site03.fr/file'],
+                    'destinations': ['http://dest.ch/file'],
+                    'selection_strategy': 'auto',
+                    'checksum': 'adler32:1234',
+                    'filesize': 1024,
+                    'metadata': {'mykey': 'myvalue'},
+                }
+            ],
+            'params': {'overwrite': True}
+        }
+
+        answer = self.app.post(url="/jobs",
+                               content_type='application/json',
+                               params=json.dumps(job),
+                               status=200)
+
+        # site03.fr should be the activated transfer
+        job_id = json.loads(answer.body)['job_id']
+        db_job = Session.query(Job).get(job_id)
+
+        self.assertEqual(db_job.reuse_job, 'R')
+
+        self.assertEqual(len(db_job.files), 3)
+
+        self.assertEqual(db_job.files[0].file_index, 0)
+        self.assertEqual(db_job.files[0].source_surl, 'http://site01.es/file')
+        self.assertEqual(db_job.files[0].dest_surl, 'http://dest.ch/file')
+        self.assertEqual(db_job.files[0].file_state, 'NOT_USED')
+
+        self.assertEqual(db_job.files[1].file_index, 0)
+        self.assertEqual(db_job.files[1].source_surl, 'http://site02.ch/file')
+        self.assertEqual(db_job.files[1].dest_surl, 'http://dest.ch/file')
+        self.assertEqual(db_job.files[1].file_state, 'NOT_USED')
+
+        self.assertEqual(db_job.files[2].file_index, 0)
+        self.assertEqual(db_job.files[2].source_surl, 'http://site03.fr/file')
+        self.assertEqual(db_job.files[2].dest_surl, 'http://dest.ch/file')
+        self.assertEqual(db_job.files[2].file_state, 'SUBMITTED')
+
+        # Same file index, same hashed id
+        uniq_hashes = set(map(lambda f: f.hashed_id, db_job.files))
+        self.assertEqual(len(uniq_hashes), 1)
+
     def test_submit_multiple_transfers(self):
         """
         Submit one job with multiple independent transfers
@@ -110,7 +191,7 @@ class TestMultiple(TestController):
                 {
                     'sources': ['https://host.com/another/file'],
                     'destinations': ['https://dest.net/another/destination'],
-                    'selection_strategy': 'whatever',
+                    'selection_strategy': 'orderly',
                     'checksum': 'adler32:56789',
                     'filesize': 512,
                     'metadata': {'flag': True}
