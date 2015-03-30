@@ -17,11 +17,11 @@
 
 from datetime import datetime, timedelta
 from pylons import request
+from sqlalchemy import func
 from sqlalchemy.orm import noload
 import hashlib
 import json
 import logging
-import pylons
 import socket
 import types
 import urllib
@@ -150,6 +150,31 @@ def _generate_hashed_id(job_id, f_index):
     return int(hashlib.md5(concat).hexdigest()[-4:], 16)
 
 
+def _select_best_replica(files, entry_state):
+    """
+    Given a list of files (that must be multiple replicas for the same file) mark as submitted
+    the best one
+    """
+    source_se_list = map(lambda f: f['source_se'], files)
+    queue_sizes = Session.query(File.source_se, func.count(File.source_se))\
+        .filter(File.file_state == 'SUBMITTED')\
+        .filter(File.dest_se==files[0]['dest_se'])\
+        .filter(File.source_se.in_(source_se_list))\
+        .group_by(File.source_se)
+
+    best_ses = map(lambda elem: elem[0], sorted(queue_sizes, key=lambda elem: elem[1]))
+    best_index = 0
+    for index, file in enumerate(files):
+        # If not in the result set, the queue is empty, so finish here
+        if file['source_se'] not in best_ses:
+            best_index = index
+            break
+        # So far this looks good, but keep looking, in case some other has nothing at all
+        if file['source_se'] == best_ses[0]:
+            best_index = index
+    files[best_index]['file_state'] = entry_state
+
+
 def _populate_files(files_dict, job_id, f_index, vo_name, is_bringonline, shared_hashed_id):
     """
     From the dictionary files_dict, generate a list of transfers for a job
@@ -194,7 +219,7 @@ def _populate_files(files_dict, job_id, f_index, vo_name, is_bringonline, shared
             dest_se=_get_storage_element(d),
             vo_name=vo_name,
             user_filesize=_valid_filesize(files_dict.get('filesize', 0)),
-            selection_strategy=files_dict.get('selection_strategy', None),
+            selection_strategy=files_dict.get('selection_strategy', 'auto'),
             checksum=files_dict.get('checksum', None),
             file_metadata=files_dict.get('metadata', None),
             activity=files_dict.get('activity', 'default'),
@@ -203,7 +228,10 @@ def _populate_files(files_dict, job_id, f_index, vo_name, is_bringonline, shared
         files.append(f)
 
     if file_initial_state == 'NOT_USED':
-        files[0]['file_state'] = entry_state
+        if files_dict.get('selection_strategy', 'auto') == 'auto':
+            _select_best_replica(files, entry_state)
+        else:
+            files[0]['file_state'] = entry_state
 
     return files
 
