@@ -157,6 +157,7 @@ def _select_best_replica(files, entry_state):
     """
     source_se_list = map(lambda f: f['source_se'], files)
     queue_sizes = Session.query(File.source_se, func.count(File.source_se))\
+        .filter(File.vo_name == files[0]['vo_name'])\
         .filter(File.file_state == 'SUBMITTED')\
         .filter(File.dest_se==files[0]['dest_se'])\
         .filter(File.source_se.in_(source_se_list))\
