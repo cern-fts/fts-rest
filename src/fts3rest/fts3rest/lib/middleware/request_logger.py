@@ -66,15 +66,18 @@ class RequestLogger(object):
 
         if code >= 400:
             log.error(entry)
-            try:
-                log.debug('Request params: ' + str(pylons.request.params))
-                log.debug('Request content type: ' + pylons.request.content_type)
-                if pylons.request.content_type == 'application/json':
-                    log.debug('Request body: ')
-                    for line in pylons.request.body.split('\n'):
-                        log.debug(line)
-            except TypeError:
-                # Sometimes there is no request registered (?), so let it go
-                pass
+            self._log_request_details()
         else:
             log.info(entry)
+
+    def _log_request_details(self):
+        try:
+            log.debug('Request params: ' + str(pylons.request.params))
+            log.debug('Request content type: ' + pylons.request.content_type)
+            if pylons.request.content_type == 'application/json':
+                log.debug('Request body: ')
+                for line in pylons.request.body.split('\n'):
+                    log.debug(line)
+        except TypeError:
+            # Sometimes there is no request registered (?), so let it go
+            pass

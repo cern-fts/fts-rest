@@ -15,11 +15,17 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import re, time, dateutil.parser, logging, urllib
+import re
+import time
+import dateutil.parser
+import logging
+import urllib
 from base64 import b64decode
 from M2Crypto import X509, EVP
 from m2ext import SSL
-from fts3rest.lib.middleware.fts3auth.credentials import InvalidCredentials, vo_from_fqan, build_vo_from_dn, generate_delegation_id
+
+from fts3rest.lib.middleware.fts3auth.credentials import InvalidCredentials, build_vo_from_dn, generate_delegation_id
+
 
 def do_authentication(credentials, env):
     """
@@ -64,12 +70,12 @@ def do_authentication(credentials, env):
         raise InvalidCredentials()
 
     ctx = SSL.Context()
-    ctx.load_verify_locations(capath = "/etc/grid-security/certificates");
+    ctx.load_verify_locations(capath="/etc/grid-security/certificates")
     if not ctx.validate_certificate(x509):
         log.info("Certificate verification failed")
         raise InvalidCredentials("Certificate verification failed")
 
-    credentials.user_dn = '/'+'/'.join(x509.get_subject().as_text().split(', '))
+    credentials.user_dn = '/' + '/'.join(x509.get_subject().as_text().split(', '))
     credentials.dn.append(credentials.user_dn)
     if 'SSL_CLIENT_S_DN' in env:
         credentials.dn.append(urllib.unquote_plus(env['SSL_CLIENT_S_DN']))

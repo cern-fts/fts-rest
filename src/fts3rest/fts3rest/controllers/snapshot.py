@@ -25,9 +25,9 @@ from fts3rest.lib.helpers import jsonify, misc
 
 def _get_limits(source, destination):
     source_thr = Session.query(Optimize.throughput)\
-        .filter(Optimize.source_se==source).filter(Optimize.throughput != None).all()
+        .filter(Optimize.source_se == source).filter(Optimize.throughput != None).all()
     dest_thr = Session.query(Optimize.throughput)\
-        .filter(Optimize.dest_se==destination).filter(Optimize.throughput != None).all()
+        .filter(Optimize.dest_se == destination).filter(Optimize.throughput != None).all()
 
     limits = dict()
     if len(source_thr):
@@ -110,7 +110,8 @@ class SnapshotController(BaseController):
 
                 # Average queue time
                 queued_times = map(
-                    lambda f: (f[5] - f[4]),  # start_time - submit_time
+                    # start_time - submit_time
+                    lambda f: (f[5] - f[4]),
                     filter(lambda f: f[6] is None and f[5] is not None, files)
                 )
                 avg_queued = misc.average(queued_times, timedelta(), misc.timedelta_to_seconds)
@@ -131,16 +132,16 @@ class SnapshotController(BaseController):
                 # Average throughput for last 60, 30, 15 and 5 minutes
                 avg_thr = dict()
                 now = datetime.utcnow()
-                for min in 60, 30, 15, 5:
+                for minutes in 60, 30, 15, 5:
                     tail = filter(
-                        lambda f: f[2] and f[6] is None or f[6] >= now - timedelta(minutes=min),
+                        lambda f: f[2] and f[6] is None or f[6] >= now - timedelta(minutes=minutes),
                         finished
                     )
-                    avg_thr[str(min)] = misc.average(map(lambda f: f[2], tail))
+                    avg_thr[str(minutes)] = misc.average(map(lambda f: f[2], tail))
                 pair_info['avg_throughput'] = avg_thr
 
                 # Most frequent error
-                reasons = map(lambda f: f[3], failed)  # Get reasons
+                reasons = map(lambda f: f[3], failed)
                 reasons_count = [(reason, len(list(grouped))) for reason, grouped in itertools.groupby(reasons)]
                 reasons_count = sorted(reasons_count, key=lambda p: p[1], reverse=True)
 

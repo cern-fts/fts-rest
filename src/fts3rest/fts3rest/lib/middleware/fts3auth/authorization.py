@@ -26,7 +26,19 @@ import pylons
 log = logging.getLogger(__name__)
 
 
-def authorized(op, resource_owner=None, resource_vo=None, env=None):
+def _is_dn_authorized_in_db(user_dn, operation):
+    """
+    Returns a boolean indicating if user_dn is configured in the database as
+    allowed to peform operation
+    """
+    authz_entry = Session.query(AuthorizationByDn).get((user_dn, operation))
+    if authz_entry is not None:
+        log.info('%s granted to "%s" because it is configured in the database' % (operation, user_dn))
+        return True
+    return False
+
+
+def authorized(operation, resource_owner=None, resource_vo=None, env=None):
     """
     Check if the user has enough privileges for a given operation
 
@@ -47,7 +59,7 @@ def authorized(op, resource_owner=None, resource_vo=None, env=None):
         return False
 
     user = env['fts3.User.Credentials']
-    granted_level = user.get_granted_level_for(op)
+    granted_level = user.get_granted_level_for(operation)
 
     if granted_level == ALL:
         return True
@@ -57,11 +69,7 @@ def authorized(op, resource_owner=None, resource_vo=None, env=None):
         return resource_owner is None or resource_owner == user.user_dn
     else:
         # Give it a last try querying the DB for admin dns
-        authz_entry = Session.query(AuthorizationByDn).get((user.user_dn, op))
-        if authz_entry is not None:
-            log.info('%s granted to "%s" because it is configured in the database' % (op, user.user_dn))
-            return True
-    return False
+        return _is_dn_authorized_in_db(user.user_dn, operation)
 
 
 def authorize(op, env=None):

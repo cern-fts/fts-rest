@@ -21,7 +21,6 @@ from datetime import datetime, timedelta
 from optparse import OptionParser
 from sqlalchemy.exc import SQLAlchemyError
 import json
-import sys
 
 from MockedJobController import MockedJobController, request
 from QueryCounter import QueryCounter
@@ -56,6 +55,11 @@ def benchmark_submission(job_number, files_number, callgraph_output):
     return duration, float(job_number) / duration_seconds, float(files_number) / duration_seconds
 
 
+def _user_confirms():
+    log.warning("Are you sure? (Type Yes)")
+    return sys.stdin.readline().strip().lower() == "yes"
+
+
 if __name__ == "__main__":
     opt_parser = OptionParser()
     opt_parser.add_option("-d", "--database", dest="database",
@@ -84,11 +88,9 @@ if __name__ == "__main__":
         query_counter = QueryCounter()
         setup_database(opts.database, proxy=query_counter)
 
-        if not opts.force:
-            log.warning("Are you sure? (Type Yes)")
-            if sys.stdin.readline().strip().lower() != "yes":
-                log.critical("Aborted!")
-                sys.exit(1)
+        if not opts.force and not _user_confirms():
+            log.critical("Aborted!")
+            sys.exit(1)
         else:
             log.warning("--force specified, no confirmation required")
 

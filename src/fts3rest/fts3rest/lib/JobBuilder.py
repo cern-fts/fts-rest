@@ -272,7 +272,7 @@ class JobBuilder(object):
                 dest_surl=destination.geturl(),
                 source_se=_get_storage_element(source),
                 dest_se=_get_storage_element(destination),
-                vo_name=None,  # To be set up later
+                vo_name=None,
                 user_filesize=_safe_filesize(file_dict.get('filesize', 0)),
                 selection_strategy=file_dict.get('selection_strategy', 'auto'),
                 checksum=file_dict.get('checksum', None),
@@ -313,10 +313,10 @@ class JobBuilder(object):
             job_params=self.params['gridftp'],
             submit_host=socket.getfqdn(),
             agent_dn='rest',
-            user_dn=None,  # To be set up later
-            voms_cred=None,  # To be set up later
-            vo_name=None,  # To be set up later
-            cred_id=None,  # To be set up later
+            user_dn=None,
+            voms_cred=None,
+            vo_name=None,
+            cred_id=None,
             submit_time=datetime.utcnow(),
             priority=max(min(int(self.params['priority']), 5), 1),
             space_token=self.params['spacetoken'],
@@ -386,10 +386,10 @@ class JobBuilder(object):
             job_params=self.params['gridftp'],
             submit_host=socket.getfqdn(),
             agent_dn='rest',
-            user_dn=None,  # To be set up later
-            voms_cred=None,  # To be set up later
-            vo_name=None,  # To be set up later
-            cred_id=None,  # To be set up later
+            user_dn=None,
+            voms_cred=None,
+            vo_name=None,
+            cred_id=None,
             submit_time=datetime.utcnow(),
             priority=3,
             space_token=self.params['spacetoken'],
@@ -426,7 +426,7 @@ class JobBuilder(object):
             if surl not in unique_surls:
                 self.datamanagement.append(dict(
                     job_id=self.job_id,
-                    vo_name=None,  # To be set up later
+                    vo_name=None,
                     file_state='DELETE',
                     source_surl=entry['surl'],
                     source_se=_get_storage_element(surl),

@@ -134,6 +134,7 @@ class JobsController(BaseController):
 
         if filter_fields:
             original_jobs = jobs
+
             def _field_subset():
                 fields = filter_fields.split(',')
                 for job in original_jobs:
@@ -142,6 +143,7 @@ class JobsController(BaseController):
                         if hasattr(job, field):
                             entry[field] = getattr(job, field)
                     yield entry
+
             jobs = _field_subset()
 
         return jobs
@@ -175,7 +177,7 @@ class JobsController(BaseController):
                             for field in fields:
                                 try:
                                     fd[field] = getattr(f, field)
-                                except:
+                                except AttributeError:
                                     pass
                             yield fd
                     job.__dict__['files'] = files()
@@ -265,7 +267,8 @@ class JobsController(BaseController):
 
         # First, check which job ids exist and can be accessed
         for job_id in requested_job_ids:
-            if not job_id:  # Skip empty
+            # Skip empty
+            if not job_id:
                 continue
             try:
                 job = JobsController._get_job(job_id)

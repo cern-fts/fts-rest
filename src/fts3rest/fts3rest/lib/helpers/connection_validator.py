@@ -17,11 +17,11 @@ from sqlalchemy.interfaces import PoolListener
 from sqlalchemy.exc import DisconnectionError
 try:
     from MySQLdb.connections import Connection as MySQLConnection
-except:
+except ImportError:
     MySQLConnection = type(None)
 try:
     from cx_Oracle import Connection as OracleConnection, DatabaseError
-except:
+except ImportError:
     OracleConnection = type(None)
     DatabaseError = Exception
 
@@ -37,7 +37,8 @@ class ConnectionValidator(PoolListener):
     def checkout(self, dbapi_con, con_record, con_proxy):
         exc = None
         if isinstance(dbapi_con, MySQLConnection):
-            dbapi_con.ping(True)  # True will silently reconnect if the connection was lost
+            # True will silently reconnect if the connection was lost
+            dbapi_con.ping(True)
         elif isinstance(dbapi_con, OracleConnection):
             try:
                 dbapi_con.ping()

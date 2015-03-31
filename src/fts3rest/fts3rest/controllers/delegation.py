@@ -167,16 +167,18 @@ class DelegationController(BaseController):
         Constructor
         """
         vomses_dir = '/etc/vomses'
-        self.vo_list = set()
+        vo_set = set()
         try:
             vomses = os.listdir(vomses_dir)
             for voms in vomses:
                 voms_cfg = os.path.join(vomses_dir, voms)
-                for l in open(voms_cfg).readlines():
-                    l = l.strip()
-                    if len(l) and l[0] != '#':
-                        self.vo_list.add(shlex.split(l)[0])
-            self.vo_list = list(sorted(self.vo_list))
+                lines = filter(
+                    lambda l: len(l) and l[0] != '#',
+                    map(str.strip, open(voms_cfg).readlines())
+                )
+                for l in lines:
+                    vo_set.add(shlex.split(l)[0])
+            self.vo_list = list(sorted(vo_set))
         except:
             pass
 

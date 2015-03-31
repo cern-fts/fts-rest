@@ -30,7 +30,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.properties import ColumnProperty
 try:
     from sqlalchemy.orm.properties import RelationProperty
-except:
+except ImportError:
     from sqlalchemy.orm.relationships import RelationshipProperty as RelationProperty
 from types import FunctionType
 
@@ -85,19 +85,19 @@ def get_model_fields(model_name, model_list):
     """
     model = getattr(fts3.model, model_name, None)
     if not model:
-        return {}
-    fields = {}
-    for field in model.__dict__.values():
-        if isinstance(field, InstrumentedAttribute):
-            name = field.key
-            prop = field.property
-            if isinstance(prop, ColumnProperty):
-                column = prop.columns[0]
-                fields[name] = get_column_type_description(column.type)
-            elif isinstance(prop, RelationProperty):
-                relation_description = get_relation_type_description(prop, model_list)
-                if relation_description:
-                    fields[name] = relation_description
+        return dict()
+    fields = dict()
+    attributes = [field for field in model.__dict__.values() if isinstance(field, InstrumentedAttribute)]
+    for field in attributes:
+        name = field.key
+        prop = field.property
+        if isinstance(prop, ColumnProperty):
+            column = prop.columns[0]
+            fields[name] = get_column_type_description(column.type)
+        elif isinstance(prop, RelationProperty):
+            relation_description = get_relation_type_description(prop, model_list)
+            if relation_description:
+                fields[name] = relation_description
     return fields
 
 
@@ -370,12 +370,10 @@ def generate_apis_and_models(routes, controllers):
 
             if 'action' in param_names:
                 actions = actions_from_controller(controller)
+            elif 'action' in route.defaults:
+                actions = [route.defaults['action']]
             else:
-                action = route.defaults.get('action', None)
-                if action:
-                    actions = [action]
-                else:
-                    actions = []
+                actions = []
 
             for action in actions:
                 path = raw_path.replace('{action}', action)
@@ -395,8 +393,6 @@ def generate_apis_and_models(routes, controllers):
                 else:
                     all_apis[cname][path] = api
                 all_models[cname].update(models)
-
-                methods = map(lambda o: o['method'], api['operations'])
 
     # Remove keys used for convenience
     for resource_root in all_apis:
