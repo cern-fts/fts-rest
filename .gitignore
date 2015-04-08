@@ -5,7 +5,7 @@
 *.rpm
 *.pyc
 *.pyo
-*.sublime-workspace
+*.sublime-*
 coverage.xml
 nosetests.xml
 
