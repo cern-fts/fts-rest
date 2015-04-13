@@ -70,7 +70,11 @@ class RequestFactory(object):
         message = None
         if response_body:
             try:
-                message = json.loads(response_body)['message']
+                response = json.loads(response_body)
+                if 'message' in response:
+                    message = response['message']
+                else:
+                    message = response_body
             except:
                 pass
 
@@ -82,7 +86,7 @@ class RequestFactory(object):
         elif 401 <= code <= 403:
             raise Unauthorized()
         elif code == 404:
-            raise NotFound(url)
+            raise NotFound(url, message)
         elif code == 419:
             raise NeedDelegation('Need delegation')
         elif code == 424:
@@ -139,6 +143,7 @@ class RequestFactory(object):
             self.curl_handle.setopt(pycurl.IOCTLFUNCTION, self._ioctl)
 
         self.curl_handle.perform()
+        log.debug(self._response)
 
         self._handle_error(url, self.curl_handle.getinfo(pycurl.HTTP_CODE), self._response)
 

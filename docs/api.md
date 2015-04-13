@@ -905,6 +905,26 @@ Delete the delegated credentials from the database
 Returns the user certificate
 
 ### Operations on jobs and transfers
+#### DELETE /jobs/{job_id}/files/{file_ids}
+Cancel individual files - comma separated for multiple - within a job
+
+##### Returns
+File final states (array if multiple files were given)
+
+##### Path arguments
+
+|Name    |Type  |
+|--------|------|
+|job_id  |string|
+|file_ids|string|
+
+##### Responses
+
+|Code|Description                            |
+|----|---------------------------------------|
+|404 |The job doesn't exist                  |
+|403 |The user doesn't have enough privileges|
+
 #### DELETE /jobs/{job_id_list}
 Cancel the given job
 

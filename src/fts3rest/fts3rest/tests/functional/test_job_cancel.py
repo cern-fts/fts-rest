@@ -19,7 +19,7 @@ import json
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import Job
+from fts3.model import Job, File, JobActiveStates
 
 
 class TestJobCancel(TestController):
@@ -27,7 +27,7 @@ class TestJobCancel(TestController):
     Tests for the job cancellation
     """
 
-    def _submit(self, count=1):
+    def _submit(self, count=1, reuse=False):
         """
         Submit a valid job
         """
@@ -47,7 +47,7 @@ class TestJobCancel(TestController):
 
         job = {
             'files': files,
-            'params': {'overwrite': True, 'verify_checksum': True}
+            'params': {'overwrite': True, 'verify_checksum': True, 'reuse': reuse}
         }
 
         answer = self.app.put(url="/jobs",
@@ -203,3 +203,122 @@ class TestJobCancel(TestController):
                 self.assertEqual(job['http_status'], '200 Ok')
             else:
                 self.assertEqual(job['http_status'], '404 Not Found')
+
+    def _test_cancel_file_asserts(self, job_id, expect_job, expect_files):
+        """
+        Helper for test_cancel_remaining_file
+        """
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.job_state, expect_job)
+        if expect_job in JobActiveStates:
+            self.assertIsNone(job.job_finished)
+        else:
+            self.assertIsNotNone(job.job_finished)
+        self.assertEqual('CANCELED', job.files[0].file_state)
+        self.assertIsNotNone(job.files[0].finish_time)
+        self.assertIsNone(job.files[0].job_finished)
+        for f in job.files[1:]:
+            self.assertEqual(expect_files, f.file_state)
+            if expect_job in JobActiveStates:
+                self.assertIsNone(f.job_finished)
+            else:
+                self.assertIsNotNone(f.job_finished)
+
+    def test_cancel_file(self):
+        """
+        Cancel just one file of a job with multiple files.
+        The job and other files must remain unaffected.
+        """
+        job_id = self._submit(5)
+        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
+
+        self.app.delete(url="/jobs/%s/files/%s" % (job_id, files[0]['file_id']))
+        self._test_cancel_file_asserts(job_id, 'SUBMITTED', 'SUBMITTED')
+
+    def test_cancel_only_file(self):
+        """
+        Cancel the only file in a job.
+        The job must go to CANCELED.
+        """
+        job_id = self._submit(1)
+        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
+
+        self.app.delete(url="/jobs/%s/files/%s" % (job_id, files[0]['file_id']))
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.job_state, 'CANCELED')
+        self.assertEqual('CANCELED', job.files[0].file_state)
+
+    def _submit_and_mark_all_but_one(self, count, states):
+        """
+        Helper for test_cancel_remaining_file
+        Submit a job, mark all files except the first one with the state 'state'
+        state can be a list with count-1 final states
+        """
+        job_id = self._submit(count)
+        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
+
+        if isinstance(states, str):
+            states = [states] * (count - 1)
+
+        for i in range(1, count):
+            fil = Session.query(File).get(files[i]['file_id'])
+            fil.file_state = states[i - 1]
+            Session.merge(fil)
+        Session.commit()
+
+        return job_id, files
+
+    def test_cancel_remaining_file(self):
+        """
+        Cancel the remaining file of a job.
+        Depending on the other file states, the job must go to FAILED, CANCELED or FINISHEDDIRTY
+        """
+        # Try first all remaining FAILED
+        # Final state must be FAILED
+        job_id, files = self._submit_and_mark_all_but_one(5, 'FAILED')
+
+        self.app.delete(url="/jobs/%s/files/%s" % (job_id, files[0]['file_id']))
+        self._test_cancel_file_asserts(job_id, 'CANCELED', 'FAILED')
+
+        # All remaining FINISHED
+        # Final state must be FINISHED
+        job_id, files = self._submit_and_mark_all_but_one(5, 'FINISHED')
+
+        self.app.delete(url="/jobs/%s/files/%s" % (job_id, files[0]['file_id']))
+        self._test_cancel_file_asserts(job_id, 'CANCELED', 'FINISHED')
+
+        # All remaining CANCELED
+        # Final state must be CANCELED
+        job_id, files = self._submit_and_mark_all_but_one(5, 'CANCELED')
+
+        self.app.delete(url="/jobs/%s/files/%s" % (job_id, files[0]['file_id']))
+        self._test_cancel_file_asserts(job_id, 'CANCELED', 'CANCELED')
+
+    def test_cancel_multiple_files(self):
+        """
+        Cancel multiple files within a job.
+        """
+        job_id = self._submit(10)
+        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
+
+        file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
+        answer = self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=200)
+        changed_states = answer.json
+
+        self.assertEqual(changed_states, ['CANCELED', 'CANCELED'])
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.job_state, 'SUBMITTED')
+        for file in job.files[2:]:
+            self.assertEqual(file.file_state, 'SUBMITTED')
+
+    def test_cancel_reuse(self):
+        """
+        Jobs with reuse or multihop can not be cancelled file per file
+        """
+        job_id = self._submit(10, reuse=True)
+        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
+
+        file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
+        self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=400)

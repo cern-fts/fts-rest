@@ -278,6 +278,11 @@ class TestController(TestCase):
             standardMsg = "%s in %s" % (member, str(container))
             self.fail(standardMsg)
 
+    def assertIsNone(self, obj):
+        if obj is not None:
+            standardMsg = "Object must be None"
+            self.fail(standardMsg)
+
     def assertIsNotNone(self, obj):
         if obj is None:
             standardMsg = "Unexpected None"

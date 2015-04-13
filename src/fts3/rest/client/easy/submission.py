@@ -18,7 +18,7 @@ from fts3.rest.client import Submitter
 from delegate import delegate
 
 
-def cancel(context, job_id):
+def cancel(context, job_id, file_ids=None):
     """
     Cancels a job
 
@@ -31,7 +31,7 @@ def cancel(context, job_id):
         Note that it may not be CANCELED if the job finished already!
     """
     submitter = Submitter(context)
-    return submitter.cancel(job_id)
+    return submitter.cancel(job_id, file_ids)
 
 
 def new_transfer(source, destination, checksum=None, filesize=None, metadata=None):

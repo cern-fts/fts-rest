@@ -58,5 +58,9 @@ class Submitter(object):
         r = json.loads(self.context.post_json('/jobs', job))
         return r['job_id']
 
-    def cancel(self, job_id):
-        return json.loads(self.context.delete('/jobs/%s' % job_id))
+    def cancel(self, job_id, file_ids = None):
+        if file_ids is not None:
+            file_ids_str = ','.join(map(str, file_ids))
+            return json.loads(self.context.delete('/jobs/%s/files/%s' % (job_id, file_ids_str)))
+        else:
+            return json.loads(self.context.delete('/jobs/%s' % job_id))

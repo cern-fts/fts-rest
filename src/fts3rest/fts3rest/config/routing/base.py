@@ -56,6 +56,8 @@ def do_connect(config, map):
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}/files', controller='jobs', action='get_files',
                 conditions=dict(method=['GET']))
+    map.connect('/jobs/{job_id}/files/{file_ids}', controller='jobs', action='cancel_files',
+                conditions=dict(method=['DELETE']))
     map.connect('/jobs/{job_id}/files/{file_id}/retries', controller='jobs', action='get_file_retries',
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}/{field}', controller='jobs', action='get_field',

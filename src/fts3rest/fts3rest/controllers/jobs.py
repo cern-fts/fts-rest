@@ -230,6 +230,69 @@ class JobsController(BaseController):
         return files.yield_per(100)
 
     @doc.response(403, 'The user doesn\'t have enough privileges')
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.return_type('File final states (array if multiple files were given)')
+    @jsonify
+    def cancel_files(self, job_id, file_ids):
+        """
+        Cancel individual files - comma separated for multiple - within a job
+        """
+        job = self._get_job(job_id)
+
+        if job.reuse_job != 'N':
+            raise HTTPBadRequest('Multihop or reuse jobs must be cancelled at once (%s)' % str(job.reuse_job))
+
+        file_ids = file_ids.split(',')
+        changed_states = list()
+
+        try:
+            # Mark files in the list as CANCELED
+            for file_id in file_ids:
+                file = Session.query(File).get(file_id)
+                if not file or file.job_id != job_id:
+                    changed_states.append('File does not belong to the job')
+                    continue
+
+                if file.file_state not in FileActiveStates:
+                    changed_states.append(file.file_state)
+                    continue
+
+                file.file_state = 'CANCELED'
+                file.finish_time = datetime.utcnow()
+                changed_states.append('CANCELED')
+                Session.merge(file)
+
+            # Mark job depending on the status of the rest of files
+            not_changed_states = map(lambda f: f.file_state, filter(lambda f: f.file_id not in file_ids, job.files))
+            all_states = not_changed_states + changed_states
+
+            # All files within the job have been canceled
+            if len(not_changed_states) == 0:
+                job.job_state = 'CANCELED'
+                job.job_finished = datetime.utcnow()
+                log.warning('Cancelling all remaining files within the job %s' % job_id)
+            # No files in non-terminal, mark the job as CANCELED too
+            elif len(filter(lambda s: s in FileActiveStates, all_states)) == 0:
+                log.warning('Cancelling a file within a job with others in terminal state (%s)' % job_id)
+                job.job_state = 'CANCELED'
+                job.job_finished = datetime.utcnow()
+                # Remember, job_finished must be NULL so FTS3 kills the fts_url_copy process
+                # Update job_finished for all the others
+                Session.query(File).filter(File.job_id == job_id).filter(~File.file_id.in_(file_ids))\
+                    .update({
+                        'job_finished': job.job_finished
+                    }, synchronize_session=False)
+            else:
+                log.warning('Cancelling files within a job with others still active (%s)' % job_id)
+
+            Session.merge(job)
+            Session.commit()
+        except:
+            Session.rollback()
+            raise
+        return changed_states if len(changed_states) > 1 else changed_states[0]
+
+    @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job or the file don\'t exist')
     @jsonify
     def get_file_retries(self, job_id, file_id):
