@@ -18,11 +18,15 @@ try:
     import json
 except:
     import simplejson as json
+import logging
 import pycurl
 from exceptions import *
 from StringIO import StringIO
 
 _PYCURL_SSL = pycurl.version_info()[5].split('/')[0]
+
+
+log = logging.getLogger(__name__)
 
 
 class RequestFactory(object):
@@ -68,6 +72,7 @@ class RequestFactory(object):
     def _handle_error(self, url, code, response_body=None):
         # Try parsing the response, maybe we can get the error message
         message = None
+        response = None
         if response_body:
             try:
                 response = json.loads(response_body)
@@ -76,9 +81,14 @@ class RequestFactory(object):
                 else:
                     message = response_body
             except:
-                pass
+                message = response_body
 
-        if code == 400:
+        if code == 207:
+            try:
+                raise ClientError('\n'.join(map(lambda m: m['http_message'], response)))
+            except (KeyError, TypeError):
+                raise ClientError(message)
+        elif code == 400:
             if message:
                 raise ClientError('Bad request: ' + message)
             else:
@@ -147,6 +157,7 @@ class RequestFactory(object):
 
         self._handle_error(url, self.curl_handle.getinfo(pycurl.HTTP_CODE), self._response)
 
+        log.debug(self._response)
         return self._response
 
 
