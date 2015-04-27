@@ -38,7 +38,8 @@ DEFAULT_PARAMS = {
     'source_spacetoken': '',
     'spacetoken': '',
     'retry': 0,
-    'priority': 3
+    'priority': 3,
+    'max_time_in_queue': None
 }
 
 
@@ -326,7 +327,8 @@ class JobBuilder(object):
             checksum_method=self.params['verify_checksum'],
             bring_online=self.params['bring_online'],
             job_metadata=self.params['job_metadata'],
-            internal_job_params=self._build_internal_job_params()
+            internal_job_params=self._build_internal_job_params(),
+            max_time_in_queue=self.params['max_time_in_queue']
         )
 
         if 'credential' in self.params:
@@ -399,7 +401,8 @@ class JobBuilder(object):
             checksum_method=None,
             bring_online=None,
             job_metadata=self.params['job_metadata'],
-            internal_job_params=None
+            internal_job_params=None,
+            max_time_in_queue=self.params['max_time_in_queue']
         )
 
         if 'credential' in self.params:

@@ -701,6 +701,36 @@ class TestJobSubmission(TestController):
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.priority, 5)
 
+
+    def test_submit_max_time_in_queue(self):
+        """
+        Submits a job specifying the maximum time it should stay in the queue.
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://dest.ch:8447/file'],
+            }],
+            'params': {
+                'max_time_in_queue': 180
+            }
+        }
+        response = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        )
+
+        self.assertEquals(response.content_type, 'application/json')
+
+        job_id = json.loads(response.body)['job_id']
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.max_time_in_queue, 180)
+
     def test_files_balanced(self):
         """
         Checks the distribution of the file 'hashed ids' is reasonably uniformely distributed.
