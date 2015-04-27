@@ -15,7 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from sqlalchemy import Column, DateTime, Float
+from sqlalchemy import Boolean, Column, DateTime, Float
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import relation, backref
 
@@ -47,7 +47,7 @@ class File(Base):
     reason_class         = Column(String(32))
     reason               = Column(String(2048))
     num_failures         = Column(Integer)
-    current_failures     = Column(Integer)
+    recoverable          = Column('current_failures', Boolean)
     filesize             = Column(Float)
     checksum             = Column(String(100))
     finish_time          = Column(DateTime)
