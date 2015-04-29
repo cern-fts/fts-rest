@@ -30,7 +30,7 @@ class MockCredentials:
         self.delegation_id = '12345'
         self.user_dn = '/DN=1234'
         self.voms_cred = []
-        self.vos = []
+        self.vos = ['dteam']
 
     def get_granted_level_for(self, operation):
         return fts3auth.constants.ALL

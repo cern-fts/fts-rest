@@ -21,6 +21,7 @@ from datetime import datetime, timedelta
 from optparse import OptionParser
 from sqlalchemy.exc import SQLAlchemyError
 import json
+import sys
 
 from MockedJobController import MockedJobController, request
 from QueryCounter import QueryCounter
