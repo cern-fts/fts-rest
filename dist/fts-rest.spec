@@ -38,7 +38,8 @@ Requires:       mod_wsgi
 Requires:       python-fts = %{version}-%{release}
 Requires:       python-paste-deploy
 Requires:       python-pylons
-Requires:       gfal2-python
+Requires:       python-simplejson%{?_isa}
+Requires:       gfal2-python%{?_isa}
 
 %description
 This package provides the FTS3 REST interface

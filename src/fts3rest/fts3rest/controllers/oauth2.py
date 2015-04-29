@@ -14,7 +14,10 @@
 #   limitations under the License.
 
 import base64
-import json
+try:
+    import simplejson as json
+except:
+    import json
 import logging
 import os
 import pylons

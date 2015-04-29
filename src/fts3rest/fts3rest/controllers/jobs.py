@@ -19,7 +19,10 @@ from datetime import datetime, timedelta
 from pylons import request
 from sqlalchemy.orm import noload
 
-import json
+try:
+    import simplejson as json
+except:
+    import json
 import logging
 import urllib
 

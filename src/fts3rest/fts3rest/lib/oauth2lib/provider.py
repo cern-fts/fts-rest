@@ -1,4 +1,7 @@
-import json
+try:
+    import simplejson as json
+except:
+    import json
 import logging
 from requests import Response
 from cStringIO import StringIO

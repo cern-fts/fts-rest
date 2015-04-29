@@ -15,9 +15,9 @@
 
 from datetime import timedelta
 try:
-    import json
-except:
     import simplejson as json
+except:
+    import json 
 import logging
 import sys
 import time

@@ -15,9 +15,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 try:
-    import json
-except:
     import simplejson as json
+except:
+    import json
 import logging
 import pycurl
 from exceptions import *

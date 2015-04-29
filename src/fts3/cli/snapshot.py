@@ -14,9 +14,9 @@
 #   limitations under the License.
 
 try:
-    import json
-except:
     import simplejson as json
+except:
+    import json
 
 from base import Base
 from fts3.rest.client import Inquirer

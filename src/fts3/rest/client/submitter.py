@@ -16,9 +16,9 @@
 #   limitations under the License.
 
 try:
-    import json
-except:
     import simplejson as json
+except:
+    import json
 
 
 class Submitter(object):

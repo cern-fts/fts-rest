@@ -16,7 +16,10 @@
 #   limitations under the License.
 
 import errno
-import json
+try:
+    import simplejson as json
+except:
+    import json
 import os
 import signal
 from StringIO import StringIO

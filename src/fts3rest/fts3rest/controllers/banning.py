@@ -13,7 +13,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
+try:
+    import simplejson as json
+except:
+    import json
 import logging
 from datetime import datetime
 from pylons import request

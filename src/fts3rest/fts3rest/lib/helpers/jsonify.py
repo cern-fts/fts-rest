@@ -19,7 +19,10 @@ from datetime import datetime
 from decorator import decorator
 from fts3.model.base import Base
 from pylons.decorators.util import get_pylons
-import json
+try:
+    import simplejson as json
+except:
+    import json
 import logging
 import types
 

@@ -23,9 +23,9 @@ except:
     from pytz import utc as UTC
 import ctypes
 try:
-    import json
-except:
     import simplejson as json
+except:
+    import json
 import logging
 import platform
 import sys

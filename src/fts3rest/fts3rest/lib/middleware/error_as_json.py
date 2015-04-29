@@ -15,7 +15,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
+try:
+    import simplejson as json
+except:
+    import json
 import pylons
 from webob import Response
 

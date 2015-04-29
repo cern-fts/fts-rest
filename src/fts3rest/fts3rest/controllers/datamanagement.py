@@ -26,7 +26,10 @@ import stat
 import tempfile
 import urlparse
 import urllib
-import json
+try:
+    import simplejson as json
+except:
+    import json
 
 from fts3.model import Credential
 from fts3rest.lib.api import doc
