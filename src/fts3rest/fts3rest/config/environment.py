@@ -78,6 +78,7 @@ def load_environment(global_conf, app_conf):
     if config['sqlalchemy.url'].startswith('mysql://'):
         import MySQLdb
         kwargs['connect_args'] = {'cursorclass': MySQLdb.cursors.SSCursor}
+        kwargs['isolation_level'] = 'READ COMMITTED'
     engine = engine_from_config(config, 'sqlalchemy.', pool_recycle = 7200, **kwargs)
     init_model(engine)
 
