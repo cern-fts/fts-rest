@@ -486,8 +486,10 @@ class JobBuilder(object):
             # Reject for SE banning
             # If any SE does not accept submissions, reject the whole job
             # Update wait_timeout and wait_timestamp if WAIT_AS is set
-            _apply_banning(self.files)
-            _apply_banning(self.datamanagement)
+            if self.files:
+                _apply_banning(self.files)
+            if self.datamanagement:
+                _apply_banning(self.datamanagement)
 
         except ValueError, e:
             raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
