@@ -44,7 +44,7 @@ class TestJobInvalidSubmits(TestController):
         error = json.loads(response.body)
 
         self.assertEquals(error['status'], '400 Bad Request')
-        self.assertEquals(error['message'], 'Badly formatted JSON request (No JSON object could be decoded)')
+        self.assertTrue(error['message'].startswith('Badly formatted JSON request'))
 
     def test_submit_no_transfers(self):
         """
