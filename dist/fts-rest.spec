@@ -131,6 +131,16 @@ fi
 %setup -qc
 
 %build
+# Make sure the version in the spec file and the version used
+# for building matches
+fts_api_ver=`awk 'match($0, /^API_VERSION = dict\(major=([0-9]+), minor=([0-9]+), patch=([0-9]+)\)/, m) {print m[1]"."m[2]"."m[3]; }' src/fts3rest/fts3rest/controllers/api.py`
+fts_spec_ver=`expr "%{version}" : '\([0-9]*\\.[0-9]*\\.[0-9]*\)'`
+if [ "$fts_api_ver" != "$fts_spec_ver" ]; then
+    echo "The version in api.py does not match the CMakeLists.txt version!"
+    echo "$fts_api_ver != %{version}"
+    exit 1
+fi
+
 %cmake . -DCMAKE_INSTALL_PREFIX=/ -DPYTHON_SITE_PACKAGES=%{python_sitelib}
 make %{?_smp_mflags}
 
