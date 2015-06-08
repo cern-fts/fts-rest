@@ -128,7 +128,7 @@ setsebool -P httpd_setrlimit=0
 fi
 
 %prep
-%setup -qc
+%setup -q
 
 %build
 # Make sure the version in the spec file and the version used
