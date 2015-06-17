@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-transfer-cancel
 % fts-devel@cern.ch
-% September 25, 2014
+% June 17, 2015
 # NAME
 
 fts-rest-transfer-cancel
@@ -14,6 +14,7 @@ Usage: fts-rest-transfer-cancel [options]
 This command can be used to cancel a running job.  It returns the final state of the canceled job.
 Please, mind that if the job is already in a final state (FINISHEDDIRTY, FINISHED, FAILED),
 this command will return this state.
+You can additionally cancel only a subset appending a comma-separated list of file ids
 
 
 # OPTIONS
@@ -46,5 +47,7 @@ this command will return this state.
 ```
 $ fts-rest-transfer-cancel -s https://fts3-devel.cern.ch:8446 c079a636-c363-11e3-b7e5-02163e009f5a
 FINISHED
+$ fts-rest-transfer-cancel -s https://fts3-devel.cern.ch:8446 c079a636-c363-11e3-b7e5-02163e009f5a:5658,5659,5670
+CANCELED, CANCELED, CANCELED
 
 ```

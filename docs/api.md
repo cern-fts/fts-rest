@@ -1494,6 +1494,7 @@ Models
 |tx_duration         |float   |
 |pid                 |integer |
 |hashed_id           |integer |
+|checksum            |string  |
 |num_failures        |integer |
 |log_debug           |integer |
 |retry               |integer |
@@ -1505,8 +1506,6 @@ Models
 |source_se           |string  |
 |file_state          |string  |
 |start_time          |dateTime|
-|activity            |string  |
-|dest_se             |string  |
 |file_index          |integer |
 |reason              |string  |
 |wait_timeout        |integer |
@@ -1519,18 +1518,19 @@ Models
 |dest_surl           |string  |
 |internal_file_params|string  |
 |finish_time         |dateTime|
-|checksum            |string  |
+|dest_se             |string  |
 |staging_finished    |dateTime|
 |user_filesize       |float   |
 |file_metadata       |string  |
 |error_scope         |string  |
 |transferhost        |string  |
 |throughput          |float   |
-|current_failures    |integer |
+|activity            |string  |
 |log_file            |string  |
 |agent_dn            |string  |
 |reason_class        |string  |
 |vo_name             |string  |
+|recoverable         |string  |
 
 ### ConfigAudit
 

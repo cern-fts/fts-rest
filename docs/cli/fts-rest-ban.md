@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-ban
 % fts-devel@cern.ch
-% September 25, 2014
+% June 17, 2015
 # NAME
 
 fts-rest-ban
