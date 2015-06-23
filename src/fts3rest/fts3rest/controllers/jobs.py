@@ -238,6 +238,22 @@ class JobsController(BaseController):
 
     @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job doesn\'t exist')
+    @doc.return_type(array_of=DataManagement)
+    @jsonify
+    def get_dm(self, job_id):
+        """
+        Get the data management tasks within a job
+        """
+        owner = Session.query(Job.user_dn, Job.vo_name).filter(Job.job_id == job_id).first()
+        if owner is None:
+            raise HTTPNotFound('No job with the id "%s" has been found' % job_id)
+        if not authorized(TRANSFER, resource_owner=owner[0], resource_vo=owner[1]):
+            raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
+        dm = Session.query(DataManagement).filter(DataManagement.job_id == job_id)
+        return dm.yield_per(100)
+
+    @doc.response(403, 'The user doesn\'t have enough privileges')
+    @doc.response(404, 'The job doesn\'t exist')
     @doc.return_type('File final states (array if multiple files were given)')
     @jsonify
     def cancel_files(self, job_id, file_ids):

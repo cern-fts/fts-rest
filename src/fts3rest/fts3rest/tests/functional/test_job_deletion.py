@@ -72,6 +72,19 @@ class TestJobDeletion(TestController):
 
         return str(job_id)
 
+    def test_get_delete_job(self):
+        """
+        Submit a deletion job, get info via REST
+        """
+        job_id = self.test_simple_delete()
+
+        job = self.app.get_json(url="/jobs/%s" % job_id, status=200).json
+        files = self.app.get_json(url="/jobs/%s/dm" % job_id, status=200).json
+
+        self.assertEqual(job['job_state'], 'DELETE')
+        self.assertEqual(files[0]['source_surl'], 'root://source.es/file')
+        self.assertEqual(files[1]['source_surl'], 'root://source.es/file2')
+
     def test_cancel_delete(self):
         """
         Submit deletion job, then cancel
