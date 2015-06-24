@@ -109,13 +109,6 @@ class RequestFactory(object):
         elif code >= 500:
             raise ServerError(str(code))
 
-    def _send(self, length):
-        return self._input.read(length)
-
-    def _ioctl(self, cmd):
-        if cmd == pycurl.IOCMD_RESTARTREAD:
-            self._input.seek(0)
-
     def method(self, method, url, body=None, headers=None):
         if method == 'GET':
             self.curl_handle.setopt(pycurl.HTTPGET, True)
@@ -144,11 +137,12 @@ class RequestFactory(object):
         self.curl_handle.setopt(pycurl.WRITEDATA, response_file)
 
         if body is not None:
-            self._input = StringIO(body)
+            input_file = tempfile.TemporaryFile()
+            input_file.write(body)
+            input_file.seek(0)
             self.curl_handle.setopt(pycurl.INFILESIZE, len(body))
             self.curl_handle.setopt(pycurl.POSTFIELDSIZE, len(body))
-            self.curl_handle.setopt(pycurl.READFUNCTION, self._send)
-            self.curl_handle.setopt(pycurl.IOCTLFUNCTION, self._ioctl)
+            self.curl_handle.setopt(pycurl.READDATA, input_file)
 
         self.curl_handle.perform()
         response_file.seek(0)
