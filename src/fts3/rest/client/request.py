@@ -20,8 +20,9 @@ except:
     import json
 import logging
 import pycurl
+import tempfile
 from exceptions import *
-from StringIO import StringIO
+
 
 _PYCURL_SSL = pycurl.version_info()[5].split('/')[0]
 
@@ -108,10 +109,6 @@ class RequestFactory(object):
         elif code >= 500:
             raise ServerError(str(code))
 
-    def _receive(self, data):
-        self._response += data
-        return len(data)
-
     def _send(self, length):
         return self._input.read(length)
 
@@ -142,8 +139,9 @@ class RequestFactory(object):
         self.curl_handle.setopt(pycurl.URL, str(url))
         #self.curl_handle.setopt(pycurl.VERBOSE, 1)
 
-        self._response = ''
-        self.curl_handle.setopt(pycurl.WRITEFUNCTION, self._receive)
+        # Callback methods produce leaks in EL6, so better avoid them
+        response_file = tempfile.TemporaryFile()
+        self.curl_handle.setopt(pycurl.WRITEDATA, response_file)
 
         if body is not None:
             self._input = StringIO(body)
@@ -153,12 +151,13 @@ class RequestFactory(object):
             self.curl_handle.setopt(pycurl.IOCTLFUNCTION, self._ioctl)
 
         self.curl_handle.perform()
-        log.debug(self._response)
+        response_file.seek(0)
+        response_str = response_file.read()
+        #log.debug(response_str)
 
-        self._handle_error(url, self.curl_handle.getinfo(pycurl.HTTP_CODE), self._response)
+        self._handle_error(url, self.curl_handle.getinfo(pycurl.HTTP_CODE), response_str)
 
-        log.debug(self._response)
-        return self._response
+        return response_str
 
 
 __all__ = ['RequestFactory']
