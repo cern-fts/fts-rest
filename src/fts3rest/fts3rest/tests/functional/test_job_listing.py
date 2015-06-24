@@ -29,7 +29,7 @@ class TestJobListing(TestController):
     Tests for the job controller, listing, stating, etc.
     """
 
-    def _submit(self):
+    def _submit(self, file_metadata=None):
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
@@ -41,6 +41,8 @@ class TestJobListing(TestController):
             }],
             'params': {'overwrite': True, 'verify_checksum': True}
         }
+        if file_metadata:
+            job['files'][0]['metadata'] = file_metadata
 
         answer = self.app.put(url="/jobs",
                               params=json.dumps(job),
@@ -534,3 +536,27 @@ class TestJobListing(TestController):
         job_list = json.loads(answer.body)
 
         self.assertNotIn(job_id, [j['job_id'] for j in job_list])
+
+    def test_get_multiple_with_files(self):
+        """
+        Query multiple jobs at once, asking for a subset of the fields of their files
+        Regression for FTS-265
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job1 = self._submit(file_metadata='a')
+        job2 = self._submit(file_metadata='5')
+        job3 = self._submit(file_metadata='?')
+
+        jobs = self.app.get(
+            url="/jobs/%s?files=job_id,file_metadata" % ','.join([job1, job2, job3]),
+            status=200).json
+
+        self.assertEqual(3, len(jobs))
+        self.assertEqual(jobs[0]['job_id'], jobs[0]['files'][0]['job_id'])
+        self.assertEqual('a',               jobs[0]['files'][0]['file_metadata'])
+        self.assertEqual(jobs[1]['job_id'], jobs[1]['files'][0]['job_id'])
+        self.assertEqual('5',               jobs[1]['files'][0]['file_metadata'])
+        self.assertEqual(jobs[2]['job_id'], jobs[2]['files'][0]['job_id'])
+        self.assertEqual('?',               jobs[2]['files'][0]['file_metadata'])
