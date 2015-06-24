@@ -167,23 +167,27 @@ class JobsController(BaseController):
 
         # request is not available inside the generator
         environ = request.environ
-        fields = request.GET.get('files', '').split(',')
+        file_fields = request.GET.get('files', '').split(',')
 
         statuses = list()
         for job_id in filter(len, job_ids):
             try:
                 job = JobsController._get_job(job_id, env=environ)
-                if len(fields):
-                    def files():
-                        for f in Session.query(File).filter(File.job_id == job.job_id).yield_per(100):
-                            fd = dict()
-                            for field in fields:
-                                try:
-                                    fd[field] = getattr(f, field)
-                                except AttributeError:
-                                    pass
-                            yield fd
-                    job.__dict__['files'] = files()
+                if len(file_fields):
+                    class FileIterator(object):
+                        def __init__(self, job_id):
+                            self.job_id = job_id
+
+                        def __call__(self):
+                            for f in Session.query(File).filter(File.job_id == self.job_id).yield_per(100):
+                                fd = dict()
+                                for field in file_fields:
+                                    try:
+                                        fd[field] = getattr(f, field)
+                                    except AttributeError:
+                                        pass
+                                yield fd
+                    job.__dict__['files'] = FileIterator(job.job_id)()
                 setattr(job, 'http_status', '200 Ok')
                 statuses.append(job)
             except HTTPError, e:
