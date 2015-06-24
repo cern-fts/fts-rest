@@ -2,7 +2,7 @@
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
 
 Name:           fts-rest
-Version:        3.3.0
+Version:        3.3.1
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
@@ -25,7 +25,11 @@ BuildRequires:  python-pylons
 BuildRequires:  scipy
 BuildRequires:  m2crypto
 BuildRequires:  python-m2ext
+%if %{?rhel}%{!?rhel:0} >= 7
 BuildRequires:  python-sqlalchemy
+%else
+BuildRequires:  python-sqlalchemy0.8
+%endif
 BuildRequires:  python-requests
 %if %{?rhel}%{!?rhel:0} == 6
 BuildRequires:  python-slimit
