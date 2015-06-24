@@ -101,7 +101,11 @@ Summary:        FTS3 database model
 Group:          Applications/Internet
 Requires:       m2crypto
 Requires:       python-pycurl
+%if %{?rhel}%{!?rhel:0} >= 7
 Requires:       python-sqlalchemy
+%else
+Requires:       python-sqlalchemy0.8
+%endif
 
 %description -n python-fts
 This package provides an object model of the FTS3
@@ -151,7 +155,8 @@ make %{?_smp_mflags}
 %check
 pushd src/fts3rest
 %if %{?rhel}%{!?rhel:0} == 6
-PYTHONPATH=../ nosetests1.1 --with-xunit --xunit-file=/tmp/nosetests.xml
+PYTHONPATH=../:/usr/lib64/python2.6/site-packages/SQLAlchemy-0.8.2-py2.6-linux-x86_64.egg/ \
+    nosetests1.1 --with-xunit --xunit-file=/tmp/nosetests.xml
 %endif
 %if %{?rhel}%{!?rhel:0} >= 7
 PYTHONPATH=../ ./setup_pylons_plugin.py install --user
