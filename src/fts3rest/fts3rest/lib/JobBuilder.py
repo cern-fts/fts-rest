@@ -207,6 +207,11 @@ class JobBuilder(object):
             param_list.append("buffersize:%d" % int(self.params['buffer_size']))
         if 'strict_copy' in self.params:
             param_list.append("strict")
+        if self.params.get('ipv4', False):
+            param_list.append('ipv4')
+        elif self.params.get('ipv6', False):
+            param_list.append('ipv6')
+
         if len(param_list) == 0:
             return None
         else:

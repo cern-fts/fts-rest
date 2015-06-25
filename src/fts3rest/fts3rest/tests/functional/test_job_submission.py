@@ -731,6 +731,84 @@ class TestJobSubmission(TestController):
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.max_time_in_queue, 180)
 
+    def test_submit_ipv4(self):
+        """
+        Submit a job with IPv4 only
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://dest.ch:8447/file'],
+            }],
+            'params': {
+                'ipv4': True
+            }
+        }
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        jobdb = Session.query(Job).get(job_id)
+        self.assertIn('ipv4', jobdb.internal_job_params)
+        self.assertNotIn('ipv6', jobdb.internal_job_params)
+
+        job['params']['ipv4'] = False
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        jobdb = Session.query(Job).get(job_id)
+        self.assertTrue(jobdb.internal_job_params is None or 'ipv4' not in jobdb.internal_job_params)
+        self.assertTrue(jobdb.internal_job_params is None or 'ipv6' not in jobdb.internal_job_params)
+
+    def test_submit_ipv6(self):
+        """
+        Submit a job with IPv6 only
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://dest.ch:8447/file'],
+            }],
+            'params': {
+                'ipv6': True
+            }
+        }
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        jobdb = Session.query(Job).get(job_id)
+        self.assertIn('ipv6', jobdb.internal_job_params)
+        self.assertNotIn('ipv4', jobdb.internal_job_params)
+
+        job['params']['ipv6'] = False
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        jobdb = Session.query(Job).get(job_id)
+        self.assertTrue(jobdb.internal_job_params is None or 'ipv4' not in jobdb.internal_job_params)
+        self.assertTrue(jobdb.internal_job_params is None or 'ipv6' not in jobdb.internal_job_params)
+
     def test_files_balanced(self):
         """
         Checks the distribution of the file 'hashed ids' is reasonably uniformely distributed.

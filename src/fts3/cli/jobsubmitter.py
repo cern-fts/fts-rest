@@ -126,6 +126,12 @@ class JobSubmitter(Base):
                                    help='submit a multihop transfer.')
         self.opt_parser.add_option('--cloud-credentials', dest='cloud_cred', default=None,
                                    help='use cloud credentials for the job (i.e. dropbox).')
+        self.opt_parser.add_option('--nostreams', dest='nostreams', default=None,
+                                   help='number of streams')
+        self.opt_parser.add_option('--ipv4', dest='ipv4', default=False, action='store_true',
+                                   help='force ipv4')
+        self.opt_parser.add_option('--ipv6', dest='ipv6', default=False, action='store_true',
+                                   help='force ipv6')
 
     def validate(self):
         if not self.options.bulk_file:
@@ -142,6 +148,9 @@ class JobSubmitter(Base):
                 sys.exit(1)
         else:
             self.checksum = None
+
+        if self.options.ipv4 and self.options.ipv6:
+            self.opt_parser.error('ipv4 and ipv6 can not be used at the same time')
 
         if self.options.verbose:
             self.logger.setLevel(logging.DEBUG)
@@ -187,7 +196,10 @@ class JobSubmitter(Base):
             reuse=self.options.reuse,
             retry=self.options.retry,
             multihop=self.options.multihop,
-            credential=self.options.cloud_cred
+            credential=self.options.cloud_cred,
+            nostreams=self.options.nostreams,
+            ipv4=self.options.ipv4,
+            ipv6=self.options.ipv6
         )
 
         if self.options.json:
@@ -233,7 +245,10 @@ class JobSubmitter(Base):
             reuse=self.options.reuse,
             retry=self.options.retry,
             multihop=self.options.multihop,
-            credential=self.options.cloud_cred
+            credential=self.options.cloud_cred,
+            nostreams=self.options.nostreams,
+            ipv4=self.options.ipv4,
+            ipv6=self.options.ipv6
         )
         return None
 
