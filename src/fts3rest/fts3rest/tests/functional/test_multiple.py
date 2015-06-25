@@ -53,13 +53,14 @@ class TestMultiple(TestController):
             'params': {'overwrite': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Validate job in the database
-        job_id = json.loads(answer.body)['job_id']
         db_job = Session.query(Job).get(job_id)
 
         self.assertEqual(db_job.reuse_job, 'R')
@@ -139,13 +140,14 @@ class TestMultiple(TestController):
             'params': {'overwrite': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # site03.fr should be the activated transfer
-        job_id = json.loads(answer.body)['job_id']
         db_job = Session.query(Job).get(job_id)
 
         self.assertEqual(db_job.reuse_job, 'R')
@@ -200,13 +202,14 @@ class TestMultiple(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Validate job in the database
-        job_id = json.loads(answer.body)['job_id']
         db_job = Session.query(Job).get(job_id)
 
         self.assertNotEqual(db_job.reuse_job, 'R')
@@ -316,12 +319,12 @@ class TestMultiple(TestController):
             'params': {'overwrite': True, 'reuse': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
-
-        job_id = json.loads(answer.body)['job_id']
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.reuse_job, 'Y')
@@ -354,12 +357,12 @@ class TestMultiple(TestController):
             'params': {'overwrite': True, 'multihop': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
-
-        job_id = json.loads(answer.body)['job_id']
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # The hashed ID must be the same for all files!
         # Also, the reuse flag must be 'H' in the database
@@ -394,12 +397,12 @@ class TestMultiple(TestController):
             'params': {'overwrite': True, 'multihop': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
-
-        job_id = json.loads(answer.body)['job_id']
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # The hashed ID must be the same for all files!
         # Also, the reuse flag must be 'H' in the database

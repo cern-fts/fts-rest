@@ -197,11 +197,10 @@ class TestDebug(TestController):
             status=200
         )
 
-        response = self.app.get(url="/config/debug",
+        debugs = self.app.get(url="/config/debug",
             headers = {'Accept': 'application/json'},
             status=200
-        )
-        debugs = json.loads(response.body)
+        ).json
 
         self.assertEqual(2, len(debugs))
 

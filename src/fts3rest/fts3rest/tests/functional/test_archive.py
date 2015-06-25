@@ -15,8 +15,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
-
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3rest.lib.middleware.fts3auth import UserCredentials
@@ -60,8 +58,7 @@ class TestArchive(TestController):
         self.setup_gridsite_environment()
 
         job_id = self._insert_job()
-        answer = self.app.get(url="/archive/%s" % job_id, status=200)
-        job = json.loads(answer.body)
+        job = self.app.get(url="/archive/%s" % job_id, status=200).json
 
         self.assertEqual(job['job_id'], job_id)
         self.assertEqual(job['job_state'], 'CANCELED')
@@ -80,9 +77,7 @@ class TestArchive(TestController):
         self.setup_gridsite_environment()
 
         job_id = self._insert_job()
-        answer = self.app.get(url="/archive/%s/job_state" % job_id, status=200)
-
-        state = json.loads(answer.body)
+        state = self.app.get(url="/archive/%s/job_state" % job_id, status=200).json
         self.assertEqual(state, 'CANCELED')
 
     def test_missing_job(self):
@@ -90,9 +85,7 @@ class TestArchive(TestController):
         Query a job id that does not exist
         """
         self.setup_gridsite_environment()
-        answer = self.app.get(url="/archive/1234-5678-98765", status=404)
-
-        error = json.loads(answer.body)
+        error = self.app.get(url="/archive/1234-5678-98765", status=404).json
         self.assertEqual(error['status'], '404 Not Found')
 
     def test_get_job_forbidden(self):
@@ -102,14 +95,14 @@ class TestArchive(TestController):
         self.setup_gridsite_environment()
         job_id = self._insert_job()
 
+        # Trick to force a 'denied'
         old_granted = UserCredentials.get_granted_level_for
         UserCredentials.get_granted_level_for = lambda self_, op: None
 
-        answer = self.app.get("/archive/%s" % job_id, status=403)
+        error = self.app.get("/archive/%s" % job_id, status=403).json
 
         UserCredentials.get_granted_level_for = old_granted
 
-        error = json.loads(answer.body)
         self.assertEqual(error['status'], '403 Forbidden')
 
     def test_get_missing_field(self):
@@ -119,8 +112,7 @@ class TestArchive(TestController):
         self.setup_gridsite_environment()
         job_id = self._insert_job()
 
-        answer = self.app.get(url="/archive/%s/not_really_a_field" % job_id, status=404)
+        error = self.app.get(url="/archive/%s/not_really_a_field" % job_id, status=404).json
 
-        error = json.loads(answer.body)
         self.assertEqual(error['status'], '404 Not Found')
         self.assertEqual(error['message'], 'No such field')

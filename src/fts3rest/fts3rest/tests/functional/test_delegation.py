@@ -39,9 +39,8 @@ class TestDelegation(TestController):
         self.setup_gridsite_environment()
         creds = self.get_user_credentials()
 
-        answer = self.app.get(url="/delegation/%s" % creds.delegation_id, status=200)
-
-        self.assertEqual(json.loads(answer.body), None)
+        delegation_id = self.app.get(url="/delegation/%s" % creds.delegation_id, status=200).json
+        self.assertEqual(delegation_id, None)
 
     def test_get_termination_time(self):
         """
@@ -50,9 +49,12 @@ class TestDelegation(TestController):
         self.test_valid_proxy()
         creds = self.get_user_credentials()
 
-        answer = self.app.get(url="/delegation/%s" % creds.delegation_id, status=200)
+        termination_str = self.app.get(
+            url="/delegation/%s" % creds.delegation_id,
+            status=200
+        ).json['termination_time']
 
-        termination = datetime.strptime(json.loads(answer.body)['termination_time'], '%Y-%m-%dT%H:%M:%S')
+        termination = datetime.strptime(termination_str, '%Y-%m-%dT%H:%M:%S')
         self.assertGreater(termination, datetime.utcnow() + timedelta(hours=2, minutes=58))
 
     def test_put_cred_without_cache(self):

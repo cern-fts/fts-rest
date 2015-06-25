@@ -33,15 +33,11 @@ class TestJobInvalidSubmits(TestController):
         """
         self.setup_gridsite_environment()
 
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
             params='thisXisXnotXjson',
             status=400
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertTrue(error['message'].startswith('Badly formatted JSON request'))
@@ -54,15 +50,11 @@ class TestJobInvalidSubmits(TestController):
         self.push_delegation()
         job = {'parameters': {}}
 
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
             params=json.dumps(job),
             status=400
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'No transfers or namespace operations specified')
@@ -81,16 +73,12 @@ class TestJobInvalidSubmits(TestController):
             }]
         }
 
-        response = self.app.post(
+        error = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
             status=400
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'Invalid value within the request: Missing scheme (/etc/passwd)')
@@ -109,16 +97,12 @@ class TestJobInvalidSubmits(TestController):
             }]
         }
 
-        response = self.app.post(
+        error = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
             status=400
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'Invalid value within the request: Can not transfer local files (file:///etc/passwd)')
@@ -142,16 +126,12 @@ class TestJobInvalidSubmits(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        response = self.app.post(
+        error = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
             status=400
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'Invalid value within the request: Missing host (gsiftp:/source.es:8446/file)')
@@ -175,16 +155,12 @@ class TestJobInvalidSubmits(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        response = self.app.post(
+        error = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
             status=400
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'Invalid value within the request: Missing path (gsiftp://source.es:8446/)')
@@ -203,15 +179,12 @@ class TestJobInvalidSubmits(TestController):
 
         job = {'transfers': [{'source': 'root://source.es/file'}]}
 
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
+            content_type='application/json',
             params=json.dumps(job),
             status=400
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'No transfers or namespace operations specified')
@@ -233,15 +206,12 @@ class TestJobInvalidSubmits(TestController):
             }]
         }
 
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
+            content_type='application/json',
             params=json.dumps(job),
             status=400
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'Invalid value within the request: Missing host (http:/// //source.es/file)')
@@ -251,14 +221,11 @@ class TestJobInvalidSubmits(TestController):
         Submission without valid credentials is forbidden
         """
         self.assertFalse('GRST_CRED_AURI_0' in self.app.extra_environ)
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
             params='thisXisXnotXjson',
             status=403
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '403 Forbidden')
 
@@ -276,15 +243,11 @@ class TestJobInvalidSubmits(TestController):
             }]
         }
 
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
             params=json.dumps(job),
             status=419
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '419 Authentication Timeout')
         self.assertEquals(error['message'], 'No delegation found for "%s"' % TestController.TEST_USER_DN)
@@ -303,15 +266,11 @@ class TestJobInvalidSubmits(TestController):
             }]
         }
 
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
             params=json.dumps(job),
             status=419
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '419 Authentication Timeout')
         self.assertEquals(error['message'][0:33], 'The delegated credentials expired')
@@ -330,15 +289,11 @@ class TestJobInvalidSubmits(TestController):
             }]
         }
 
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
             params=json.dumps(job),
             status=419
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '419 Authentication Timeout')
         self.assertTrue(error['message'].startswith('The delegated credentials has less than one hour left'))
@@ -357,15 +312,11 @@ class TestJobInvalidSubmits(TestController):
             }]
         }
 
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
             params=json.dumps(job),
             status=400
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '400 Bad Request')
         self.assertEquals(error['message'], 'Invalid value within the request: Missing path (http://google.com)')
@@ -379,13 +330,11 @@ class TestJobInvalidSubmits(TestController):
 
         job = {'files': []}
 
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
             params=json.dumps(job),
             status=400
-        )
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEqual(error['status'], '400 Bad Request')
         self.assertEqual(error['message'], 'No valid pairs available')
@@ -401,13 +350,11 @@ class TestJobInvalidSubmits(TestController):
             'files': 48,
         }
 
-        response = self.app.put(
+        error = self.app.put(
             url="/jobs",
             params=json.dumps(job),
             status=400
-        )
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEqual(error['status'], '400 Bad Request')
         self.assertEqual(error['message'][0:17], 'Malformed request')
@@ -438,13 +385,12 @@ class TestJobInvalidSubmits(TestController):
                 'strict_copy': True
             }
         }
-        response = self.app.post(
+        error = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
             status=400
-        )
-        error = json.loads(response.body)
+        ).json
 
         self.assertEqual(error['status'], '400 Bad Request')
         self.assertEqual(error['message'][0:32], 'Invalid value within the request')
@@ -533,23 +479,25 @@ class TestJobInvalidSubmits(TestController):
             }
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=400)
+        error = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=400
+        ).json
 
-        error = json.loads(answer.body)
         self.assertIn('multiple replicas', error['message'].lower())
         self.assertIn('staging', error['message'].lower())
 
         del job['params']['copy_pin_lifetime']
         job['params']['bring_online'] = 1234
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=400)
+        error = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=400
+        ).json
 
-        error = json.loads(answer.body)
         self.assertIn('multiple replicas', error['message'].lower())
         self.assertIn('staging', error['message'].lower())

@@ -131,6 +131,5 @@ class TestOptions(TestController):
         """
         self.setup_gridsite_environment()
 
-        response = self.app.get('/', status=200)
-        json_response = json.loads(response.body)
+        json_response = self.app.get('/', status=200).json
         self.assertIn('api', json_response)

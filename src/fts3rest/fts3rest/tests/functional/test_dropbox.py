@@ -84,8 +84,7 @@ class TestDropbox(TestController):
         Just test if the Dropbox plugin has been loaded
         Should be, in a development environment!
         """
-        response = self.app.get(url="/cs/registered/dropbox", status=200)
-        is_registered = json.loads(response.body)
+        is_registered = self.app.get(url="/cs/registered/dropbox", status=200).json
         self.assertFalse(is_registered)
 
     def test_request_access(self):

@@ -13,7 +13,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import ConfigAudit, AuthorizationByDn
@@ -63,8 +62,7 @@ class TestConfigAuthz(TestController):
         List special authorizations
         """
         self.test_add_authz()
-        response = self.app.get_json("/config/authorize", status=200)
-        authz = json.loads(response.body)
+        authz = self.app.get_json("/config/authorize", status=200).json
 
         self.assertEqual(1, len(authz))
         self.assertEqual(authz[0]['dn'], '/DN=a.test.user')

@@ -13,7 +13,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import ConfigAudit, Optimize, OperationConfig
@@ -140,8 +139,7 @@ class TestConfigSe(TestController):
         """
         self.test_set_se_config()
 
-        response = self.app.get_json("/config/se?se=test.cern.ch", status=200)
-        cfg = json.loads(response.body)
+        cfg = self.app.get_json("/config/se?se=test.cern.ch", status=200).json
 
         self.assertIn('test.cern.ch', cfg.keys())
         se_cfg = cfg['test.cern.ch']

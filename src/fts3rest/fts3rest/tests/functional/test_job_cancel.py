@@ -50,12 +50,12 @@ class TestJobCancel(TestController):
             'params': {'overwrite': True, 'verify_checksum': True, 'reuse': reuse}
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
-        # Make sure it was commited to the DB
-        job_id = json.loads(answer.body)['job_id']
         return str(job_id)
 
     def test_cancel(self):
@@ -63,9 +63,7 @@ class TestJobCancel(TestController):
         Cancel a job
         """
         job_id = self._submit()
-        answer = self.app.delete(url="/jobs/%s" % job_id,
-                                 status=200)
-        job = json.loads(answer.body)
+        job = self.app.delete(url="/jobs/%s" % job_id, status=200).json
 
         self.assertEqual(job['job_id'], job_id)
         self.assertEqual(job['job_state'], 'CANCELED')
@@ -94,9 +92,7 @@ class TestJobCancel(TestController):
         Session.merge(job)
         Session.commit()
 
-        answer = self.app.delete(url="/jobs/%s" % job_id,
-                                 status=200)
-        job = json.loads(answer.body)
+        job = self.app.delete(url="/jobs/%s" % job_id, status=200).json
 
         self.assertEqual(job['job_id'], job_id)
         self.assertEqual(job['job_state'], 'FINISHED')
@@ -122,9 +118,7 @@ class TestJobCancel(TestController):
         Session.merge(job)
         Session.commit()
 
-        answer = self.app.delete(url="/jobs/%s" % job_id,
-                                 status=200)
-        job = json.loads(answer.body)
+        job = self.app.delete(url="/jobs/%s" % job_id, status=200).json
 
         self.assertEqual(job['job_id'], job_id)
         self.assertEqual(job['job_state'], 'CANCELED')
@@ -148,9 +142,7 @@ class TestJobCancel(TestController):
         for i in range(10):
           job_ids.append(self._submit())
 
-        answer = self.app.delete(url="/jobs/%s" % ','.join(job_ids),
-                                 status=200)
-        jobs = json.loads(answer.body)
+        jobs = self.app.delete(url="/jobs/%s" % ','.join(job_ids), status=200).json
 
         self.assertEqual(len(jobs), 10)
         for job in jobs:
@@ -171,9 +163,7 @@ class TestJobCancel(TestController):
         """
         job_id = self._submit()
 
-        answer = self.app.delete(url="/jobs/%s," % job_id,
-                                 status=200)
-        jobs = json.loads(answer.body)
+        jobs = self.app.delete(url="/jobs/%s," % job_id, status=200).json
 
         self.assertEqual(len(jobs), 1)
         self.assertEqual(jobs[0]['job_id'], job_id)
@@ -190,9 +180,7 @@ class TestJobCancel(TestController):
         One status per entry
         """
         job_id = self._submit()
-        answer = self.app.delete(url="/jobs/%s,fake-fake-fake" % job_id,
-                                 status=207)
-        jobs = json.loads(answer.body)
+        jobs = self.app.delete(url="/jobs/%s,fake-fake-fake" % job_id, status=207).json
 
         self.assertEqual(len(jobs), 2)
 

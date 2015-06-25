@@ -13,13 +13,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
 import urllib
 from insert_job import insert_job
 
-from fts3.model import Job, File
 from fts3rest.tests import TestController
-from fts3rest.lib.base import Session
 
 
 def _group_by_triplet(snapshot):
@@ -73,8 +70,7 @@ class TestSnapshot(TestController):
         Get snapshot information for all pairs and vos
         """
         self.setup_gridsite_environment()
-        answer = self.app.get(url="/snapshot", status=200)
-        snapshot_raw = json.loads(answer.body)
+        snapshot_raw = self.app.get(url="/snapshot", status=200).json
         snapshot = _group_by_triplet(snapshot_raw)
 
         self.assertEqual(4, len(snapshot_raw))
@@ -112,8 +108,7 @@ class TestSnapshot(TestController):
         Get snapshot for one specific VO
         """
         self.setup_gridsite_environment()
-        answer = self.app.get(url="/snapshot?vo_name=dteam", status=200)
-        snapshot_raw = json.loads(answer.body)
+        snapshot_raw = self.app.get(url="/snapshot?vo_name=dteam", status=200).json
         snapshot = _group_by_triplet(snapshot_raw)
 
         self.assertEqual(1, len(snapshot_raw))
@@ -131,9 +126,10 @@ class TestSnapshot(TestController):
         Snapshot filtering by source only
         """
         self.setup_gridsite_environment()
-        answer = self.app.get(url="/snapshot?source_se=%s" % urllib.quote("srm://source.se", ""), status=200)
-        snapshot_raw = json.loads(answer.body)
-        snapshot = _group_by_triplet(snapshot_raw)
+        snapshot_raw = self.app.get(
+            url="/snapshot?source_se=%s" % urllib.quote("srm://source.se", ""),
+            status=200
+        ).json
 
         self.assertEqual(3, len(snapshot_raw))
 
@@ -142,9 +138,10 @@ class TestSnapshot(TestController):
         Snapshot filtering by destination only
         """
         self.setup_gridsite_environment()
-        answer = self.app.get(url="/snapshot?dest_se=%s" % urllib.quote("srm://dest.es", ""), status=200)
-        snapshot_raw = json.loads(answer.body)
-        snapshot = _group_by_triplet(snapshot_raw)
+        snapshot_raw = self.app.get(
+            url="/snapshot?dest_se=%s" % urllib.quote("srm://dest.es", ""),
+            status=200
+        ).json
 
         self.assertEqual(2, len(snapshot_raw))
 
@@ -153,14 +150,12 @@ class TestSnapshot(TestController):
         Snapshot filtering by pair
         """
         self.setup_gridsite_environment()
-        answer = self.app.get(
+        snapshot_raw = self.app.get(
             url="/snapshot?source_se=%s&dest_se=%s" % (
                 urllib.quote("srm://source.se", ""), urllib.quote("srm://dest.es", "")
             ),
             status=200
-        )
-        snapshot_raw = json.loads(answer.body)
-        snapshot = _group_by_triplet(snapshot_raw)
+        ).json
 
         self.assertEqual(2, len(snapshot_raw))
 
@@ -169,13 +164,12 @@ class TestSnapshot(TestController):
         Snapshot filtering by source, destination and vo
         """
         self.setup_gridsite_environment()
-        answer = self.app.get(
+        snapshot_raw = self.app.get(
             url="/snapshot?source_se=%s&dest_se=%s&vo_name=%s" % (
                 urllib.quote("srm://source.se", ""), urllib.quote("srm://dest.es", ""), "atlas"
             ),
             status=200
-        )
-        snapshot_raw = json.loads(answer.body)
+        ).json
         snapshot = _group_by_triplet(snapshot_raw)
 
         self.assertEqual(1, len(snapshot_raw))

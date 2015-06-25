@@ -39,11 +39,12 @@ class TestJobDeletion(TestController):
             ]
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
-        job_id = json.loads(answer.body)['job_id']
         self.assertIsNotNone(job_id)
 
         job = Session.query(Job).get(job_id)
@@ -111,11 +112,12 @@ class TestJobDeletion(TestController):
             ]
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
-        job_id = json.loads(answer.body)['job_id']
         self.assertIsNotNone(job_id)
 
         dm = Session.query(DataManagement).filter(DataManagement.job_id == job_id).all()
