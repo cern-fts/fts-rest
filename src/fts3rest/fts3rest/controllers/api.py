@@ -27,7 +27,7 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib import api
 
-API_VERSION = dict(major=3, minor=3, patch=1)
+API_VERSION = dict(major=3, minor=3, patch=2)
 
 
 class ApiController(BaseController):
