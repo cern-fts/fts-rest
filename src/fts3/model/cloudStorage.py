@@ -30,7 +30,7 @@ class CloudStorage(Base):
 class CloudStorageUser(Base):
     __tablename__ = 't_cloudStorageUser'
 
-    user_dn                  = Column(String(1024), primary_key=True)
+    user_dn                  = Column(String(700), primary_key=True)
     cloudStorage_name        = Column(String(36), ForeignKey('t_cloudStorage.cloudStorage_name'), primary_key=True)
     access_token             = Column(String(255))
     access_token_secret      = Column(String(255))

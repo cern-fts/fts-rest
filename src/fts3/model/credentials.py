@@ -17,7 +17,7 @@
 
 from base import Base
 from datetime import datetime, timedelta
-from sqlalchemy import Column, DateTime, CLOB, String
+from sqlalchemy import Column, DateTime, Text, String
 
 
 class CredentialCache(Base):
@@ -25,9 +25,9 @@ class CredentialCache(Base):
 
     dlg_id       = Column(String(100), primary_key=True)
     dn           = Column(String(255), primary_key=True)
-    cert_request = Column(CLOB)
-    priv_key     = Column(CLOB)
-    voms_attrs   = Column(CLOB)
+    cert_request = Column(Text)
+    priv_key     = Column(Text)
+    voms_attrs   = Column(Text)
 
 
 class Credential(Base):
@@ -35,8 +35,8 @@ class Credential(Base):
 
     dlg_id           = Column(String(100), primary_key=True)
     dn               = Column(String(255), primary_key=True)
-    proxy            = Column(CLOB)
-    voms_attrs       = Column(CLOB)
+    proxy            = Column(Text)
+    voms_attrs       = Column(Text)
     termination_time = Column(DateTime(timezone = True))
 
     def expired(self):
