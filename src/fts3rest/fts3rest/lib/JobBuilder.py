@@ -199,13 +199,13 @@ class JobBuilder(object):
         received protocol parameters
         """
         param_list = list()
-        if 'nostreams' in self.params:
+        if self.params.get('nostreams', None):
             param_list.append("nostreams:%d" % int(self.params['nostreams']))
-        if 'timeout' in self.params:
+        if self.params.get('timeout', None):
             param_list.append("timeout:%d" % int(self.params['timeout']))
-        if 'buffer_size' in self.params:
+        if self.params.get('buffer_size', None):
             param_list.append("buffersize:%d" % int(self.params['buffer_size']))
-        if 'strict_copy' in self.params:
+        if self.params.get('strict_copy', False):
             param_list.append("strict")
         if self.params.get('ipv4', False):
             param_list.append('ipv4')
