@@ -16,9 +16,11 @@
 #   limitations under the License.
 
 import json
+import mock
 #import scipy.stats
 import socket
 from nose.plugins.skip import SkipTest
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
@@ -730,6 +732,60 @@ class TestJobSubmission(TestController):
         job_id = json.loads(response.body)['job_id']
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.max_time_in_queue, 180)
+
+    def test_submit_race_condition_optimize(self):
+        """
+        Regression for FTS-270
+        Reproduce a race condition between two submitters. Submission must go on.
+        Can't be tested with sqlite, because it locks the full DB
+        """
+        # This test will not work with sqlite, since it does not allow concurrent modifications
+        from pylons import config
+        if config['sqlalchemy.url'].startswith('sqlite://'):
+            raise SkipTest('Not applicable with sqlite')
+
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://dest.ch:8447/file']
+            }],
+            'params': {
+                'ipv6': True
+            }
+        }
+
+        # Hook something to interrupt the other code
+        original_init = OptimizerActive.__init__
+        def overriden_init(self):
+            original_init(self)
+            # The controller is trying to insert a OptimizerActive _after_ checking
+            # it does not exist
+            # Insert another one here to trigger the bug
+            new_session = scoped_session(sessionmaker())
+            new_session.execute(OptimizerActive.__table__.insert(), dict(
+                source_se='http://source.es', dest_se='root://dest.ch'
+            ))
+            new_session.commit()
+
+        job_id = None
+        with mock.patch.object(OptimizerActive, '__init__', overriden_init):
+            job_id = self.app.post(
+                url="/jobs",
+                content_type='application/json',
+                params=json.dumps(job),
+                status=200
+            ).json['job_id']
+
+        optimizer = Session.query(OptimizerActive).get(('http://source.es', 'root://dest.ch'))
+        self.assertIsNotNone(optimizer)
+
+        job = Session.query(Job).get(job_id)
+        self.assertIsNotNone(job)
+        self.assertEqual(job.files[0].source_surl, 'http://source.es:8446/file')
+        self.assertEqual(job.files[0].dest_surl, 'root://dest.ch:8447/file')
 
     def test_files_balanced(self):
         """

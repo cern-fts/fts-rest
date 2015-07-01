@@ -17,6 +17,7 @@
 
 from datetime import datetime, timedelta
 from pylons import request
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import noload
 
 try:
@@ -468,6 +469,7 @@ class JobsController(BaseController):
                 Session.execute(File.__table__.insert(), populated.files)
             if len(populated.datamanagement):
                 Session.execute(DataManagement.__table__.insert(), populated.datamanagement)
+            Session.flush()
 
             # Insert into the optimizer
             unique_pairs = set(map(lambda f: (f['source_se'], f['dest_se']), populated.files))
@@ -478,7 +480,13 @@ class JobsController(BaseController):
                     optimizer_active.dest_se = dest_se
                     optimizer_active.ema = 0
                     optimizer_active.datetime = datetime.utcnow()
-                    Session.add(optimizer_active)
+
+                    try:
+                        with Session.begin_nested():
+                            Session.add(optimizer_active)
+                    except IntegrityError:
+                        # Someone else inserted the same record after we did the check, so just skip
+                        pass
             Session.commit()
         except:
             Session.rollback()
