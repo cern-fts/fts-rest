@@ -24,6 +24,7 @@ BuildRequires:  python-dateutil
 BuildRequires:  python-pylons
 BuildRequires:  scipy
 BuildRequires:  m2crypto
+BuildRequires:  python-mock
 BuildRequires:  python-m2ext
 %if %{?rhel}%{!?rhel:0} >= 7
 BuildRequires:  python-sqlalchemy
