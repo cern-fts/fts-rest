@@ -37,11 +37,14 @@ def setup_app(command, conf, vars):
     # Connect
     Base.metadata.bind = Session.bind
 
-    # Drop tables if running tests
-    if cfgFilename == 'test.ini':
-        log.info("Dropping existing tables for the testing environment")
-        Base.metadata.drop_all(checkfirst = True)
+    if pylons.config['sqlalchemy.url'].startswith('sqlite:'):
+        # Drop tables if running tests
+        if cfgFilename == 'test.ini':
+            log.info("Dropping existing tables for the testing environment")
+            Base.metadata.drop_all(checkfirst = True)
 
-    # Create the tables if they don't already exist
-    log.info("Creating tables if they do not exist")
-    Base.metadata.create_all(checkfirst = True)
+        # Create the tables if they don't already exist
+        log.info("Creating tables if they do not exist")
+        Base.metadata.create_all(checkfirst = True)
+    else:
+        log.info("Skipping table creation for non-sqlite database")
