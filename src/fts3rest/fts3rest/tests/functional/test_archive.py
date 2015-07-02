@@ -33,6 +33,7 @@ class TestArchive(TestController):
 
         job.job_id = '111-222-333'
         job.job_state = 'CANCELED'
+        job.user_dn = TestController.TEST_USER_DN
 
         archived = ArchivedFile()
         archived.job_id = job.job_id

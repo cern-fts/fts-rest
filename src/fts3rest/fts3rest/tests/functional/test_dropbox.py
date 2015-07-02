@@ -76,8 +76,9 @@ class TestDropbox(TestController):
         self.setup_gridsite_environment()
 
     def tearDown(self):
-        Session.query(CloudStorage).delete()
         Session.query(CloudStorageUser).delete()
+        Session.query(CloudStorage).delete()
+        Session.commit()
 
     def test_loaded(self):
         """
