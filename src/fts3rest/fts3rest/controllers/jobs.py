@@ -134,7 +134,7 @@ class JobsController(BaseController):
         if filter_limit:
             jobs = jobs[:filter_limit]
         else:
-            jobs = jobs.yield_per(100)
+            jobs = jobs.yield_per(100).enable_eagerloads(False)
 
         if filter_fields:
             original_jobs = jobs
@@ -180,7 +180,7 @@ class JobsController(BaseController):
                             self.job_id = job_id
 
                         def __call__(self):
-                            for f in Session.query(File).filter(File.job_id == self.job_id).yield_per(100):
+                            for f in Session.query(File).filter(File.job_id == self.job_id):
                                 fd = dict()
                                 for field in file_fields:
                                     try:
@@ -235,7 +235,7 @@ class JobsController(BaseController):
         if not authorized(TRANSFER, resource_owner=owner[0], resource_vo=owner[1]):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         files = Session.query(File).filter(File.job_id == job_id).options(noload(File.retries))
-        return files.yield_per(100)
+        return files.yield_per(100).enable_eagerloads(False)
 
     @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job doesn\'t exist')
@@ -251,7 +251,7 @@ class JobsController(BaseController):
         if not authorized(TRANSFER, resource_owner=owner[0], resource_vo=owner[1]):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         dm = Session.query(DataManagement).filter(DataManagement.job_id == job_id)
-        return dm.yield_per(100)
+        return dm.yield_per(100).enable_eagerloads(False)
 
     @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job doesn\'t exist')

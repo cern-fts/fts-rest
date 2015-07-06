@@ -821,7 +821,7 @@ class TestJobSubmission(TestController):
         """
         # This test will not work with sqlite, since it does not allow concurrent modifications
         from pylons import config
-        if config['sqlalchemy.url'].startswith('sqlite://'):
+        if config.get('sqlalchemy.url', 'sqlite:').startswith('sqlite://'):
             raise SkipTest('Not applicable with sqlite')
 
         self.setup_gridsite_environment()
