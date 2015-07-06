@@ -37,7 +37,7 @@ def setup_app(command, conf, vars):
     # Connect
     Base.metadata.bind = Session.bind
 
-    if pylons.config['sqlalchemy.url'].startswith('sqlite:'):
+    if pylons.config.get('sqlalchemy.url', 'sqlite:').startswith('sqlite:'):
         # Drop tables if running tests
         if cfgFilename == 'test.ini':
             log.info("Dropping existing tables for the testing environment")
