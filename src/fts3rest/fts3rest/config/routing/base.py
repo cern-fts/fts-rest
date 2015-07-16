@@ -69,6 +69,12 @@ def do_connect(config, map):
     map.connect('/jobs', controller='jobs', action='submit',
                 conditions=dict(method=['PUT', 'POST']))
 
+    # Query directly the transfers
+    map.connect('/files', controller='files', action='index',
+                conditions=dict(method=['GET']))
+    map.connect('/files/', controller='files', action='index',
+                conditions=dict(method=['GET']))
+
     # Archive
     map.connect('/archive', controller='archive', action='index',
                 conditions=dict(method=['GET']))

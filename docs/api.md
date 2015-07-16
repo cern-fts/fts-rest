@@ -904,6 +904,57 @@ Delete the delegated credentials from the database
 #### GET /whoami/certificate
 Returns the user certificate
 
+### Operations on Files
+#### GET /files
+Get a list of active jobs, or those that match the filter requirements
+
+##### Returns
+Array of [File](#file)
+
+##### Query arguments
+
+|Name       |Type  |Required|Description                                                         |
+|-----------|------|--------|--------------------------------------------------------------------|
+|time_window|string|False   |For terminal states, limit results to hours[:minutes] into the past |
+|limit      |string|False   |Limit the number of results                                         |
+|dest_surl  |string|False   |Destination SURL                                                    |
+|dest_se    |string|False   |Destination storage element                                         |
+|source_se  |string|False   |Source storage element                                              |
+|state_in   |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
+|vo_name    |string|False   |Filter by VO                                                        |
+
+##### Responses
+
+|Code|Description                      |
+|----|---------------------------------|
+|400 |DN and delegation ID do not match|
+|403 |Operation forbidden              |
+
+#### GET /files
+Get a list of active jobs, or those that match the filter requirements
+
+##### Returns
+Array of [File](#file)
+
+##### Query arguments
+
+|Name       |Type  |Required|Description                                                         |
+|-----------|------|--------|--------------------------------------------------------------------|
+|time_window|string|False   |For terminal states, limit results to hours[:minutes] into the past |
+|limit      |string|False   |Limit the number of results                                         |
+|dest_surl  |string|False   |Destination SURL                                                    |
+|dest_se    |string|False   |Destination storage element                                         |
+|source_se  |string|False   |Source storage element                                              |
+|state_in   |string|False   |Comma separated list of job states to filter. ACTIVE only by default|
+|vo_name    |string|False   |Filter by VO                                                        |
+
+##### Responses
+
+|Code|Description                      |
+|----|---------------------------------|
+|400 |DN and delegation ID do not match|
+|403 |Operation forbidden              |
+
 ### Operations on jobs and transfers
 #### DELETE /jobs/{job_id}/files/{file_ids}
 Cancel individual files - comma separated for multiple - within a job
@@ -917,6 +968,25 @@ File final states (array if multiple files were given)
 |--------|------|
 |job_id  |string|
 |file_ids|string|
+
+##### Responses
+
+|Code|Description                            |
+|----|---------------------------------------|
+|404 |The job doesn't exist                  |
+|403 |The user doesn't have enough privileges|
+
+#### GET /jobs/{job_id}/dm
+Get the data management tasks within a job
+
+##### Returns
+Array of [DataManagement](#datamanagement)
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|job_id|string|
 
 ##### Responses
 

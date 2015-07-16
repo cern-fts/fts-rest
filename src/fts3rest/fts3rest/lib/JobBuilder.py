@@ -43,7 +43,7 @@ DEFAULT_PARAMS = {
 }
 
 
-def _get_storage_element(uri):
+def get_storage_element(uri):
     """
     Returns the storage element of the given uri, which is the scheme + hostname without the port
 
@@ -276,8 +276,8 @@ class JobBuilder(object):
                 file_state=initial_file_state,
                 source_surl=source.geturl(),
                 dest_surl=destination.geturl(),
-                source_se=_get_storage_element(source),
-                dest_se=_get_storage_element(destination),
+                source_se=get_storage_element(source),
+                dest_se=get_storage_element(destination),
                 vo_name=None,
                 user_filesize=_safe_filesize(file_dict.get('filesize', 0)),
                 selection_strategy=file_dict.get('selection_strategy', 'auto'),
@@ -437,7 +437,7 @@ class JobBuilder(object):
                     vo_name=None,
                     file_state='DELETE',
                     source_surl=entry['surl'],
-                    source_se=_get_storage_element(surl),
+                    source_se=get_storage_element(surl),
                     dest_surl=None,
                     dest_se=None,
                     hashed_id=shared_hashed_id,

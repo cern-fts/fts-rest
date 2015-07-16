@@ -29,11 +29,11 @@ class TestJobListing(TestController):
     Tests for the job controller, listing, stating, etc.
     """
 
-    def _submit(self, file_metadata=None):
+    def _submit(self, file_metadata=None, dest_surl='root://dest.ch/file'):
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -544,3 +544,30 @@ class TestJobListing(TestController):
         self.assertEqual('5',               jobs[1]['files'][0]['file_metadata'])
         self.assertEqual(jobs[2]['job_id'], jobs[2]['files'][0]['job_id'])
         self.assertEqual('?',               jobs[2]['files'][0]['file_metadata'])
+
+    def test_query_something_running(self):
+        """
+        Query if there are any active or submitted files for a given destination surl
+        Requested by ATLAS to query if a given destination file landed on the DB
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job1 = self._submit(dest_surl='gsiftp://test/path')
+        job2 = self._submit(dest_surl='gsiftp://test2/path')
+
+        files = self.app.get(
+            url="/files?dest_surl=gsiftp://test2/path",
+            status=200
+        ).json
+
+        self.assertNotIn(job1, map(lambda f: f['job_id'], files))
+        self.assertIn(job2, map(lambda f: f['job_id'], files))
+
+        files = self.app.get(
+            url="/files?dest_surl=gsiftp://test/path",
+            status=200
+        ).json
+
+        self.assertIn(job1, map(lambda f: f['job_id'], files))
+        self.assertNotIn(job2, map(lambda f: f['job_id'], files))
