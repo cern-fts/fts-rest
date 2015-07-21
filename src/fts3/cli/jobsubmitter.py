@@ -107,7 +107,7 @@ class JobSubmitter(Base):
                                    help='the destination space token or its description.')
         self.opt_parser.add_option('-S', '--source-token', dest='source_token',
                                    help='the source space token or its description.')
-        self.opt_parser.add_option('-K', '--compare-checksum', dest='compare_checksum',
+        self.opt_parser.add_option('-K', '--compare-checksum', dest='compare_checksum', default=False, action='store_true',
                                    help='compare checksums between source and destination.')
         self.opt_parser.add_option('--copy-pin-lifetime', dest='pin_lifetime', type='long', default=-1,
                                    help='pin lifetime of the copy in seconds.')
