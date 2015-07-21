@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-whoami
 % fts-devel@cern.ch
-% June 17, 2015
+% July 21, 2015
 # NAME
 
 fts-rest-whoami
@@ -34,6 +34,9 @@ who are we for the server.
 
 --cert
 :	The user certificate. 
+
+--capath
+:	Use the specified directory to verify the peer
 
 --insecure
 :	Do not validate the server certificate

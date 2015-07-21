@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-transfer-submit
 % fts-devel@cern.ch
-% June 17, 2015
+% July 21, 2015
 # NAME
 
 fts-rest-transfer-submit
@@ -64,6 +64,9 @@ format is as follows:
 
 --cert
 :	The user certificate. 
+
+--capath
+:	Use the specified directory to verify the peer
 
 --insecure
 :	Do not validate the server certificate
@@ -130,6 +133,15 @@ format is as follows:
 
 --cloud-credentials
 :	Use cloud credentials for the job (i. E. Dropbox). 
+
+--nostreams
+:	Number of streams
+
+--ipv4
+:	Force ipv4
+
+--ipv6
+:	Force ipv6
 
 # EXAMPLE
 ```

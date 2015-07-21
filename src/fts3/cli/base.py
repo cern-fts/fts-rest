@@ -99,6 +99,8 @@ class Base(object):
                                    help='the user certificate private key.', default=opt_ukey)
         self.opt_parser.add_option('--cert', dest='ucert',
                                    help='the user certificate.', default=opt_ucert)
+        self.opt_parser.add_option('--capath', dest='capath', default='/etc/grid-security/certificates',
+                                   help='use the specified directory to verify the peer')
         self.opt_parser.add_option('--insecure', dest='verify', default=True, action='store_false',
                                    help='do not validate the server certificate')
         self.opt_parser.add_option('--access-token', dest='access_token',
@@ -130,5 +132,5 @@ class Base(object):
     def _create_context(self):
         return Context(
             self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert, verify=self.options.verify,
-            access_token=self.options.access_token
+            access_token=self.options.access_token, capath=self.options.capath
         )
