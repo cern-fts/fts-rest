@@ -172,6 +172,16 @@ def do_connect(config, map):
     map.connect('/config/authorize', controller='config', action='remove_authz',
                 conditions=dict(method=['DELETE']))
 
+    # Configure activity shares
+    map.connect('/config/activity_shares', controller='config', action='get_activity_shares',
+                conditions=dict(method=['GET']))
+    map.connect('/config/activity_shares', controller='config', action='set_activity_shares',
+                conditions=dict(method=['POST']))
+    map.connect('/config/activity_shares/{vo_name}', controller='config', action='get_activity_shares_vo',
+                conditions=dict(method=['GET']))
+    map.connect('/config/activity_shares/{vo_name}', controller='config', action='delete_activity_shares',
+                conditions=dict(method=['DELETE']))
+
     # Optimizer
     map.connect('/optimizer', controller='optimizer', action='is_enabled',
                 conditions=dict(method=['GET']))

@@ -22,7 +22,7 @@ from sqlalchemy import and_
 from sqlalchemy import __version__ as sqlalchemy_version
 from sqlalchemy.orm import relation
 
-from base import Base, Flag
+from base import Base, Flag, Json
 from file import File
 
 
@@ -204,3 +204,11 @@ class OperationConfig(Base):
     host           = Column(String(255), primary_key=True)
     concurrent_ops = Column(Integer, default=0)
     operation      = Column(String(150), primary_key=True)
+
+
+class ActivityShare(Base):
+    __tablename__ = 't_activity_share_config'
+
+    vo             = Column(String(100), primary_key=True)
+    activity_share = Column(Json(1024))
+    active         = Column(Flag(negative='off', positive='on'), default='on')
