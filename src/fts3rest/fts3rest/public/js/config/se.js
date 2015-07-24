@@ -85,7 +85,7 @@ function generateOpForm(klass, title, operations)
     if (operations) {
         $.each(operations, function (vo, op) {
             $.each(op, function(op_name, value) {
-                var deleteBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></button>");
+                var deleteBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></a>");
                 var limitField = $("<input type='number' name='limit' class='form-control'/>").val(value);
 
                 var row = $("<tr></tr>")
@@ -109,7 +109,7 @@ function generateOpForm(klass, title, operations)
         });
     }
 
-    var addOpBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-plus'></i></button>");
+    var addOpBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-plus'></i></a>");
 
     var addForm = $("<tbody></tbody>")
         .append($("<tr></tr>")
@@ -122,6 +122,10 @@ function generateOpForm(klass, title, operations)
             .append("<td><select name='operation' class='form-control'><option value='delete'>Delete</option><option value='staging'>Staging</option></select></td>")
             .append("<td><input type='number' name='limit' class='form-control'/></td>")
         );
+
+    bindMethodToEnterOnInput(addForm, function(event) {
+        addOperation(addForm, tbody);
+    });
 
     addOpBtn.click(function(event) {
         event.preventDefault();
@@ -154,7 +158,7 @@ function addOperation(form, tbody)
 
     var tr = $("<tr></tr>");
 
-    var deleteBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></button>");
+    var deleteBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></a>");
 
     tr.append($("<td></td>").append(deleteBtn))
         .append($("<td></td>").text(vo)
@@ -175,6 +179,8 @@ function addOperation(form, tbody)
 
     form.find("input[name='vo']").val("");
     form.find("input[name='limit']").val("");
+
+    form.find("input[name='vo']").focus();
 }
 
 
@@ -337,6 +343,10 @@ function setupSe()
 {
     // Refresh list
     refreshSeConfig();
+
+    bindMethodToEnterOnInput($("#se-add-ops-add"), function(event) {
+        addOperation($("#se-add-ops-add"), $("#se-add-ops-list"));
+    });
 
     // Bind to form
     $("#se-add-frm").submit(function(event) {

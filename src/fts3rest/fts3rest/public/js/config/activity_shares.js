@@ -62,7 +62,7 @@ function addShare(form, tbody)
 
     var tr = $("<tr></tr>");
 
-    var deleteBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></button>");
+    var deleteBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></a>");
 
     tr.append($("<td></td>").append(deleteBtn))
         .append($("<td></td>")
@@ -80,6 +80,8 @@ function addShare(form, tbody)
 
     form.find("input[name='share']").val("");
     form.find("input[name='weight']").val("");
+
+    form.find("input[name='share']").focus();
 }
 
 /**
@@ -126,7 +128,7 @@ function refreshActivityShares()
 
             $.each(shareConfig.share, function(share, weight) {
                 var tr = $("<tr></tr>");
-                var shareDeleteBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></button>");
+                var shareDeleteBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></a>");
                 shareDeleteBtn.click(function(event) {
                     event.preventDefault();
                     tr.remove()
@@ -146,7 +148,7 @@ function refreshActivityShares()
             shareTable.append($("<thead><tr><th></th><th>Activity name</th><th>Weight</th></tr></thead>"));
             shareTable.append(shareTbody);
 
-            var addOpBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-plus'></i></button>");
+            var addOpBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-plus'></i></a>");
 
             var addForm = $("<tbody></tbody>")
                 .append($("<tr></tr>")
@@ -160,6 +162,10 @@ function refreshActivityShares()
             addOpBtn.click(function(event) {
                 event.preventDefault();
                 addShare(addForm, shareTable)
+            });
+
+            bindMethodToEnterOnInput(addForm, function(event) {
+                addShare(addForm, shareTable);
             });
 
             shareTable.append(addForm);
@@ -204,6 +210,10 @@ function setupActivityShares()
     refreshActivityShares();
 
     // Bind to form
+    bindMethodToEnterOnInput($("#activity-share-add-entry-frm"), function (event) {
+        addShare($("#activity-share-add-entry-frm"), $("#activity-share-add-list"));
+    });
+
     $("#activity-share-add-frm").submit(function(event) {
         event.preventDefault();
         handleActivityShareSave($("#activity-share-add-frm"))
@@ -226,3 +236,4 @@ function setupActivityShares()
         source: "/autocomplete/vo"
     });
 }
+

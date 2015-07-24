@@ -29,3 +29,18 @@ function errorMessage(jqXHR)
     $("#err-dialog-msg").text(msg);
     $("#err-dialog").modal('show');
 }
+
+/**
+ * Bind the 'enter key' press to func for every input field inside form
+ */
+function bindMethodToEnterOnInput(form, func)
+{
+    form.find("input").keydown(function(event) {
+        if (event.which == 13) {
+            event.preventDefault();
+            func(event);
+            return false;
+        }
+        return true;
+    });
+}
