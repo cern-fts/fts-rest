@@ -1,0 +1,54 @@
+<%include file="header.html" args="page='/config/activity_shares', subtitle='Activity shares'"/>
+
+<div class="container">
+	<h1>Activity shares</h1>
+
+    <div id="activity-shares-list"></div>
+
+    <div id="activity-share-add">
+        <h2>Add new activity share</h2>
+        <form class="panel panel-success" id="activity-share-add-frm">
+            <div class="panel-heading">
+				<h2 class="panel-title">
+					<input type="text" name="vo" placeholder="VO Name" class="form-control"
+						id="activity-share-add-field-vo"/>
+				</h2>
+			</div>
+            <div class="panel-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Activity name</th>
+                            <th>Weight</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activity-share-add-list" class="share-list">
+                    </tbody>
+                    <tbody id="activity-share-add-entry-frm">
+                        <tr>
+                            <td>
+                                <button class="btn btn-link" id="activity-share-add-entry-btn">
+                                    <i class="glyphicon glyphicon-plus"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <input type="text" id="activity-share-add-field-share-name" name="share" class="form-control"/>
+                            </td>
+                            <td>
+                                <input type="number" step="any" id="activity-share-add-field-share-value" name="weight" class="form-control"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                 </table>
+            </div>
+            <div class="panel-footer">
+                <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/js/config/activity_shares.js" onload="setupActivityShares()"></script>
+
+<%include file="footer.html"/>

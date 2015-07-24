@@ -1,0 +1,228 @@
+/*
+ *  Copyright 2015 CERN
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+**/
+
+/**
+ * Save changes
+ */
+function handleActivityShareSave(form)
+{
+    var setup = {};
+    var vo = form.find("input[name='vo']").val();
+
+    var tbody = form.find(".share-list");
+    var rows = tbody.find("tr");
+    var shares = {};
+
+    rows.each(function (i, tr) {
+        var share = $(tr).find("input[name='share']").val()
+        var weight = $(tr).find("input[name='weight']").val();
+        shares[share] = parseInt(weight);
+    });
+
+
+    var msg = {
+        'vo': vo,
+        'share': shares,
+        'active': true
+    };
+    console.log(msg);
+
+    return $.ajax({
+        url: "/config/activity_shares",
+        type: "POST",
+        dataType: "json",
+        contentType: "application/json",
+        data: JSON.stringify(msg)
+    });
+}
+
+/**
+ * Add a new share to the tbody
+ */
+function addShare(form, tbody)
+{
+    var share = form.find("input[name='share']").val()
+    var weight = form.find("input[name='weight']").val()
+
+    if (!share || !weight)
+        return;
+
+    var tr = $("<tr></tr>");
+
+    var deleteBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></button>");
+
+    tr.append($("<td></td>").append(deleteBtn))
+        .append($("<td></td>")
+            .append($("<input type='text' name='share' class='form-control'/>").val(share))
+        )
+        .append($("<td></td>")
+            .append($("<input type='number' step='any' name='weight' class='form-control'/>").val(weight))
+        );
+
+    tbody.append(tr);
+
+    deleteBtn.click(function(event) {
+        tr.remove()
+    });
+
+    form.find("input[name='share']").val("");
+    form.find("input[name='weight']").val("");
+}
+
+/**
+ * Updates the list of activity shares configured
+ */
+function refreshActivityShares()
+{
+    var parent = $("#activity-shares-list");
+
+    $.ajax({
+        url: "/config/activity_shares?"
+    })
+    .done(function(data, textStatus, jqXHR) {
+        parent.empty();
+
+        $.each(data, function(voName, shareConfig) {
+            var div = $("<div class='panel panel-info'></div>");
+
+            var deleteBtn = $("<button class='btn btn-danger'></button>")
+                .append("<i class='glyphicon glyphicon-trash'></i> Delete");
+
+            deleteBtn.click(function(event) {
+                div.css("background", "#d9534f");
+                $.ajax({
+                    url: "/config/activity_shares/" + encodeURIComponent(voName),
+                    type: "DELETE"
+                })
+                .done(function(data, textStatus, jqXHR) {
+                    div.fadeOut(300, function() {tr.remove();})
+                })
+                .fail(function(jqXHR) {
+                    errorMessage(jqXHR);
+                })
+                .always(function() {
+                     div.css("background", "#ffffff").css("transition", "background .50s ease-in-out");
+                });
+                event.preventDefault();
+            });
+
+            var submitBtn = $("<button class='btn btn-primary'>Save</button>");
+
+            var shareTable = $("<table class='table'></table>");
+            var shareTbody = $("<tbody class='share-list'></tbody>");
+
+            $.each(shareConfig.share, function(share, weight) {
+                var tr = $("<tr></tr>");
+                var shareDeleteBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></button>");
+                shareDeleteBtn.click(function(event) {
+                    event.preventDefault();
+                    tr.remove()
+                });
+
+                tr.append(
+                    $("<td></td>").append(shareDeleteBtn)
+                ).append(
+                    $("<td></td>").append($("<input type='text' name='share' class='form-control'/>").val(share))
+                ).append(
+                    $("<td></td>").append($("<input type='number' step='any' name='weight' class='form-control'/>").val(weight))
+                );
+
+                shareTbody.append(tr);
+            });
+
+            shareTable.append($("<thead><tr><th></th><th>Activity name</th><th>Weight</th></tr></thead>"));
+            shareTable.append(shareTbody);
+
+            var addOpBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-plus'></i></button>");
+
+            var addForm = $("<tbody></tbody>")
+                .append($("<tr></tr>")
+                    .append($("<td></td>").append(addOpBtn))
+                    .append($("<td></td>")
+                        .append($("<input type='text' name='share' class='form-control'/></td>"))
+                    )
+                    .append("<td><input type='number' step='any' name='weight' class='form-control'/></td>")
+                );
+
+            addOpBtn.click(function(event) {
+                event.preventDefault();
+                addShare(addForm, shareTable)
+            });
+
+            shareTable.append(addForm);
+
+            var form = $("<form class='panel-body'></form>")
+                .append($("<input type='hidden' name='vo'/>").val(voName))
+                .append(shareTable)
+                .append($("<div class='panel-footer'></div>").append(submitBtn).append(deleteBtn));
+
+            form.submit(function(event) {
+                event.preventDefault();
+                div.css("background", "#5cb85c");
+                handleActivityShareSave(form)
+                .fail(function(jqXHR) {
+                    errorMessage(jqXHR);
+                })
+                .always(function() {
+                     div.css("background", "#ffffff").css("transition", "background .50s ease-in-out");
+                });
+            });
+
+            var h2 = $("<h2 class='panel-title'></h2>").text(voName);
+            var header = $("<div class='panel-heading'></div>").append(h2);
+
+            div.append(header)
+                .append(form);
+
+            parent.append(div);
+        });
+    })
+    .fail(function(jqXHR) {
+        errorMessage(jqXHR);
+    });
+}
+
+/**
+ * Initializes the activity shares view
+ */
+function setupActivityShares()
+{
+    // Refresh list
+    refreshActivityShares();
+
+    // Bind to form
+    $("#activity-share-add-frm").submit(function(event) {
+        event.preventDefault();
+        handleActivityShareSave($("#activity-share-add-frm"))
+        .done(function(data, textStatus, jqXHR) {
+            $("#activity-share-add-frm").trigger("reset");
+            refreshActivityShares();
+        })
+        .fail(function(jqXHR) {
+            errorMessage(jqXHR);
+        });
+    });
+
+    $("#activity-share-add-entry-btn").click(function(event) {
+        addShare($("#activity-share-add-entry-frm"), $("#activity-share-add-list"));
+        event.preventDefault();
+    })
+
+    // Autocomplete
+    $("#activity-share-add-field-vo").autocomplete({
+        source: "/autocomplete/vo"
+    });
+}

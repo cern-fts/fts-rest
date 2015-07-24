@@ -59,7 +59,7 @@ class TestConfigActivityShare(TestController):
         """
         self.test_set_activity_share(legacy)
 
-        shares = self.app.get("/config/activity_shares", status=200).json
+        shares = self.app.get_json("/config/activity_shares", status=200).json
         self.assertIn("dteam", shares)
         self.assertEqual(shares["dteam"]["share"]["High"], 80)
         self.assertEqual(shares["dteam"]["share"]["Medium"], 15)
@@ -70,7 +70,7 @@ class TestConfigActivityShare(TestController):
         Get the activity shares for a given vo
         """
         self.test_set_activity_share(legacy)
-        shares = self.app.get("/config/activity_shares/dteam", status=200).json
+        shares = self.app.get_json("/config/activity_shares/dteam", status=200).json
         self.assertEqual(shares["share"]["High"], 80)
         self.assertEqual(shares["share"]["Medium"], 15)
         self.assertEqual(shares["share"]["Low"], 5)
@@ -117,8 +117,6 @@ class TestConfigActivityShare(TestController):
         self.test_modify_activity_share(legacy=True)
         self.test_remove_activity_share(legacy=True)
 
-        audits = Session.query(ConfigAudit).all()
-
     def test_malformed_activity_share(self):
         """
         Submit a malformed share. Must be refused.
@@ -129,6 +127,10 @@ class TestConfigActivityShare(TestController):
         msg =  {"vo": "dteam", "active": True}
         self.app.post_json("/config/activity_shares", params=msg, status=400)
         msg =  "this has nothing to do"
+        self.app.post_json("/config/activity_shares", params=msg, status=400)
+        msg = {"vo": "dteam", "active": False, "share": {"A": 1, "B": 'abc'}}
+        self.app.post_json("/config/activity_shares", params=msg, status=400)
+        msg = {"vo": "dteam", "active": False, "share": [{"A": 1}, {"B": 'abc'}]}
         self.app.post_json("/config/activity_shares", params=msg, status=400)
 
     def test_activity_shares_unauthorized(self):
@@ -141,4 +143,4 @@ class TestConfigActivityShare(TestController):
         msg = {"vo": "dteam", "active": True, "share": {"High": 80, "Medium": 15, "Low": 5}}
         self.app.post_json(url="/config/activity_shares", params=msg, status=403)
         self.app.delete(url="/config/activity_shares/dteam", status=403)
-        self.app.get(url="/config/activity_shares", status=403)
+        self.app.get_json(url="/config/activity_shares", status=403)

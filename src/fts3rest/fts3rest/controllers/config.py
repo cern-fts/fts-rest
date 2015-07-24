@@ -879,7 +879,7 @@ class ConfigController(BaseController):
     @doc.response(403, 'The user is not allowed to see the configuration')
     @require_certificate
     @authorize(CONFIG)
-    @jsonify
+    @accept(html_template='/config/activity_shares.html')
     def get_activity_shares(self, start_response):
         """
         Get all activity shares
@@ -910,6 +910,7 @@ class ConfigController(BaseController):
     @doc.response(403, 'The user is not allowed to modify the configuration')
     @require_certificate
     @authorize(CONFIG)
+    @jsonify
     def set_activity_shares(self, start_response):
         """
         Set a new/modify an activity share
@@ -924,6 +925,12 @@ class ConfigController(BaseController):
 
         input_dict['share'] = _normalize_activity_share_format(input_dict['share'])
 
+        # Make sure the share weights are numbers
+        for entry in input_dict['share']:
+            for key, value in entry.iteritems():
+                if not type(value) in (float, int):
+                    raise HTTPBadRequest('Share weight must be a number')
+
         activity_share = ActivityShare(
             vo=input_dict['vo'], active=input_dict['active'], activity_share=input_dict['share']
         )
@@ -934,7 +941,7 @@ class ConfigController(BaseController):
         except:
             Session.rollback()
             raise
-        return ['']
+        return activity_share
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
     @require_certificate
