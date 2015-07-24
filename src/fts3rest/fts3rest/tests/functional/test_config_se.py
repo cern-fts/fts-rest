@@ -158,3 +158,67 @@ class TestConfigSe(TestController):
         self.assertEqual(False, se_cfg['as_destination']['ipv6'])
         self.assertEqual(1, se_cfg['as_destination']['active'])
         self.assertEqual(33, se_cfg['as_destination']['throughput'])
+
+    def test_set_malformed(self):
+        """
+        Malformed configurations
+        """
+        config = {'test.cern.ch': 'what?'}
+        self.app.post_json("/config/se",
+            params=config,
+            status=400
+        )
+        self.app.post_json("/config/se",
+            params={
+                'test.cern.ch': {
+                    'operations': {
+                        'atlas': {
+                            'delete': 'must be a number!',
+                        }
+                    },
+                    'as_source': {
+                        'ipv6': False,
+                        'active': 88
+                    },
+                    'as_destination': {
+                        'ipv6': True,
+                        'active': 11,
+                        'throughput': 10
+                    }
+                }
+            },
+            status=400
+        )
+        self.app.post_json("/config/se",
+            params={
+                'test.cern.ch': {
+                    'operations': {
+                        'atlas': {
+                            'delete': 2,
+                        }
+                    },
+                    'as_source': {
+                        'ipv6': False,
+                        'active': 'not again!'
+                    },
+                    'as_destination': {
+                        'ipv6': True,
+                        'active': 11,
+                        'throughput': 10
+                    }
+                }
+            },
+            status=400
+        )
+        self.app.post_json("/config/se",
+            params={
+                'test.cern.ch': {
+                    'as_destination': {
+                        'ipv6': True,
+                        'active': 0.5,
+                        'throughput': 10
+                    }
+                }
+            },
+            status=400
+        )

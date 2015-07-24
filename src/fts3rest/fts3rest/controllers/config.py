@@ -717,6 +717,7 @@ class ConfigController(BaseController):
                 if operations:
                     for vo, limits in operations.iteritems():
                         for op, limit in limits.iteritems():
+                            limit = int(limit)
                             new_limit = Session.query(OperationConfig).get((vo, storage, op))
                             if limit > 0:
                                 if not new_limit:
@@ -729,6 +730,9 @@ class ConfigController(BaseController):
                                 Session.delete(new_limit)
                     _audit_configuration('set-se-limits', 'Set limits for %s: %s' % (storage, json.dumps(operations)))
             Session.commit()
+        except (AttributeError, ValueError):
+            Session.rollback()
+            raise HTTPBadRequest('Malformed configuration')
         except:
             Session.rollback()
             raise
