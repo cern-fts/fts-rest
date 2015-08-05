@@ -226,3 +226,13 @@ class TestSubmitToStaging(TestController):
 
         # SRM has to be mentioned in the error message
         self.assertIn('SRM', error['message'])
+
+        # Mock must be let through (FTS-289)
+        job['files'][0]['sources'][0] = 'mock://test/path'
+        self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        )
+

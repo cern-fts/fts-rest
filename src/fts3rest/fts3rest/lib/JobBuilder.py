@@ -267,7 +267,7 @@ class JobBuilder(object):
                 shared_hashed_id = _generate_hashed_id()
 
         for source, destination in pairs:
-            if source.scheme != 'srm' and self.is_bringonline:
+            if source.scheme not in ('srm', 'mock') and self.is_bringonline:
                 raise HTTPBadRequest('Staging operations can only be used with the SRM protocol')
 
             f = dict(
