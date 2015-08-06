@@ -143,6 +143,9 @@ class RequestFactory(object):
             self.curl_handle.setopt(pycurl.INFILESIZE, len(body))
             self.curl_handle.setopt(pycurl.POSTFIELDSIZE, len(body))
             self.curl_handle.setopt(pycurl.READDATA, input_file)
+        else:
+            self.curl_handle.setopt(pycurl.INFILESIZE, 0)
+            self.curl_handle.setopt(pycurl.POSTFIELDSIZE, 0)
 
         self.curl_handle.perform()
         response_file.seek(0)
