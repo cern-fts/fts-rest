@@ -110,6 +110,7 @@ class RequestFactory(object):
             raise ServerError(str(code))
 
     def method(self, method, url, body=None, headers=None):
+        self.curl_handle.setopt(pycurl.CUSTOMREQUEST, method)
         if method == 'GET':
             self.curl_handle.setopt(pycurl.HTTPGET, True)
         elif method == 'HEAD':
@@ -118,8 +119,6 @@ class RequestFactory(object):
             self.curl_handle.setopt(pycurl.POST, True)
         elif method == 'PUT':
             self.curl_handle.setopt(pycurl.UPLOAD, True)
-        else:
-            self.curl_handle.setopt(pycurl.CUSTOMREQUEST, method)
 
         _headers = {'Accept': 'application/json'}
         if headers:
