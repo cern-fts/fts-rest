@@ -477,7 +477,7 @@ class TestJobSubmission(TestController):
                 'filesize': 1024,
                 'metadata': {'mykey': 'myvalue'},
             }],
-            'params': {'overwrite': True, 'verify_checksum': True, 'retry': 42}
+            'params': {'overwrite': True, 'verify_checksum': True, 'retry': 42, 'retry_delay': 123}
         }
 
         job_id = self.app.put(
@@ -493,6 +493,7 @@ class TestJobSubmission(TestController):
         job = Session.query(Job).get(job_id)
         self._validate_submitted(job)
         self.assertEqual(job.retry, 42)
+        self.assertEqual(job.retry_delay, 123)
 
     def test_optimizer_respected(self):
         """

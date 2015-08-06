@@ -38,6 +38,7 @@ DEFAULT_PARAMS = {
     'source_spacetoken': '',
     'spacetoken': '',
     'retry': 0,
+    'retry_delay': 0,
     'priority': 3,
     'max_time_in_queue': None
 }
@@ -316,6 +317,7 @@ class JobBuilder(object):
             job_state=job_initial_state,
             reuse_job=reuse_flag,
             retry=int(self.params['retry']),
+            retry_delay=int(self.params['retry_delay']),
             job_params=self.params['gridftp'],
             submit_host=socket.getfqdn(),
             agent_dn='rest',
@@ -390,6 +392,7 @@ class JobBuilder(object):
             job_state='DELETE',
             reuse_job=None,
             retry=int(self.params['retry']),
+            retry_delay=int(self.params['retry_delay']),
             job_params=self.params['gridftp'],
             submit_host=socket.getfqdn(),
             agent_dn='rest',
