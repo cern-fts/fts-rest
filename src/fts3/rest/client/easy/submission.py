@@ -76,7 +76,7 @@ def add_alternative_source(transfer, alt_source):
     return transfer
 
 
-def new_job(transfers=None, verify_checksum=True, reuse=False, overwrite=False, multihop=False,
+def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, overwrite=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None):
@@ -85,6 +85,7 @@ def new_job(transfers=None, verify_checksum=True, reuse=False, overwrite=False, 
 
     Args:
         transfers:         Initial list of transfers
+        deletion:          Delete files
         verify_checksum:   Enable checksum verification
         reuse:             Enable reuse (all transfers are handled by the same process)
         overwrite:         Overwrite the destinations if exist
@@ -116,6 +117,7 @@ def new_job(transfers=None, verify_checksum=True, reuse=False, overwrite=False, 
     )
     job = dict(
         files=transfers,
+        delete=deletion,
         params=params
     )
     return job
