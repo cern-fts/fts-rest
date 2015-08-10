@@ -449,6 +449,29 @@ class TestBanning(TestController):
             self.assertEqual(0, f.wait_timeout)
             self.assertGreater(f.wait_timestamp, datetime.utcnow() - timedelta(minutes=1))
 
+    def test_unban_wait(self):
+        """
+        Regression for FTS-297
+        When unbanning a storage, if any file was left on wait, they must re-enter the queue
+        """
+        job_id = insert_job('dteam', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED', user_dn='/DC=cern/CN=someone')
+        self.app.post(
+            url="/ban/se", params={'storage': 'gsiftp://source', 'status': 'wait', 'allow_submit': True},
+            status=200
+        )
+
+        files = Session.query(File).filter(File.job_id == job_id)
+        for f in files:
+            self.assertIsNotNone(f.wait_timestamp)
+            self.assertIsNotNone(f.wait_timeout)
+
+        self.app.delete(url="/ban/se?storage=%s" % urllib.quote('gsiftp://source'), status=204)
+
+        files = Session.query(File).filter(File.job_id == job_id)
+        for f in files:
+            self.assertIsNone(f.wait_timestamp)
+            self.assertIsNone(f.wait_timeout)
+
     # Some requests that must be rejected
     def test_ban_dn_empty(self):
         """
