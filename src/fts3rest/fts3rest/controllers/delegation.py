@@ -78,7 +78,7 @@ def _generate_proxy_request():
     x509_request.set_pubkey(pkey)
     x509_request.set_subject(_populated_x509_name([('O', 'Dummy')]))
     x509_request.set_version(0)
-    x509_request.sign(pkey, 'md5')
+    x509_request.sign(pkey, 'sha256')
 
     return x509_request, pkey
 
