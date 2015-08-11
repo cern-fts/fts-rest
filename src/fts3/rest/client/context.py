@@ -59,7 +59,13 @@ def _get_x509_list(cert):
     return x509_list
 
 
-# Base class for actors
+def _get_default_proxy():
+    """
+    Returns the default proxy location
+    """
+    return "/tmp/x509up_u%d" % os.geteuid()
+
+
 class Context(object):
 
     def _read_passwd_from_stdin(self, *args, **kwargs):
@@ -68,19 +74,19 @@ class Context(object):
         return self.passwd
 
     def _set_x509(self, ucert, ukey):
-        if not ukey:
-            if ucert:
-                ukey = ucert
-            elif 'X509_USER_PROXY' in os.environ:
-                ukey = os.environ['X509_USER_PROXY']
-            elif 'X509_USER_KEY' in os.environ:
-                ukey = os.environ['X509_USER_KEY']
+        default_proxy_location = _get_default_proxy()
 
-        if not ucert:
+        # User certificate and key locations
+        if ucert and not ukey:
+            ukey = ucert
+        elif not ucert:
             if 'X509_USER_PROXY' in os.environ:
-                ucert = os.environ['X509_USER_PROXY']
+                ukey = ucert = os.environ['X509_USER_PROXY']
+            elif os.path.exists(default_proxy_location):
+                ukey = ucert = default_proxy_location
             elif 'X509_USER_CERT' in os.environ:
                 ucert = os.environ['X509_USER_CERT']
+                ukey = os.environ.get('X509_USER_KEY', ucert)
 
         if ucert and ukey:
             self.x509_list = _get_x509_list(ucert)
@@ -115,10 +121,10 @@ class Context(object):
             self.ucert = self.ukey = None
 
         if not self.ucert and not self.ukey:
-            logging.warning("No user certificate given!")
+            log.warning("No user certificate given!")
         else:
-            logging.debug("User certificte: %s" % self.ucert)
-            logging.debug("User private key: %s" % self.ukey)
+            log.debug("User certificate: %s" % self.ucert)
+            log.debug("User private key: %s" % self.ukey)
 
     def _set_endpoint(self, endpoint):
         self.endpoint = endpoint
