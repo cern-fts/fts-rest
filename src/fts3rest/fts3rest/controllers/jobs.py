@@ -478,8 +478,8 @@ class JobsController(BaseController):
         # Populate the job and files
         populated = JobBuilder(user, **submitted_dict)
 
+        # Insert the job
         try:
-            # Insert the job
             Session.execute(Job.__table__.insert(), [populated.job])
             if len(populated.files):
                 Session.execute(File.__table__.insert(), populated.files)

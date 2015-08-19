@@ -383,6 +383,11 @@ class JobBuilder(object):
 
         self._set_job_source_and_destination(self.files)
 
+        # If reuse is enabled, source and destination SE must be the same
+        # for all entries
+        if reuse_flag == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
+            raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
+
     def _populate_deletion(self, deletion_dict):
         """
         Initializes the list of deletions

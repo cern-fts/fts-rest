@@ -501,3 +501,30 @@ class TestJobInvalidSubmits(TestController):
 
         self.assertIn('multiple replicas', error['message'].lower())
         self.assertIn('staging', error['message'].lower())
+
+    def test_submit_reuse_different_hosts(self):
+        """
+        Submit a reuse job with different hosts in the surls
+        Regression for FTS-291
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['root://source.es/file'],
+                'destinations': ['root://dest.ch/file'],
+            },
+            {
+                'sources': ['root://somewhere.else.fr/file'],
+                'destinations': ['root://dest.ch/file'],
+            }],
+            'params': {'overwrite': True, 'verify_checksum': True, 'reuse': True}
+        }
+
+        self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=400
+        )
