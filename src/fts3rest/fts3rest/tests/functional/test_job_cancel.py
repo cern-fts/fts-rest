@@ -159,7 +159,7 @@ class TestJobCancel(TestController):
 
     def test_cancel_multiple_one(self):
         """
-        Use multiple cancellation convention but with only one
+        Use multiple cancellation convention but with only one job
         """
         job_id = self._submit()
 

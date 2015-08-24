@@ -40,6 +40,26 @@ from fts3rest.lib.middleware.fts3auth.constants import *
 
 log = logging.getLogger(__name__)
 
+def _multistatus(responses, start_response, expecting_multistatus=False):
+    """
+    Return 200 if everything is Ok, 207 if there is any errors,
+    and, if input was only one, do not return an array
+    """
+    if not expecting_multistatus:
+        single = responses[0]
+        if isinstance(single, Job):
+            if single.http_status not in ('200 Ok', '304 Not Modified'):
+                start_response(single.http_status, [('Content-Type', 'application/json')])
+        elif single['http_status'] not in ('200 Ok', '304 Not Modified'):
+            start_response(single['http_status'], [('Content-Type', 'application/json')])
+        return single
+
+    for response in responses:
+        if isinstance(response, dict) and not response.get('http_status', '').startswith('2'):
+            start_response("207 Multi-Status", [('Content-Type', 'application/json')])
+            break
+    return responses
+
 
 class JobsController(BaseController):
     """
@@ -348,8 +368,7 @@ class JobsController(BaseController):
         """
         requested_job_ids = job_id_list.split(',')
         cancellable_jobs = list()
-        response = list()
-        multistatus = False
+        responses = list()
 
         # First, check which job ids exist and can be accessed
         for job_id in requested_job_ids:
@@ -364,15 +383,13 @@ class JobsController(BaseController):
                     setattr(job, 'http_status', '304 Not Modified')
                     setattr(job, 'http_message', 'The job is in a terminal state')
                     log.warning("The job %s can not be canceled, since it is %s" % (job_id, job.job_state))
-                    response.append(job)
-                    multistatus = True
+                    responses.append(job)
             except HTTPClientError, e:
-                response.append(dict(
+                responses.append(dict(
                     job_id=job_id,
                     http_status="%s %s" % (e.code, e.title),
                     http_message=e.detail
                 ))
-                multistatus = True
 
         # Now, cancel those that can be canceled
         now = datetime.utcnow()
@@ -403,7 +420,7 @@ class JobsController(BaseController):
                 log.info("Job %s canceled" % job.job_id)
                 setattr(job, 'http_status', "200 Ok")
                 setattr(job, 'http_message', None)
-                response.append(job)
+                responses.append(job)
                 Session.expunge(job)
             Session.commit()
             Session.expire_all()
@@ -411,20 +428,7 @@ class JobsController(BaseController):
             Session.rollback()
             raise
 
-        # Return 200 if everything is Ok, 207 if there is any errors,
-        # and, if input was only one, do not return an array
-        if len(requested_job_ids) == 1:
-            single = response[0]
-            if isinstance(single, Job):
-                if single.http_status not in ('200 Ok', '304 Not Modified'):
-                    start_response(single.http_status, [('Content-Type', 'application/json')])
-            elif single['http_status'] not in ('200 Ok', '304 Not Modified'):
-                start_response(single['http_status'], [('Content-Type', 'application/json')])
-            return single
-
-        if multistatus:
-            start_response("207 Multi-Status", [('Content-Type', 'application/json')])
-        return response
+        return _multistatus(responses, start_response, expecting_multistatus=len(requested_job_ids) > 1)
 
     @doc.response(207, 'For multiple job requests if there has been any error')
     @doc.response(403, 'The user doesn\'t have enough privileges')
@@ -436,8 +440,7 @@ class JobsController(BaseController):
         """
         requested_job_ids = job_id_list.split(',')
         modifiable_jobs = list()
-        response = list()
-        multistatus = False
+        responses = list()
 
         # First, check which job ids exist and can be accessed
         for job_id in requested_job_ids:
@@ -452,15 +455,13 @@ class JobsController(BaseController):
                     setattr(job, 'http_status', '304 Not Modified')
                     setattr(job, 'http_message', 'The job is in a terminal state')
                     log.warning("The job %s can not be modified, since it is %s" % (job_id, job.job_state))
-                    response.append(job)
-                    multistatus = True
+                    responses.append(job)
             except HTTPClientError, e:
-                response.append(dict(
+                responses.append(dict(
                     job_id=job_id,
                     http_status="%s %s" % (e.code, e.title),
                     http_message=e.detail
                 ))
-                multistatus = True
 
         # Now, modify those that can be
         modification = get_input_as_dict(request)
@@ -481,7 +482,7 @@ class JobsController(BaseController):
                     log.info("Job %s priority changed to %d" % (job.job_id, priority))
                 setattr(job, 'http_status', "200 Ok")
                 setattr(job, 'http_message', None)
-                response.append(job)
+                responses.append(job)
                 Session.expunge(job)
             Session.commit()
             Session.expire_all()
@@ -489,20 +490,7 @@ class JobsController(BaseController):
             Session.rollback()
             raise
 
-        # Return 200 if everything is Ok, 207 if there is any errors,
-        # and, if input was only one, do not return an array
-        if len(requested_job_ids) == 1:
-            single = response[0]
-            if isinstance(single, Job):
-                if single.http_status not in ('200 Ok', '304 Not Modified'):
-                    start_response(single.http_status, [('Content-Type', 'application/json')])
-            elif single['http_status'] not in ('200 Ok', '304 Not Modified'):
-                start_response(single['http_status'], [('Content-Type', 'application/json')])
-            return single
-
-        if multistatus:
-            start_response("207 Multi-Status", [('Content-Type', 'application/json')])
-        return response
+        return _multistatus(responses, start_response, expecting_multistatus=len(requested_job_ids) > 1)
 
     @doc.input('Submission description', 'SubmitSchema')
     @doc.response(400, 'The submission request could not be understood')
