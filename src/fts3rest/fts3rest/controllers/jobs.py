@@ -22,10 +22,9 @@ from sqlalchemy.orm import noload
 
 try:
     import simplejson as json
-except:
+except ImportError:
     import json
 import logging
-import urllib
 
 from fts3.model import Job, File, JobActiveStates, FileActiveStates
 from fts3.model import DataManagement, DataManagementActiveStates
@@ -33,7 +32,7 @@ from fts3.model import Credential, OptimizerActive, FileRetryLog
 from fts3rest.lib.JobBuilder import JobBuilder
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
-from fts3rest.lib.helpers import jsonify
+from fts3rest.lib.helpers import jsonify, get_input_as_dict
 from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.middleware.fts3auth import authorize, authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
@@ -464,20 +463,7 @@ class JobsController(BaseController):
                 multistatus = True
 
         # Now, modify those that can be
-        try:
-            if request.method == 'PUT':
-                unencoded_body = request.body
-            elif request.method == 'POST':
-                if request.content_type == 'application/json':
-                    unencoded_body = request.body
-                else:
-                    unencoded_body = urllib.unquote_plus(request.body)
-            else:
-                raise HTTPBadRequest('Unsupported method %s' % request.method)
-
-            modification = json.loads(unencoded_body)
-        except ValueError, e:
-            raise HTTPBadRequest('Badly formatted JSON request (%s)' % str(e))
+        modification = get_input_as_dict(request)
 
         priority = None
         try:
@@ -534,21 +520,7 @@ class JobsController(BaseController):
         It can be used to validate (i.e in Python, jsonschema.validate)
         """
         # First, the request has to be valid JSON
-        try:
-            if request.method == 'PUT':
-                unencoded_body = request.body
-            elif request.method == 'POST':
-                if request.content_type == 'application/json':
-                    unencoded_body = request.body
-                else:
-                    unencoded_body = urllib.unquote_plus(request.body)
-            else:
-                raise HTTPBadRequest('Unsupported method %s' % request.method)
-
-            submitted_dict = json.loads(unencoded_body)
-
-        except ValueError, e:
-            raise HTTPBadRequest('Badly formatted JSON request (%s)' % str(e))
+        submitted_dict = get_input_as_dict(request)
 
         # The auto-generated delegation id must be valid
         user = request.environ['fts3.User.Credentials']

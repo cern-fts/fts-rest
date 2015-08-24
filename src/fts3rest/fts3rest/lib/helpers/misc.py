@@ -1,3 +1,6 @@
+import json
+from fts3rest.lib.http_exceptions import *
+
 
 def timedelta_to_seconds(td):
     """
@@ -20,3 +23,24 @@ def average(iterable, start=None, transform=None):
         return addition / float(len(iterable))
     else:
         return None
+
+
+def get_input_as_dict(request, from_query=False):
+    """
+    Return a valid dictionary from the request imput
+    """
+    if from_query:
+        input_dict = request.params
+    elif request.content_type == 'application/json' or request.method == 'PUT':
+        try:
+            input_dict = json.loads(request.body)
+        except Exception:
+            raise HTTPBadRequest('Badly formatted JSON request')
+    elif request.content_type.startswith('application/x-www-form-urlencoded'):
+        input_dict = dict(request.params)
+    else:
+        raise HTTPBadRequest('Expecting application/json or application/x-www-form-urlencoded')
+
+    if not hasattr(input_dict, '__getitem__') or not hasattr(input_dict, 'get'):
+        raise HTTPBadRequest('Expecting a dictionary')
+    return input_dict

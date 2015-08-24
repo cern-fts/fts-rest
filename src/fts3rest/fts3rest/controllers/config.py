@@ -26,7 +26,7 @@ from pylons import request
 from fts3.model import *
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
-from fts3rest.lib.helpers import jsonify, to_json, accept
+from fts3rest.lib.helpers import jsonify, to_json, accept, get_input_as_dict
 from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.middleware.fts3auth import authorize, require_certificate
 from fts3rest.lib.middleware.fts3auth.constants import *
@@ -48,27 +48,6 @@ def _audit_configuration(action, config):
     )
     Session.add(audit)
     log.info(action)
-
-
-def _get_input_as_dict(request, from_query=False):
-    """
-    Return a valid dictionary from the request imput
-    """
-    if from_query:
-        input_dict = request.params
-    elif request.content_type == 'application/json':
-        try:
-            input_dict = json.loads(request.body)
-        except Exception:
-            raise HTTPBadRequest('Malformed input')
-    elif request.content_type.startswith('application/x-www-form-urlencoded'):
-        input_dict = dict(request.params)
-    else:
-        raise HTTPBadRequest('Expecting application/json or application/x-www-form-urlencoded')
-
-    if not hasattr(input_dict, '__getitem__') or not hasattr(input_dict, 'get'):
-        raise HTTPBadRequest('Expecting a dictionary')
-    return input_dict
 
 
 def _validate_type(Type, key, value):
@@ -149,7 +128,7 @@ class ConfigController(BaseController):
         """
         Set the drain status of a server
         """
-        input_dict = _get_input_as_dict(request)
+        input_dict = get_input_as_dict(request)
 
         hostname = input_dict.get('hostname')
         try:
@@ -189,7 +168,7 @@ class ConfigController(BaseController):
         """
         Sets the debug level status for a storage
         """
-        input_dict = _get_input_as_dict(request)
+        input_dict = get_input_as_dict(request)
 
         source = input_dict.get('source_se', None)
         destin = input_dict.get('dest_se', None)
@@ -252,7 +231,7 @@ class ConfigController(BaseController):
         """
         Removes a debug entry
         """
-        input_dict = _get_input_as_dict(request, from_query=True)
+        input_dict = get_input_as_dict(request, from_query=True)
 
         source = input_dict.get('source_se', None)
         destin = input_dict.get('dest_se', None)
@@ -296,7 +275,7 @@ class ConfigController(BaseController):
         """
         Set the global configuration
         """
-        cfg = _get_input_as_dict(request)
+        cfg = get_input_as_dict(request)
 
         vo_name = cfg.get('vo_name', '*')
         db_cfg = Session.query(ServerConfig).get(vo_name)
@@ -356,7 +335,7 @@ class ConfigController(BaseController):
         """
         Delete the global configuration for the given VO
         """
-        input_dict = _get_input_as_dict(request, from_query=True)
+        input_dict = get_input_as_dict(request, from_query=True)
         vo_name = input_dict.get('vo_name')
         if not vo_name or vo_name == '*':
             raise HTTPBadRequest('Missing VO name')
@@ -378,7 +357,7 @@ class ConfigController(BaseController):
         """
         Add a SE to a group
         """
-        input_dict = _get_input_as_dict(request)
+        input_dict = get_input_as_dict(request)
 
         member = input_dict.get('member', None)
         groupname = input_dict.get('groupname', None)
@@ -432,7 +411,7 @@ class ConfigController(BaseController):
         """
         Delete a member from a group. If the group is left empty, the group will be removed
         """
-        input_dict = _get_input_as_dict(request, from_query=True)
+        input_dict = get_input_as_dict(request, from_query=True)
 
         storage = input_dict.get('member', None)
         if storage:
@@ -459,7 +438,7 @@ class ConfigController(BaseController):
         """
         Set the configuration for a given link
         """
-        input_dict = _get_input_as_dict(request)
+        input_dict = get_input_as_dict(request)
 
         source = input_dict.get('source', '*')
         destination = input_dict.get('destination', '*')
@@ -540,7 +519,7 @@ class ConfigController(BaseController):
         """
         Add or modify a share
         """
-        input_dict = _get_input_as_dict(request, from_query=True)
+        input_dict = get_input_as_dict(request, from_query=True)
         source = input_dict.get('source')
         destination = input_dict.get('destination')
         vo = input_dict.get('vo')
@@ -593,7 +572,7 @@ class ConfigController(BaseController):
         """
         Delete a share
         """
-        input_dict = _get_input_as_dict(request, from_query=True)
+        input_dict = get_input_as_dict(request, from_query=True)
         source = input_dict.get('source')
         destination = input_dict.get('destination')
         vo = input_dict.get('vo')
@@ -623,7 +602,7 @@ class ConfigController(BaseController):
         """
         Fixes the number of actives for a pair
         """
-        input_dict = _get_input_as_dict(request)
+        input_dict = get_input_as_dict(request)
         source = input_dict.get('source_se')
         destination = input_dict.get('dest_se')
         try:
@@ -666,7 +645,7 @@ class ConfigController(BaseController):
         """
         Gets the fixed pairs
         """
-        input_dict = _get_input_as_dict(request, from_query=True)
+        input_dict = get_input_as_dict(request, from_query=True)
         source = input_dict.get('source_se')
         destination = input_dict.get('dest_se')
 
@@ -686,7 +665,7 @@ class ConfigController(BaseController):
         """
         Set the configuration parameters for a given SE
         """
-        input_dict = _get_input_as_dict(request)
+        input_dict = get_input_as_dict(request)
 
         try:
             for storage, cfg in input_dict.iteritems():
@@ -808,7 +787,7 @@ class ConfigController(BaseController):
         """
         Give special access to someone
         """
-        input_dict = _get_input_as_dict(request)
+        input_dict = get_input_as_dict(request)
         dn = input_dict.get('dn')
         op = input_dict.get('operation')
         if not dn or not op:
@@ -837,7 +816,7 @@ class ConfigController(BaseController):
         """
         List granted accesses
         """
-        input_dict = _get_input_as_dict(request, from_query=True)
+        input_dict = get_input_as_dict(request, from_query=True)
         dn = input_dict.get('dn')
         op = input_dict.get('operation')
         authz = Session.query(AuthorizationByDn)
@@ -856,7 +835,7 @@ class ConfigController(BaseController):
         """
         Revoke access for a DN for a given operation, or all
         """
-        input_dict = _get_input_as_dict(request, from_query=True)
+        input_dict = get_input_as_dict(request, from_query=True)
         dn = input_dict.get('dn')
         op = input_dict.get('operation')
         if not dn:
@@ -919,7 +898,7 @@ class ConfigController(BaseController):
         """
         Set a new/modify an activity share
         """
-        input_dict = _get_input_as_dict(request)
+        input_dict = get_input_as_dict(request)
         if not input_dict.get('vo', None):
             raise HTTPBadRequest('Missing VO')
         if not input_dict.get('share', None):
