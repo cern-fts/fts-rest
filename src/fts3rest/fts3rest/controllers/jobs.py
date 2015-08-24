@@ -427,6 +427,97 @@ class JobsController(BaseController):
             start_response("207 Multi-Status", [('Content-Type', 'application/json')])
         return response
 
+    @doc.response(207, 'For multiple job requests if there has been any error')
+    @doc.response(403, 'The user doesn\'t have enough privileges')
+    @doc.response(404, 'The job doesn\'t exist')
+    @jsonify
+    def modify(self, job_id_list, start_response):
+        """
+        Modify a job, or set of jobs
+        """
+        requested_job_ids = job_id_list.split(',')
+        modifiable_jobs = list()
+        response = list()
+        multistatus = False
+
+        # First, check which job ids exist and can be accessed
+        for job_id in requested_job_ids:
+            # Skip empty
+            if not job_id:
+                continue
+            try:
+                job = JobsController._get_job(job_id)
+                if job.job_state in JobActiveStates:
+                    modifiable_jobs.append(job)
+                else:
+                    setattr(job, 'http_status', '304 Not Modified')
+                    setattr(job, 'http_message', 'The job is in a terminal state')
+                    log.warning("The job %s can not be modified, since it is %s" % (job_id, job.job_state))
+                    response.append(job)
+                    multistatus = True
+            except HTTPClientError, e:
+                response.append(dict(
+                    job_id=job_id,
+                    http_status="%s %s" % (e.code, e.title),
+                    http_message=e.detail
+                ))
+                multistatus = True
+
+        # Now, modify those that can be
+        try:
+            if request.method == 'PUT':
+                unencoded_body = request.body
+            elif request.method == 'POST':
+                if request.content_type == 'application/json':
+                    unencoded_body = request.body
+                else:
+                    unencoded_body = urllib.unquote_plus(request.body)
+            else:
+                raise HTTPBadRequest('Unsupported method %s' % request.method)
+
+            modification = json.loads(unencoded_body)
+        except ValueError, e:
+            raise HTTPBadRequest('Badly formatted JSON request (%s)' % str(e))
+
+        priority = None
+        try:
+            priority = int(modification['params']['priority'])
+        except KeyError:
+            pass
+        except ValueError:
+            raise HTTPBadRequest('Invalid priority value')
+
+        try:
+            for job in modifiable_jobs:
+                if priority:
+                    job.priority = priority
+                    job = Session.merge(job)
+                    log.info("Job %s priority changed to %d" % (job.job_id, priority))
+                setattr(job, 'http_status', "200 Ok")
+                setattr(job, 'http_message', None)
+                response.append(job)
+                Session.expunge(job)
+            Session.commit()
+            Session.expire_all()
+        except:
+            Session.rollback()
+            raise
+
+        # Return 200 if everything is Ok, 207 if there is any errors,
+        # and, if input was only one, do not return an array
+        if len(requested_job_ids) == 1:
+            single = response[0]
+            if isinstance(single, Job):
+                if single.http_status not in ('200 Ok', '304 Not Modified'):
+                    start_response(single.http_status, [('Content-Type', 'application/json')])
+            elif single['http_status'] not in ('200 Ok', '304 Not Modified'):
+                start_response(single['http_status'], [('Content-Type', 'application/json')])
+            return single
+
+        if multistatus:
+            start_response("207 Multi-Status", [('Content-Type', 'application/json')])
+        return response
+
     @doc.input('Submission description', 'SubmitSchema')
     @doc.response(400, 'The submission request could not be understood')
     @doc.response(403, 'The user doesn\'t have enough permissions to submit')

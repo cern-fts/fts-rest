@@ -73,7 +73,7 @@ class TestOptions(TestController):
         self.assertItemsEqual(['GET', 'POST', 'PUT', 'OPTIONS'], response.allow)
 
         response = self.app.options('/jobs/1234-56789', status=200)
-        self.assertItemsEqual(['GET', 'DELETE', 'OPTIONS'], response.allow)
+        self.assertItemsEqual(['GET', 'DELETE', 'POST', 'OPTIONS'], response.allow)
 
         response = self.app.options('/jobs/1234-56789/files', status=200)
         self.assertItemsEqual(['GET', 'OPTIONS'], response.allow)

@@ -66,6 +66,8 @@ def do_connect(config, map):
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id_list}', controller='jobs', action='cancel',
                 conditions=dict(method=['DELETE']))
+    map.connect('/jobs/{job_id_list}', controller='jobs', action='modify',
+                conditions=dict(method=['POST']))
     map.connect('/jobs', controller='jobs', action='submit',
                 conditions=dict(method=['PUT', 'POST']))
 
