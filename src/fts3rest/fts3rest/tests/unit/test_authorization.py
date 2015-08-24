@@ -129,3 +129,23 @@ class TestAuthorization(unittest.TestCase):
         Session.commit()
 
         self.assertTrue(fts3auth.authorized(fts3auth.CONFIG, env = self.env))
+
+    def test_authorize_root(self):
+        """
+        If the credentials are those of the server (hostcert.pem), then grant full
+        access
+        """
+        env = dict()
+        env['SSL_SERVER_S_DN'] = '/DN=test'
+
+        env['GRST_CRED_AURI_0'] = 'dn:/DN=notme'
+        env['fts3.User.Credentials'] = fts3auth.UserCredentials(env, TestAuthorization.ROLES)
+        self.assertFalse(fts3auth.authorized(fts3auth.CONFIG, env=env))
+        self.assertTrue(fts3auth.authorized(fts3auth.DELEGATION, env=env))
+        self.assertFalse(fts3auth.authorized(fts3auth.TRANSFER, env=env, resource_vo='atlas'))
+
+        env['GRST_CRED_AURI_0'] = 'dn:/DN=test'
+        env['fts3.User.Credentials'] = fts3auth.UserCredentials(env, TestAuthorization.ROLES)
+        self.assertTrue(fts3auth.authorized(fts3auth.CONFIG, env=env))
+        self.assertTrue(fts3auth.authorized(fts3auth.DELEGATION, env=env))
+        self.assertTrue(fts3auth.authorized(fts3auth.TRANSFER, env=env, resource_vo='atlas'))
