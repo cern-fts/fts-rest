@@ -101,101 +101,101 @@ def do_connect(config, map):
                 conditions=dict(method=['GET']))
 
     # Set/unset draining mode
-    map.connect('/config/drain', controller='config', action='set_drain',
+    map.connect('/config/drain', controller='config.drain', action='set_drain',
                 conditions=dict(method=['POST']))
 
     # Configuration audit
-    map.connect('/config/audit', controller='config', action='audit',
+    map.connect('/config/audit', controller='config.audit', action='audit',
                 conditions=dict(method=['GET']))
 
     # Debug level
-    map.connect('/config/debug', controller='config', action='set_debug',
+    map.connect('/config/debug', controller='config.debug', action='set_debug',
                 conditions=dict(method=['POST']))
-    map.connect('/config/debug', controller='config', action='delete_debug',
+    map.connect('/config/debug', controller='config.debug', action='delete_debug',
                 conditions=dict(method=['DELETE']))
-    map.connect('/config/debug', controller='config', action='list_debug',
+    map.connect('/config/debug', controller='config.debug', action='list_debug',
                 conditions=dict(method=['GET']))
 
     # Global settings
-    map.connect('/config/global', controller='config', action='set_global_config',
+    map.connect('/config/global', controller='config.global', action='set_global_config',
                 conditions=dict(method=['POST']))
-    map.connect('/config/global', controller='config', action='get_global_config',
+    map.connect('/config/global', controller='config.global', action='get_global_config',
                 conditions=dict(method=['GET']))
-    map.connect('/config/global', controller='config', action='delete_vo_global_config',
+    map.connect('/config/global', controller='config.global', action='delete_vo_global_config',
                 conditions=dict(method=['DELETE']))
 
     # Groups and group members
-    map.connect('/config/groups', controller='config', action='add_to_group',
+    map.connect('/config/groups', controller='config.segroups', action='add_to_group',
                 conditions=dict(method=['POST']))
-    map.connect('/config/groups', controller='config', action='get_all_groups',
+    map.connect('/config/groups', controller='config.segroups', action='get_all_groups',
                 conditions=dict(method=['GET']))
-    map.connect('/config/groups/{group_name}', controller='config', action='get_group',
+    map.connect('/config/groups/{group_name}', controller='config.segroups', action='get_group',
                 conditions=dict(method=['GET']))
-    map.connect('/config/groups/{group_name}', controller='config', action='delete_from_group',
+    map.connect('/config/groups/{group_name}', controller='config.segroups', action='delete_from_group',
                 conditions=dict(method=['DELETE']))
 
     # Link config (SE or Group)
-    map.connect('/config/links', controller='config', action='set_link_config',
+    map.connect('/config/links', controller='config.links', action='set_link_config',
                 conditions=dict(method=['POST']))
-    map.connect('/config/links', controller='config', action='get_all_link_configs',
+    map.connect('/config/links', controller='config.links', action='get_all_link_configs',
                 conditions=dict(method=['GET']))
-    map.connect('/config/links/{sym_name}', controller='config', action='get_link_config',
+    map.connect('/config/links/{sym_name}', controller='config.links', action='get_link_config',
                 conditions=dict(method=['GET']))
-    map.connect('/config/links/{sym_name}', controller='config', action='delete_link_config',
+    map.connect('/config/links/{sym_name}', controller='config.links', action='delete_link_config',
                 conditions=dict(method=['DELETE']))
 
     # Shares
-    map.connect('/config/shares', controller='config', action='set_share',
+    map.connect('/config/shares', controller='config.shares', action='set_share',
                 conditions=dict(method=['POST']))
-    map.connect('/config/shares', controller='config', action='get_shares',
+    map.connect('/config/shares', controller='config.shares', action='get_shares',
                 conditions=dict(method=['GET']))
-    map.connect('/config/shares', controller='config', action='delete_share',
+    map.connect('/config/shares', controller='config.shares', action='delete_share',
                 conditions=dict(method=['DELETE']))
 
     # Fixed number of actives
-    map.connect('/config/fixed', controller='config', action='fix_active',
+    map.connect('/config/fixed', controller='config.fix', action='fix_active',
                 conditions=dict(method=['POST']))
-    map.connect('/config/fixed', controller='config', action='get_fixed_active',
+    map.connect('/config/fixed', controller='config.fix', action='get_fixed_active',
                 conditions=dict(method=['GET']))
 
     # Per SE
-    map.connect('/config/se', controller='config', action='set_se_config',
+    map.connect('/config/se', controller='config.se', action='set_se_config',
                 conditions=dict(method=['POST']))
-    map.connect('/config/se', controller='config', action='get_se_config',
+    map.connect('/config/se', controller='config.se', action='get_se_config',
                 conditions=dict(method=['GET']))
-    map.connect('/config/se', controller='config', action='delete_se_config',
+    map.connect('/config/se', controller='config.se', action='delete_se_config',
                 conditions=dict(method=['DELETE']))
 
     # Grant special permissions to given DNs
-    map.connect('/config/authorize', controller='config', action='add_authz',
+    map.connect('/config/authorize', controller='config.authz', action='add_authz',
                 conditions=dict(method=['POST']))
-    map.connect('/config/authorize', controller='config', action='list_authz',
+    map.connect('/config/authorize', controller='config.authz', action='list_authz',
                 conditions=dict(method=['GET']))
-    map.connect('/config/authorize', controller='config', action='remove_authz',
+    map.connect('/config/authorize', controller='config.authz', action='remove_authz',
                 conditions=dict(method=['DELETE']))
 
     # Configure activity shares
-    map.connect('/config/activity_shares', controller='config', action='get_activity_shares',
+    map.connect('/config/activity_shares', controller='config.activities', action='get_activity_shares',
                 conditions=dict(method=['GET']))
-    map.connect('/config/activity_shares', controller='config', action='set_activity_shares',
+    map.connect('/config/activity_shares', controller='config.activities', action='set_activity_shares',
                 conditions=dict(method=['POST']))
-    map.connect('/config/activity_shares/{vo_name}', controller='config', action='get_activity_shares_vo',
+    map.connect('/config/activity_shares/{vo_name}', controller='config.activities', action='get_activity_shares_vo',
                 conditions=dict(method=['GET']))
-    map.connect('/config/activity_shares/{vo_name}', controller='config', action='delete_activity_shares',
+    map.connect('/config/activity_shares/{vo_name}', controller='config.activities', action='delete_activity_shares',
                 conditions=dict(method=['DELETE']))
 
     # Configure cloud storages
-    map.connect('/config/cloud_storage', controller='config', action='get_cloud_storages',
+    map.connect('/config/cloud_storage', controller='config.cloud', action='get_cloud_storages',
                 conditions=dict(method=['GET']))
-    map.connect('/config/cloud_storage', controller='config', action='set_cloud_storage',
+    map.connect('/config/cloud_storage', controller='config.cloud', action='set_cloud_storage',
                 conditions=dict(method=['POST']))
-    map.connect('/config/cloud_storage/{storage_name}', controller='config', action='get_cloud_storage',
+    map.connect('/config/cloud_storage/{storage_name}', controller='config.cloud', action='get_cloud_storage',
                 conditions=dict(method=['GET']))
-    map.connect('/config/cloud_storage/{storage_name}', controller='config', action='remove_cloud_storage',
+    map.connect('/config/cloud_storage/{storage_name}', controller='config.cloud', action='remove_cloud_storage',
                 conditions=dict(method=['DELETE']))
-    map.connect('/config/cloud_storage/{storage_name}', controller='config', action='add_user_to_cloud_storage',
+    map.connect('/config/cloud_storage/{storage_name}', controller='config.cloud', action='add_user_to_cloud_storage',
                 conditions=dict(method=['POST']))
-    map.connect('/config/cloud_storage/{storage_name}/{id}', controller='config', action='remove_user_from_cloud_storage',
+    map.connect('/config/cloud_storage/{storage_name}/{id}', controller='config.cloud', action='remove_user_from_cloud_storage',
                 conditions=dict(method=['DELETE']))
 
     # Optimizer

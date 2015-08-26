@@ -97,7 +97,7 @@ class TestDropbox(TestController):
         response = self.app.get(url="/cs/access_request/dropbox/request", status=200)
         self.assertEqual('oauth_token_secret=1234&oauth_token=abcd', response.body)
 
-        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX'))
+        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX', ''))
         self.assertTrue(csu is not None)
         self.assertEqual('abcd', csu.request_token)
         self.assertEqual('1234', csu.request_token_secret)
@@ -115,7 +115,7 @@ class TestDropbox(TestController):
         self.test_request_access()
         self.app.get(url="/cs/access_grant/dropbox", status=200)
 
-        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX'))
+        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX', ''))
         self.assertTrue(csu is not None)
         self.assertEqual('cafesilvousplait', csu.access_token)
         self.assertEqual('blahblahsecret', csu.access_token_secret)
@@ -127,5 +127,5 @@ class TestDropbox(TestController):
         self.test_access_granted()
         self.app.delete(url="/cs/access_grant/dropbox", status=204)
 
-        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX'))
+        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX', ''))
         self.assertTrue(csu is None)
