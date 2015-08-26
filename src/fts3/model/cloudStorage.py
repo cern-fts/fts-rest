@@ -36,6 +36,7 @@ class CloudStorageUser(Base):
     access_token_secret      = Column(String(255))
     request_token            = Column(String(255))
     request_token_secret     = Column(String(255))
+    vo_name                  = Column(String(100), primary_key=True)
 
     def is_access_requested(self):
         return not (self.request_token is None or self.request_token_secret is None)

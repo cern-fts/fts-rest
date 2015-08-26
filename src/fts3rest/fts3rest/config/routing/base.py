@@ -184,6 +184,20 @@ def do_connect(config, map):
     map.connect('/config/activity_shares/{vo_name}', controller='config', action='delete_activity_shares',
                 conditions=dict(method=['DELETE']))
 
+    # Configure cloud storages
+    map.connect('/config/cloud_storage', controller='config', action='get_cloud_storages',
+                conditions=dict(method=['GET']))
+    map.connect('/config/cloud_storage', controller='config', action='set_cloud_storage',
+                conditions=dict(method=['POST']))
+    map.connect('/config/cloud_storage/{storage_name}', controller='config', action='get_cloud_storage',
+                conditions=dict(method=['GET']))
+    map.connect('/config/cloud_storage/{storage_name}', controller='config', action='remove_cloud_storage',
+                conditions=dict(method=['DELETE']))
+    map.connect('/config/cloud_storage/{storage_name}', controller='config', action='add_user_to_cloud_storage',
+                conditions=dict(method=['POST']))
+    map.connect('/config/cloud_storage/{storage_name}/{id}', controller='config', action='remove_user_from_cloud_storage',
+                conditions=dict(method=['DELETE']))
+
     # Optimizer
     map.connect('/optimizer', controller='optimizer', action='is_enabled',
                 conditions=dict(method=['GET']))
