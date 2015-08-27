@@ -190,7 +190,7 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %{python_sitelib}/fts3rest/controllers/archive.py*
 %{python_sitelib}/fts3rest/controllers/autocomplete.py*
 %{python_sitelib}/fts3rest/controllers/banning.py*
-%{python_sitelib}/fts3rest/controllers/config.py*
+%{python_sitelib}/fts3rest/controllers/config/*.py*
 %{python_sitelib}/fts3rest/controllers/datamanagement.py*
 %{python_sitelib}/fts3rest/controllers/delegation.py*
 %{python_sitelib}/fts3rest/controllers/error.py*
