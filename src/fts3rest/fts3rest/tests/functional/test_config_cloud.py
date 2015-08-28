@@ -34,7 +34,7 @@ class TestConfigCloud(TestController):
         self.app.post_json(
             url="/config/cloud_storage",
             params={
-                'name': 'S3:host',
+                'storage_name': 'S3:host',
                 'service_api_url': 'cs3.cern.ch'
             },
             status=201
@@ -48,9 +48,9 @@ class TestConfigCloud(TestController):
         self.app.post_json(
             url="/config/cloud_storage",
             params={
-                'name': 'dropbox',
-                'key': 'dropbox_app_key',
-                'secret': 'dropbox_app_secret',
+                'storage_name': 'dropbox',
+                'app_key': 'dropbox_app_key',
+                'app_secret': 'dropbox_app_secret',
                 'service_api_url': 'https://www.dropbox.com/1'
             },
             status=201
@@ -88,9 +88,9 @@ class TestConfigCloud(TestController):
         self.app.post_json(
             url="/config/cloud_storage",
             params={
-                'name': 'dropbox',
-                'key': 'new_app_key',
-                'secret': 'new_app_secret',
+                'storage_name': 'dropbox',
+                'app_key': 'new_app_key',
+                'app_secret': 'new_app_secret',
                 'service_api_url': 'https://www.dropbox.com/1'
             },
             status=201

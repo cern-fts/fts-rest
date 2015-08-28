@@ -45,19 +45,16 @@ class CloudConfigController(BaseController):
     @doc.response(403, 'The user is not allowed to modify the configuration')
     @require_certificate
     @authorize(CONFIG)
-    @accept(html_template='/config/cloud_storages.html')
+    @accept(html_template='/config/cloud_storage.html')
     def get_cloud_storages(self):
         """
         Get a list of cloud storages registered
         """
         storages = Session.query(CloudStorage).all()
-        storage_list = list()
         for storage in storages:
-            storage_list.append(dict(
-                storage_name=storage.cloudStorage_name,
-                service_api_url=storage.service_api_url
-            ))
-        return storage_list
+            users = Session.query(CloudStorageUser).filter(CloudStorageUser.storage_name == storage.storage_name)
+            setattr(storage, 'users', list(users))
+        return storages
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
     @require_certificate
@@ -68,13 +65,13 @@ class CloudConfigController(BaseController):
         Add or modify a cloud storage entry
         """
         input_dict = get_input_as_dict(request)
-        if 'name' not in input_dict:
+        if 'storage_name' not in input_dict:
             raise HTTPBadRequest('Missing storage name')
 
         storage = CloudStorage(
-            cloudStorage_name=input_dict.get('name'),
-            app_key=input_dict.get('key', None),
-            app_secret=input_dict.get('secret', None),
+            storage_name=input_dict.get('storage_name'),
+            app_key=input_dict.get('app_key', None),
+            app_secret=input_dict.get('app_secret', None),
             service_api_url=input_dict.get('service_api_url', None)
         )
         try:
@@ -84,7 +81,7 @@ class CloudConfigController(BaseController):
             Session.rollback()
             raise
         start_response('201 Created', [])
-        return storage.cloudStorage_name
+        return storage.storage_name
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
     @require_certificate
@@ -98,14 +95,8 @@ class CloudConfigController(BaseController):
         if not storage:
             raise HTTPNotFound('The storage does not exist')
 
-        users = Session.query(CloudStorageUser).filter(CloudStorageUser.cloudStorage_name == storage_name)
-        user_list = list()
-        for user in users:
-            user_list.append(dict(
-                user_dn=user.user_dn,
-                vo_name=user.vo_name
-            ))
-        return user_list
+        users = Session.query(CloudStorageUser).filter(CloudStorageUser.storage_name == storage_name)
+        return users
 
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
@@ -120,7 +111,7 @@ class CloudConfigController(BaseController):
             raise HTTPNotFound('The storage does not exist')
 
         try:
-            Session.query(CloudStorageUser).filter(CloudStorageUser.cloudStorage_name == storage_name).delete()
+            Session.query(CloudStorageUser).filter(CloudStorageUser.storage_name == storage_name).delete()
             Session.delete(storage)
             Session.commit()
         except:
@@ -128,7 +119,7 @@ class CloudConfigController(BaseController):
             raise
 
         start_response('204 No Content', [])
-        return storage.cloudStorage_name
+        return storage.storage_name
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
     @require_certificate
@@ -143,18 +134,19 @@ class CloudConfigController(BaseController):
             raise HTTPNotFound('The storage does not exist')
 
         input_dict = get_input_as_dict(request)
-        user_dn = request.environ['fts3.User.Credentials'].user_dn
-        if 'vo_name' in input_dict:
-            user_dn = ''
+        if not input_dict.get('user_dn', None) and not input_dict.get('vo_name', None):
+            raise HTTPBadRequest('One of user_dn or vo_name must be specified')
+        elif input_dict.get('user_dn', None) and input_dict.get('vo_name', None):
+            raise HTTPBadRequest('One of user_dn or vo_name must be specified')
 
         cuser = CloudStorageUser(
-            user_dn=user_dn,
-            cloudStorage_name=storage_name,
+            user_dn=input_dict.get('user_dn', ''),
+            storage_name=storage_name,
             access_token=input_dict.get('access_key', input_dict.get('access_token', None)),
             access_token_secret=input_dict.get('secret_key', input_dict.get('access_token_secret', None)),
             request_token=input_dict.get('request_token'),
             request_token_secret=input_dict.get('request_token_secret'),
-            vo_name=input_dict.get('vo_name', None),
+            vo_name=input_dict.get('vo_name', ''),
         )
 
         try:
@@ -165,7 +157,7 @@ class CloudConfigController(BaseController):
             raise
 
         start_response('201 Created', [])
-        return dict(storage_name=cuser.cloudStorage_name, user_dn=cuser.user_dn, vo_name=cuser.vo_name)
+        return dict(storage_name=cuser.storage_name, user_dn=cuser.user_dn, vo_name=cuser.vo_name)
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
     @require_certificate
@@ -179,7 +171,7 @@ class CloudConfigController(BaseController):
             raise HTTPNotFound('The storage does not exist')
 
         users = Session.query(CloudStorageUser)\
-            .filter(CloudStorageUser.cloudStorage_name == storage_name)\
+            .filter(CloudStorageUser.storage_name == storage_name)\
             .filter((CloudStorageUser.vo_name == id) | (CloudStorageUser.user_dn == id))
 
         try:

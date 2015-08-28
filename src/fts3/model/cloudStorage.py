@@ -21,22 +21,23 @@ from base import Base
 class CloudStorage(Base):
     __tablename__ = 't_cloudStorage'
 
-    cloudStorage_name        = Column(String(50), primary_key=True)
-    app_key                  = Column(String(255))
-    app_secret               = Column(String(255))
-    service_api_url          = Column(String(1024))
+    storage_name    = Column(String(50), primary_key=True, name='cloudStorage_name')
+    app_key         = Column(String(255))
+    app_secret      = Column(String(255))
+    service_api_url = Column(String(1024))
 
 
 class CloudStorageUser(Base):
     __tablename__ = 't_cloudStorageUser'
 
-    user_dn                  = Column(String(700), primary_key=True)
-    cloudStorage_name        = Column(String(36), ForeignKey('t_cloudStorage.cloudStorage_name'), primary_key=True)
-    access_token             = Column(String(255))
-    access_token_secret      = Column(String(255))
-    request_token            = Column(String(255))
-    request_token_secret     = Column(String(255))
-    vo_name                  = Column(String(100), primary_key=True)
+    user_dn              = Column(String(700), primary_key=True)
+    storage_name         = Column(String(36), ForeignKey('t_cloudStorage.cloudStorage_name'),
+                                  primary_key=True, name='cloudStorage_name')
+    access_token         = Column(String(255))
+    access_token_secret  = Column(String(255))
+    request_token        = Column(String(255))
+    request_token_secret = Column(String(255))
+    vo_name              = Column(String(100), primary_key=True)
 
     def is_access_requested(self):
         return not (self.request_token is None or self.request_token_secret is None)
