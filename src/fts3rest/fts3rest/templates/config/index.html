@@ -25,6 +25,29 @@ from datetime import datetime, timedelta
             </tr>
         </thead>
         <tbody id="server-statuses">
+        <script id="server-status-template" type="text/x-handlebars-template">
+            {{#each this}}
+            <tr>
+                <td>{{hostname}}</td>
+                <td>{{service_name}}</td>
+                <td>
+                    {{beat}}
+                    <div class="btn-group">
+                        <button class="btn btn-xs dropdown-toggle {{status_klass}}" data-toggle="dropdown" aria-expanded="false">
+                            {{status_lbl}} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            {{#if is_draining}}
+                                <li><a href="#" onclick="setServerDrain('{{hostname}}', false)">Undrain</a></li>
+                            {{else}}
+                                <li><a href="#" onclick="setServerDrain('{{hostname}}', true)">Drain</a></li>
+                            {{/if}}
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+            {{/each}}
+        </script>
         </tbody>
     </table>
 
