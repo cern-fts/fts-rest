@@ -32,7 +32,7 @@ __controller__ = 'ConfigAuditController'
 log = logging.getLogger(__name__)
 
 
-class ConfigController(BaseController):
+class ConfigAuditController(BaseController):
     """
     Config audit
     """
