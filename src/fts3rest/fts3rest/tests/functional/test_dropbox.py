@@ -65,7 +65,7 @@ class TestDropbox(TestController):
     def setUp(self):
         # Inject a Dropbox app
         cs = CloudStorage(
-                cloudStorage_name='DROPBOX',
+                storage_name='DROPBOX',
                 app_key='1234',
                 app_secret='sssh',
                 service_api_url='https://api.dropbox.com'

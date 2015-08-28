@@ -64,7 +64,7 @@ class DropboxConnector(object):
         tokens = request_tokens.split('&')
         newuser = CloudStorageUser(
             user_dn=self.user_dn,
-            cloudStorage_name=dropbox_info.cloudStorage_name,
+            storage_name=dropbox_info.storage_name,
             request_token=tokens[1].split('=')[1],
             request_token_secret=tokens[0].split('=')[1],
             vo_name=''
@@ -95,7 +95,7 @@ class DropboxConnector(object):
                     raise
                 raise HTTPNotFound('No registered user for the service "%s" has been found' % self.service)
 
-        return info.cloudStorage_name
+        return info.storage_name
 
     def remove_token(self):
         info = self._get_dropbox_user_info()
