@@ -61,7 +61,7 @@ class TestJobModify(TestController):
         }}
 
         self.app.post_json(
-            url="/jobs/%s" % job_id,
+            url="/jobs/%s" % str(job_id),
             params=mod,
             status=200
         )
@@ -99,7 +99,7 @@ class TestJobModify(TestController):
         }}
 
         self.app.post_json(
-            url="/jobs/%s" % job_id,
+            url="/jobs/%s" % str(job_id),
             params=mod,
             status=400
         )

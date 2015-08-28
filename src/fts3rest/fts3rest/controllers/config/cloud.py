@@ -119,7 +119,7 @@ class CloudConfigController(BaseController):
             raise
 
         start_response('204 No Content', [])
-        return storage.storage_name
+        return [''] 
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
     @require_certificate
