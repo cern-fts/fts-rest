@@ -44,3 +44,14 @@ function bindMethodToEnterOnInput(form, func)
         return true;
     });
 }
+
+/**
+ * Helper for select elements
+ */
+Handlebars.registerHelper('selected', function(option, value){
+    if (option === value) {
+        return ' selected';
+    } else {
+        return ''
+    }
+});
