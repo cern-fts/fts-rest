@@ -17,6 +17,8 @@ import random
 import socket
 import types
 import uuid
+import logging
+
 from datetime import datetime
 from sqlalchemy import func
 from urlparse import urlparse
@@ -25,6 +27,11 @@ from fts3.model import File, BannedSE
 from fts3rest.lib.base import Session
 from fts3rest.lib.http_exceptions import *
 
+from fts3rest.lib.scheduler.schd import Scheduler
+from fts3rest.lib.scheduler.db import Database
+from fts3rest.lib.scheduler.Cache import ThreadLocalCache
+
+log = logging.getLogger(__name__)
 
 DEFAULT_PARAMS = {
     'bring_online': -1,
@@ -46,7 +53,8 @@ DEFAULT_PARAMS = {
 
 def get_storage_element(uri):
     """
-    Returns the storage element of the given uri, which is the scheme + hostname without the port
+    Returns the storage element of the given uri, which is the scheme +
+    hostname without the port
 
     Args:
         uri: An urlparse instance
@@ -75,7 +83,8 @@ def _safe_flag(flag):
     1/0 => True/False
     'Y'/'N' => True/False
     """
-    if isinstance(flag, types.StringType) or isinstance(flag, types.UnicodeType):
+    if isinstance(flag, types.StringType) or isinstance(flag,
+                                                        types.UnicodeType):
         return len(flag) > 0 and flag[0].upper() == 'Y'
     else:
         return bool(flag)
@@ -94,7 +103,8 @@ def _generate_hashed_id():
     """
     Generates a uniformly distributed value between 0 and 2**16
     This is intended to split evenly the load across node
-    The name is an unfortunately legacy from when this used to be based on a hash on the job
+    The name is an unfortunately legacy from when this used to
+    be based on a hash on the job
     """
     return random.randint(0, (2 ** 16) - 1)
 
@@ -102,8 +112,8 @@ def _generate_hashed_id():
 def _has_multiple_options(files):
     """
     Returns a tuple (Boolean, Integer)
-    Boolean is True if there are multiple replica entries, and Integer holds the number
-    of unique files.
+    Boolean is True if there are multiple replica entries, and Integer
+    holds the number of unique files.
     """
     ids = map(lambda f: f['file_index'], files)
     id_count = len(ids)
@@ -111,27 +121,72 @@ def _has_multiple_options(files):
     return unique_id_count != id_count, unique_id_count
 
 
-def _select_best_replica(files, vo_name, entry_state='SUBMITTED'):
-    """
-    Given a list of files (that must be multiple replicas for the same file) mark as submitted
-    the best one
-    """
-    source_se_list = map(lambda f: f['source_se'], files)
-    queue_sizes = Session.query(File.source_se, func.count(File.source_se))\
-        .filter(File.vo_name == vo_name)\
-        .filter(File.file_state == 'SUBMITTED')\
-        .filter(File.dest_se == files[0]['dest_se'])\
-        .filter(File.source_se.in_(source_se_list))\
-        .group_by(File.source_se)
+def _select_best_replica(files, vo_name, entry_state, strategy):
 
-    best_ses = map(lambda elem: elem[0], sorted(queue_sizes, key=lambda elem: elem[1]))
+    dst = files[0]['dest_se']
+    activity = files[0]['activity']
+    user_filesize = files[0]['user_filesize']
+
+    queue_provider = Database(Session)
+    cache_provider = ThreadLocalCache(queue_provider)
+    # s = Scheduler(queue_provider)
+    s = Scheduler (cache_provider)
+    source_se_list = map(lambda f: f['source_se'], files)
+
+    if strategy == "orderly":
+        best_ses = source_se_list
+
+    elif strategy == "queue" or strategy == "auto":
+        best_ses = map(lambda x: x[0], s.rank_submitted(source_se_list,
+                                                        dst,
+                                                        vo_name))
+
+    elif strategy == "success":
+        best_ses = map(lambda x: x[0], s.rank_success_rate(source_se_list,
+                                                           dst))
+
+    elif strategy == "throughput":
+        best_ses = map(lambda x: x[0], s.rank_throughput(source_se_list,
+                                                         dst))
+
+    elif strategy == "file-throughput":
+        best_ses = map(lambda x: x[0], s.rank_per_file_throughput(
+                                                           source_se_list,
+                                                           dst))
+
+    elif strategy == "pending-data":
+        best_ses = map(lambda x: x[0], s.rank_pending_data(source_se_list,
+                                                           dst,
+                                                           vo_name,
+                                                           activity))
+
+    elif strategy == "waiting-time":
+        best_ses = map(lambda x: x[0], s.rank_waiting_time(source_se_list,
+                                                           dst,
+                                                           vo_name,
+                                                           activity))
+
+    elif strategy == "waiting-time-with-error":
+        best_ses = map(lambda x: x[0], s.rank_waiting_time_with_error(
+                                                               source_se_list,
+                                                               dst,
+                                                               vo_name,
+                                                               activity))
+
+    elif strategy == "duration":
+        best_ses = map(lambda x: x[0], s.rank_finish_time(source_se_list,
+                                                          dst,
+                                                          vo_name,
+                                                          activity,
+                                                          user_filesize))
+    else:
+        log.info(strategy + " algorithm is not supported by Scheduler")
+        log.info("'auto' algorithm is invoked")
+        best_ses = map(lambda x: x[0], s.rank_submitted(source_se_list,
+                                                        dst,
+                                                        vo_name))
     best_index = 0
     for index, transfer in enumerate(files):
-        # If not in the result set, the queue is empty, so finish here
-        if transfer['source_se'] not in best_ses:
-            best_index = index
-            break
-        # So far this looks good, but keep looking, in case some other has nothing at all
         if transfer['source_se'] == best_ses[0]:
             best_index = index
     files[best_index]['file_state'] = entry_state
@@ -293,10 +348,9 @@ class JobBuilder(object):
         """
         On multiple-replica jobs, select the adecuate file to go active
         """
-        if self.files[0].get('selection_strategy', 'auto') == 'auto':
-            _select_best_replica(self.files, self.user.vos[0])
-        else:
-            self.files[0]['file_state'] = 'STAGING' if self.is_bringonline else 'SUBMITTED'
+        entry_state = "STAGING" if self.is_bringonline else "SUBMITTED"
+        _select_best_replica(self.files, self.user.vos[0], entry_state,
+                             self.files[0].get('selection_strategy', 'auto'))
 
     def _populate_transfers(self, files_list):
         """
@@ -510,4 +564,3 @@ class JobBuilder(object):
             raise HTTPBadRequest('Malformed request: %s' % str(e))
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
-

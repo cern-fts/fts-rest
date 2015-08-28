@@ -212,6 +212,10 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/*.py*
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/__init__.py*
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/ssl.py*
+%{python_sitelib}/fts3rest/lib/scheduler/schd.py*
+%{python_sitelib}/fts3rest/lib/scheduler/db.py*
+%{python_sitelib}/fts3rest/lib/scheduler/Cache.py*
+%{python_sitelib}/fts3rest/lib/scheduler/__init__.py*
 
 %{python_sitelib}/fts3rest/model/
 
