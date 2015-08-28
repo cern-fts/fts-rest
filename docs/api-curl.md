@@ -234,7 +234,7 @@ import requests
 
 root_ca    = '/etc/grid-security/certificates/CERN-Root.pem'
 my_proxy   = '/home/user/proxy.pem'
-schema     = json.loads(requests.get('https://fts3-pilot.cern.ch:8446/schema/submit', verify=root_ca, cert=my_proxy).text)
+schema     = json.loads(requests.get('https://fts3-pilot.cern.ch:8446/api-docs/schema/submit', verify=root_ca, cert=my_proxy).text)
 submission = json.loads(open('submit.json').read())
 jsonschema.validate(submission, schema)
 
