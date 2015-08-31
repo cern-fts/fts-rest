@@ -151,7 +151,7 @@ class JobsController(BaseController):
             jobs = jobs.filter(Job.dest_se == filter_dest)
 
         if filter_limit:
-            jobs = jobs[:filter_limit]
+            jobs = jobs.order_by(Job.submit_time.desc())[:filter_limit]
         else:
             jobs = jobs.yield_per(100).enable_eagerloads(False)
 
