@@ -51,6 +51,7 @@ class TestJobSubmission(TestController):
         self.assertEqual(job.verify_checksum, True)
         self.assertEqual(job.reuse_job, 'N')
         self.assertEqual(job.priority, 3)
+        self.assertIsNone(job.max_time_in_queue)
 
         self.assertEqual(len(files), 1)
         self.assertEqual(files[0].file_state, 'SUBMITTED')
