@@ -13,14 +13,14 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import logging
 import random
 import socket
+import time
 import types
 import uuid
-import logging
 
 from datetime import datetime
-from sqlalchemy import func
 from urlparse import urlparse
 
 from fts3.model import File, BannedSE
@@ -47,7 +47,7 @@ DEFAULT_PARAMS = {
     'retry': 0,
     'retry_delay': 0,
     'priority': 3,
-    'max_time_in_queue': None
+    'max_time_in_queue': 0
 }
 
 
@@ -366,6 +366,11 @@ class JobBuilder(object):
 
         job_initial_state = 'STAGING' if self.is_bringonline else 'SUBMITTED'
 
+        max_time_in_queue = int(self.params['max_time_in_queue'])
+        expiration_time = None
+        if max_time_in_queue > 0:
+            expiration_time = time.time() + (max_time_in_queue * 60 * 60)
+
         self.job = dict(
             job_id=self.job_id,
             job_state=job_initial_state,
@@ -389,7 +394,7 @@ class JobBuilder(object):
             bring_online=self.params['bring_online'],
             job_metadata=self.params['job_metadata'],
             internal_job_params=self._build_internal_job_params(),
-            max_time_in_queue=self.params['max_time_in_queue']
+            max_time_in_queue=expiration_time
         )
 
         if 'credential' in self.params:

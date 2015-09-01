@@ -19,12 +19,13 @@ import json
 import mock
 #import scipy.stats
 import socket
+import time
 from nose.plugins.skip import SkipTest
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import File, Job, OptimizerActive
+from fts3.model import File, Job, OptimizerActive, ServerConfig
 
 
 class TestJobSubmission(TestController):
@@ -723,7 +724,7 @@ class TestJobSubmission(TestController):
                 'destinations': ['root://dest.ch:8447/file'],
             }],
             'params': {
-                'max_time_in_queue': 180
+                'max_time_in_queue': 8
             }
         }
         job_id = self.app.post(
@@ -733,8 +734,12 @@ class TestJobSubmission(TestController):
             status=200
         ).json['job_id']
 
+        # See FTS-311
+        # max_time_in_queue was effectively ignored by FTS3
+        # Since FTS-311, this field stores the timestamp when the job expires
         job = Session.query(Job).get(job_id)
-        self.assertEqual(job.max_time_in_queue, 180)
+        self.assertGreater(job.max_time_in_queue, time.time())
+        self.assertLessEqual(job.max_time_in_queue, (8*60*60) + time.time())
 
     def test_submit_ipv4(self):
         """
