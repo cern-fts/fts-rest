@@ -351,36 +351,49 @@ for the given certificate
 |-------|------|
 |service|string|
 
-### Operations on the config audit
-#### POST /config/debug
-Sets the debug level status for a storage
+### Activity shares configuration
+#### GET /config/activity_shares
+Get all activity shares
+
+##### Responses
+
+|Code|Description                                     |
+|----|------------------------------------------------|
+|403 |The user is not allowed to see the configuration|
+
+#### POST /config/activity_shares
+Set a new/modify an activity share
 
 ##### Responses
 
 |Code|Description                                        |
 |----|---------------------------------------------------|
-|403 |The user is not allowed to change the configuration|
+|403 |The user is not allowed to modify the configuration|
+|400 |Malformed activity share request                   |
 
-#### DELETE /config/debug
-Removes a debug entry
+#### GET /config/activity_shares/{vo_name}
+Get activity shares for a given VO
 
-##### Responses
+##### Path arguments
 
-|Code|Description                                        |
-|----|---------------------------------------------------|
-|403 |The user is not allowed to change the configuration|
-
-#### GET /config/debug
-Return the debug settings
+|Name   |Type  |
+|-------|------|
+|vo_name|string|
 
 ##### Responses
 
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
+|Code|Description                                     |
+|----|------------------------------------------------|
+|403 |The user is not allowed to see the configuration|
 
-#### POST /config/fixed
-Fixes the number of actives for a pair
+#### DELETE /config/activity_shares/{vo_name}
+Delete an existing activity share
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|vo_name|string|
 
 ##### Responses
 
@@ -388,94 +401,14 @@ Fixes the number of actives for a pair
 |----|---------------------------------------------------|
 |403 |The user is not allowed to modify the configuration|
 
-#### GET /config/fixed
-Gets the fixed pairs
+### Config audit
+#### GET /config/audit
+Returns the last 100 entries of the config audit tables
 
-##### Responses
+##### Returns
+Array of [ConfigAudit](#configaudit)
 
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-
-#### GET /config/groups/{group_name}
-Get the members of a group
-
-##### Path arguments
-
-|Name      |Type  |
-|----------|------|
-|group_name|string|
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|404 |The group does not exist                          |
-|403 |The user is not allowed to query the configuration|
-
-#### DELETE /config/groups/{group_name}
-Delete a member from a group. If the group is left empty, the group will be removed
-
-##### Path arguments
-
-|Name      |Type  |
-|----------|------|
-|group_name|string|
-
-##### Query arguments
-
-|Name  |Type  |Required|Description                                         |
-|------|------|--------|----------------------------------------------------|
-|member|string|False   |Storage to remove. All group if left empty or absent|
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|404 |The group or the member does not exist            |
-|403 |The user is not allowed to query the configuration|
-|204 |Member removed                                    |
-
-#### POST /config/se
-Set the configuration parameters for a given SE
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-|400 |Invalid values passed in the request              |
-
-#### GET /config/se
-Get the configurations status for a given SE
-
-##### Query arguments
-
-|Name|Type  |Required|Description    |
-|----|------|--------|---------------|
-|se  |string|False   |Storage element|
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-
-#### DELETE /config/se
-Delete the configuration for a given SE
-
-##### Query arguments
-
-|Name|Type  |Required|Description    |
-|----|------|--------|---------------|
-|se  |string|True    |Storage element|
-
-##### Responses
-
-|Code|Description                                        |
-|----|---------------------------------------------------|
-|403 |The user is not allowed to modify the configuration|
-
+### Static authorizations
 #### POST /config/authorize
 Give special access to someone
 
@@ -517,6 +450,176 @@ Revoke access for a DN for a given operation, or all
 |----|---------------------------------------------------|
 |403 |The user is not allowed to modify the configuration|
 
+### Configuration of cloud storages
+#### GET /config/cloud_storage
+Get a list of cloud storages registered
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
+
+#### POST /config/cloud_storage
+Add or modify a cloud storage entry
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
+
+#### DELETE /config/cloud_storage/{storage_name}/{id}
+Delete credentials for a given user/vo
+
+##### Path arguments
+
+|Name        |Type  |
+|------------|------|
+|storage_name|string|
+|id          |string|
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
+
+#### GET /config/cloud_storage/{storage_name}
+Get a list of users registered for a given storage name
+
+##### Path arguments
+
+|Name        |Type  |
+|------------|------|
+|storage_name|string|
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
+
+#### DELETE /config/cloud_storage/{storage_name}
+Remove a registered cloud storage
+
+##### Path arguments
+
+|Name        |Type  |
+|------------|------|
+|storage_name|string|
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
+
+#### POST /config/cloud_storage/{storage_name}
+Add a user or a VO credentials to the storage
+
+##### Path arguments
+
+|Name        |Type  |
+|------------|------|
+|storage_name|string|
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
+
+### Operations on the config audit
+#### POST /config/debug
+Sets the debug level status for a storage
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to change the configuration|
+
+#### DELETE /config/debug
+Removes a debug entry
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to change the configuration|
+
+#### GET /config/debug
+Return the debug settings
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+
+### Drain operations
+#### POST /config/drain
+Set the drain status of a server
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to change the configuration|
+|400 |Bad request. Invalid host or invalid drain value   |
+
+### Configure fixed limits
+#### POST /config/fixed
+Fixes the number of actives for a pair
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
+
+#### GET /config/fixed
+Gets the fixed pairs
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+
+### Server-wide configuration
+#### POST /config/global
+Set the global configuration
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+|400 |Invalid values passed in the request              |
+
+#### GET /config/global
+Get the global configuration
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+|400 |Invalid values passed in the request              |
+
+#### DELETE /config/global
+Delete the global configuration for the given VO
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+|400 |Invalid values passed in the request              |
+
+### Link configuration
 #### GET /config/links/{sym_name}
 Get the existing configuration for a given link
 
@@ -550,6 +653,106 @@ Deletes an existing link configuration
 |403 |The user is not allowed to query the configuration|
 |204 |Link removed                                      |
 
+#### POST /config/links
+Set the configuration for a given link
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+|400 |Invalid values passed in the request              |
+
+#### GET /config/links
+Get a list of all the links configured
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+
+### Grid storage configuration
+#### POST /config/se
+Set the configuration parameters for a given SE
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+|400 |Invalid values passed in the request              |
+
+#### GET /config/se
+Get the configurations status for a given SE
+
+##### Query arguments
+
+|Name|Type  |Required|Description    |
+|----|------|--------|---------------|
+|se  |string|False   |Storage element|
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|403 |The user is not allowed to query the configuration|
+
+#### DELETE /config/se
+Delete the configuration for a given SE
+
+##### Query arguments
+
+|Name|Type  |Required|Description    |
+|----|------|--------|---------------|
+|se  |string|True    |Storage element|
+
+##### Responses
+
+|Code|Description                                        |
+|----|---------------------------------------------------|
+|403 |The user is not allowed to modify the configuration|
+
+### Storage group configuration
+#### GET /config/groups/{group_name}
+Get the members of a group
+
+##### Path arguments
+
+|Name      |Type  |
+|----------|------|
+|group_name|string|
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|404 |The group does not exist                          |
+|403 |The user is not allowed to query the configuration|
+
+#### DELETE /config/groups/{group_name}
+Delete a member from a group. If the group is left empty, the group will be removed
+
+##### Path arguments
+
+|Name      |Type  |
+|----------|------|
+|group_name|string|
+
+##### Query arguments
+
+|Name  |Type  |Required|Description                                         |
+|------|------|--------|----------------------------------------------------|
+|member|string|False   |Storage to remove. All group if left empty or absent|
+
+##### Responses
+
+|Code|Description                                       |
+|----|--------------------------------------------------|
+|404 |The group or the member does not exist            |
+|403 |The user is not allowed to query the configuration|
+|204 |Member removed                                    |
+
 #### POST /config/groups
 Add a SE to a group
 
@@ -569,39 +772,7 @@ Get a list with all group names
 |----|--------------------------------------------------|
 |403 |The user is not allowed to query the configuration|
 
-#### GET /config
-Entry point. Only makes sense with html
-
-#### POST /config/global
-Set the global configuration
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-|400 |Invalid values passed in the request              |
-
-#### GET /config/global
-Get the global configuration
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-|400 |Invalid values passed in the request              |
-
-#### DELETE /config/global
-Delete the global configuration for the given VO
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-|400 |Invalid values passed in the request              |
-
+### VO Share configuration
 #### POST /config/shares
 Add or modify a share
 
@@ -628,41 +799,6 @@ Delete a share
 |Code|Description                                        |
 |----|---------------------------------------------------|
 |403 |The user is not allowed to modify the configuration|
-
-#### GET /config/audit
-Returns the last 100 entries of the config audit tables
-
-##### Returns
-Array of [ConfigAudit](#configaudit)
-
-#### POST /config/drain
-Set the drain status of a server
-
-##### Responses
-
-|Code|Description                                        |
-|----|---------------------------------------------------|
-|403 |The user is not allowed to change the configuration|
-|400 |Bad request. Invalid host or invalid drain value   |
-
-#### POST /config/links
-Set the configuration for a given link
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-|400 |Invalid values passed in the request              |
-
-#### GET /config/links
-Get a list of all the links configured
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
 
 ### Data management operations
 #### POST /dm/unlink
@@ -1003,6 +1139,23 @@ Cancel the given job
 
 ##### Notes
 Returns the canceled job with its current status. CANCELED if it was canceled,<br/>its final status otherwise
+
+##### Path arguments
+
+|Name       |Type  |
+|-----------|------|
+|job_id_list|string|
+
+##### Responses
+
+|Code|Description                                          |
+|----|-----------------------------------------------------|
+|404 |The job doesn't exist                                |
+|403 |The user doesn't have enough privileges              |
+|207 |For multiple job requests if there has been any error|
+
+#### POST /jobs/{job_id_list}
+Modify a job, or set of jobs
 
 ##### Path arguments
 
@@ -1420,15 +1573,6 @@ Models
 |agent_dn            |string  |
 |reason_class        |string  |
 
-### FileRetryLog
-
-|Field   |Type    |
-|--------|--------|
-|reason  |string  |
-|attempt |integer |
-|file_id |integer |
-|datetime|dateTime|
-
 ### OptimizerEvolution
 
 |Field     |Type    |
@@ -1442,6 +1586,15 @@ Models
 |timeout   |integer |
 |active    |integer |
 |source_se |string  |
+
+### FileRetryLog
+
+|Field   |Type    |
+|--------|--------|
+|reason  |string  |
+|attempt |integer |
+|file_id |integer |
+|datetime|dateTime|
 
 ### OAuth2Application
 
@@ -1546,6 +1699,7 @@ Models
 |reason                  |string  |
 |space_token             |string  |
 |submit_time             |dateTime|
+|retry_delay             |integer |
 |dest_se                 |string  |
 |internal_job_params     |string  |
 |finish_time             |dateTime|

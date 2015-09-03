@@ -35,8 +35,8 @@ except ImportError:
 from types import FunctionType
 
 
-root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-controllers_path = os.path.join(root_path, 'controllers')
+ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CONTROLLERS_PATH = os.path.join(ROOT_PATH, 'controllers')
 
 log = logging.getLogger(__name__)
 
@@ -125,7 +125,7 @@ def get_mapper():
     """
     mock_config = {
         'pylons.paths': {
-            'controllers': controllers_path
+            'controllers': CONTROLLERS_PATH
         },
         'debug': False
     }
@@ -136,28 +136,41 @@ def get_controller_from_module(module, cname):
     """
     Extract classes that inherit from BaseController
     """
-    controller_classname = cname[0].upper() + cname[1:].lower() + 'Controller'
+    if hasattr(module, '__controller__'):
+        controller_classname = module.__controller__
+    else:
+        controller_classname = cname[0].upper() + cname[1:].lower() + 'Controller'
     controller_class = module.__dict__.get(controller_classname, None)
     return controller_class
 
 
-def get_controllers():
+def get_controllers(controller_path=CONTROLLERS_PATH, nested=None):
     """
     Return a list of controllers
     """
     controllers = {}
-    for f in os.listdir(controllers_path):
-        imp.load_source('fts3rest.controllers', os.path.join(controllers_path, '__init__.py'))
+    parent_mod = 'fts3rest.controllers'
+    if nested:
+        parent_mod += '.' + nested
+    imp.load_source(parent_mod, os.path.join(controller_path, '__init__.py'))
+
+    for f in os.listdir(controller_path):
+        path = os.path.join(controller_path, f)
         if not f.endswith('__init__.py') and f.endswith('.py'):
-            path = os.path.join(controllers_path, f)
             cname = f.split('.')[0]
-            module = imp.load_source('fts3rest.controllers.' + cname, path)
+            module = imp.load_source(parent_mod + '.' + cname, path)
             controller = get_controller_from_module(module, cname)
             if controller:
+                if nested:
+                    cname = nested + '/' + cname
                 log.debug('Found controller %s' % cname)
                 controllers[cname] = controller
             else:
                 log.debug('Could not get controller %s' % cname)
+        elif os.path.isdir(path):
+            log.info('Recurse for controllers into %s' % path)
+            controllers.update(get_controllers(path, f))
+
     return controllers
 
 
@@ -393,6 +406,8 @@ def generate_apis_and_models(routes, controllers):
                 else:
                     all_apis[cname][path] = api
                 all_models[cname].update(models)
+        else:
+            log.warning('%s not found in controllers' % cname)
 
     # Remove keys used for convenience
     for resource_root in all_apis:
