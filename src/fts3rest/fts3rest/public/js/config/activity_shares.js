@@ -29,7 +29,7 @@ function handleActivityShareSave(form)
     rows.each(function (i, tr) {
         var share = $(tr).find("input[name='share']").val()
         var weight = $(tr).find("input[name='weight']").val();
-        shares[share] = parseInt(weight);
+        shares[share] = parseFloat(weight);
     });
 
 
