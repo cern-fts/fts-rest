@@ -34,7 +34,7 @@ def cancel(context, job_id, file_ids=None):
     return submitter.cancel(job_id, file_ids)
 
 
-def new_transfer(source, destination, checksum=None, filesize=None, metadata=None):
+def new_transfer(source, destination, checksum=None, filesize=None, metadata=None, activity=None):
     """
     Creates a new transfer pair
 
@@ -58,6 +58,8 @@ def new_transfer(source, destination, checksum=None, filesize=None, metadata=Non
         transfer['filesize'] = filesize
     if metadata:
         transfer['metadata'] = metadata
+    if activity:
+        transfer['activity'] = activity
     return transfer
 
 
