@@ -87,6 +87,9 @@ class Context(object):
             elif 'X509_USER_CERT' in os.environ:
                 ucert = os.environ['X509_USER_CERT']
                 ukey = os.environ.get('X509_USER_KEY', ucert)
+            elif os.path.exists('/etc/grid-security/hostcert.pem') and os.path.exists('/etc/grid-security/hostkey.pem'):
+                ucert = '/etc/grid-security/hostcert.pem'
+                ukey = '/etc/grid-security/hostkey.pem'
 
         if ucert and ukey:
             self.x509_list = _get_x509_list(ucert)

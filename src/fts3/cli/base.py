@@ -19,6 +19,7 @@ from ConfigParser import SafeConfigParser
 from optparse import OptionParser, IndentedHelpFormatter
 import logging
 import os
+import socket
 import sys
 
 from fts3.rest.client import Context
@@ -51,6 +52,13 @@ class _Formatter(IndentedHelpFormatter):
                 if len(nl) > 0:
                     lines.append(indent + nl)
             return '\n' + '\n'.join(lines) + '\n\n'
+
+
+def _get_local_endpoint():
+    """
+    Generate an endpoint using the machine hostname
+    """
+    return "https://%s:8446" % socket.getfqdn()
 
 
 class Base(object):
@@ -110,7 +118,7 @@ class Base(object):
     def __call__(self, argv=sys.argv[1:]):
         (self.options, self.args) = self.opt_parser.parse_args(argv)
         if self.options.endpoint is None:
-            self.opt_parser.error('Need an endpoint')
+            self.options.endpoint = _get_local_endpoint()
         if self.options.verbose:
             self.logger.setLevel(logging.DEBUG)
         self.validate()
