@@ -122,7 +122,7 @@ class Base(object):
         if self.options.verbose:
             self.logger.setLevel(logging.DEBUG)
         self.validate()
-        self.run()
+        return self.run()
 
     def validate(self):
         """
