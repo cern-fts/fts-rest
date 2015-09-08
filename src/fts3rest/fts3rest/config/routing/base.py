@@ -250,3 +250,7 @@ def do_connect(config, map):
                 conditions=dict(method=['GET']))
     map.connect('/autocomplete/groupname', controller='autocomplete', action='autocomplete_groupname',
                 conditions=dict(method=['GET']))
+
+    # State check
+    map.connect('/status/hosts', controller='serverstatus', action='hosts_activity',
+                conditions=dict(method=['GET']))
