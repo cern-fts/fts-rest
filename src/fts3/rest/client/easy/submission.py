@@ -81,7 +81,7 @@ def add_alternative_source(transfer, alt_source):
 def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, overwrite=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
-            retry=-1, retry_delay=0, metadata=None, priority=None):
+            retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False):
     """
     Creates a new dictionary representing a job
 
@@ -117,7 +117,8 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         multihop=multihop,
         retry=retry,
         retry_delay=retry_delay,
-        priority=priority
+        priority=priority,
+        strict_copy=strict_copy
     )
     job = dict(
         files=transfers,
