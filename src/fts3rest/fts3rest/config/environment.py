@@ -81,7 +81,6 @@ def load_environment(global_conf, app_conf):
     engine = engine_from_config(config, 'sqlalchemy.', pool_recycle = 7200, **kwargs)
     init_model(engine)
 
-
     # Disable for sqlite the isolation level to work around issues with savepoints
     if config['sqlalchemy.url'].startswith('sqlite'):
         @event.listens_for(engine, "connect")
