@@ -29,6 +29,10 @@ log = logging.getLogger(__name__)
 
 class TestScheduler(TestController):
 
+    def setUp(self):
+        Session.query(OptimizerEvolution).delete()
+        Session.commit()
+
     def tearDown(self):
         Session.query(Job).delete()
         Session.query(File).delete()
