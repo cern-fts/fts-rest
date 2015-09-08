@@ -1,17 +1,17 @@
-% FTS-REST-CLI(1) fts-rest-delegate
+% FTS-REST-CLI(1) fts-rest-server-status
 % fts-devel@cern.ch
 % September 08, 2015
 # NAME
 
-fts-rest-delegate
+fts-rest-server-status
 
 # SYNOPIS
 
-Usage: fts-rest-delegate [options]
+Usage: fts-rest-server-status [options]
 
 # DESCRIPTION
 
-This command can be used to (re)delegate your credentials to the FTS3 server
+Use this command to check on the service status.
 
 # OPTIONS
 
@@ -42,12 +42,9 @@ This command can be used to (re)delegate your credentials to the FTS3 server
 --access-token
 :	Oauth2 access token (supported only by some endpoints, takes precedence)
 
--f/--force
-:	Force the delegation
+-H/--host
+:	Limit the output to a given host
 
-# EXAMPLE
-```
-$ fts-rest-delegate -s https://fts3-devel.cern.ch:8446
-Delegation id: 9a4257f435fa2010"
+--is-active
+:	The tool will return < 0 on error, 0 if nothing is active, 1 if there are active transfers, 2 if there are active staging, 3 if there are both
 
-```

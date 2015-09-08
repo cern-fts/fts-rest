@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-transfer-cancel
 % fts-devel@cern.ch
-% July 21, 2015
+% September 08, 2015
 # NAME
 
 fts-rest-transfer-cancel
