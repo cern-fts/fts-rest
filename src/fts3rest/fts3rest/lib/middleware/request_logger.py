@@ -77,6 +77,9 @@ class RequestLogger(object):
             log.debug('Request body: ')
             for line in pylons.request.body.split('\n'):
                 log.debug(line)
+        except AttributeError:
+            # Sometimes the body is a set, so ignore the failure coming from Pylons
+            pass
         except TypeError:
             # Sometimes there is no request registered (?), so let it go
             pass
