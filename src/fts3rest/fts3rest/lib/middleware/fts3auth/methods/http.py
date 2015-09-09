@@ -47,6 +47,12 @@ def do_authentication(credentials, env):
     try:
         cert = b64decode(cred['cert'])
         sign = b64decode(cred['sign'])
+	proxy = None
+	try:
+		proxy =  b64decode(cred['prx'])
+		log.info("found a proxy on the request")
+	except:
+		pass
         ts = dateutil.parser.parse(cred['ts']).strftime('%s')
     except (TypeError, ValueError):
         log.info("Cannot decode certificate, signature or timestamp")
@@ -56,14 +62,23 @@ def do_authentication(credentials, env):
     if td > 60:
         log.info("Authorization has expired by " + str(td) + " seconds")
         raise InvalidCredentials("Authorization has expired by " + str(td) + " seconds")
-
-    x509 = X509.load_cert_string(cert, X509.FORMAT_DER)
+    if proxy:
+	x509 = X509.load_cert_string(proxy, X509.FORMAT_DER)
+	fileCertString = X509.load_cert_string(cert, X509.FORMAT_DER)
+	chain =fileCertString.as_pem()
+ 	chain += x509.as_pem()
+        chain = X509.load_cert_string(chain)
+    else:
+	x509 = X509.load_cert_string(cert, X509.FORMAT_DER)
     pubkey = x509.get_pubkey().get_rsa()
     verify = EVP.PKey()
     verify.assign_rsa(pubkey)
     verify.reset_context(cred['hash'])
     verify.verify_init()
-    verify.verify_update(cert)
+    if proxy:
+    	verify.verify_update(proxy)
+    else:
+	verify.verify_update(cert)
     verify.verify_update(cred['ts'])
     if not verify.verify_final(sign):
         log.info("Signature verification failed")
@@ -71,7 +86,12 @@ def do_authentication(credentials, env):
 
     ctx = SSL.Context()
     ctx.load_verify_locations(capath="/etc/grid-security/certificates")
-    if not ctx.validate_certificate(x509):
+    if proxy:
+	log.info("Trying to verify the proxy")
+	if not ctx.validate_certificate(chain):
+		log.info("Certificate verification failed")
+        	raise InvalidCredentials("Certificate verification failed")
+    elif not ctx.validate_certificate(x509):
         log.info("Certificate verification failed")
         raise InvalidCredentials("Certificate verification failed")
 
