@@ -313,15 +313,15 @@ class BanningController(BaseController):
         banned = Session.query(BannedSE).get(storage)
         if banned:
             try:
-                requeue = Session.query(File)\
-                    .filter(File.file_state == 'SUBMITTED')\
-                    .filter(File.finish_time == None)\
-                    .filter((File.source_se == storage) | (File.dest_se == storage))
-                for f in requeue:
-                    f.wait_timestamp = None
-                    f.wait_timeout = None
-                    Session.merge(f)
                 Session.delete(banned)
+                Session.query(File)\
+                    .filter(File.file_state == 'SUBMITTED')\
+                    .filter(File.job_finished == None)\
+                    .filter((File.source_se == storage) | (File.dest_se == storage))\
+                    .update({
+                        'wait_timestamp': None,
+                        'wait_timeout': None
+                    }, synchronize_session=False)
                 Session.commit()
             except Exception:
                 Session.rollback()
