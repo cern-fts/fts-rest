@@ -325,6 +325,7 @@ class BanningController(BaseController):
                 Session.commit()
             except Exception:
                 Session.rollback()
+                raise
             log.warn("Storage %s unbanned" % storage)
         else:
             log.warn("Unban of storage %s without effect" % storage)
