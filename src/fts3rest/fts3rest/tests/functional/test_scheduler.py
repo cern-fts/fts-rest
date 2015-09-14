@@ -28,6 +28,9 @@ log = logging.getLogger(__name__)
 
 
 class TestScheduler(TestController):
+    """
+    Test different selection strategies at submission time
+    """
 
     def setUp(self):
         Session.query(OptimizerEvolution).delete()
@@ -42,7 +45,6 @@ class TestScheduler(TestController):
 
     @staticmethod
     def fill_file_queue(self):
-
         for i in range(0, 15):
             self.app.post(
                 url="/jobs",
@@ -93,7 +95,6 @@ class TestScheduler(TestController):
 
     @staticmethod
     def fill_optimizer():
-
         for i in range(10):
             evolution = OptimizerEvolution(
                 datetime=datetime.datetime.utcnow(),
@@ -130,7 +131,6 @@ class TestScheduler(TestController):
 
     @staticmethod
     def fill_activities():
-
         activity = ActivityShare(
           vo='testvo',
           activity_share=json.dumps({
@@ -154,7 +154,6 @@ class TestScheduler(TestController):
 
     @staticmethod
     def submit_job(self, strategy):
-        # Submit job
         job = {
             'files': [
                 {
@@ -209,6 +208,10 @@ class TestScheduler(TestController):
         self.assertEqual(len(uniq_hashes), 1)
 
     def test_queue(self):
+        """
+        Test the 'queue' algorithm
+        This algorithm must choose the pair with lest pending transfers
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_file_queue(self)
@@ -227,8 +230,11 @@ class TestScheduler(TestController):
         job_id = TestScheduler.submit_job(self, "queue")
         TestScheduler.validate(job_id, self)
 
-
     def test_success(self):
+        """
+        Test the 'success' algorithm
+        This algorithm must choose the pair with highest success rate
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_optimizer()
@@ -236,6 +242,10 @@ class TestScheduler(TestController):
         TestScheduler.validate(job_id, self)
 
     def test_throughput(self):
+        """
+        Test the 'throughput' algorithm
+        This algorithm must choose the pair with highest total throughput
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_optimizer()
@@ -243,6 +253,10 @@ class TestScheduler(TestController):
         TestScheduler.validate(job_id, self)
 
     def test_file_throughput(self):
+        """
+        Test the 'file-throughput algorithm
+        This algorithm must choose the pair with highest throughput _per file_
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_optimizer()
@@ -250,6 +264,11 @@ class TestScheduler(TestController):
         TestScheduler.validate(job_id, self)
 
     def test_pending_data(self):
+        """
+        Test the 'pending-data' algorihtm
+        This algorithm must choose the pair with less data to be transferred
+        (sum of the file sizes of the queued transfers)
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_activities()
@@ -258,6 +277,11 @@ class TestScheduler(TestController):
         TestScheduler.validate(job_id, self)
 
     def test_waiting_time(self):
+        """
+        Test the 'waiting-time' algorithm
+        This algorithm must choose the pair with less estimated waiting time
+        (pending data / total throughput)
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_activities()
@@ -267,6 +291,11 @@ class TestScheduler(TestController):
         TestScheduler.validate(job_id, self)
 
     def test_waiting_time_with_error(self):
+        """
+        Test the 'waiting-time-with-error' algorihtm
+        This algorithm must choose the pair with less estimated waiting time,
+        penalized by its failure rate
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_activities()
@@ -276,6 +305,11 @@ class TestScheduler(TestController):
         TestScheduler.validate(job_id, self)
 
     def test_duration(self):
+        """
+        Test the 'duration' algorithm
+        Similar to the 'waiting-time-with-error', but accounting for the file size
+        of the submitted transfer
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_activities()
@@ -284,10 +318,10 @@ class TestScheduler(TestController):
         job_id = TestScheduler.submit_job(self, "duration")
         TestScheduler.validate(job_id, self)
 
-    def test_auto(self):
-        self.test_queue()
-
     def test_invalid_strategy(self):
+        """
+        Test a random strategy name, which should fall-back to 'auto'
+        """
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_file_queue(self)
