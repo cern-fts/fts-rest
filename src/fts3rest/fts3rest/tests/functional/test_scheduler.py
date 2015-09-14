@@ -152,7 +152,6 @@ class TestScheduler(TestController):
         Session.add(activity)
         Session.commit()
 
-    @staticmethod
     def submit_job(self, strategy):
         job = {
             'files': [
@@ -179,29 +178,20 @@ class TestScheduler(TestController):
         ).json['job_id']
         return job_id
 
-    @staticmethod
-    def validate(job_id, self):
-        # site03.fr should be the activated transfer
+    def validate(self, job_id, expected_submitted='http://site03.fr/file'):
         db_job = Session.query(Job).get(job_id)
 
         self.assertEqual(db_job.reuse_job, 'R')
-
         self.assertEqual(len(db_job.files), 3)
 
-        self.assertEqual(db_job.files[0].file_index, 0)
-        self.assertEqual(db_job.files[0].source_surl, 'http://site01.es/file')
-        self.assertEqual(db_job.files[0].dest_surl, 'http://dest.ch/file')
-        self.assertEqual(db_job.files[0].file_state, 'NOT_USED')
-
-        self.assertEqual(db_job.files[1].file_index, 0)
-        self.assertEqual(db_job.files[1].source_surl, 'http://site02.ch/file')
-        self.assertEqual(db_job.files[1].dest_surl, 'http://dest.ch/file')
-        self.assertEqual(db_job.files[1].file_state, 'NOT_USED')
-
-        self.assertEqual(db_job.files[2].file_index, 0)
-        self.assertEqual(db_job.files[2].source_surl, 'http://site03.fr/file')
-        self.assertEqual(db_job.files[2].dest_surl, 'http://dest.ch/file')
-        self.assertEqual(db_job.files[2].file_state, 'SUBMITTED')
+        for f in db_job.files:
+            self.assertEqual(f.file_index, 0)
+            self.assertEqual(f.dest_surl, 'http://dest.ch/file')
+            if f.source_surl == expected_submitted:
+                self.assertEqual(f.file_state, 'SUBMITTED')
+            else:
+                self.assertEqual(f.file_state, 'NOT_USED')
+            self.assertEqual(db_job.files[0].source_surl, 'http://site01.es/file')
 
         # Same file index, same hashed id
         uniq_hashes = set(map(lambda f: f.hashed_id, db_job.files))
@@ -215,20 +205,18 @@ class TestScheduler(TestController):
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_file_queue(self)
-        job_id = TestScheduler.submit_job(self, "queue")
-        TestScheduler.validate(job_id, self)
- 
-        self.setup_gridsite_environment()
-        self.push_delegation()
-        job_id = TestScheduler.submit_job(self, "queue")
-        TestScheduler.validate(job_id, self)
- 
+
+        job_id = self.submit_job("queue")
+        self.validate(job_id)
+
+        job_id = self.submit_job("queue")
+        self.validate(job_id)
+
+        # Trigger a cache expiration
         time.sleep(6)
 
-        self.setup_gridsite_environment()
-        self.push_delegation()
-        job_id = TestScheduler.submit_job(self, "queue")
-        TestScheduler.validate(job_id, self)
+        job_id = self.submit_job("queue")
+        self.validate(job_id)
 
     def test_success(self):
         """
@@ -238,8 +226,8 @@ class TestScheduler(TestController):
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_optimizer()
-        job_id = TestScheduler.submit_job(self, "success")
-        TestScheduler.validate(job_id, self)
+        job_id = self.submit_job("success")
+        self.validate(job_id)
 
     def test_throughput(self):
         """
@@ -249,8 +237,8 @@ class TestScheduler(TestController):
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_optimizer()
-        job_id = TestScheduler.submit_job(self, "throughput")
-        TestScheduler.validate(job_id, self)
+        job_id = self.submit_job("throughput")
+        self.validate(job_id)
 
     def test_file_throughput(self):
         """
@@ -260,8 +248,8 @@ class TestScheduler(TestController):
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_optimizer()
-        job_id = TestScheduler.submit_job(self, "file-throughput")
-        TestScheduler.validate(job_id, self)
+        job_id = self.submit_job("file-throughput")
+        self.validate(job_id)
 
     def test_pending_data(self):
         """
@@ -273,8 +261,8 @@ class TestScheduler(TestController):
         self.push_delegation()
         TestScheduler.fill_activities()
         TestScheduler.fill_file_queue(self)
-        job_id = TestScheduler.submit_job(self, "pending-data")
-        TestScheduler.validate(job_id, self)
+        job_id = self.submit_job("pending-data")
+        self.validate(job_id)
 
     def test_waiting_time(self):
         """
@@ -287,8 +275,8 @@ class TestScheduler(TestController):
         TestScheduler.fill_activities()
         TestScheduler.fill_optimizer()
         TestScheduler.fill_file_queue(self)
-        job_id = TestScheduler.submit_job(self, "waiting-time")
-        TestScheduler.validate(job_id, self)
+        job_id = self.submit_job("waiting-time")
+        self.validate(job_id)
 
     def test_waiting_time_with_error(self):
         """
@@ -301,8 +289,8 @@ class TestScheduler(TestController):
         TestScheduler.fill_activities()
         TestScheduler.fill_optimizer()
         TestScheduler.fill_file_queue(self)
-        job_id = TestScheduler.submit_job(self, "waiting-time-with-error")
-        TestScheduler.validate(job_id, self)
+        job_id = self.submit_job("waiting-time-with-error")
+        self.validate(job_id)
 
     def test_duration(self):
         """
@@ -315,8 +303,8 @@ class TestScheduler(TestController):
         TestScheduler.fill_activities()
         TestScheduler.fill_optimizer()
         TestScheduler.fill_file_queue(self)
-        job_id = TestScheduler.submit_job(self, "duration")
-        TestScheduler.validate(job_id, self)
+        job_id = self.submit_job("duration")
+        self.validate(job_id)
 
     def test_invalid_strategy(self):
         """
@@ -325,5 +313,18 @@ class TestScheduler(TestController):
         self.setup_gridsite_environment()
         self.push_delegation()
         TestScheduler.fill_file_queue(self)
-        job_id = TestScheduler.submit_job(self, "YOLO")
-        TestScheduler.validate(job_id, self)
+        job_id = self.submit_job("YOLO")
+        self.validate(job_id)
+
+    def test_orderly(self):
+        """
+        Test the 'orderly' algorithm
+        This isn't really an algorithm. Just choose the first pair as submitted.
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        TestScheduler.fill_activities()
+        TestScheduler.fill_optimizer()
+        TestScheduler.fill_file_queue(self)
+        job_id = self.submit_job("orderly")
+        self.validate(job_id, expected_submitted='http://site01.es/file')
