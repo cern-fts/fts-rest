@@ -18,10 +18,10 @@
 import json
 import datetime
 import logging
-import time
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
+from fts3rest.lib.scheduler.Cache import ThreadLocalCache
 from fts3.model import Job, File, OptimizerEvolution, ActivityShare
 
 log = logging.getLogger(__name__)
@@ -213,7 +213,7 @@ class TestScheduler(TestController):
         self.validate(job_id)
 
         # Trigger a cache expiration
-        time.sleep(6)
+        ThreadLocalCache.cache_cleanup()
 
         job_id = self.submit_job("queue")
         self.validate(job_id)
