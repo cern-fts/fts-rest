@@ -348,3 +348,42 @@ class TestScheduler(TestController):
         TestScheduler.fill_file_queue(self)
         job_id = self.submit_job("orderly")
         self.validate(job_id, expected_submitted='http://site01.es/file')
+
+    def test_orderly_same_sources(self):
+        """
+        Test the 'orderly' algorithm, but the same source appears more than once
+        This is a regression for FTS-323
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+        TestScheduler.fill_activities()
+        TestScheduler.fill_optimizer()
+        TestScheduler.fill_file_queue(self)
+        job = {
+            'files': [
+                {
+                    'sources': [
+                        'http://site01.es/file',
+                        'http://site02.ch/file',
+                        'http://site01.es/file'
+                        ],
+                    'destinations': ['http://dest.ch/file'],
+                    'selection_strategy': 'orderly',
+                    'checksum': 'adler32:1234',
+                    'filesize': 1024,
+                    'metadata': {'mykey': 'myvalue'}
+                }
+            ],
+            'params': {'overwrite': True}
+        }
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        files = Session.query(File).filter(File.job_id == job_id)
+        self.assertEqual('SUBMITTED', files[0].file_state)
+        self.assertEqual('NOT_USED', files[1].file_state)
+        self.assertEqual('NOT_USED', files[2].file_state)

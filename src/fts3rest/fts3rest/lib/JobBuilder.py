@@ -134,47 +134,47 @@ def _select_best_replica(files, vo_name, entry_state, strategy):
     source_se_list = map(lambda f: f['source_se'], files)
 
     if strategy == "orderly":
-        best_ses = source_se_list
+        sorted_ses = source_se_list
 
     elif strategy == "queue" or strategy == "auto":
-        best_ses = map(lambda x: x[0], s.rank_submitted(source_se_list,
+        sorted_ses = map(lambda x: x[0], s.rank_submitted(source_se_list,
                                                         dst,
                                                         vo_name))
 
     elif strategy == "success":
-        best_ses = map(lambda x: x[0], s.rank_success_rate(source_se_list,
+        sorted_ses = map(lambda x: x[0], s.rank_success_rate(source_se_list,
                                                            dst))
 
     elif strategy == "throughput":
-        best_ses = map(lambda x: x[0], s.rank_throughput(source_se_list,
+        sorted_ses = map(lambda x: x[0], s.rank_throughput(source_se_list,
                                                          dst))
 
     elif strategy == "file-throughput":
-        best_ses = map(lambda x: x[0], s.rank_per_file_throughput(
+        sorted_ses = map(lambda x: x[0], s.rank_per_file_throughput(
                                                            source_se_list,
                                                            dst))
 
     elif strategy == "pending-data":
-        best_ses = map(lambda x: x[0], s.rank_pending_data(source_se_list,
+        sorted_ses = map(lambda x: x[0], s.rank_pending_data(source_se_list,
                                                            dst,
                                                            vo_name,
                                                            activity))
 
     elif strategy == "waiting-time":
-        best_ses = map(lambda x: x[0], s.rank_waiting_time(source_se_list,
+        sorted_ses = map(lambda x: x[0], s.rank_waiting_time(source_se_list,
                                                            dst,
                                                            vo_name,
                                                            activity))
 
     elif strategy == "waiting-time-with-error":
-        best_ses = map(lambda x: x[0], s.rank_waiting_time_with_error(
+        sorted_ses = map(lambda x: x[0], s.rank_waiting_time_with_error(
                                                                source_se_list,
                                                                dst,
                                                                vo_name,
                                                                activity))
 
     elif strategy == "duration":
-        best_ses = map(lambda x: x[0], s.rank_finish_time(source_se_list,
+        sorted_ses = map(lambda x: x[0], s.rank_finish_time(source_se_list,
                                                           dst,
                                                           vo_name,
                                                           activity,
@@ -182,10 +182,15 @@ def _select_best_replica(files, vo_name, entry_state, strategy):
     else:
         raise HTTPBadRequest(strategy + " algorithm is not supported by Scheduler")
 
+    # We got the storages sorted from better to worst following
+    # the chosen strategy.
+    # We need to find the file with the source matching that best_se
     best_index = 0
+    best_se = sorted_ses[0]
     for index, transfer in enumerate(files):
-        if transfer['source_se'] == best_ses[0]:
+        if transfer['source_se'] == best_se:
             best_index = index
+            break
     files[best_index]['file_state'] = entry_state
 
 
