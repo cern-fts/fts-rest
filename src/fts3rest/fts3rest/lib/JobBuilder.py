@@ -180,11 +180,8 @@ def _select_best_replica(files, vo_name, entry_state, strategy):
                                                           activity,
                                                           user_filesize))
     else:
-        log.info(strategy + " algorithm is not supported by Scheduler")
-        log.info("'auto' algorithm is invoked")
-        best_ses = map(lambda x: x[0], s.rank_submitted(source_se_list,
-                                                        dst,
-                                                        vo_name))
+        raise HTTPBadRequest(strategy + " algorithm is not supported by Scheduler")
+
     best_index = 0
     for index, transfer in enumerate(files):
         if transfer['source_se'] == best_ses[0]:

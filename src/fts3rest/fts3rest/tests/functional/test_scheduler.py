@@ -308,13 +308,33 @@ class TestScheduler(TestController):
 
     def test_invalid_strategy(self):
         """
-        Test a random strategy name, which should fall-back to 'auto'
+        Test a random strategy name, which must fail
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-        TestScheduler.fill_file_queue(self)
-        job_id = self.submit_job("YOLO")
-        self.validate(job_id)
+        job = {
+            'files': [
+                {
+                    'sources': [
+                        'http://site01.es/file',
+                        'http://site02.ch/file',
+                        'http://site03.fr/file'
+                        ],
+                    'destinations': ['http://dest.ch/file'],
+                    'selection_strategy': "YOLO",
+                    'checksum': 'adler32:1234',
+                    'filesize': 1024,
+                    'metadata': {'mykey': 'myvalue'}
+                }
+            ],
+            'params': {'overwrite': True}
+        }
+        self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=400
+        )
 
     def test_orderly(self):
         """
