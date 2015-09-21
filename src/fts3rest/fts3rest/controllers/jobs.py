@@ -187,7 +187,10 @@ class JobsController(BaseController):
 
         # request is not available inside the generator
         environ = request.environ
-        file_fields = request.GET.get('files', '').split(',')
+        if 'files' in request.GET:
+            file_fields = request.GET['files'].split(',')
+        else:
+            file_fields = []
 
         statuses = list()
         for job_id in filter(len, job_ids):
