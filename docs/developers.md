@@ -3,7 +3,7 @@ Developer notes
 This document briefly summarizes some points that can be of interest for anyone modifying the FTS3 RESTful API.
 
 **It is not intended for developers of client applications**. For them we have the
-[auto generated API documentation](api.md), the list of [curl examples](api-examples.md) or the [easy bindings](easy/README.md).
+[auto generated API documentation](api.md), the list of [curl examples](api-curl.md) or the [easy bindings](easy/README.md).
 
 Quick references
 ----------------
