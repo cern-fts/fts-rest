@@ -67,39 +67,44 @@ def process_cli_impl(cli_name, impl, output_base_path):
     # Override prog
     instance.opt_parser.prog = cli_name
 
+    usage = instance.opt_parser.get_usage()
+
     output_path = os.path.join(output_base_path, cli_name) + '.md'
     md_file = open(output_path, 'wt')
 
-    md_file.write("%% FTS-REST-CLI(1) %s\n" % cli_name)
-    md_file.write("% fts-devel@cern.ch\n")
-    md_file.write("%% %s\n" % date.today().strftime("%B %d, %Y"))
+    print >>md_file, "%% FTS-REST-CLI(1) %s" % cli_name
+    print >>md_file, "% fts-devel@cern.ch"
+    print >>md_file, "%% %s" % date.today().strftime("%B %d, %Y")
 
-    md_file.write("# NAME\n\n")
-    md_file.write("%s\n\n" % cli_name)
-    md_file.write("# SYNOPIS\n\n")
-    md_file.write("%s\n" % instance.opt_parser.get_usage())
+    print >>md_file, "# NAME\n"
+    print >>md_file, "%s\n" % cli_name
+    print >>md_file, "# SYNOPIS\n"
+    print >>md_file, usage
 
-    md_file.write("# DESCRIPTION\n\n")
+    print >>md_file, "# DESCRIPTION\n"
     try:
         description = sanitize_text(instance.opt_parser.get_description())
-        md_file.write("%s\n\n" % description)
+        print >>md_file, "%s\n" % description
     except:
         description = ""
 
-    md_file.write("# OPTIONS\n\n")
+    print >>md_file, "# OPTIONS\n"
+    options = str()
     for option in instance.opt_parser.option_list:
-        md_file.write(
-            "%s\n:\t%s\n\n" % (str(option), ". ".join(map(lambda s: s.strip().capitalize(), option.help.split('.'))))
-        )
+        option_line = "%s\n:\t%s\n\n" % (str(option), ". ".join(map(lambda s: s.strip().capitalize(), option.help.split('.'))))
+        print >>md_file, option_line,
+        options += option_line
 
     if instance.opt_parser.epilog:
         epilog = sanitize_text(instance.opt_parser.epilog, prog=cli_name)
-        md_file.write("# EXAMPLE\n")
-        md_file.write("```\n%s\n```\n" % epilog)
+        print >>md_file, "# EXAMPLE"
+        print >>md_file, "```\n%s\n```\n" % epilog,
+    else:
+        epilog = ""
 
     md_file.close()
 
-    return description
+    return cli_name, usage, description, options, epilog
 
 
 def generate_index(cli_list, output_base_path):
@@ -107,10 +112,20 @@ def generate_index(cli_list, output_base_path):
     output_path = os.path.join(output_base_path, 'README.md')
     md_file = open(output_path, 'wt')
 
-    md_file.write('# FTS3 REST Command Line Tools')
-    for name, description in cli_list.iteritems():
-        md_file.write('\n## [' + name + '](' + name + '.md)\n')
-        md_file.write(description + '\n')
+    print >>md_file, '# FTS3 REST Command Line Tools'
+    print >>md_file
+    for name, usage, description, options, epilog in cli_list:
+        print >>md_file, '##', name
+        print >>md_file, description
+        print >>md_file, '### Usage'
+        print >>md_file, usage
+        print >>md_file, '### Options'
+        print >>md_file, options
+        if epilog:
+            print >>md_file, '### Example'
+            print >>md_file, '```'
+            print >>md_file, epilog
+            print >>md_file, '```'
 
 
 def process_cli_file(path, output_base_path):
@@ -121,20 +136,19 @@ def process_cli_file(path, output_base_path):
         for symbol in dir(module):
             elm = getattr(module, symbol)
             if isinstance(elm, type) and issubclass(elm, Base):
-                description = process_cli_impl(cli_name, elm, output_base_path)
-                return cli_name, description
+                return process_cli_impl(cli_name, elm, output_base_path)
     except SyntaxError:
         log.debug("%s is not a Python file" % path)
-        return None, None
+        return None
 
 
 def process_all_cli(cli_base_path):
-    cli_list = {}
+    cli_list = []
     for cli_file in os.listdir(cli_base_path):
         cli_path = os.path.join(cli_base_path, cli_file)
-        name, description = process_cli_file(cli_path, output_base_path)
-        if name:
-            cli_list[name] = description
+        spec = process_cli_file(cli_path, output_base_path)
+        if spec:
+            cli_list.append(spec)
     generate_index(cli_list, output_base_path)
 
 
