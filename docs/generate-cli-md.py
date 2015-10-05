@@ -84,7 +84,7 @@ def process_cli_impl(cli_name, impl, output_base_path):
         description = sanitize_text(instance.opt_parser.get_description())
         md_file.write("%s\n\n" % description)
     except:
-        pass
+        description = ""
 
     md_file.write("# OPTIONS\n\n")
     for option in instance.opt_parser.option_list:
@@ -99,6 +99,19 @@ def process_cli_impl(cli_name, impl, output_base_path):
 
     md_file.close()
 
+    return description
+
+
+def generate_index(cli_list, output_base_path):
+    log.debug("Generatic index")
+    output_path = os.path.join(output_base_path, 'README.md')
+    md_file = open(output_path, 'wt')
+
+    md_file.write('# FTS3 REST Command Line Tools')
+    for name, description in cli_list.iteritems():
+        md_file.write('\n## [' + name + '](' + name + '.md)\n')
+        md_file.write(description + '\n')
+
 
 def process_cli_file(path, output_base_path):
     cli_name = os.path.basename(path)
@@ -108,9 +121,21 @@ def process_cli_file(path, output_base_path):
         for symbol in dir(module):
             elm = getattr(module, symbol)
             if isinstance(elm, type) and issubclass(elm, Base):
-                process_cli_impl(cli_name, elm, output_base_path)
+                description = process_cli_impl(cli_name, elm, output_base_path)
+                return cli_name, description
     except SyntaxError:
         log.debug("%s is not a Python file" % path)
+        return None, None
+
+
+def process_all_cli(cli_base_path):
+    cli_list = {}
+    for cli_file in os.listdir(cli_base_path):
+        cli_path = os.path.join(cli_base_path, cli_file)
+        name, description = process_cli_file(cli_path, output_base_path)
+        if name:
+            cli_list[name] = description
+    generate_index(cli_list, output_base_path)
 
 
 if __name__ == '__main__':
@@ -122,6 +147,4 @@ if __name__ == '__main__':
     cli_base_path = os.path.join(_base_dir, '..', 'src', 'cli')
     log.debug("CLI directory: %s" % cli_base_path)
     log.debug("Output path: %s" % output_base_path)
-    for cli_file in os.listdir(cli_base_path):
-        cli_path = os.path.join(cli_base_path, cli_file)
-        process_cli_file(cli_path, output_base_path)
+    process_all_cli(cli_base_path)
