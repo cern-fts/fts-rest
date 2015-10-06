@@ -1,14 +1,13 @@
 Developer notes
 ===============
-This document briefly summarizes some points that can be of interest for anyone modifying the FTS3 RESTful API.
+This document briefly summarizes some points that can be of interest for anyone
+modifying the FTS3 RESTful API.
 
 **It is not intended for developers of client applications**. For them we have the
 [auto generated API documentation](api.md), the list of [curl examples](api-curl.md) or the [easy bindings](easy/README.md).
 
 Quick references
 ----------------
-A basic knowledge of git is obviously required. There are plenty of [tutorials](https://www.google.ch/search?q=git+tutorial) out there.
-
 The service is written using [Pylons 0.9.7](https://pylons-webframework.readthedocs.org/en/v0.9.7/)
 
 The database abstraction is done by [SQLAlchemy 0.8](http://docs.sqlalchemy.org/en/rel_0_8/)
@@ -18,7 +17,6 @@ automatically with [nosetests](https://nose.readthedocs.org/en/latest/).
 
 Branches
 --------
-
 ### Main branches
 #### develop
 Integrated development version. Should be in a consistent state, but not necessarely stable.
@@ -32,13 +30,6 @@ in the FTS3 production services.
 develop should be consistent and workable. For big changesets, you can keep them in a
 separate branch, and merge them into develop when they are ready (remember to rebase first).
 You don't need to keep these branches in the remote repositories.
-
-### Remotes
-There are two clones of this repository:
-* https://github.com/cern-it-sdc-id/fts3-rest
-* https://gitlab.cern.ch/fts/fts-rest
-
-Please, keep master and develop synchronized in both.
 
 Release cycle
 -------------
