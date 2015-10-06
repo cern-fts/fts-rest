@@ -96,6 +96,12 @@ P.S I recognise I don't use it as much as I should.
 4. Before pushing, group related commits (yes, [you can do this with git](http://stackoverflow.com/questions/6884022/collapsing-a-group-of-commits-into-one-on-git))
     * If you have two commits for one single bug fix, try grouping them whenever it makes sense.
 
+Formatting
+----------
+Use [PEP8](https://www.python.org/dev/peps/pep-0008/). There are tools and IDE's that
+check for consistency with this guidelines.
+Do not kill yourself over it, but try to follow as much as possible.
+
 FAQ
 ---
 
