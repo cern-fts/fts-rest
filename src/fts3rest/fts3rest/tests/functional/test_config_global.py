@@ -130,3 +130,26 @@ class TestConfigGlobal(TestController):
 
         opt = Session.query(OptimizerConfig).first()
         self.assertEqual(2, opt.mode)
+
+    def test_delete_vo_global_config(self):
+        """
+        Delete the global configuration for the given VO
+        """
+        self.test_set()
+
+        self.app.post_json(url="/config/global",
+            params = dict(
+                retry=42,
+                max_time_queue=22,
+                global_timeout=55,
+                sec_per_mb=1,
+                show_user_dn=True,
+                max_per_se=10,
+                max_per_link=15,
+                vo_name='dteam'
+            ),
+            status=200
+        )
+
+        self.app.delete(url="/config/global",  status=400)
+        self.app.delete(url="/config/global?vo_name=dteam",  status=204)
