@@ -194,6 +194,7 @@ class TestDelegation(TestController):
                         status=404)
 
         proxy = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
+
         self.assertEqual(None, proxy)
 
     def test_set_voms(self):
