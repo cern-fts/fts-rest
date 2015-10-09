@@ -250,3 +250,15 @@ class TestDelegation(TestController):
 
         proxy = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
         self.assertNotEqual(None, proxy)
+
+    def test_cert(self, cert=None):
+        """
+        Test for returning the user certificate
+        """
+        self.setup_gridsite_environment()
+        if cert is None:
+            cert = 'SSL_CLIENT_CERT'
+        self.app.extra_environ['SSL_CLIENT_CERT'] = 'certificate:' + cert
+
+        returns = self.app.get(url='/whoami/certificate', status=200).body
+        self.assertEqual('certificate:' + cert, returns)
