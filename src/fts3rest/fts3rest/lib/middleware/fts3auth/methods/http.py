@@ -65,11 +65,16 @@ def do_authentication(credentials, env):
     if proxy:
 	x509 = X509.load_cert_string(proxy, X509.FORMAT_DER)
 	fileCertString = X509.load_cert_string(cert, X509.FORMAT_DER)
+	#print the cert DN
+	certDN =  '/' + '/'.join(fileCertString.get_subject().as_text().split(', '))
+        proxyDN = '/' + '/'.join(x509.get_subject().as_text().split(', '))
+	log.info("cert DN: "+ certDN)
 	chain =fileCertString.as_pem()
  	chain += x509.as_pem()
         chain = X509.load_cert_string(chain)
     else:
 	x509 = X509.load_cert_string(cert, X509.FORMAT_DER)
+        certDN = '/' + '/'.join(x509.get_subject().as_text().split(', '))
     pubkey = x509.get_pubkey().get_rsa()
     verify = EVP.PKey()
     verify.assign_rsa(pubkey)
@@ -94,8 +99,9 @@ def do_authentication(credentials, env):
     elif not ctx.validate_certificate(x509):
         log.info("Certificate verification failed")
         raise InvalidCredentials("Certificate verification failed")
-
-    credentials.user_dn = '/' + '/'.join(x509.get_subject().as_text().split(', '))
+    credentials.user_dn = certDN
+    if proxy:
+	credentials.dn.append(proxyDN)
     credentials.dn.append(credentials.user_dn)
     if 'SSL_CLIENT_S_DN' in env:
         credentials.dn.append(urllib.unquote_plus(env['SSL_CLIENT_S_DN']))
