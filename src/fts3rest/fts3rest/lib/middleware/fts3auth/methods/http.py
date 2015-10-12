@@ -24,7 +24,8 @@ from base64 import b64decode
 from M2Crypto import X509, EVP
 from m2ext import SSL
 
-from fts3rest.lib.middleware.fts3auth.credentials import InvalidCredentials, build_vo_from_dn, generate_delegation_id
+from fts3rest.lib.middleware.fts3auth.credentials import InvalidCredentials, build_vo_from_dn, generate_delegation_id, vo_from_fqan
+from fts3rest.lib.helpers.voms import VomsClient
 
 
 def do_authentication(credentials, env):
@@ -69,9 +70,9 @@ def do_authentication(credentials, env):
 	certDN =  '/' + '/'.join(fileCertString.get_subject().as_text().split(', '))
         proxyDN = '/' + '/'.join(x509.get_subject().as_text().split(', '))
 	log.info("cert DN: "+ certDN)
-	chain =fileCertString.as_pem()
- 	chain += x509.as_pem()
-        chain = X509.load_cert_string(chain)
+	chain_pem =fileCertString.as_pem()
+ 	chain_pem += x509.as_pem()
+        chain = X509.load_cert_string(chain_pem)
     else:
 	x509 = X509.load_cert_string(cert, X509.FORMAT_DER)
         certDN = '/' + '/'.join(x509.get_subject().as_text().split(', '))
@@ -105,13 +106,16 @@ def do_authentication(credentials, env):
     credentials.dn.append(credentials.user_dn)
     if 'SSL_CLIENT_S_DN' in env:
         credentials.dn.append(urllib.unquote_plus(env['SSL_CLIENT_S_DN']))
-
-#   for each VOMS attr:
-#       fqan = #magic
-#       vo = vo_from_fqan(fqan)
-#       credentials.voms_cred.append(fqan)
-#       if vo not in credentials.vos and vo:
-#           credentials.vos.append(vo)
+    if proxy:
+    	voms_client = VomsClient(chain_pem)
+	log.info("proxy path: " + voms_client.proxy_path)
+	fqans = voms_client.get_proxy_fqans()
+	voms_client.__del__()
+	for fqan in fqans:
+		vo = vo_from_fqan(fqan)
+		credentials.voms_cred.append(fqan)
+		if vo not in credentials.vos and vo:
+			credentials.vos.append(vo)
 
     # Generate the delegation ID
     credentials.delegation_id = generate_delegation_id(credentials.user_dn, credentials.voms_cred)
