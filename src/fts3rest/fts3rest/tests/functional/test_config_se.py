@@ -222,3 +222,11 @@ class TestConfigSe(TestController):
             },
             status=400
         )
+
+    def test_remove_se_config(self):
+        """
+        Remove the configuration for a given SE
+        """
+        self.test_get_se_config()
+        self.app.delete(url="/config/se",  status=400)
+        self.app.delete(url="/config/se?se=test.cern.ch",  status=204)
