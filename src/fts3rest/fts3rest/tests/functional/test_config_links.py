@@ -55,6 +55,32 @@ class TestConfigLinks(TestController):
         self.assertEqual(10, link.urlcopy_tx_to)
         self.assertEqual(False, link.auto_tuning)
 
+    def test_wrong_config_link(self):
+        """
+        Set wrong config
+        """
+        self.app.post_json("/config/links", params={
+            'symbolicname': None,
+            'source': 'test.cern.ch',
+            'destination': 'test2.cern.ch',
+            'state': True,
+            'nostreams': 16,
+            'tcp_buffer_size': 4096,
+            'urlcopy_tx_to': 10,
+            'auto_tuning': False
+        }, status=400)
+
+        self.app.post_json("/config/links", params={
+            'symbolicname': 'test-link',
+            'source': '*',
+            'destination': '*',
+            'state': True,
+            'nostreams': 16,
+            'tcp_buffer_size': 4096,
+            'urlcopy_tx_to': 10,
+            'auto_tuning': False
+        }, status=400)
+
     def test_reconfig_link_se(self):
         """
         Reset a SE link configuration
