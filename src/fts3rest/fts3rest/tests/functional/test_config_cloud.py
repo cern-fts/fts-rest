@@ -144,3 +144,45 @@ class TestConfigCloud(TestController):
         self.app.delete(url="/config/cloud_storage/S3:host/testvo", status=204)
         user = Session.query(CloudStorageUser).get(('', 'S3:host', 'testvo'))
         self.assertIsNone(user)
+
+    def test_missing_storage_name(self):
+        """
+        Missing storage name
+        """
+        self.app.post_json(
+            url="/config/cloud_storage",
+            params={
+                'app_key': 'dropbox_app_key',
+                'app_secret': 'dropbox_app_secret',
+                'service_api_url': 'https://www.dropbox.com/1'
+            },
+            status=400
+        )
+
+    def test_remove_storage_wrong(self):
+        """
+        The storage does not exist
+        """
+        self.app.delete(url="/config/cloud_storage/dsfsd:host", status=404)
+
+    def test_add_wrong(self):
+        """
+        One of user_dn or vo_name must be specified
+        """
+        self.test_add_s3()
+        self.app.post_json(
+            url="/config/cloud_storage/S3:host",
+            params={'access_key': '1234', 'secret_key': 'abcd',}, status=400)
+
+    def test_delete_wrong(self):
+        """
+        Try to delete the storage does not exist (wrong storage name)
+        """
+        self.app.delete(url="/config/cloud_storage/:host/testvo", status=404)
+
+    def test_add_wrong(self):
+        """
+        Try to add the storage does not exist
+        """
+        self.app.get(url="/config/cloud_storage/:host", status=404)
+        self.app.get(url="/config/cloud_storage/dfsdf:host", status=404)
