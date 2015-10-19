@@ -85,6 +85,13 @@ class TestOAuth2(TestController):
         self.assertEqual('/DC=ch/DC=cern/CN=Test User', app.owner)
         self.assertEqual(set(scope.split(',')), app.scope)
 
+        self.app.post(
+            url="/oauth2/register",
+            content_type='application/json',
+            params=json.dumps(req),
+            status=403
+        )
+
         return client_id
 
     def test_get_my_apps(self):
@@ -424,3 +431,97 @@ class TestOAuth2(TestController):
             headers={'Authorization': str('Bearer %s' % access_token)},
             status=403
         )
+
+    def test_app_not_found(self):
+        """
+        Application not found
+        """
+        client_id = self.test_get_app()
+        self.app.get(
+            url="/oauth2/apps/%s" % client_id,
+            status=404
+        )
+
+    def test_update_app(self):
+        """
+        Try to update app
+        """
+        self.setup_gridsite_environment()
+        client_id = str(self.test_register())
+
+        self.app.post(
+            url="/oauth2/apps/%s?scope=transfer&redirect_to=&name=MyApp&description=" % client_id,
+            status=303
+        )
+
+    def test_invalid_scope(self):
+        """
+        Set invalid scope
+        """
+        self.setup_gridsite_environment()
+        req = {
+            'name': 'MyApp',
+            'description': 'Blah blah blah',
+            'website': 'https://example.com',
+            'redirect_to': 'https://mysite.com/callback',
+            'scope': 'transfer,1'
+        }
+        self.app.post(
+            url="/oauth2/register",
+            content_type='application/json',
+            params=json.dumps(req),
+            status=400
+        )
+
+    def test_missing_web_or_name(self):
+        """
+        Missing website
+        """
+
+        config = {'name': 'MyApp', 'website': 'https://example.com'}
+
+        for i in config:
+            self.setup_gridsite_environment()
+            k = config
+            del config[i]
+            self.app.post(url="/oauth2/register", content_type='application/json', params=json.dumps(k), status=400)
+            return config
+
+    def test_missing_redirect(self):
+        """
+        Missing redirect_to
+        """
+        self.setup_gridsite_environment()
+        req = {
+            'name': 'MyApp',
+            'description': 'Blah blah blah',
+            'website': 'https://example.com',
+            'redirect_to': '',
+            'scope': 'transfer'
+        }
+        self.app.post(
+            url="/oauth2/register",
+            content_type='application/json',
+            params=json.dumps(req),
+            status=400
+        )
+
+    def test_get_my_apps_3(self):
+        """
+        Lines 100,101
+        """
+        self.setup_gridsite_environment()
+        req = {
+            'name': 'MyApp',
+            'description': 'Blah blah blah',
+            'website': 'https://example.com',
+            'redirect_to': 'https://mysite.com/callback',
+            'scope': 'transfer'
+        }
+        self.app.post(
+            url="/oauth2/register",
+            content_type='text/html; charset=UTF-8',
+            params=json.dumps(req),
+            status=400
+        )
+
