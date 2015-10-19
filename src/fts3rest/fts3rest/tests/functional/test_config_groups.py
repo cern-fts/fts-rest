@@ -128,3 +128,17 @@ class TestConfigGroup(TestController):
         Try to list members of a non existing group
         """
         self.app.get_json("/config/groups/bahbah", status=404)
+
+    def test_add_member_wrong(self):
+        """
+        Add missing values
+        """
+
+        config = {'member': 'test.cern.ch', 'groupname': 'bahbah'}
+
+        for i in config:
+            k = config
+            k[i] = ''
+            print k
+            self.app.post(url="/config/groups", params=k, status=400)
+            return config
