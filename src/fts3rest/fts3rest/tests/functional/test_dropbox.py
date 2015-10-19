@@ -14,7 +14,9 @@
 #   limitations under the License.
 
 import json
+import mock
 
+from sqlalchemy.orm import scoped_session, sessionmaker
 from fts3rest.lib.base import Session
 from fts3rest.tests import TestController
 from fts3rest.controllers.CSdropbox import DropboxConnector
@@ -129,3 +131,25 @@ class TestDropbox(TestController):
 
         csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX', ''))
         self.assertTrue(csu is None)
+
+    def test_401(self):
+        """
+        Get 401
+        """
+        csu = CloudStorageUser(
+            storage_name='DROPBOX',
+            user_dn='/DC=ch/DC=cern/CN=Test User',
+            access_token=None,
+            vo_name='')
+        Session.merge(csu)
+        Session.commit()
+        self.setup_gridsite_environment()
+
+        def overriden_info(self):
+            raise Exception
+            return '401'
+
+        info = None
+        with mock.patch.object(DropboxConnector, '_make_call', overriden_info):
+            info = self.app.get(url="/cs/access_request/dropbox/", status=200)
+            # 404 should be
