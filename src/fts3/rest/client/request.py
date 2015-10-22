@@ -22,6 +22,7 @@ import logging
 import pycurl
 import tempfile
 from exceptions import *
+import os
 
 
 _PYCURL_SSL = pycurl.version_info()[5].split('/')[0]
@@ -64,6 +65,8 @@ class RequestFactory(object):
 
         if capath:
             self.capath = capath
+        elif 'X509_CERT_DIR' in os.environ:
+            self.capath = os.environ['X509_CERT_DIR']
         else:
             self.capath = '/etc/grid-security/certificates'
 
