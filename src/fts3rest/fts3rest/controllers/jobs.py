@@ -315,12 +315,14 @@ class JobsController(BaseController):
             # All files within the job have been canceled
             if len(not_changed_states) == 0:
                 job.job_state = 'CANCELED'
+                job.cancel_job = True
                 job.job_finished = datetime.utcnow()
                 log.warning('Cancelling all remaining files within the job %s' % job_id)
             # No files in non-terminal, mark the job as CANCELED too
             elif len(filter(lambda s: s in FileActiveStates, all_states)) == 0:
                 log.warning('Cancelling a file within a job with others in terminal state (%s)' % job_id)
                 job.job_state = 'CANCELED'
+                job.cancel_job = True
                 job.job_finished = datetime.utcnow()
                 # Remember, job_finished must be NULL so FTS3 kills the fts_url_copy process
                 # Update job_finished for all the others
@@ -399,6 +401,7 @@ class JobsController(BaseController):
         try:
             for job in cancellable_jobs:
                 job.job_state = 'CANCELED'
+                job.cancel_job = True
                 job.finish_time = now
                 job.job_finished = now
                 job.reason = 'Job canceled by the user'

@@ -69,10 +69,11 @@ class Flag(TypeDecorator):
             return self.negative
 
     def process_result_value(self, value, dialect):
-        if value is None:
+        if self.positive and not value:
             return False
-        else:
-            return len(value) > 0 and value.upper() != self.negative.upper()
+        if value and self.negative:
+            return value.upper() != self.negative.upper()
+        return value != self.negative
 
 
 # This is used for flags that can be True, False, or some other thing
