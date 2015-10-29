@@ -573,3 +573,97 @@ class JobsController(BaseController):
             )
 
         return {'job_id': populated.job_id}
+
+    @doc.response(403, 'The user doesn\'t have enough privileges')
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.return_type('File final states (array if multiple files were given)')
+    @jsonify
+    def cancel_all_by_vo(self, vo_name):
+        """
+        Cancel all files by the given vo_name
+        """
+        user = request.environ['fts3.User.Credentials']
+
+        now = datetime.utcnow()
+        if user.is_root == True:
+            try:
+                # FTS3 daemon expects job_finished to be NULL in order to trigger the signal
+                # to fts_url_copy
+                Session.query(File).filter(File.vo_name == vo_name)\
+                    .filter(File.file_state.in_(FileActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'finish_time': now
+                    }, synchronize_session=False)
+
+                # However, for data management operations there is nothing to signal, so
+                # set job_finished
+                Session.query(DataManagement).filter(DataManagement.vo_name == vo_name)\
+                    .filter(DataManagement.file_state.in_(DataManagementActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                    }, synchronize_session=False)
+
+                Session.query(Job).filter(Job.vo_name == vo_name)\
+                    .filter(Job.job_state.in_(JobActiveStates))\
+                    .update({
+                        'job_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                     }, synchronize_session=False)
+                Session.commit()
+                Session.expire_all()
+                log.info("Active jobs for VO %s canceled" % vo_name)
+            except:
+                Session.rollback()
+                raise
+        else:
+            raise HTTPForbidden(
+                'User does not have root privilages'
+            )
+
+    @doc.response(403, 'The user doesn\'t have enough privileges')
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.return_type('File final states (array if multiple files were given)')
+    @jsonify
+    def cancel_all(self):
+        """
+        Cancel all files
+        """
+        user = request.environ['fts3.User.Credentials']
+
+        now = datetime.utcnow()
+        if user.is_root == True:
+            try:
+                # FTS3 daemon expects job_finished to be NULL in order to trigger the signal
+                # to fts_url_copy
+                Session.query(File).filter(File.file_state.in_(FileActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'finish_time': now
+                    }, synchronize_session=False)
+
+                # However, for data management operations there is nothing to signal, so
+                # set job_finished
+                Session.query(DataManagement)\
+                    .filter(DataManagement.file_state.in_(DataManagementActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                    }, synchronize_session=False)
+
+                Session.query(Job).filter(Job.job_state.in_(JobActiveStates))\
+                    .update({
+                        'job_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                    }, synchronize_session=False)
+                Session.commit()
+                Session.expire_all()
+                log.info("Active jobs canceled")
+            except:
+                Session.rollback()
+                raise
+        else:
+            raise HTTPForbidden(
+                'User does not have root privilages'
+            )

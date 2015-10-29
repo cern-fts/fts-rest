@@ -58,6 +58,10 @@ def do_connect(config, map):
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}/files/{file_ids}', controller='jobs', action='cancel_files',
                 conditions=dict(method=['DELETE']))
+    map.connect('/jobs/vo/{vo_name}', controller='jobs', action='cancel_all_by_vo',
+                conditions=dict(method=['DELETE']))
+    map.connect('/jobs/all', controller='jobs', action='cancel_all',
+                conditions=dict(method=['DELETE']))
     map.connect('/jobs/{job_id}/files/{file_id}/retries', controller='jobs', action='get_file_retries',
                 conditions=dict(method=['GET']))
     map.connect('/jobs/{job_id}/dm', controller='jobs', action='get_dm',
