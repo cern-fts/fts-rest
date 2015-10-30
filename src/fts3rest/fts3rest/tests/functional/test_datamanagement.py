@@ -32,7 +32,7 @@ class TestDatamanagement(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-        self.app.get(
+        response = self.app.get(
             url="/dm/list",
             params={
                 'surl': 'mock://destination.es/file?list=a:1755:0,b:0755:123,c:000:0,d:0444:1234',
@@ -40,8 +40,13 @@ class TestDatamanagement(TestController):
                 'mode': 0775,
                 'mtime': 5
             },
-            status=400
-         )
+            status=200
+        ).json
+        self.assertIn('a', response)
+        self.assertIn('b', response)
+        self.assertIn('c', response)
+        self.assertIn('d', response)
+        self.assertEqual(123, response['b']['size'])
 
     def test_missing_surl(self):
         """
