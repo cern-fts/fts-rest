@@ -446,13 +446,23 @@ class TestOAuth2(TestController):
         """
         Try to update app
         """
-        self.setup_gridsite_environment()
-        client_id = str(self.test_register())
+        client_id = self.test_register()
+
+        config = {'redirect_to': 'https://xxx/path', 'description': 'abcd'}
 
         self.app.post(
-            url="/oauth2/apps/%s?scope=transfer&redirect_to=&name=MyApp&description=" % client_id,
+            url="/oauth2/apps/%s" % client_id,
+            content_type='application/json',
+            params=json.dumps(config),
             status=303
         )
+
+        app = Session.query(OAuth2Application).get(client_id)
+
+        self.assertEqual('MyApp', app.name)
+        self.assertEqual('abcd', app.description)
+        self.assertEqual('https://xxx/path', app.redirect_to)
+        self.assertEqual('/DC=ch/DC=cern/CN=Test User', app.owner)
 
     def test_invalid_scope(self):
         """
@@ -524,4 +534,3 @@ class TestOAuth2(TestController):
             params=json.dumps(req),
             status=400
         )
-
