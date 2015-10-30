@@ -32,13 +32,16 @@ class TestDatamanagement(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-        self.app.get(url="/dm/list",
-                            params={
-                                'surl': 'mock://destination.es/file',
-                                'size': 1,
-                                'mode': 0775,
-                                'mtime': 5},
-                    status=400)
+        self.app.get(
+            url="/dm/list",
+            params={
+                'surl': 'mock://destination.es/file?list=a:1755:0,b:0755:123,c:000:0,d:0444:1234',
+                'size': 1,
+                'mode': 0775,
+                'mtime': 5
+            },
+            status=400
+         )
 
     def test_missing_surl(self):
         """
@@ -54,16 +57,19 @@ class TestDatamanagement(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-        self.app.get(url="/dm/stat",
-                            params={
-                                'surl': 'mock://destination.es/file',
-                                'mode': 1,
-                                'nlink': 1,
-                                'size': 1,
-                                'atime': 1,
-                                'mtime': 1,
-                                'ctime': 1},
-                    status=200)
+        self.app.get(
+            url="/dm/stat",
+            params={
+                'surl': 'mock://destination.es/file',
+                'mode': 1,
+                'nlink': 1,
+                'size': 1,
+                'atime': 1,
+                'mtime': 1,
+                'ctime': 1
+            },
+            status=200
+        )
 
     def test_rename(self):
         """
@@ -71,16 +77,18 @@ class TestDatamanagement(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-        self.app.post(url="/dm/rename",
-                            params={
-                                'surl': 'mock://destination.es/file3',
-                                'mode': 0775,
-                                'nlink': 1,
-                                'size': 1,
-                                'atime': 1,
-                                'mtime': 1,
-                                'ctime': 1},
-                    status=400)
+        self.app.post(
+            url="/dm/rename",
+            params={
+                'surl': 'mock://destination.es/file3',
+                'mode': 0775,
+                'nlink': 1,
+                'size': 1,
+                'atime': 1,
+                'mtime': 1,
+                'ctime': 1},
+            status=400
+        )
 
     def test_unlink(self):
         """
@@ -88,13 +96,16 @@ class TestDatamanagement(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-        self.app.post(url="/dm/unlink",
-                            params={
-                                'surl': 'mock://destination.es/file3',
-                                'size': 1,
-                                'mode': 5,
-                                'mtime': 5},
-                    status=400)
+        self.app.post(
+            url="/dm/unlink",
+            params={
+                'surl': 'mock://destination.es/file3',
+                'size': 1,
+                'mode': 5,
+                'mtime': 5
+            },
+            status=400
+        )
 
     def test_rmdir(self):
         """
@@ -102,16 +113,19 @@ class TestDatamanagement(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-        self.app.post(url="/dm/rmdir",
-                            params={
-                                'surl': 'mock://destination.es/file3',
-                                'mode': 0775,
-                                'nlink': 1,
-                                'size': 1,
-                                'atime': 1,
-                                'mtime': 1,
-                                'ctime': 1},
-                    status=400)
+        self.app.post(
+            url="/dm/rmdir",
+            params={
+                'surl': 'mock://destination.es/file3',
+                'mode': 0775,
+                'nlink': 1,
+                'size': 1,
+                'atime': 1,
+                'mtime': 1,
+                'ctime': 1
+            },
+        status=400
+        )
 
     def test_mkdir(self):
         """
@@ -119,13 +133,16 @@ class TestDatamanagement(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-        self.app.post(url="/dm/mkdir",
-                            params={
-                                'surl': 'mock://destination.es/file3',
-                                'mode': 0775,
-                                'nlink': 1,
-                                'size': 1,
-                                'atime': 1,
-                                'mtime': 1,
-                                'ctime': 1},
-                    status=400)
+        self.app.post(
+            url="/dm/mkdir",
+            params={
+                'surl': 'mock://destination.es/file3',
+                'mode': 0775,
+                'nlink': 1,
+                'size': 1,
+                'atime': 1,
+                'mtime': 1,
+                'ctime': 1
+            },
+            status=400
+        )
