@@ -12,7 +12,7 @@ NOSETESTS_XML="${SOURCE_DIR}/nosetests.xml"
 # Setup virtualenv
 if [ ! -e "${VIRTUALENV}" ]; then
     echo "Creating ${VIRTUALENV}"
-    virtualenv "${VIRTUALENV}"
+    virtualenv "${VIRTUALENV}" --system-site-packages
     if [ $? -ne 0 ]; then
         echo "virtualenv failed"
         exit 1

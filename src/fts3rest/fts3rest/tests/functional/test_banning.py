@@ -477,7 +477,7 @@ class TestBanning(TestController):
         """
         Banning with a missing dn must fail
         """
-        self.app.post(url="/ban/dn", params={}, status=400)
+        self.app.post_json(url="/ban/dn", params={}, status=400)
 
     def test_unban_dn_empty(self):
         """
@@ -489,7 +489,7 @@ class TestBanning(TestController):
         """
         Ask for banning with a missing storage must fail
         """
-        self.app.post(url="/ban/se", params={}, status=400)
+        self.app.post_json(url="/ban/se", params={}, status=400)
 
     def test_unban_se_empty(self):
         """

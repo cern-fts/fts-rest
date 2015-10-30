@@ -219,9 +219,8 @@ class TestDelegation(TestController):
         Session.commit()
 
         # Now, request the voms extensions
-        self.app.post(url="/delegation/%s/voms" % creds.delegation_id,
-                      content_type='application/json',
-                      params=json.dumps(['dteam:/dteam/Role=lcgadmin']),
+        self.app.post_json(url="/delegation/%s/voms" % creds.delegation_id,
+                      params=['dteam:/dteam/Role=lcgadmin'],
                       status=203)
 
         # And validate
