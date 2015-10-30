@@ -444,7 +444,7 @@ class TestOAuth2(TestController):
         """
         Try to update app
         """
-        client_id = self.test_register()
+        client_id = str(self.test_register())
 
         config = {'redirect_to': 'https://xxx/path', 'description': 'abcd'}
 
