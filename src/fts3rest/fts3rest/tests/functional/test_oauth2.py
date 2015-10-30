@@ -68,10 +68,9 @@ class TestOAuth2(TestController):
             'redirect_to': 'https://mysite.com/callback',
             'scope': scope
         }
-        client_id = self.app.post(
+        client_id = self.app.post_json(
             url="/oauth2/register",
-            content_type='application/json',
-            params=json.dumps(req),
+            params=req,
             status=201
         ).json
         self.assertNotEqual(None, client_id)
@@ -85,10 +84,9 @@ class TestOAuth2(TestController):
         self.assertEqual('/DC=ch/DC=cern/CN=Test User', app.owner)
         self.assertEqual(set(scope.split(',')), app.scope)
 
-        self.app.post(
+        self.app.post_json(
             url="/oauth2/register",
-            content_type='application/json',
-            params=json.dumps(req),
+            params=req,
             status=403
         )
 
@@ -450,10 +448,9 @@ class TestOAuth2(TestController):
 
         config = {'redirect_to': 'https://xxx/path', 'description': 'abcd'}
 
-        self.app.post(
+        self.app.post_json(
             url="/oauth2/apps/%s" % client_id,
-            content_type='application/json',
-            params=json.dumps(config),
+            params=config,
             status=303
         )
 
@@ -476,10 +473,9 @@ class TestOAuth2(TestController):
             'redirect_to': 'https://mysite.com/callback',
             'scope': 'transfer,1'
         }
-        self.app.post(
+        self.app.post_json(
             url="/oauth2/register",
-            content_type='application/json',
-            params=json.dumps(req),
+            params=req,
             status=400
         )
 
@@ -494,7 +490,7 @@ class TestOAuth2(TestController):
             self.setup_gridsite_environment()
             k = config
             del config[i]
-            self.app.post(url="/oauth2/register", content_type='application/json', params=json.dumps(k), status=400)
+            self.app.post(url="/oauth2/register", params=k, status=400)
             return config
 
     def test_missing_redirect(self):
@@ -509,10 +505,9 @@ class TestOAuth2(TestController):
             'redirect_to': '',
             'scope': 'transfer'
         }
-        self.app.post(
+        self.app.post_json(
             url="/oauth2/register",
-            content_type='application/json',
-            params=json.dumps(req),
+            params=req,
             status=400
         )
 
