@@ -100,8 +100,16 @@ paramSchema = {
         'priority': {
             'type': ['integer', 'null'],
             'title': 'Job priority'
+        },
+        'ipv4': {
+            'type': ['boolean', 'null'],
+            'title': 'Force IPv4 if the underlying protocol supports it'
+        },
+        'ipv6': {
+            'type': ['boolean', 'null'],
+            'title': 'Force IPv6 if the underlying protocol supports it'
         }
-    },
+    }
 }
 
 deleteSchema = {
