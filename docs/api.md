@@ -1092,6 +1092,23 @@ Array of [File](#file)
 |403 |Operation forbidden              |
 
 ### Operations on jobs and transfers
+#### GET /jobs/{job_id}/{field}
+Get a specific field from the job identified by id
+
+##### Path arguments
+
+|Name  |Type  |
+|------|------|
+|job_id|string|
+|field |string|
+
+##### Responses
+
+|Code|Description                            |
+|----|---------------------------------------|
+|404 |The job or the field doesn't exist     |
+|403 |The user doesn't have enough privileges|
+
 #### DELETE /jobs/{job_id}/files/{file_ids}
 Cancel individual files - comma separated for multiple - within a job
 
@@ -1292,21 +1309,17 @@ Submission description (SubmitSchema)
 |403 |The user doesn't have enough permissions to submit|
 |400 |The submission request could not be understood    |
 
-#### GET /jobs/{job_id}/{field}
-Get a specific field from the job identified by id
+#### DELETE /jobs/all
+Cancel all files
 
-##### Path arguments
-
-|Name  |Type  |
-|------|------|
-|job_id|string|
-|field |string|
+##### Returns
+File final states (array if multiple files were given)
 
 ##### Responses
 
 |Code|Description                            |
 |----|---------------------------------------|
-|404 |The job or the field doesn't exist     |
+|404 |The job doesn't exist                  |
 |403 |The user doesn't have enough privileges|
 
 #### GET /jobs/{job_id}/files/{file_id}/retries
@@ -1337,6 +1350,25 @@ Array of [File](#file)
 |Name  |Type  |
 |------|------|
 |job_id|string|
+
+##### Responses
+
+|Code|Description                            |
+|----|---------------------------------------|
+|404 |The job doesn't exist                  |
+|403 |The user doesn't have enough privileges|
+
+#### DELETE /jobs/vo/{vo_name}
+Cancel all files by the given vo_name
+
+##### Returns
+File final states (array if multiple files were given)
+
+##### Path arguments
+
+|Name   |Type  |
+|-------|------|
+|vo_name|string|
 
 ##### Responses
 
@@ -1520,6 +1552,10 @@ Indicates if the optimizer is enabled in the server
 
 ##### Returns
 boolean
+
+### Server general status
+#### GET /status/hosts
+What are the hosts doing
 
 ### Snapshot API
 #### GET /snapshot
