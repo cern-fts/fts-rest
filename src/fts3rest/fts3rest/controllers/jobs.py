@@ -619,7 +619,7 @@ class JobsController(BaseController):
                 raise
         else:
             raise HTTPForbidden(
-                'User does not have root privilages'
+                'User does not have root privileges'
             )
 
     @doc.response(403, 'The user doesn\'t have enough privileges')
@@ -665,5 +665,5 @@ class JobsController(BaseController):
                 raise
         else:
             raise HTTPForbidden(
-                'User does not have root privilages'
+                'User does not have root privileges'
             )
