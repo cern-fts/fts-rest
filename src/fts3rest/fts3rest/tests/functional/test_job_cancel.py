@@ -19,9 +19,9 @@ import json
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import Job, File, JobActiveStates, Credential, FileActiveStates,FileTerminalStates
-#from fts3rest.lib.middleware.fts3auth import UserCredentials
+from fts3.model import Job, File, JobActiveStates, Credential, FileActiveStates, FileTerminalStates
 from datetime import datetime, timedelta
+
 
 class TestJobCancel(TestController):
     """
@@ -147,7 +147,7 @@ class TestJobCancel(TestController):
         """
         job_ids = list()
         for i in range(10):
-          job_ids.append(self._submit())
+            job_ids.append(self._submit())
 
         jobs = self.app.delete(url="/jobs/%s" % ','.join(job_ids), status=200).json
 
@@ -318,7 +318,7 @@ class TestJobCancel(TestController):
         file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
         self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=400)
 
-    def _becomeRoot(self):
+    def _become_root(self):
         """
         Helper function to become root superuser
         """
@@ -340,30 +340,26 @@ class TestJobCancel(TestController):
         """
         Helper function to prepare and test created jobs for cancel tests
         """
-        #JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING', 'DELETE']
-        #FileActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING']
-        #FileTerminalStates = ['FINISHED', 'FAILED', 'CANCELED']
-
         job_ids = list()
-        for i in range(len(FileActiveStates)+len(FileTerminalStates)):
+        for i in range(len(FileActiveStates) + len(FileTerminalStates)):
             job_ids.append(self._submit(8))
         i = 0
         for state in FileActiveStates + FileTerminalStates:
-          job = Session.query(Job).get(job_ids[i])
-          i += 1
-          job.job_state = state
-          for f in job.files:
-            f.file_state = state
-          Session.merge(job)
-          Session.commit()
+            job = Session.query(Job).get(job_ids[i])
+            i += 1
+            job.job_state = state
+            for f in job.files:
+                f.file_state = state
+            Session.merge(job)
+            Session.commit()
 
         i = 0
         for state in FileActiveStates + FileTerminalStates:
-          job = Session.query(Job).get(job_ids[i])
-          self.assertEqual(job.job_state, state)
-          for f in job.files:
-            self.assertEqual(f.file_state, state)
-          i += 1
+            job = Session.query(Job).get(job_ids[i])
+            self.assertEqual(job.job_state, state)
+            for f in job.files:
+                self.assertEqual(f.file_state, state)
+            i += 1
         return job_ids
 
     def _test_canceled_jobs(self, job_ids):
@@ -371,18 +367,18 @@ class TestJobCancel(TestController):
         Helper function to test canceled jobs
         """
         i = 0
-        for state in FileActiveStates:
-          job = Session.query(Job).get(job_ids[i])
-          self.assertEqual(job.job_state, 'CANCELED')
-          for f in job.files:
-            self.assertEqual(f.file_state, 'CANCELED')
-          i += 1
+        for _ in FileActiveStates:
+            job = Session.query(Job).get(job_ids[i])
+            self.assertEqual(job.job_state, 'CANCELED')
+            for f in job.files:
+                self.assertEqual(f.file_state, 'CANCELED')
+            i += 1
         for state in FileTerminalStates:
-          job = Session.query(Job).get(job_ids[i])
-          self.assertEqual(job.job_state, state)
-          for f in job.files:
-            self.assertEqual(f.file_state, state)
-          i += 1
+            job = Session.query(Job).get(job_ids[i])
+            self.assertEqual(job.job_state, state)
+            for f in job.files:
+                self.assertEqual(f.file_state, state)
+            i += 1
 
 
     def test_cancel_all_by_vo(self):
@@ -392,13 +388,13 @@ class TestJobCancel(TestController):
         self.setup_gridsite_environment()
         creds = self.get_user_credentials()
         if creds.vos:
-          vo_name = creds.vos[0]
+            vo_name = creds.vos[0]
         else:
-          vo_name = "testvo"
+            vo_name = "testvo"
 
         job_ids = self._prepare_and_test_created_jobs_to_cancel()
         self.app.delete(url="/jobs/vo/%s" % vo_name, status=403)
-        self._becomeRoot()
+        self._become_root()
         self.app.delete(url="/jobs/vo/%s" % vo_name, status=200)
         self._test_canceled_jobs(job_ids)         
 
@@ -408,7 +404,7 @@ class TestJobCancel(TestController):
         """
         job_ids = self._prepare_and_test_created_jobs_to_cancel() 
         self.app.delete(url="/jobs/all", status=403) 
-        self._becomeRoot()
+        self._become_root()
         self.app.delete(url="/jobs/all", status=200)
         self._test_canceled_jobs(job_ids)
 
