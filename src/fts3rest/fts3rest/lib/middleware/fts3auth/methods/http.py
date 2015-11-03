@@ -110,7 +110,6 @@ def do_authentication(credentials, env):
     	voms_client = VomsClient(chain_pem)
 	log.info("proxy path: " + voms_client.proxy_path)
 	fqans = voms_client.get_proxy_fqans()
-	voms_client.__del__()
 	for fqan in fqans:
 		vo = vo_from_fqan(fqan)
 		credentials.voms_cred.append(fqan)
