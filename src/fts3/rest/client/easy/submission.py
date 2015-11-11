@@ -16,7 +16,7 @@
 from datetime import timedelta
 from fts3.rest.client import Submitter
 from delegate import delegate
-
+from fts3.rest.client import ClientError
 
 def cancel(context, job_id, file_ids=None):
     """
@@ -103,6 +103,8 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
     Returns:
         An initialized dictionary representing a job
     """
+    if transfers is None and deletion is None:
+        raise ClientError('Bad request: No transfers or deletion jobs are provided')
     if transfers is None:
         transfers = []
     params = dict(
@@ -127,6 +129,42 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
     )
     return job
 
+def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spacetoken=None, spacetoken=None, metadata=None, priority=None):
+    """
+        Creates a new dictionary representing a staging job
+        
+    Args:
+        files:  Array of surls to stage.
+        bring_online:      Bring online timeout
+        copy_pin_lifetime: Pin lifetime
+        source_spacetoken: Source space token
+        spacetoken: Deletion spacetoken
+        metadata:   Metadata to bind to the job
+        priority:          Job priority
+        
+    Returns:
+        An initialized dictionary representing a staging job
+    """
+    if bring_online <= 0 and copy_pin_lifetime <= 0:
+        raise ClientError('Bad request: bring_online and copy_pin_lifetime are not positive numbers')
+        
+    transfers = []
+    for i in range (0, len(files)-1):
+        transfers.append(new_transfer(source=files[i], destination=files[i]))
+        	 
+    params = dict(
+        source_spacetoken=source_spacetoken,
+        spacetoken=spacetoken,
+        bring_online=bring_online,
+        copy_pin_lifetime=copy_pin_lifetime,
+        job_metadata=metadata,
+
+    )
+    job = dict(
+       files=transfers,
+       params=params
+    )
+    return job
 
 def new_delete_job(files, spacetoken=None, metadata=None):
     """
@@ -137,7 +175,7 @@ def new_delete_job(files, spacetoken=None, metadata=None):
         spacetoken: Deletion spacetoken
         metadata:   Metadata to bind to the job
 
-    Returns:
+    Return
         An initialized dictionary representing a deletion job
     """
     params = dict(
@@ -167,4 +205,4 @@ def submit(context, job, delegation_lifetime=timedelta(hours=7), force_delegatio
     delegate(context, delegation_lifetime, force_delegation)
     submitter = Submitter(context)
     params = job.get('params', {})
-    return submitter.submit(transfers=job.get('files', None), delete=job.get('delete', None), **params)
+    return submitter.submit(transfers=job.get('files', None), delete=job.get('delete', None), staging=job.get('staging', None), **params)
