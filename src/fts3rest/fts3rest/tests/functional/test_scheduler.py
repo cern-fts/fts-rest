@@ -95,38 +95,36 @@ class TestScheduler(TestController):
 
     @staticmethod
     def fill_optimizer():
-        for i in range(10):
-            evolution = OptimizerEvolution(
-                datetime=datetime.datetime.utcnow(),
-                source_se='http://site01.es',
-                dest_se='http://dest.ch',
-                success=90,
-                active=10,
-                throughput=10
-            )
-            Session.add(evolution)
+        evolution = OptimizerEvolution(
+            datetime=datetime.datetime.utcnow(),
+            source_se='http://site01.es',
+            dest_se='http://dest.ch',
+            success=90,
+            active=10,
+            throughput=10
+        )
+        Session.add(evolution)
 
-        for i in range(10):
-            evolution = OptimizerEvolution(
-                datetime=datetime.datetime.utcnow(),
-                source_se='http://site02.ch',
-                dest_se='http://dest.ch',
-                success=95,
-                active=10,
-                throughput=15
-            )
-            Session.add(evolution)
+        evolution = OptimizerEvolution(
+            datetime=datetime.datetime.utcnow(),
+            source_se='http://site02.ch',
+            dest_se='http://dest.ch',
+            success=95,
+            active=10,
+            throughput=15
+        )
+        Session.add(evolution)
 
-        for i in range(10):
-            evolution = OptimizerEvolution(
-                datetime=datetime.datetime.utcnow(),
-                source_se='http://site03.fr',
-                dest_se='http://dest.ch',
-                success=100,
-                active=10,
-                throughput=20
-            )
-            Session.add(evolution)
+        evolution = OptimizerEvolution(
+            datetime=datetime.datetime.utcnow(),
+            source_se='http://site03.fr',
+            dest_se='http://dest.ch',
+            success=100,
+            active=10,
+            throughput=20
+        )
+        Session.add(evolution)
+
         Session.commit()
 
     @staticmethod
