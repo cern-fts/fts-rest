@@ -88,7 +88,7 @@ def load_environment(global_conf, app_conf):
             dbapi_connection.isolation_level = None
 
     # Catch dead connections
-    event.listens_for(engine, 'connect')(connection_validator)
+    event.listens_for(engine, 'checkout')(connection_validator)
 
     # Mako templating
     config['pylons.app_globals'].mako_lookup = TemplateLookup(

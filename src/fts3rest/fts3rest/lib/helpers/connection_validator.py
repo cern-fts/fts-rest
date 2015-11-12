@@ -28,7 +28,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-def connection_validator(dbapi_con, con_record):
+def connection_validator(dbapi_con, con_record, con_proxy):
     exc = None
     if isinstance(dbapi_con, MySQLConnection):
         # True will silently reconnect if the connection was lost
