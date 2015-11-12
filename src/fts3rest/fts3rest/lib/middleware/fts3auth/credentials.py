@@ -108,8 +108,8 @@ class UserCredentials(object):
         Constructor
 
         Args:
-            env:             Environment (i.e. os.environ)
-            rolePermissions: The role permissions as configured in the FTS3 config file
+            env:              Environment (i.e. os.environ)
+            role_permissions: The role permissions as configured in the FTS3 config file
         """
         # Default
         self.user_dn   = None
