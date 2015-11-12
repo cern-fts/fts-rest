@@ -53,23 +53,22 @@ class DrainController(BaseController):
         """
         input_dict = get_input_as_dict(request)
 
-        hostname = input_dict.get('hostname')
-        try:
-            drain = input_dict.get('drain', 'true').lower() == 'true'
-        except:
-            raise HTTPBadRequest('Invalid drain value')
+        hostname = input_dict.get('hostname', None)
+        drain = input_dict.get('drain', True)
+        if not isinstance(drain, bool) or not isinstance(hostname, basestring):
+            raise HTTPBadRequest('Invalid drain request')
 
         entries = Session.query(Host).filter(Host.hostname == hostname).all()
         if not entries:
             raise HTTPBadRequest('Host not found')
 
         try:
+            audit_configuration(
+                'drain', 'Turning drain %s the drain mode for %s' % (drain, hostname)
+            )
             for entry in entries:
                 entry.drain = drain
                 Session.merge(entry)
-                audit_configuration(
-                    'drain', 'Turning drain %s the drain mode for %s' % (drain, hostname)
-                )
             Session.commit()
         except:
             Session.rollback()

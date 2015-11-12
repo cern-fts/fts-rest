@@ -21,7 +21,13 @@ var template_server_status = null;
  */
 function setServerDrain(hostname, drain)
 {
-    $.post("/config/drain", {hostname: hostname, drain: drain})
+    $.ajax({
+        url: "/config/drain",
+        type: "POST",
+        dataType: "json",
+        contentType: "application/json",
+        data: JSON.stringify({hostname: hostname, drain: drain})
+    })
     .done(function(data, textStatus, jqXHR) {
         refreshOverview();
     })
