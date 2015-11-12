@@ -31,6 +31,7 @@ class TestDebug(TestController):
 
     def tearDown(self):
         super(TestDebug, self).tearDown()
+        Session.query(ConfigAudit).delete()
 
     def test_set_debug_source(self):
         """
