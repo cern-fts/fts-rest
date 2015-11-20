@@ -58,7 +58,7 @@ class RequestFactory(object):
         else:
             pass
 
-    def __init__(self, ucert, ukey, capath=None, passwd=None, verify=True, access_token=None, connectTimeout=None, timeout=None):
+    def __init__(self, ucert, ukey, capath=None, passwd=None, verify=True, access_token=None, connectTimeout=30, timeout=30):
         self.ucert = ucert
         self.ukey  = ukey
         self.passwd = passwd
