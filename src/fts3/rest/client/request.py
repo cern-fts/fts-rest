@@ -37,7 +37,6 @@ class RequestFactory(object):
         self.curl_handle.setopt(pycurl.SSL_VERIFYPEER, self.verify)
         if self.verify:
             self.curl_handle.setopt(pycurl.SSL_VERIFYHOST, 2)
-
         if self.ucert:
             self.curl_handle.setopt(pycurl.SSLCERT, self.ucert)
         if self.ukey:
@@ -46,6 +45,10 @@ class RequestFactory(object):
             self.curl_handle.setopt(pycurl.CAPATH, self.capath)
         if self.passwd:
             self.curl_handle.setopt(pycurl.SSLKEYPASSWD, self.passwd)
+        if self.connectTimeout:
+            self.curl_handle.setopt(pycurl.CONNECTTIMEOUT, self.connectTimeout)
+        if self.timeout:
+            self.curl_handle.setopt(pycurl.TIMEOUT, self.timeout)
 
         if _PYCURL_SSL == 'GnuTL':
             pass
@@ -55,13 +58,14 @@ class RequestFactory(object):
         else:
             pass
 
-    def __init__(self, ucert, ukey, capath=None, passwd=None, verify=True, access_token=None):
+    def __init__(self, ucert, ukey, capath=None, passwd=None, verify=True, access_token=None, connectTimeout=None, timeout=None):
         self.ucert = ucert
         self.ukey  = ukey
         self.passwd = passwd
         self.access_token = access_token
-
         self.verify = verify
+        self.connectTimeout = connectTimeout
+        self.timeout = timeout
 
         if capath:
             self.capath = capath
