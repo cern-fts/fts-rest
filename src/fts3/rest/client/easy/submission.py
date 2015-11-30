@@ -134,7 +134,7 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
         Creates a new dictionary representing a staging job
         
     Args:
-        files:  Array of surls to stage.
+        files:  Array of surls to stage. Each item can be either a string or a dictionary with keys surl and metadata
         bring_online:      Bring online timeout
         copy_pin_lifetime: Pin lifetime
         source_spacetoken: Source space token
@@ -149,8 +149,17 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
         raise ClientError('Bad request: bring_online and copy_pin_lifetime are not positive numbers')
         
     transfers = []
-    for i in range (0, len(files)-1):
-        transfers.append(new_transfer(source=files[i], destination=files[i]))
+    for trans in files:
+      if isinstance(trans, dict):
+        surl=trans['surl']
+        meta=trans['metadata']
+      elif isinstance(trans, basestring):
+        surl=trans
+        meta=None
+      else:
+        raise AttributeError("Unexpected input type %s"%type(files))
+
+      transfers.append(new_transfer(source=surl, destination=surl, metadata=meta))
         	 
     params = dict(
         source_spacetoken=source_spacetoken,
@@ -158,7 +167,7 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
         bring_online=bring_online,
         copy_pin_lifetime=copy_pin_lifetime,
         job_metadata=metadata,
-
+	priority=priority,
     )
     job = dict(
        files=transfers,
@@ -166,7 +175,7 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
     )
     return job
 
-def new_delete_job(files, spacetoken=None, metadata=None):
+def new_delete_job(files, spacetoken=None, metadata=None, priority=None):
     """
     Creates a new dictionary representing a deletion job
 
@@ -180,7 +189,8 @@ def new_delete_job(files, spacetoken=None, metadata=None):
     """
     params = dict(
         source_spacetoken=spacetoken,
-        job_metadata=metadata
+        job_metadata=metadata,
+        priority=priority
     )
     job = dict(
         delete=files,
