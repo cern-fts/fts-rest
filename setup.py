@@ -63,7 +63,7 @@ setup(
     package_dir={'fts3': os.path.join(base_dir, 'src', 'fts3')},
     scripts=glob(os.path.join(base_dir, 'src', 'cli', 'fts-*')),
 
-    install_requires=['M2Crypto>=0.16', 'pycurl%s' % pycurl_ver]
+    install_requires=['M2Crypto>=0.16', 'pycurl%s' % pycurl_ver, 'requests']
 )
 
 # Need to install these first so the dependencies can be built!
