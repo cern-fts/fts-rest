@@ -242,12 +242,12 @@ Where config is a json with the following parameters
 S3 storage registration:
 
 ```bash
-curl https://fts3devel01.cern.ch:8446/config/cloud_storage -H "Content-Type: application/json" -X POST -d '{"storage_name":"cs3.cern.ch"}'
+curl https://fts3devel01.cern.ch:8446/config/cloud_storage -H "Content-Type: application/json" -X POST -d '{"storage_name":"S3:CS3.CERN.CH"}'
 ```
 Provide S3 credentials:
 
 ```bash
-curl https://fts3devel01.cern.ch:8446/config/cloud_storage/cs3.cern.ch -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3devel01.cern.ch:8446/config/cloud_storage/S3:CS3.CERN.CH -H "Content-Type: application/json" -X POST -d "config"
 ```
 Where config is a json with the following parameters
 ```json
