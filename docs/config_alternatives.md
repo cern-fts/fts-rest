@@ -237,4 +237,29 @@ Where config is a json with the following parameters
     ]
 }
 ```
+### S3 configuration
+
+S3 storage registration:
+
+```bash
+curl https://fts3devel01.cern.ch:8446/config/cloud_storage -H "Content-Type: application/json" -X POST -d '{"storage_name":"cs3.cern.ch"}'
+```
+Provide S3 credentials:
+
+```bash
+curl https://fts3devel01.cern.ch:8446/config/cloud_storage/cs3.cern.ch -H "Content-Type: application/json" -X POST -d "config"
+```
+Where config is a json with the following parameters
+```json
+{
+    "vo_name": "dteam",
+    "access_key": "ACCESS_KEY",
+    "secret_key": "SECRET_KEY"
+}
+```
+
+
+
+
+
 
