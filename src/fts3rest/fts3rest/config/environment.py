@@ -28,7 +28,7 @@ else:
     from pylons.configuration import PylonsConfig
 
 from mako.lookup import TemplateLookup
-from sqlalchemy import engine_from_config
+from sqlalchemy import engine_from_config, event
 
 import fts3rest.lib.app_globals as app_globals
 import fts3rest.lib.helpers
@@ -83,11 +83,9 @@ def load_environment(global_conf, app_conf):
 
     # Disable for sqlite the isolation level to work around issues with savepoints
     if config['sqlalchemy.url'].startswith('sqlite'):
-        from sqlalchemy.interfaces import PoolListener
-        class SQLiteDisableIsolation(PoolListener):
-            def checkout(self, dbapi_con, con_record, con_proxy):
-                dbapi_con.isolation_level = None
-        engine.pool.add_listener(SQLiteDisableIsolation())
+        @event.listens_for(engine, "connect")
+        def do_connect(dbapi_connection, connection_record):
+            dbapi_connection.isolation_level = None
 
     # Catch dead connections
     event.listens_for(engine, 'checkout')(connection_validator)
