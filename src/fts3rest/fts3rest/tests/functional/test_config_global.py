@@ -130,3 +130,22 @@ class TestConfigGlobal(TestController):
 
         opt = Session.query(OptimizerConfig).first()
         self.assertEqual(2, opt.mode)
+
+    def test_set_wrong_optimizer_mode(self):
+        """
+        Wrong value for optimizer_mode
+        """
+        self.app.post_json(url="/config/global",
+            params={'optimizer_mode': 'dfsdf'},
+            status=400
+        )
+    def test_delete_vo_global_config(self):
+        """
+        Delete the global configuration for the given VO
+        """
+        self.test_set()
+
+        self.app.delete(url="/config/global",  status=400)
+        self.app.delete(url="/config/global?vo_name=dteam",  status=204)
+        vo_name = Session.query(OptimizerConfig).get("dteam")
+        self.assertIsNone(vo_name)

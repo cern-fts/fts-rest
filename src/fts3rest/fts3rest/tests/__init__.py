@@ -41,7 +41,7 @@ from webtest import TestApp, TestRequest
 from fts3rest.lib.middleware import fts3auth
 from fts3rest.lib.base import Session
 from fts3.model import Credential, CredentialCache, DataManagement
-from fts3.model import Job, File, FileRetryLog, OptimizerActive
+from fts3.model import Job, File, FileRetryLog, OptimizerActive, ServerConfig
 
 
 __all__ = ['environ', 'url', 'TestController']
@@ -262,12 +262,18 @@ class TestController(TestCase):
         Session.query(DataManagement).delete()
         Session.query(Job).delete()
         Session.query(OptimizerActive).delete()
+        Session.query(ServerConfig).delete()
         Session.commit()
 
     # Handy asserts not available in the EPEL-6 version
     def assertGreater(self, a, b):
         if not a > b:
             standardMsg = "%s not greater than %s" % (repr(a), repr(b))
+            self.fail(standardMsg)
+
+    def assertLessEqual(self, a, b):
+        if not a <= b:
+            standardMsg = "%s not less or equal than %s" % (repr(a), repr(b))
             self.fail(standardMsg)
 
     def assertIn(self, member, container):

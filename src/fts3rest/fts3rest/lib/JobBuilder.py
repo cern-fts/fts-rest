@@ -13,18 +13,25 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import logging
 import random
 import socket
+import time
 import types
 import uuid
+
 from datetime import datetime
-from sqlalchemy import func
 from urlparse import urlparse
 
 from fts3.model import File, BannedSE
 from fts3rest.lib.base import Session
 from fts3rest.lib.http_exceptions import *
 
+from fts3rest.lib.scheduler.schd import Scheduler
+from fts3rest.lib.scheduler.db import Database
+from fts3rest.lib.scheduler.Cache import ThreadLocalCache
+
+log = logging.getLogger(__name__)
 
 DEFAULT_PARAMS = {
     'bring_online': -1,
@@ -38,14 +45,16 @@ DEFAULT_PARAMS = {
     'source_spacetoken': '',
     'spacetoken': '',
     'retry': 0,
+    'retry_delay': 0,
     'priority': 3,
-    'max_time_in_queue': None
+    'max_time_in_queue': 0
 }
 
 
-def _get_storage_element(uri):
+def get_storage_element(uri):
     """
-    Returns the storage element of the given uri, which is the scheme + hostname without the port
+    Returns the storage element of the given uri, which is the scheme +
+    hostname without the port
 
     Args:
         uri: An urlparse instance
@@ -74,7 +83,8 @@ def _safe_flag(flag):
     1/0 => True/False
     'Y'/'N' => True/False
     """
-    if isinstance(flag, types.StringType) or isinstance(flag, types.UnicodeType):
+    if isinstance(flag, types.StringType) or isinstance(flag,
+                                                        types.UnicodeType):
         return len(flag) > 0 and flag[0].upper() == 'Y'
     else:
         return bool(flag)
@@ -93,7 +103,8 @@ def _generate_hashed_id():
     """
     Generates a uniformly distributed value between 0 and 2**16
     This is intended to split evenly the load across node
-    The name is an unfortunately legacy from when this used to be based on a hash on the job
+    The name is an unfortunately legacy from when this used to
+    be based on a hash on the job
     """
     return random.randint(0, (2 ** 16) - 1)
 
@@ -101,8 +112,8 @@ def _generate_hashed_id():
 def _has_multiple_options(files):
     """
     Returns a tuple (Boolean, Integer)
-    Boolean is True if there are multiple replica entries, and Integer holds the number
-    of unique files.
+    Boolean is True if there are multiple replica entries, and Integer
+    holds the number of unique files.
     """
     ids = map(lambda f: f['file_index'], files)
     id_count = len(ids)
@@ -110,29 +121,76 @@ def _has_multiple_options(files):
     return unique_id_count != id_count, unique_id_count
 
 
-def _select_best_replica(files, vo_name, entry_state='SUBMITTED'):
-    """
-    Given a list of files (that must be multiple replicas for the same file) mark as submitted
-    the best one
-    """
-    source_se_list = map(lambda f: f['source_se'], files)
-    queue_sizes = Session.query(File.source_se, func.count(File.source_se))\
-        .filter(File.vo_name == vo_name)\
-        .filter(File.file_state == 'SUBMITTED')\
-        .filter(File.dest_se == files[0]['dest_se'])\
-        .filter(File.source_se.in_(source_se_list))\
-        .group_by(File.source_se)
+def _select_best_replica(files, vo_name, entry_state, strategy):
 
-    best_ses = map(lambda elem: elem[0], sorted(queue_sizes, key=lambda elem: elem[1]))
+    dst = files[0]['dest_se']
+    activity = files[0]['activity']
+    user_filesize = files[0]['user_filesize']
+
+    queue_provider = Database(Session)
+    cache_provider = ThreadLocalCache(queue_provider)
+    # s = Scheduler(queue_provider)
+    s = Scheduler (cache_provider)
+    source_se_list = map(lambda f: f['source_se'], files)
+
+    if strategy == "orderly":
+        sorted_ses = source_se_list
+
+    elif strategy == "queue" or strategy == "auto":
+        sorted_ses = map(lambda x: x[0], s.rank_submitted(source_se_list,
+                                                        dst,
+                                                        vo_name))
+
+    elif strategy == "success":
+        sorted_ses = map(lambda x: x[0], s.rank_success_rate(source_se_list,
+                                                           dst))
+
+    elif strategy == "throughput":
+        sorted_ses = map(lambda x: x[0], s.rank_throughput(source_se_list,
+                                                         dst))
+
+    elif strategy == "file-throughput":
+        sorted_ses = map(lambda x: x[0], s.rank_per_file_throughput(
+                                                           source_se_list,
+                                                           dst))
+
+    elif strategy == "pending-data":
+        sorted_ses = map(lambda x: x[0], s.rank_pending_data(source_se_list,
+                                                           dst,
+                                                           vo_name,
+                                                           activity))
+
+    elif strategy == "waiting-time":
+        sorted_ses = map(lambda x: x[0], s.rank_waiting_time(source_se_list,
+                                                           dst,
+                                                           vo_name,
+                                                           activity))
+
+    elif strategy == "waiting-time-with-error":
+        sorted_ses = map(lambda x: x[0], s.rank_waiting_time_with_error(
+                                                               source_se_list,
+                                                               dst,
+                                                               vo_name,
+                                                               activity))
+
+    elif strategy == "duration":
+        sorted_ses = map(lambda x: x[0], s.rank_finish_time(source_se_list,
+                                                          dst,
+                                                          vo_name,
+                                                          activity,
+                                                          user_filesize))
+    else:
+        raise HTTPBadRequest(strategy + " algorithm is not supported by Scheduler")
+
+    # We got the storages sorted from better to worst following
+    # the chosen strategy.
+    # We need to find the file with the source matching that best_se
     best_index = 0
+    best_se = sorted_ses[0]
     for index, transfer in enumerate(files):
-        # If not in the result set, the queue is empty, so finish here
-        if transfer['source_se'] not in best_ses:
+        if transfer['source_se'] == best_se:
             best_index = index
             break
-        # So far this looks good, but keep looking, in case some other has nothing at all
-        if transfer['source_se'] == best_ses[0]:
-            best_index = index
     files[best_index]['file_state'] = entry_state
 
 
@@ -199,14 +257,19 @@ class JobBuilder(object):
         received protocol parameters
         """
         param_list = list()
-        if 'nostreams' in self.params:
+        if self.params.get('nostreams', None):
             param_list.append("nostreams:%d" % int(self.params['nostreams']))
-        if 'timeout' in self.params:
+        if self.params.get('timeout', None):
             param_list.append("timeout:%d" % int(self.params['timeout']))
-        if 'buffer_size' in self.params:
+        if self.params.get('buffer_size', None):
             param_list.append("buffersize:%d" % int(self.params['buffer_size']))
-        if 'strict_copy' in self.params:
+        if self.params.get('strict_copy', False):
             param_list.append("strict")
+        if self.params.get('ipv4', False):
+            param_list.append('ipv4')
+        elif self.params.get('ipv6', False):
+            param_list.append('ipv6')
+
         if len(param_list) == 0:
             return None
         else:
@@ -262,7 +325,7 @@ class JobBuilder(object):
                 shared_hashed_id = _generate_hashed_id()
 
         for source, destination in pairs:
-            if source.scheme != 'srm' and self.is_bringonline:
+            if source.scheme not in ('srm', 'mock') and self.is_bringonline:
                 raise HTTPBadRequest('Staging operations can only be used with the SRM protocol')
 
             f = dict(
@@ -271,8 +334,8 @@ class JobBuilder(object):
                 file_state=initial_file_state,
                 source_surl=source.geturl(),
                 dest_surl=destination.geturl(),
-                source_se=_get_storage_element(source),
-                dest_se=_get_storage_element(destination),
+                source_se=get_storage_element(source),
+                dest_se=get_storage_element(destination),
                 vo_name=None,
                 user_filesize=_safe_filesize(file_dict.get('filesize', 0)),
                 selection_strategy=file_dict.get('selection_strategy', 'auto'),
@@ -287,10 +350,9 @@ class JobBuilder(object):
         """
         On multiple-replica jobs, select the adecuate file to go active
         """
-        if self.files[0].get('selection_strategy', 'auto') == 'auto':
-            _select_best_replica(self.files, self.user.vos[0])
-        else:
-            self.files[0]['file_state'] = 'STAGING' if self.is_bringonline else 'SUBMITTED'
+        entry_state = "STAGING" if self.is_bringonline else "SUBMITTED"
+        _select_best_replica(self.files, self.user.vos[0], entry_state,
+                             self.files[0].get('selection_strategy', 'auto'))
 
     def _populate_transfers(self, files_list):
         """
@@ -306,11 +368,17 @@ class JobBuilder(object):
 
         job_initial_state = 'STAGING' if self.is_bringonline else 'SUBMITTED'
 
+        max_time_in_queue = int(self.params['max_time_in_queue'])
+        expiration_time = None
+        if max_time_in_queue > 0:
+            expiration_time = time.time() + (max_time_in_queue * 60 * 60)
+
         self.job = dict(
             job_id=self.job_id,
             job_state=job_initial_state,
             reuse_job=reuse_flag,
             retry=int(self.params['retry']),
+            retry_delay=int(self.params['retry_delay']),
             job_params=self.params['gridftp'],
             submit_host=socket.getfqdn(),
             agent_dn='rest',
@@ -328,7 +396,7 @@ class JobBuilder(object):
             bring_online=self.params['bring_online'],
             job_metadata=self.params['job_metadata'],
             internal_job_params=self._build_internal_job_params(),
-            max_time_in_queue=self.params['max_time_in_queue']
+            max_time_in_queue=expiration_time
         )
 
         if 'credential' in self.params:
@@ -376,6 +444,11 @@ class JobBuilder(object):
 
         self._set_job_source_and_destination(self.files)
 
+        # If reuse is enabled, source and destination SE must be the same
+        # for all entries
+        if reuse_flag == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
+            raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
+
     def _populate_deletion(self, deletion_dict):
         """
         Initializes the list of deletions
@@ -385,6 +458,7 @@ class JobBuilder(object):
             job_state='DELETE',
             reuse_job=None,
             retry=int(self.params['retry']),
+            retry_delay=int(self.params['retry_delay']),
             job_params=self.params['gridftp'],
             submit_host=socket.getfqdn(),
             agent_dn='rest',
@@ -432,7 +506,7 @@ class JobBuilder(object):
                     vo_name=None,
                     file_state='DELETE',
                     source_surl=entry['surl'],
-                    source_se=_get_storage_element(surl),
+                    source_se=get_storage_element(surl),
                     dest_surl=None,
                     dest_se=None,
                     hashed_id=shared_hashed_id,
@@ -497,4 +571,3 @@ class JobBuilder(object):
             raise HTTPBadRequest('Malformed request: %s' % str(e))
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
-

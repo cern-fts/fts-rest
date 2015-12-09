@@ -19,12 +19,13 @@ import json
 import mock
 #import scipy.stats
 import socket
+import time
 from nose.plugins.skip import SkipTest
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import File, Job, OptimizerActive
+from fts3.model import File, Job, OptimizerActive, ServerConfig
 
 
 class TestJobSubmission(TestController):
@@ -50,6 +51,7 @@ class TestJobSubmission(TestController):
         self.assertEqual(job.verify_checksum, True)
         self.assertEqual(job.reuse_job, 'N')
         self.assertEqual(job.priority, 3)
+        self.assertIsNone(job.max_time_in_queue)
 
         self.assertEqual(len(files), 1)
         self.assertEqual(files[0].file_state, 'SUBMITTED')
@@ -99,12 +101,14 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(job_id, 0)
 
         self._validate_submitted(Session.query(Job).get(job_id))
@@ -130,12 +134,14 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True, 'reuse': True}
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was commited to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
@@ -162,12 +168,14 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': 'Y', 'verify_checksum': 'Y', 'reuse': 'Y'}
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was commited to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
@@ -192,13 +200,14 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         self._validate_submitted(Session.query(Job).get(job_id))
@@ -225,13 +234,14 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
@@ -269,13 +279,14 @@ class TestJobSubmission(TestController):
             }
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
@@ -303,13 +314,14 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
@@ -337,13 +349,14 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
@@ -370,13 +383,14 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
@@ -404,12 +418,14 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was commited to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         self._validate_submitted(Session.query(Job).get(job_id), no_vo=True)
@@ -435,12 +451,14 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was commited to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         self._validate_submitted(Session.query(Job).get(job_id), no_vo=True, dn=proxy_dn)
@@ -461,20 +479,23 @@ class TestJobSubmission(TestController):
                 'filesize': 1024,
                 'metadata': {'mykey': 'myvalue'},
             }],
-            'params': {'overwrite': True, 'verify_checksum': True, 'retry': 42}
+            'params': {'overwrite': True, 'verify_checksum': True, 'retry': 42, 'retry_delay': 123}
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was commited to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
         self._validate_submitted(job)
         self.assertEqual(job.retry, 42)
+        self.assertEqual(job.retry_delay, 123)
 
     def test_optimizer_respected(self):
         """
@@ -514,12 +535,14 @@ class TestJobSubmission(TestController):
             }]
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was commited to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
@@ -545,12 +568,13 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
-
+        job_id = self.app.put(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
         # Make sure it was commited to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
@@ -577,16 +601,12 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True}
         }
 
-        response = self.app.post(
+        job_id = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
             status=200
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        job_id = json.loads(response.body)['job_id']
+        ).json['job_id']
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(1, len(job.files))
@@ -612,16 +632,12 @@ class TestJobSubmission(TestController):
             'params': {'overwrite': True, 'verify_checksum': True, 'credential': 'dropbox'}
         }
 
-        response = self.app.post(
+        job_id = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
             status=200
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        job_id = json.loads(response.body)['job_id']
+        ).json['job_id']
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(1, len(job.files))
@@ -654,16 +670,12 @@ class TestJobSubmission(TestController):
                 'strict_copy': True
             }
         }
-        response = self.app.post(
+        job_id = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
             status=200
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        job_id = json.loads(response.body)['job_id']
+        ).json['job_id']
 
         job = Session.query(Job).get(job_id)
         self.assertTrue(job.internal_job_params is not None)
@@ -689,16 +701,12 @@ class TestJobSubmission(TestController):
                 'priority': 5,
             }
         }
-        response = self.app.post(
+        job_id = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
             status=200
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        job_id = json.loads(response.body)['job_id']
+        ).json['job_id']
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.priority, 5)
@@ -717,21 +725,100 @@ class TestJobSubmission(TestController):
                 'destinations': ['root://dest.ch:8447/file'],
             }],
             'params': {
-                'max_time_in_queue': 180
+                'max_time_in_queue': 8
             }
         }
-        response = self.app.post(
+        job_id = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
             status=200
-        )
+        ).json['job_id']
 
-        self.assertEquals(response.content_type, 'application/json')
-
-        job_id = json.loads(response.body)['job_id']
+        # See FTS-311
+        # max_time_in_queue was effectively ignored by FTS3
+        # Since FTS-311, this field stores the timestamp when the job expires
         job = Session.query(Job).get(job_id)
-        self.assertEqual(job.max_time_in_queue, 180)
+        self.assertGreater(job.max_time_in_queue, time.time())
+        self.assertLessEqual(job.max_time_in_queue, (8*60*60) + time.time())
+
+    def test_submit_ipv4(self):
+        """
+        Submit a job with IPv4 only
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://dest.ch:8447/file'],
+            }],
+            'params': {
+                'ipv4': True
+            }
+        }
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        jobdb = Session.query(Job).get(job_id)
+        self.assertIn('ipv4', jobdb.internal_job_params)
+        self.assertNotIn('ipv6', jobdb.internal_job_params)
+
+        job['params']['ipv4'] = False
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        jobdb = Session.query(Job).get(job_id)
+        self.assertTrue(jobdb.internal_job_params is None or 'ipv4' not in jobdb.internal_job_params)
+        self.assertTrue(jobdb.internal_job_params is None or 'ipv6' not in jobdb.internal_job_params)
+
+    def test_submit_ipv6(self):
+        """
+        Submit a job with IPv6 only
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://dest.ch:8447/file'],
+            }],
+            'params': {
+                'ipv6': True
+            }
+        }
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        jobdb = Session.query(Job).get(job_id)
+        self.assertIn('ipv6', jobdb.internal_job_params)
+        self.assertNotIn('ipv4', jobdb.internal_job_params)
+
+        job['params']['ipv6'] = False
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        jobdb = Session.query(Job).get(job_id)
+        self.assertTrue(jobdb.internal_job_params is None or 'ipv4' not in jobdb.internal_job_params)
+        self.assertTrue(jobdb.internal_job_params is None or 'ipv6' not in jobdb.internal_job_params)
 
     def test_submit_race_condition_optimize(self):
         """
@@ -741,7 +828,7 @@ class TestJobSubmission(TestController):
         """
         # This test will not work with sqlite, since it does not allow concurrent modifications
         from pylons import config
-        if config['sqlalchemy.url'].startswith('sqlite://'):
+        if config.get('sqlalchemy.url', 'sqlite:').startswith('sqlite://'):
             raise SkipTest('Not applicable with sqlite')
 
         self.setup_gridsite_environment()
@@ -806,11 +893,11 @@ class TestJobSubmission(TestController):
 
         job = {'files': files}
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
-
-        job_id = json.loads(answer.body)['job_id']
+        job_id = self.app.put(
+            url="/jobs",
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         files = Session.query(File.hashed_id).filter(File.job_id == job_id)
         hashed_ids = map(lambda f: f.hashed_id, files)

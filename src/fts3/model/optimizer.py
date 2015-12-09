@@ -15,7 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Column, DateTime, Float, Integer, String, ForeignKeyConstraint
 
 from base import Base, Flag
 
@@ -24,8 +24,8 @@ class OptimizerEvolution(Base):
     __tablename__ = 't_optimizer_evolution'
 
     datetime   = Column(DateTime, primary_key=True)
-    source_se  = Column(String, primary_key=True)
-    dest_se    = Column(String, primary_key=True)
+    source_se  = Column(String(150), primary_key=True)
+    dest_se    = Column(String(150), primary_key=True)
     nostreams  = Column(Integer)
     timeout    = Column(Integer)
     active     = Column(Integer)
@@ -37,8 +37,8 @@ class OptimizerEvolution(Base):
 class OptimizerActive(Base):
     __tablename__ = 't_optimize_active'
 
-    source_se = Column(String(255), primary_key=True)
-    dest_se   = Column(String(255), primary_key=True)
+    source_se = Column(String(150), primary_key=True)
+    dest_se   = Column(String(150), primary_key=True)
     active    = Column(Integer, default=2)
     message   = Column(String(512))
     datetime  = Column(DateTime, default=None)
@@ -46,12 +46,28 @@ class OptimizerActive(Base):
     fixed     = Column(Flag(negative='off', positive='on'), default='off')
 
 
+class OptimizerStreams(Base):
+    __tablename__ = 't_optimize_streams'
+
+    source_se  = Column(String(150), primary_key=True)
+    dest_se    = Column(String(150), primary_key=True)
+    nostreams  = Column(Integer, primary_key=True)
+    datetime   = Column(DateTime)
+    throughput = Column(Float)
+    tested     = Column(Integer, default=0)
+
+    __table_args__ = (
+        ForeignKeyConstraint(['source_se', 'dest_se'],
+                             [OptimizerActive.source_se, OptimizerActive.dest_se]),
+    )
+
+
 class Optimize(Base):
     __tablename__ = 't_optimize'
 
     auto_number = Column(Integer, autoincrement=True, primary_key=True)
-    source_se  = Column(String, nullable=True)
-    dest_se    = Column(String, nullable=True)
+    source_se  = Column(String(150), nullable=True)
+    dest_se    = Column(String(150), nullable=True)
     active     = Column(Integer)
     throughput = Column(Float)
     udt        = Column(Flag(negative='off', positive='on'))

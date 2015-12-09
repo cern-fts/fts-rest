@@ -16,7 +16,7 @@
 from datetime import timedelta
 from fts3.rest.client import Submitter
 from delegate import delegate
-
+from fts3.rest.client import ClientError
 
 def cancel(context, job_id, file_ids=None):
     """
@@ -34,7 +34,7 @@ def cancel(context, job_id, file_ids=None):
     return submitter.cancel(job_id, file_ids)
 
 
-def new_transfer(source, destination, checksum=None, filesize=None, metadata=None):
+def new_transfer(source, destination, checksum=None, filesize=None, metadata=None, activity=None):
     """
     Creates a new transfer pair
 
@@ -58,6 +58,8 @@ def new_transfer(source, destination, checksum=None, filesize=None, metadata=Non
         transfer['filesize'] = filesize
     if metadata:
         transfer['metadata'] = metadata
+    if activity:
+        transfer['activity'] = activity
     return transfer
 
 
@@ -76,15 +78,16 @@ def add_alternative_source(transfer, alt_source):
     return transfer
 
 
-def new_job(transfers=None, verify_checksum=True, reuse=False, overwrite=False, multihop=False,
+def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, overwrite=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
-            retry=-1, metadata=None):
+            retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False):
     """
     Creates a new dictionary representing a job
 
     Args:
         transfers:         Initial list of transfers
+        deletion:          Delete files
         verify_checksum:   Enable checksum verification
         reuse:             Enable reuse (all transfers are handled by the same process)
         overwrite:         Overwrite the destinations if exist
@@ -95,10 +98,13 @@ def new_job(transfers=None, verify_checksum=True, reuse=False, overwrite=False, 
         copy_pin_lifetime: Pin lifetime
         retry:             Number of retries: <0 is no retries, 0 is server default, >0 is whatever value is passed
         metadata:          Metadata to bind to the job
+        priority:          Job priority
 
     Returns:
         An initialized dictionary representing a job
     """
+    if transfers is None and deletion is None:
+        raise ClientError('Bad request: No transfers or deletion jobs are provided')
     if transfers is None:
         transfers = []
     params = dict(
@@ -111,16 +117,65 @@ def new_job(transfers=None, verify_checksum=True, reuse=False, overwrite=False, 
         source_spacetoken=source_spacetoken,
         overwrite=overwrite,
         multihop=multihop,
-        retry=retry
+        retry=retry,
+        retry_delay=retry_delay,
+        priority=priority,
+        strict_copy=strict_copy
     )
     job = dict(
         files=transfers,
+        delete=deletion,
         params=params
     )
     return job
 
+def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spacetoken=None, spacetoken=None, metadata=None, priority=None):
+    """
+        Creates a new dictionary representing a staging job
+        
+    Args:
+        files:  Array of surls to stage. Each item can be either a string or a dictionary with keys surl and metadata
+        bring_online:      Bring online timeout
+        copy_pin_lifetime: Pin lifetime
+        source_spacetoken: Source space token
+        spacetoken: Deletion spacetoken
+        metadata:   Metadata to bind to the job
+        priority:          Job priority
+        
+    Returns:
+        An initialized dictionary representing a staging job
+    """
+    if bring_online <= 0 and copy_pin_lifetime <= 0:
+        raise ClientError('Bad request: bring_online and copy_pin_lifetime are not positive numbers')
+        
+    transfers = []
+    for trans in files:
+      if isinstance(trans, dict):
+        surl=trans['surl']
+        meta=trans['metadata']
+      elif isinstance(trans, basestring):
+        surl=trans
+        meta=None
+      else:
+        raise AttributeError("Unexpected input type %s"%type(files))
 
-def new_delete_job(files, spacetoken=None, metadata=None):
+      transfers.append(new_transfer(source=surl, destination=surl, metadata=meta))
+        	 
+    params = dict(
+        source_spacetoken=source_spacetoken,
+        spacetoken=spacetoken,
+        bring_online=bring_online,
+        copy_pin_lifetime=copy_pin_lifetime,
+        job_metadata=metadata,
+	priority=priority,
+    )
+    job = dict(
+       files=transfers,
+       params=params
+    )
+    return job
+
+def new_delete_job(files, spacetoken=None, metadata=None, priority=None):
     """
     Creates a new dictionary representing a deletion job
 
@@ -129,12 +184,13 @@ def new_delete_job(files, spacetoken=None, metadata=None):
         spacetoken: Deletion spacetoken
         metadata:   Metadata to bind to the job
 
-    Returns:
+    Return
         An initialized dictionary representing a deletion job
     """
     params = dict(
         source_spacetoken=spacetoken,
-        job_metadata=metadata
+        job_metadata=metadata,
+        priority=priority
     )
     job = dict(
         delete=files,
@@ -159,4 +215,4 @@ def submit(context, job, delegation_lifetime=timedelta(hours=7), force_delegatio
     delegate(context, delegation_lifetime, force_delegation)
     submitter = Submitter(context)
     params = job.get('params', {})
-    return submitter.submit(transfers=job.get('files', None), delete=job.get('delete', None), **params)
+    return submitter.submit(transfers=job.get('files', None), delete=job.get('delete', None), staging=job.get('staging', None), **params)

@@ -1,0 +1,169 @@
+<%include file="header.html" args="page='/config/cloud_storage', subtitle='Cloud storage configuration'"/>
+
+<div class="container">
+	<h1>Cloud storage</h1>
+
+    <p>
+        FTS3 currently supports two types of cloud storage: S3 and Dropbox.<br/>
+        However, the way of configuring differs.
+    </p>
+
+    <h4>S3</h4>
+    <p>
+        Can only be configured from this tab. For being able to configure an S3 endpoint, you need to:
+    </p>
+    <dl>
+        <dt>Register the S3 storage</dt>
+        <dd>The name should have the form S3:hostname (i.e. S3:s3.example.com). App key and secret are not used.</dd>
+        <dt>Grant access to a set of VO and/or users</dt>
+        <dd>Empty user with a value in VO grant access to all members from that VO.
+            Access token = access key, access secret = secret key. Leave request fields empty.
+        </dd>
+    </dl>
+
+    <h4>Dropbox</h4>
+    <p>
+        Dropbox is normally not supposed to be used without user interaction. For supporting Dropbox (for instance,
+        for an FTS3 that run WebFTS as well), you will need first to register a new application at
+        <a href="https://www.dropbox.com/developers/apps">Dropbox.com</a>. Then, add a storage called 'dropbox',
+        and fill the corresponding app key and secret key.
+    </p>
+    <p>
+        Normally, from here on users will grant access to their account using OAuth (only OAuth1 is supported at
+        the moment). For this to work, remember that fts-rest-cloud-storage <em>must</em> be installed.
+    </p>
+
+    <h2>Configuration</h2>
+
+    <div id="storage-list">
+        <script id="storage-entry-template" type="text/x-handlebars-template">
+        <div class="panel panel-info">
+            <input type="hidden" name="storage-name" value="{{storage_name}}"/>
+            <input type="hidden" name="service-api" value="{{service_api_url}}"/>
+
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    {{storage_name}}
+                    <span style="float:right">
+                        Service API: <code>{{service_api_url}}</code>
+                    </span>
+                </h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-inline">
+                    <div class="form-group">
+                        <label class="control-label">App key (for Dropbox)</label>
+                        <input name="app-key" type="text" class="form-control" value="{{ app_key }}"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">App secret key (for Dropbox)</label>
+                        <input name="app-secret" type="text" class="form-control" value="{{ app_secret }}"/>
+                    </div>
+                </div>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>User</th>
+                        <th>VO</th>
+                        <th>Access token</th>
+                        <th>Access secret</th>
+                        <th>Request token</th>
+                        <th>Request secret</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each users}}
+                    <tr class="user-entry">
+                        <td>
+                            <a><i class="glyphicon glyphicon-trash btn-delete-user"></i></a>
+                            <a><i class="glyphicon glyphicon-floppy-disk btn-save-user"></i></a>
+                        </td>
+                        <td>
+                            <input type="hidden" name="user-dn" value="{{user_dn}}"/>
+                            {{user_dn}}
+                        </td>
+                        <td>
+                            <input type="hidden" name="vo-name" value="{{vo_name}}"/>
+                            {{vo_name}}
+                        </td>
+                        <td>
+                            <input type="text" name="access-token" class="form-control" value="{{access_token}}"/>
+                        </td>
+                        <td>
+                            <input type="text" name="access-secret" class="form-control" value="{{access_token_secret}}"/>
+                        </td>
+                        <td>
+                            <input type="text" name="request-token" class="form-control" value="{{request_token}}"/>
+                        </td>
+                        <td>
+                            <input type="text" name="request-secret" class="form-control" value="{{request_token_secret}}"/>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+                <tbody class="frm-add-user">
+                    <tr>
+                        <td>
+                            <a><i class="glyphicon glyphicon-plus btn-add-user"></i></a>
+                        </td>
+                        <td>
+                            <input name="user-dn" type="text" class="form-control" value=""/>
+                        </td>
+                        <td>
+                            <input name="vo-name" type="text" class="form-control" value=""/>
+                        </td>
+                        <td>
+                            <input name="access-token" type="text" class="form-control" value=""/>
+                        </td>
+                        <td>
+                            <input name="access-secret" type="text" class="form-control" value=""/>
+                        </td>
+                        <td>
+                            <input name="request-token" type="text" class="form-control" value=""/>
+                        </td>
+                        <td>
+                            <input name="request-secret" type="text" class="form-control" value=""/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="panel-footer">
+                <button class="btn btn-success btn-save">Save</button>
+                <button class="btn btn-danger btn-delete">Delete</button>
+            </div>
+        </div>
+        </script>
+    </div>
+
+    <form class="panel panel-success" id="add-cloud-frm">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                Add a new cloud storage
+            </h3>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label">Name</label>
+                <input name="storage-name" type="text" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Service API</label>
+                <input name="service-api" type="text" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label class="control-label">App key (for Dropbox)</label>
+                <input name="app-key" type="text" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label class="control-label">App secret key (from Dropbox)</label>
+                <input name="app-secret" type="text" class="form-control"/>
+            </div>
+            <input type="submit" class="btn btn-info" value="Add">
+        </div>
+    </form>
+
+<script src="/js/config/cloud_storage.js" onload="setupCloudStorage()"></script>
+
+<%include file="footer.html"/>

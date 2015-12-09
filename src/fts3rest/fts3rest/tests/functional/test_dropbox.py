@@ -14,7 +14,9 @@
 #   limitations under the License.
 
 import json
+import mock
 
+from sqlalchemy.orm import scoped_session, sessionmaker
 from fts3rest.lib.base import Session
 from fts3rest.tests import TestController
 from fts3rest.controllers.CSdropbox import DropboxConnector
@@ -65,7 +67,7 @@ class TestDropbox(TestController):
     def setUp(self):
         # Inject a Dropbox app
         cs = CloudStorage(
-                cloudStorage_name='DROPBOX',
+                storage_name='DROPBOX',
                 app_key='1234',
                 app_secret='sssh',
                 service_api_url='https://api.dropbox.com'
@@ -85,8 +87,7 @@ class TestDropbox(TestController):
         Just test if the Dropbox plugin has been loaded
         Should be, in a development environment!
         """
-        response = self.app.get(url="/cs/registered/dropbox", status=200)
-        is_registered = json.loads(response.body)
+        is_registered = self.app.get(url="/cs/registered/dropbox", status=200).json
         self.assertFalse(is_registered)
 
     def test_request_access(self):
@@ -98,7 +99,7 @@ class TestDropbox(TestController):
         response = self.app.get(url="/cs/access_request/dropbox/request", status=200)
         self.assertEqual('oauth_token_secret=1234&oauth_token=abcd', response.body)
 
-        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX'))
+        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX', ''))
         self.assertTrue(csu is not None)
         self.assertEqual('abcd', csu.request_token)
         self.assertEqual('1234', csu.request_token_secret)
@@ -116,7 +117,7 @@ class TestDropbox(TestController):
         self.test_request_access()
         self.app.get(url="/cs/access_grant/dropbox", status=200)
 
-        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX'))
+        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX', ''))
         self.assertTrue(csu is not None)
         self.assertEqual('cafesilvousplait', csu.access_token)
         self.assertEqual('blahblahsecret', csu.access_token_secret)
@@ -128,5 +129,27 @@ class TestDropbox(TestController):
         self.test_access_granted()
         self.app.delete(url="/cs/access_grant/dropbox", status=204)
 
-        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX'))
+        csu = Session.query(CloudStorageUser).get(('/DC=ch/DC=cern/CN=Test User', 'DROPBOX', ''))
         self.assertTrue(csu is None)
+
+    def test_401(self):
+        """
+        Get 401
+        """
+        csu = CloudStorageUser(
+            storage_name='DROPBOX',
+            user_dn='/DC=ch/DC=cern/CN=Test User',
+            access_token=None,
+            vo_name='')
+        Session.merge(csu)
+        Session.commit()
+        self.setup_gridsite_environment()
+
+        def overriden_info(self):
+            raise Exception
+            return '401'
+
+        info = None
+        with mock.patch.object(DropboxConnector, '_make_call', overriden_info):
+            info = self.app.get(url="/cs/access_request/dropbox/", status=200)
+            # 404 should be

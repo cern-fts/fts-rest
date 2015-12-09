@@ -39,7 +39,7 @@ def apply_pycurl_workaround():
 # Ugly hack to pick a version that compiles in SLC6
 pycurl_ver = '>=7.19'
 dist = platform.dist()
-if dist[0] == 'redhat':
+if dist[0] in ('redhat', 'centos'):
     apply_m2crypto_workaround()
 
     os_major = dist[1].split('.')[0]
@@ -63,7 +63,7 @@ setup(
     package_dir={'fts3': os.path.join(base_dir, 'src', 'fts3')},
     scripts=glob(os.path.join(base_dir, 'src', 'cli', 'fts-*')),
 
-    install_requires=['M2Crypto>=0.16', 'pycurl%s' % pycurl_ver]
+    install_requires=['M2Crypto>=0.16', 'pycurl%s' % pycurl_ver, 'requests']
 )
 
 # Need to install these first so the dependencies can be built!

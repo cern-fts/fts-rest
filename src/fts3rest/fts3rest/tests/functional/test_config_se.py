@@ -13,7 +13,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import ConfigAudit, Optimize, OperationConfig
@@ -140,8 +139,7 @@ class TestConfigSe(TestController):
         """
         self.test_set_se_config()
 
-        response = self.app.get_json("/config/se?se=test.cern.ch", status=200)
-        cfg = json.loads(response.body)
+        cfg = self.app.get_json("/config/se?se=test.cern.ch", status=200).json
 
         self.assertIn('test.cern.ch', cfg.keys())
         se_cfg = cfg['test.cern.ch']
@@ -160,3 +158,75 @@ class TestConfigSe(TestController):
         self.assertEqual(False, se_cfg['as_destination']['ipv6'])
         self.assertEqual(1, se_cfg['as_destination']['active'])
         self.assertEqual(33, se_cfg['as_destination']['throughput'])
+
+    def test_set_malformed(self):
+        """
+        Malformed configurations
+        """
+        config = {'test.cern.ch': 'what?'}
+        self.app.post_json("/config/se",
+            params=config,
+            status=400
+        )
+        self.app.post_json("/config/se",
+            params={
+                'test.cern.ch': {
+                    'operations': {
+                        'atlas': {
+                            'delete': 'must be a number!',
+                        }
+                    },
+                    'as_source': {
+                        'ipv6': False,
+                        'active': 88
+                    },
+                    'as_destination': {
+                        'ipv6': True,
+                        'active': 11,
+                        'throughput': 10
+                    }
+                }
+            },
+            status=400
+        )
+        self.app.post_json("/config/se",
+            params={
+                'test.cern.ch': {
+                    'operations': {
+                        'atlas': {
+                            'delete': 2,
+                        }
+                    },
+                    'as_source': {
+                        'ipv6': False,
+                        'active': 'not again!'
+                    },
+                    'as_destination': {
+                        'ipv6': True,
+                        'active': 11,
+                        'throughput': 10
+                    }
+                }
+            },
+            status=400
+        )
+        self.app.post_json("/config/se",
+            params={
+                'test.cern.ch': {
+                    'as_destination': {
+                        'ipv6': True,
+                        'active': 0.5,
+                        'throughput': 10
+                    }
+                }
+            },
+            status=400
+        )
+
+    def test_remove_se_config(self):
+        """
+        Remove the configuration for a given SE
+        """
+        self.test_get_se_config()
+        self.app.delete(url="/config/se",  status=400)
+        self.app.delete(url="/config/se?se=test.cern.ch",  status=204)

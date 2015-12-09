@@ -4,7 +4,7 @@ IP=0.0.0.0
 DbType=sqlite
 DbUserName=
 DbPassword=
-DbConnectString=/tmp/fts3.db
+DbConnectString=
 
 Alias=Testing
 Infosys=lcg-bdii.cern.ch:2170
@@ -13,5 +13,5 @@ CleanRecordsHost=false
 
 
 [roles]
-Public=vo:transfer
+Public=vo:transfer;all:datamanagement
 lcgadmin=all:config

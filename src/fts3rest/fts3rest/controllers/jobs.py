@@ -22,10 +22,9 @@ from sqlalchemy.orm import noload
 
 try:
     import simplejson as json
-except:
+except ImportError:
     import json
 import logging
-import urllib
 
 from fts3.model import Job, File, JobActiveStates, FileActiveStates
 from fts3.model import DataManagement, DataManagementActiveStates
@@ -33,13 +32,33 @@ from fts3.model import Credential, OptimizerActive, FileRetryLog
 from fts3rest.lib.JobBuilder import JobBuilder
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
-from fts3rest.lib.helpers import jsonify
+from fts3rest.lib.helpers import jsonify, get_input_as_dict
 from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.middleware.fts3auth import authorize, authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
 
 
 log = logging.getLogger(__name__)
+
+def _multistatus(responses, start_response, expecting_multistatus=False):
+    """
+    Return 200 if everything is Ok, 207 if there is any errors,
+    and, if input was only one, do not return an array
+    """
+    if not expecting_multistatus:
+        single = responses[0]
+        if isinstance(single, Job):
+            if single.http_status not in ('200 Ok', '304 Not Modified'):
+                start_response(single.http_status, [('Content-Type', 'application/json')])
+        elif single['http_status'] not in ('200 Ok', '304 Not Modified'):
+            start_response(single['http_status'], [('Content-Type', 'application/json')])
+        return single
+
+    for response in responses:
+        if isinstance(response, dict) and not response.get('http_status', '').startswith('2'):
+            start_response("207 Multi-Status", [('Content-Type', 'application/json')])
+            break
+    return responses
 
 
 class JobsController(BaseController):
@@ -132,9 +151,9 @@ class JobsController(BaseController):
             jobs = jobs.filter(Job.dest_se == filter_dest)
 
         if filter_limit:
-            jobs = jobs[:filter_limit]
+            jobs = jobs.order_by(Job.submit_time.desc())[:filter_limit]
         else:
-            jobs = jobs.yield_per(100)
+            jobs = jobs.yield_per(100).enable_eagerloads(False)
 
         if filter_fields:
             original_jobs = jobs
@@ -168,7 +187,10 @@ class JobsController(BaseController):
 
         # request is not available inside the generator
         environ = request.environ
-        file_fields = request.GET.get('files', '').split(',')
+        if 'files' in request.GET:
+            file_fields = request.GET['files'].split(',')
+        else:
+            file_fields = []
 
         statuses = list()
         for job_id in filter(len, job_ids):
@@ -180,7 +202,7 @@ class JobsController(BaseController):
                             self.job_id = job_id
 
                         def __call__(self):
-                            for f in Session.query(File).filter(File.job_id == self.job_id).yield_per(100):
+                            for f in Session.query(File).filter(File.job_id == self.job_id):
                                 fd = dict()
                                 for field in file_fields:
                                     try:
@@ -235,7 +257,23 @@ class JobsController(BaseController):
         if not authorized(TRANSFER, resource_owner=owner[0], resource_vo=owner[1]):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         files = Session.query(File).filter(File.job_id == job_id).options(noload(File.retries))
-        return files.yield_per(100)
+        return files.yield_per(100).enable_eagerloads(False)
+
+    @doc.response(403, 'The user doesn\'t have enough privileges')
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.return_type(array_of=DataManagement)
+    @jsonify
+    def get_dm(self, job_id):
+        """
+        Get the data management tasks within a job
+        """
+        owner = Session.query(Job.user_dn, Job.vo_name).filter(Job.job_id == job_id).first()
+        if owner is None:
+            raise HTTPNotFound('No job with the id "%s" has been found' % job_id)
+        if not authorized(TRANSFER, resource_owner=owner[0], resource_vo=owner[1]):
+            raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
+        dm = Session.query(DataManagement).filter(DataManagement.job_id == job_id)
+        return dm.yield_per(100).enable_eagerloads(False)
 
     @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job doesn\'t exist')
@@ -277,12 +315,14 @@ class JobsController(BaseController):
             # All files within the job have been canceled
             if len(not_changed_states) == 0:
                 job.job_state = 'CANCELED'
+                job.cancel_job = True
                 job.job_finished = datetime.utcnow()
                 log.warning('Cancelling all remaining files within the job %s' % job_id)
             # No files in non-terminal, mark the job as CANCELED too
             elif len(filter(lambda s: s in FileActiveStates, all_states)) == 0:
                 log.warning('Cancelling a file within a job with others in terminal state (%s)' % job_id)
                 job.job_state = 'CANCELED'
+                job.cancel_job = True
                 job.job_finished = datetime.utcnow()
                 # Remember, job_finished must be NULL so FTS3 kills the fts_url_copy process
                 # Update job_finished for all the others
@@ -333,8 +373,7 @@ class JobsController(BaseController):
         """
         requested_job_ids = job_id_list.split(',')
         cancellable_jobs = list()
-        response = list()
-        multistatus = False
+        responses = list()
 
         # First, check which job ids exist and can be accessed
         for job_id in requested_job_ids:
@@ -349,21 +388,20 @@ class JobsController(BaseController):
                     setattr(job, 'http_status', '304 Not Modified')
                     setattr(job, 'http_message', 'The job is in a terminal state')
                     log.warning("The job %s can not be canceled, since it is %s" % (job_id, job.job_state))
-                    response.append(job)
-                    multistatus = True
+                    responses.append(job)
             except HTTPClientError, e:
-                response.append(dict(
+                responses.append(dict(
                     job_id=job_id,
                     http_status="%s %s" % (e.code, e.title),
                     http_message=e.detail
                 ))
-                multistatus = True
 
         # Now, cancel those that can be canceled
         now = datetime.utcnow()
         try:
             for job in cancellable_jobs:
                 job.job_state = 'CANCELED'
+                job.cancel_job = True
                 job.finish_time = now
                 job.job_finished = now
                 job.reason = 'Job canceled by the user'
@@ -388,7 +426,7 @@ class JobsController(BaseController):
                 log.info("Job %s canceled" % job.job_id)
                 setattr(job, 'http_status', "200 Ok")
                 setattr(job, 'http_message', None)
-                response.append(job)
+                responses.append(job)
                 Session.expunge(job)
             Session.commit()
             Session.expire_all()
@@ -396,20 +434,69 @@ class JobsController(BaseController):
             Session.rollback()
             raise
 
-        # Return 200 if everything is Ok, 207 if there is any errors,
-        # and, if input was only one, do not return an array
-        if len(requested_job_ids) == 1:
-            single = response[0]
-            if isinstance(single, Job):
-                if single.http_status not in ('200 Ok', '304 Not Modified'):
-                    start_response(single.http_status, [('Content-Type', 'application/json')])
-            elif single['http_status'] not in ('200 Ok', '304 Not Modified'):
-                start_response(single['http_status'], [('Content-Type', 'application/json')])
-            return single
+        return _multistatus(responses, start_response, expecting_multistatus=len(requested_job_ids) > 1)
 
-        if multistatus:
-            start_response("207 Multi-Status", [('Content-Type', 'application/json')])
-        return response
+    @doc.response(207, 'For multiple job requests if there has been any error')
+    @doc.response(403, 'The user doesn\'t have enough privileges')
+    @doc.response(404, 'The job doesn\'t exist')
+    @jsonify
+    def modify(self, job_id_list, start_response):
+        """
+        Modify a job, or set of jobs
+        """
+        requested_job_ids = job_id_list.split(',')
+        modifiable_jobs = list()
+        responses = list()
+
+        # First, check which job ids exist and can be accessed
+        for job_id in requested_job_ids:
+            # Skip empty
+            if not job_id:
+                continue
+            try:
+                job = JobsController._get_job(job_id)
+                if job.job_state in JobActiveStates:
+                    modifiable_jobs.append(job)
+                else:
+                    setattr(job, 'http_status', '304 Not Modified')
+                    setattr(job, 'http_message', 'The job is in a terminal state')
+                    log.warning("The job %s can not be modified, since it is %s" % (job_id, job.job_state))
+                    responses.append(job)
+            except HTTPClientError, e:
+                responses.append(dict(
+                    job_id=job_id,
+                    http_status="%s %s" % (e.code, e.title),
+                    http_message=e.detail
+                ))
+
+        # Now, modify those that can be
+        modification = get_input_as_dict(request)
+
+        priority = None
+        try:
+            priority = int(modification['params']['priority'])
+        except KeyError:
+            pass
+        except ValueError:
+            raise HTTPBadRequest('Invalid priority value')
+
+        try:
+            for job in modifiable_jobs:
+                if priority:
+                    job.priority = priority
+                    job = Session.merge(job)
+                    log.info("Job %s priority changed to %d" % (job.job_id, priority))
+                setattr(job, 'http_status', "200 Ok")
+                setattr(job, 'http_message', None)
+                responses.append(job)
+                Session.expunge(job)
+            Session.commit()
+            Session.expire_all()
+        except:
+            Session.rollback()
+            raise
+
+        return _multistatus(responses, start_response, expecting_multistatus=len(requested_job_ids) > 1)
 
     @doc.input('Submission description', 'SubmitSchema')
     @doc.response(400, 'The submission request could not be understood')
@@ -427,21 +514,7 @@ class JobsController(BaseController):
         It can be used to validate (i.e in Python, jsonschema.validate)
         """
         # First, the request has to be valid JSON
-        try:
-            if request.method == 'PUT':
-                unencoded_body = request.body
-            elif request.method == 'POST':
-                if request.content_type == 'application/json':
-                    unencoded_body = request.body
-                else:
-                    unencoded_body = urllib.unquote_plus(request.body)
-            else:
-                raise HTTPBadRequest('Unsupported method %s' % request.method)
-
-            submitted_dict = json.loads(unencoded_body)
-
-        except ValueError, e:
-            raise HTTPBadRequest('Badly formatted JSON request (%s)' % str(e))
+        submitted_dict = get_input_as_dict(request)
 
         # The auto-generated delegation id must be valid
         user = request.environ['fts3.User.Credentials']
@@ -462,8 +535,8 @@ class JobsController(BaseController):
         # Populate the job and files
         populated = JobBuilder(user, **submitted_dict)
 
+        # Insert the job
         try:
-            # Insert the job
             Session.execute(Job.__table__.insert(), [populated.job])
             if len(populated.files):
                 Session.execute(File.__table__.insert(), populated.files)
@@ -500,3 +573,97 @@ class JobsController(BaseController):
             )
 
         return {'job_id': populated.job_id}
+
+    @doc.response(403, 'The user doesn\'t have enough privileges')
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.return_type('File final states (array if multiple files were given)')
+    @jsonify
+    def cancel_all_by_vo(self, vo_name):
+        """
+        Cancel all files by the given vo_name
+        """
+        user = request.environ['fts3.User.Credentials']
+
+        now = datetime.utcnow()
+        if user.is_root == True:
+            try:
+                # FTS3 daemon expects job_finished to be NULL in order to trigger the signal
+                # to fts_url_copy
+                Session.query(File).filter(File.vo_name == vo_name)\
+                    .filter(File.file_state.in_(FileActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'finish_time': now
+                    }, synchronize_session=False)
+
+                # However, for data management operations there is nothing to signal, so
+                # set job_finished
+                Session.query(DataManagement).filter(DataManagement.vo_name == vo_name)\
+                    .filter(DataManagement.file_state.in_(DataManagementActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                    }, synchronize_session=False)
+
+                Session.query(Job).filter(Job.vo_name == vo_name)\
+                    .filter(Job.job_state.in_(JobActiveStates))\
+                    .update({
+                        'job_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                     }, synchronize_session=False)
+                Session.commit()
+                Session.expire_all()
+                log.info("Active jobs for VO %s canceled" % vo_name)
+            except:
+                Session.rollback()
+                raise
+        else:
+            raise HTTPForbidden(
+                'User does not have root privileges'
+            )
+
+    @doc.response(403, 'The user doesn\'t have enough privileges')
+    @doc.response(404, 'The job doesn\'t exist')
+    @doc.return_type('File final states (array if multiple files were given)')
+    @jsonify
+    def cancel_all(self):
+        """
+        Cancel all files
+        """
+        user = request.environ['fts3.User.Credentials']
+
+        now = datetime.utcnow()
+        if user.is_root == True:
+            try:
+                # FTS3 daemon expects job_finished to be NULL in order to trigger the signal
+                # to fts_url_copy
+                Session.query(File).filter(File.file_state.in_(FileActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'finish_time': now
+                    }, synchronize_session=False)
+
+                # However, for data management operations there is nothing to signal, so
+                # set job_finished
+                Session.query(DataManagement)\
+                    .filter(DataManagement.file_state.in_(DataManagementActiveStates))\
+                    .update({
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                    }, synchronize_session=False)
+
+                Session.query(Job).filter(Job.job_state.in_(JobActiveStates))\
+                    .update({
+                        'job_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'job_finished': now, 'finish_time': now
+                    }, synchronize_session=False)
+                Session.commit()
+                Session.expire_all()
+                log.info("Active jobs canceled")
+            except:
+                Session.rollback()
+                raise
+        else:
+            raise HTTPForbidden(
+                'User does not have root privileges'
+            )

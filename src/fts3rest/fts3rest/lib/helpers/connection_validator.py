@@ -13,7 +13,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 import logging
-from sqlalchemy.interfaces import PoolListener
 from sqlalchemy.exc import DisconnectionError
 try:
     from MySQLdb.connections import Connection as MySQLConnection
@@ -29,22 +28,17 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-class ConnectionValidator(PoolListener):
-    """
-    Pool listener that validates a connection before using it
-    """
+def connection_validator(dbapi_con, con_record, con_proxy):
+    exc = None
+    if isinstance(dbapi_con, MySQLConnection):
+        # True will silently reconnect if the connection was lost
+        dbapi_con.ping(True)
+    elif isinstance(dbapi_con, OracleConnection):
+        try:
+            dbapi_con.ping()
+        except DatabaseError, e:
+            exc = DisconnectionError(str(e))
 
-    def checkout(self, dbapi_con, con_record, con_proxy):
-        exc = None
-        if isinstance(dbapi_con, MySQLConnection):
-            # True will silently reconnect if the connection was lost
-            dbapi_con.ping(True)
-        elif isinstance(dbapi_con, OracleConnection):
-            try:
-                dbapi_con.ping()
-            except DatabaseError, e:
-                exc = DisconnectionError(str(e))
-
-        if exc is not None:
-            log.warning(exc.message)
-            raise exc
+    if exc is not None:
+        log.warning(exc.message)
+        raise exc

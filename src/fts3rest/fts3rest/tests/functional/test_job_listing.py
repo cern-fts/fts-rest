@@ -29,11 +29,11 @@ class TestJobListing(TestController):
     Tests for the job controller, listing, stating, etc.
     """
 
-    def _submit(self, file_metadata=None):
+    def _submit(self, file_metadata=None, dest_surl='root://dest.ch/file'):
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -44,12 +44,13 @@ class TestJobListing(TestController):
         if file_metadata:
             job['files'][0]['metadata'] = file_metadata
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was commited to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
         return job_id
 
@@ -78,8 +79,7 @@ class TestJobListing(TestController):
         self.push_delegation()
 
         job_id = self._submit()
-        answer = self.app.get(url="/jobs/%s" % job_id, status=200)
-        job = json.loads(answer.body)
+        job = self.app.get(url="/jobs/%s" % job_id, status=200).json
 
         self.assertEqual(job['job_id'], job_id)
         self.assertEqual(job['job_state'], 'SUBMITTED')
@@ -89,14 +89,10 @@ class TestJobListing(TestController):
         Request an invalid job
         """
         self.setup_gridsite_environment()
-        response = self.app.get(
+        error = self.app.get(
             url="/jobs/1234x",
             status=404
-        )
-
-        self.assertEquals(response.content_type, 'application/json')
-
-        error = json.loads(response.body)
+        ).json
 
         self.assertEquals(error['status'], '404 Not Found')
         self.assertEquals(error['message'], 'No job with the id "1234x" has been found')
@@ -110,9 +106,7 @@ class TestJobListing(TestController):
 
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs",
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(url="/jobs", status=200).json
         self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
 
     def test_list_with_dlg_id(self):
@@ -125,10 +119,11 @@ class TestJobListing(TestController):
 
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs",
-                              params={'dlg_id': creds.delegation_id},
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(
+            url="/jobs",
+            params={'dlg_id': creds.delegation_id},
+            status=200
+        ).json
         self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
 
     def test_list_with_dn(self):
@@ -141,10 +136,11 @@ class TestJobListing(TestController):
 
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs",
-                              params={'user_dn': creds.user_dn},
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(
+            url="/jobs",
+            params={'user_dn': creds.user_dn},
+            status=200
+        ).json
         self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
 
     def test_list_with_vo(self):
@@ -157,10 +153,11 @@ class TestJobListing(TestController):
 
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs",
-                              params={'vo_name': creds.vos[0]},
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(
+            url="/jobs",
+            params={'vo_name': creds.vos[0]},
+            status=200
+        ).json
         self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
 
     def test_list_bad_dlg_id(self):
@@ -199,10 +196,11 @@ class TestJobListing(TestController):
 
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs",
-                              params={'dlg_id': creds.delegation_id, 'state_in': 'FINISHED,FAILED,CANCELED'},
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(
+            url="/jobs",
+            params={'dlg_id': creds.delegation_id, 'state_in': 'FINISHED,FAILED,CANCELED'},
+            status=200
+        ).json
         self.assertFalse(job_id in map(lambda j: j['job_id'], job_list))
 
     def test_list_with_state_match(self):
@@ -215,10 +213,11 @@ class TestJobListing(TestController):
 
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs",
-                              params={'dlg_id': creds.delegation_id, 'state_in': 'ACTIVE,SUBMITTED'},
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(
+            url="/jobs",
+            params={'dlg_id': creds.delegation_id, 'state_in': 'ACTIVE,SUBMITTED'},
+            status=200
+        ).json
         self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
 
     def test_list_with_source_se(self):
@@ -230,16 +229,18 @@ class TestJobListing(TestController):
 
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs",
-                              params={'source_se': 'root://source.es'},
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(
+            url="/jobs",
+            params={'source_se': 'root://source.es'},
+            status=200
+        ).json
         self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
 
-        answer = self.app.get(url="/jobs",
-                              params={'source_se': 'gsiftp://source.es'},
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(
+            url="/jobs",
+            params={'source_se': 'gsiftp://source.es'},
+            status=200
+        ).json
         self.assertTrue(job_id not in map(lambda j: j['job_id'], job_list))
 
     def test_list_with_dest_se(self):
@@ -251,16 +252,18 @@ class TestJobListing(TestController):
 
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs",
-                              params={'dest_se': 'root://dest.ch'},
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(
+            url="/jobs",
+            params={'dest_se': 'root://dest.ch'},
+            status=200
+        ).json
         self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
 
-        answer = self.app.get(url="/jobs",
-                              params={'dest_se': 'gsiftp://dest.ch'},
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(
+            url="/jobs",
+            params={'dest_se': 'gsiftp://dest.ch'},
+            status=200
+        ).json
         self.assertTrue(job_id not in map(lambda j: j['job_id'], job_list))
 
     def test_list_with_state_no_dlg_id(self):
@@ -270,9 +273,11 @@ class TestJobListing(TestController):
         self.setup_gridsite_environment()
         self.push_delegation()
 
-        self.app.get(url="/jobs",
-                     params={'state_in': 'SUBMITTED,ACTIVE'},
-                     status=403)
+        self.app.get(
+            url="/jobs",
+            params={'state_in': 'SUBMITTED,ACTIVE'},
+            status=403
+        )
 
     def test_list_no_vo(self):
         """
@@ -285,9 +290,7 @@ class TestJobListing(TestController):
         job_id = self._submit()
 
         # Must be in the listings!
-        answer = self.app.get(url="/jobs",
-                              status=200)
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(url="/jobs", status=200).json
         self.assertTrue(job_id in map(lambda j: j['job_id'], job_list))
 
     def test_get_no_vo(self):
@@ -301,9 +304,7 @@ class TestJobListing(TestController):
         job_id = self._submit()
 
         # Must be in the listings!
-        answer = self.app.get(url="/jobs/%s" % job_id,
-                              status=200)
-        job_info = json.loads(answer.body)
+        job_info = self.app.get(url="/jobs/%s" % job_id, status=200).json
         self.assertEqual(job_id, job_info['job_id'])
         self.assertEqual(self.get_user_credentials().vos[0], job_info['vo_name'])
 
@@ -316,9 +317,7 @@ class TestJobListing(TestController):
 
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs/%s/job_state" % job_id,
-                              status=200)
-        state = json.loads(answer.body)
+        state = self.app.get(url="/jobs/%s/job_state" % job_id, status=200).json
         self.assertEqual(state, 'SUBMITTED')
 
     def test_get_job_forbidden(self):
@@ -332,11 +331,10 @@ class TestJobListing(TestController):
         old_granted = UserCredentials.get_granted_level_for
         UserCredentials.get_granted_level_for = lambda self_, op: None
 
-        answer = self.app.get("/jobs/%s" % job_id, status=403)
+        error = self.app.get("/jobs/%s" % job_id, status=403).json
 
         UserCredentials.get_granted_level_for = old_granted
 
-        error = json.loads(answer.body)
         self.assertEqual(error['status'], '403 Forbidden')
 
     def test_get_missing_field(self):
@@ -347,9 +345,8 @@ class TestJobListing(TestController):
         self.push_delegation()
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs/%s/not_really_a_field" % job_id, status=404)
+        error = self.app.get(url="/jobs/%s/not_really_a_field" % job_id, status=404).json
 
-        error = json.loads(answer.body)
         self.assertEqual(error['status'], '404 Not Found')
         self.assertEqual(error['message'], 'No such field')
 
@@ -361,9 +358,7 @@ class TestJobListing(TestController):
         self.push_delegation()
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs/%s/files" % job_id, status=200)
-
-        files = json.loads(answer.body)
+        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
 
         self.assertEqual(1, len(files))
         self.assertEqual("root://source.es/file", files[0]['source_surl'])
@@ -378,12 +373,10 @@ class TestJobListing(TestController):
         self.push_delegation()
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs/%s/files" % job_id, status=200)
-        files = json.loads(answer.body)
+        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
         file_id = files[0]['file_id']
 
-        answer = self.app.get(url="/jobs/%s/files/%d/retries" % (job_id, file_id), status=200)
-        retries = json.loads(answer.body)
+        retries = self.app.get(url="/jobs/%s/files/%d/retries" % (job_id, file_id), status=200).json
         self.assertEqual(0, len(retries))
 
     def test_get_retries(self):
@@ -394,8 +387,7 @@ class TestJobListing(TestController):
         self.push_delegation()
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs/%s/files" % job_id, status=200)
-        files = json.loads(answer.body)
+        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
         file_id = files[0]['file_id']
 
         retry = FileRetryLog()
@@ -407,8 +399,7 @@ class TestJobListing(TestController):
         Session.merge(retry)
         Session.commit()
 
-        answer = self.app.get(url="/jobs/%s/files/%d/retries" % (job_id, file_id), status=200)
-        retries = json.loads(answer.body)
+        retries = self.app.get(url="/jobs/%s/files/%d/retries" % (job_id, file_id), status=200).json
 
         self.assertEqual(1, len(retries))
         self.assertEqual(1, retries[0]['attempt'])
@@ -424,8 +415,7 @@ class TestJobListing(TestController):
         self.push_delegation()
         job_id = self._submit()
 
-        answer = self.app.get(url="/jobs/%s?files=start_time,source_surl" % job_id, status=200)
-        job = json.loads(answer.body)
+        job = self.app.get(url="/jobs/%s?files=start_time,source_surl" % job_id, status=200).json
 
         self.assertIn('files', job)
         self.assertEqual(1, len(job['files']))
@@ -450,11 +440,10 @@ class TestJobListing(TestController):
         for i in range(N_JOBS):
             job_ids.append(self._submit())
 
-        answer = self.app.get(
-            url="/jobs/%s?files=start_time,source_surl,file_state" % ','.join(job_ids), status=200
-        )
-
-        job_list = json.loads(answer.body)
+        job_list = self.app.get(
+            url="/jobs/%s?files=start_time,source_surl,file_state" % ','.join(job_ids),
+            status=200
+        ).json
 
         self.assertEqual(list, type(job_list))
         self.assertEqual(N_JOBS, len(job_list))
@@ -486,11 +475,9 @@ class TestJobListing(TestController):
             job_ids.append(self._submit())
         job_ids.append('12345-BADBAD-09876')
 
-        answer = self.app.get(
+        job_list = self.app.get(
             url="/jobs/%s?files=start_time,source_surl,file_state" % ','.join(job_ids), status=207
-        )
-
-        job_list = json.loads(answer.body)
+        ).json
 
         self.assertEqual(list, type(job_list))
         self.assertEqual(N_JOBS + 1, len(job_list))
@@ -512,28 +499,25 @@ class TestJobListing(TestController):
         job_id = self._terminal('FINISHED', timedelta(minutes=30))
 
         # Try one hour
-        answer = self.app.get(url="/jobs",
+        job_list = self.app.get(url="/jobs",
             params={
                 'dlg_id': creds.delegation_id,
                 'state_in': 'FINISHED',
                 'time_window': '1'},
             status=200
-        )
-
-        job_list = json.loads(answer.body)
+        ).json
 
         self.assertIn(job_id, [j['job_id'] for j in job_list])
 
         # Try 15 minutes
-        answer = self.app.get(url="/jobs",
+        job_list = self.app.get(url="/jobs",
             params={
                 'dlg_id': creds.delegation_id,
                 'state_in': 'FINISHED',
-                'time_window': '0:15'},
+                'time_window': '0:15'
+            },
             status=200
-        )
-
-        job_list = json.loads(answer.body)
+        ).json
 
         self.assertNotIn(job_id, [j['job_id'] for j in job_list])
 
@@ -560,3 +544,30 @@ class TestJobListing(TestController):
         self.assertEqual('5',               jobs[1]['files'][0]['file_metadata'])
         self.assertEqual(jobs[2]['job_id'], jobs[2]['files'][0]['job_id'])
         self.assertEqual('?',               jobs[2]['files'][0]['file_metadata'])
+
+    def test_query_something_running(self):
+        """
+        Query if there are any active or submitted files for a given destination surl
+        Requested by ATLAS to query if a given destination file landed on the DB
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job1 = self._submit(dest_surl='gsiftp://test/path')
+        job2 = self._submit(dest_surl='gsiftp://test2/path')
+
+        files = self.app.get(
+            url="/files?dest_surl=gsiftp://test2/path",
+            status=200
+        ).json
+
+        self.assertNotIn(job1, map(lambda f: f['job_id'], files))
+        self.assertIn(job2, map(lambda f: f['job_id'], files))
+
+        files = self.app.get(
+            url="/files?dest_surl=gsiftp://test/path",
+            status=200
+        ).json
+
+        self.assertIn(job1, map(lambda f: f['job_id'], files))
+        self.assertNotIn(job2, map(lambda f: f['job_id'], files))

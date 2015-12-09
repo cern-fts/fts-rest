@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-delete-submit
 % fts-devel@cern.ch
-% June 17, 2015
+% October 05, 2015
 # NAME
 
 fts-rest-delete-submit
@@ -33,6 +33,9 @@ This command can be used to submit a deletion job to FTS3. It supports simple an
 
 --cert
 :	The user certificate. 
+
+--capath
+:	Use the specified directory to verify the peer
 
 --insecure
 :	Do not validate the server certificate

@@ -22,7 +22,8 @@ from sqlalchemy import and_
 from sqlalchemy import __version__ as sqlalchemy_version
 from sqlalchemy.orm import relation
 
-from base import Base, Flag
+from base import Base, Flag, Json
+from file import File
 
 
 class  ConfigAudit(Base):
@@ -40,10 +41,10 @@ class  ConfigAudit(Base):
 class LinkConfig(Base):
     __tablename__ = 't_link_config'
 
-    source            = Column(String, primary_key=True)
-    destination       = Column(String, primary_key=True)
+    source            = Column(String(150), primary_key=True)
+    destination       = Column(String(150), primary_key=True)
     state             = Column(Flag(negative='off', positive='on'))
-    symbolicname      = Column(String, unique=True)
+    symbolicname      = Column(String(255), unique=True)
     nostreams         = Column(Integer)
     tcp_buffer_size   = Column(Integer)
     urlcopy_tx_to     = Column(Integer)
@@ -65,17 +66,17 @@ class Se(Base):
     __tablename__ = 't_se'
 
     se_id_info = Column(Integer)
-    name       = Column(String, primary_key=True)
-    endpoint   = Column(String)
-    se_type    = Column(String)
-    site       = Column(String)
-    state      = Column(String)
-    version    = Column(String)
-    host       = Column(String)
-    se_transfer_type     = Column(String)
-    se_transfer_protocol = Column(String)
-    se_control_protocol  = Column(String)
-    gocdb_id   = Column(String)
+    name       = Column(String(150), primary_key=True)
+    endpoint   = Column(String(1024))
+    se_type    = Column(String(30))
+    site       = Column(String(100))
+    state      = Column(String(30))
+    version    = Column(String(30))
+    host       = Column(String(100))
+    se_transfer_type     = Column(String(30))
+    se_transfer_protocol = Column(String(30))
+    se_control_protocol  = Column(String(30))
+    gocdb_id   = Column(String(100))
 
     source_on =\
         relation('LinkConfig', backref='source_se',
@@ -108,9 +109,9 @@ class Se(Base):
 class ShareConfig(Base):
     __tablename__ = 't_share_config'
 
-    source      = Column(String, primary_key=True)
-    destination = Column(String, primary_key=True)
-    vo          = Column(String, primary_key=True)
+    source      = Column(String(150), primary_key=True)
+    destination = Column(String(150), primary_key=True)
+    vo          = Column(String(100), primary_key=True)
     share       = Column(Integer, name='active')
 
     __table_args__ = (ForeignKeyConstraint(['source', 'destination'],
@@ -119,6 +120,22 @@ class ShareConfig(Base):
 
     def __str__(self):
         return "%s: %s => %s" % (self.vo, self.source, self.destination)
+
+
+class FileShareConfig(Base):
+    __tablename__ = 't_file_share_config'
+
+    file_id     = Column(Integer, primary_key=True)
+    source      = Column(String(150), primary_key=True)
+    destination = Column(String(150), primary_key=True)
+    vo          = Column(String(100), nullable=False)
+
+    __table_args__ = (
+        ForeignKeyConstraint(['source', 'destination', 'vo'],
+                             [ShareConfig.source, ShareConfig.destination, ShareConfig.vo]),
+        ForeignKeyConstraint(['file_id'],
+                             [File.file_id])
+    )
 
 
 class Group(Base):
@@ -134,8 +151,8 @@ class Member(Base):
     __tablename__ = 't_group_members'
     __table_args__ = ({'useexisting': True})
 
-    groupname = Column(String, primary_key=True)
-    member    = Column(String, primary_key=True)
+    groupname = Column(String(255), primary_key=True)
+    member    = Column(String(255), primary_key=True)
 
     def __str__(self):
         return "%s/%s" % (self.groupname, self.member)
@@ -187,3 +204,11 @@ class OperationConfig(Base):
     host           = Column(String(255), primary_key=True)
     concurrent_ops = Column(Integer, default=0)
     operation      = Column(String(150), primary_key=True)
+
+
+class ActivityShare(Base):
+    __tablename__ = 't_activity_share_config'
+
+    vo             = Column(String(100), primary_key=True)
+    activity_share = Column(Json(1024))
+    active         = Column(Flag(negative='off', positive='on'), default='on')

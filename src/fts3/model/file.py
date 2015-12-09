@@ -70,7 +70,7 @@ class File(Base):
     wait_timestamp       = Column(DateTime)
     wait_timeout         = Column(Integer)
 
-    retries = relation("FileRetryLog", uselist=True, lazy=False,
+    retries = relation("FileRetryLog", uselist=True, lazy=True,
                        backref=backref("file", lazy=False))
 
     def isFinished(self):

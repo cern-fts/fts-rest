@@ -27,7 +27,7 @@ class Submitter(object):
         self.context = context
 
     @staticmethod
-    def build_submission(transfers=None, delete=None, **kwargs):
+    def build_submission(transfers=None, delete=None, staging=None, **kwargs):
         job = dict()
 
         job['params'] = dict()
@@ -35,6 +35,8 @@ class Submitter(object):
 
         if delete:
             job['delete'] = delete
+        if staging:
+            job['staging'] = staging
         if transfers:
             job['files'] = transfers
             if 'checksum' in kwargs:

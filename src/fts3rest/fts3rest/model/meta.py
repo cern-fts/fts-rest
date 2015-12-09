@@ -16,13 +16,17 @@
 #   limitations under the License.
 
 """SQLAlchemy Metadata and Session object"""
-from sqlalchemy.ext.declarative import declarative_base
+import sqlalchemy
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 __all__ = ['Base', 'Session']
 
 # SQLAlchemy session manager. Updated by model.init_model()
 Session = scoped_session(sessionmaker())
+
+# Log the version
+import logging
+logging.getLogger(__name__).info('Using SQLAlchemy %s' % sqlalchemy.__version__)
 
 # The declarative Base
 from fts3.model.base import Base

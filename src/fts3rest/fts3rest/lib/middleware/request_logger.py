@@ -74,10 +74,12 @@ class RequestLogger(object):
         try:
             log.debug('Request params: ' + str(pylons.request.params))
             log.debug('Request content type: ' + pylons.request.content_type)
-            if pylons.request.content_type == 'application/json':
-                log.debug('Request body: ')
-                for line in pylons.request.body.split('\n'):
-                    log.debug(line)
+            log.debug('Request body: ')
+            for line in pylons.request.body.split('\n'):
+                log.debug(line)
+        except AttributeError:
+            # Sometimes the body is a set, so ignore the failure coming from Pylons
+            pass
         except TypeError:
             # Sometimes there is no request registered (?), so let it go
             pass

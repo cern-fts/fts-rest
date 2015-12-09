@@ -15,7 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, Boolean, String
 
 from base import Base
 
@@ -26,4 +26,4 @@ class Host(Base):
     hostname     = Column(String(64), primary_key=True)
     service_name = Column(String(64), primary_key=True)
     beat         = Column(DateTime)
-    drain        = Column(Integer)
+    drain        = Column(Boolean)

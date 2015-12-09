@@ -68,13 +68,11 @@ class TestOAuth2(TestController):
             'redirect_to': 'https://mysite.com/callback',
             'scope': scope
         }
-        response = self.app.post(
+        client_id = self.app.post_json(
             url="/oauth2/register",
-            content_type='application/json',
-            params=json.dumps(req),
+            params=req,
             status=201
-        )
-        client_id = json.loads(response.body)
+        ).json
         self.assertNotEqual(None, client_id)
 
         app = Session.query(OAuth2Application).get(client_id)
@@ -86,6 +84,12 @@ class TestOAuth2(TestController):
         self.assertEqual('/DC=ch/DC=cern/CN=Test User', app.owner)
         self.assertEqual(set(scope.split(',')), app.scope)
 
+        self.app.post_json(
+            url="/oauth2/register",
+            params=req,
+            status=403
+        )
+
         return client_id
 
     def test_get_my_apps(self):
@@ -93,11 +97,10 @@ class TestOAuth2(TestController):
         Get my list of apps
         """
         client_id = self.test_register()
-        response = self.app.get(
+        apps = self.app.get(
             url="/oauth2/apps",
             status=200
-        )
-        apps = json.loads(response.body)
+        ).json
 
         self.assertEqual(1, len(apps['apps']))
         self.assertEqual(client_id, apps['apps'][0]['client_id'])
@@ -107,11 +110,10 @@ class TestOAuth2(TestController):
         Ask for a given app
         """
         client_id = self.test_register()
-        response = self.app.get(
+        app = self.app.get(
             url="/oauth2/apps/%s" % str(client_id),
             status=200
-        )
-        app = json.loads(response.body)
+        ).json
         self.assertEqual(client_id, app['client_id'])
 
     def test_delete(self):
@@ -198,11 +200,10 @@ class TestOAuth2(TestController):
         )
 
     def _get_client_secret(self, client_id):
-        response = self.app.get(
+        app = self.app.get(
             url="/oauth2/apps/%s" % client_id,
             status=200
-        )
-        app = json.loads(response.body)
+        ).json
         return app['client_secret']
 
     def test_get_token(self, scope='transfer', no_vo=False, client_id=None):
@@ -210,7 +211,7 @@ class TestOAuth2(TestController):
         Get a OAuth2 token (third step)
         """
         client_id, code = self.test_get_code(scope=scope, no_vo=no_vo, client_id=client_id)
-        response = self.app.post(
+        auth = self.app.post(
             url="/oauth2/token",
             params={
                 'grant_type': 'authorization_code',
@@ -221,8 +222,7 @@ class TestOAuth2(TestController):
                 'scope': scope
             },
             status=200
-        )
-        auth = json.loads(response.body)
+        ).json
         self.assertIn('access_token', auth.keys())
         self.assertIn('refresh_token', auth.keys())
         self.assertEqual('Bearer', auth.get('token_type'))
@@ -252,7 +252,7 @@ class TestOAuth2(TestController):
         Refresh a token
         """
         client_id, access_token, refresh_token, expires = self.test_get_token('transfer')
-        response = self.app.post(
+        auth = self.app.post(
             url="/oauth2/token",
             params={
                 'grant_type': 'refresh_token',
@@ -262,8 +262,7 @@ class TestOAuth2(TestController):
                 'scope': 'transfer'
             },
             status=200
-        )
-        auth = json.loads(response.body)
+        ).json
         self.assertIn('access_token', auth.keys())
         time.sleep(1)
         self.assertGreater(datetime.utcnow() + timedelta(seconds=auth['expires_in']), expires)
@@ -277,21 +276,19 @@ class TestOAuth2(TestController):
         del self.app.extra_environ['GRST_CRED_AURI_0']
 
         # Without bearer first
-        response = self.app.get(
+        whoami = self.app.get(
             url="/whoami",
             status=200
-        )
-        whoami = json.loads(response.body)
+        ).json
         self.assertEqual('anon', whoami['user_dn'])
         self.assertEqual('unauthenticated', whoami['method'])
 
         # With bearer
-        response = self.app.get(
+        whoami = self.app.get(
             url="/whoami",
             headers={'Authorization': str('Bearer %s' % access_token)},
             status=200
-        )
-        whoami = json.loads(response.body)
+        ).json
         self.assertEqual('/DC=ch/DC=cern/CN=Test User', whoami['user_dn'])
 
     def test_revoke(self):
@@ -342,12 +339,11 @@ class TestOAuth2(TestController):
         client_id, access_token, refresh_token, expires = self.test_get_token()
         del self.app.extra_environ['GRST_CRED_AURI_0']
 
-        response = self.app.get(
+        whoami = self.app.get(
             url="/whoami",
             headers={'Authorization': str('Bearer %s' % access_token)},
             status=200
-        )
-        whoami = json.loads(response.body)
+        ).json
         self.assertEqual('oauth2', whoami['method'])
 
         token = Session.query(OAuth2Token).get((client_id, refresh_token))
@@ -432,4 +428,104 @@ class TestOAuth2(TestController):
             url="/config/fixed",
             headers={'Authorization': str('Bearer %s' % access_token)},
             status=403
+        )
+
+    def test_app_not_found(self):
+        """
+        Application not found
+        """
+        client_id = self.test_get_app()
+        self.app.get(
+            url="/oauth2/apps/%s" % client_id,
+            status=404
+        )
+
+    def test_update_app(self):
+        """
+        Try to update app
+        """
+        client_id = str(self.test_register())
+
+        config = {'redirect_to': 'https://xxx/path', 'description': 'abcd'}
+
+        self.app.post_json(
+            url="/oauth2/apps/%s" % client_id,
+            params=config,
+            status=303
+        )
+
+        app = Session.query(OAuth2Application).get(client_id)
+
+        self.assertEqual('MyApp', app.name)
+        self.assertEqual('abcd', app.description)
+        self.assertEqual('https://xxx/path', app.redirect_to)
+        self.assertEqual('/DC=ch/DC=cern/CN=Test User', app.owner)
+
+    def test_invalid_scope(self):
+        """
+        Set invalid scope
+        """
+        self.setup_gridsite_environment()
+        req = {
+            'name': 'MyApp',
+            'description': 'Blah blah blah',
+            'website': 'https://example.com',
+            'redirect_to': 'https://mysite.com/callback',
+            'scope': 'transfer,1'
+        }
+        self.app.post_json(
+            url="/oauth2/register",
+            params=req,
+            status=400
+        )
+
+    def test_missing_web_or_name(self):
+        """
+        Missing website
+        """
+
+        config = {'name': 'MyApp', 'website': 'https://example.com'}
+
+        for i in config:
+            self.setup_gridsite_environment()
+            k = config
+            del config[i]
+            self.app.post(url="/oauth2/register", params=k, status=400)
+            return config
+
+    def test_missing_redirect(self):
+        """
+        Missing redirect_to
+        """
+        self.setup_gridsite_environment()
+        req = {
+            'name': 'MyApp',
+            'description': 'Blah blah blah',
+            'website': 'https://example.com',
+            'redirect_to': '',
+            'scope': 'transfer'
+        }
+        self.app.post_json(
+            url="/oauth2/register",
+            params=req,
+            status=400
+        )
+
+    def test_get_my_apps_3(self):
+        """
+        Lines 100,101
+        """
+        self.setup_gridsite_environment()
+        req = {
+            'name': 'MyApp',
+            'description': 'Blah blah blah',
+            'website': 'https://example.com',
+            'redirect_to': 'https://mysite.com/callback',
+            'scope': 'transfer'
+        }
+        self.app.post(
+            url="/oauth2/register",
+            content_type='text/html; charset=UTF-8',
+            params=json.dumps(req),
+            status=400
         )

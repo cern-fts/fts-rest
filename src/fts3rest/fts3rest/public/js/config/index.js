@@ -14,81 +14,79 @@
  *  limitations under the License.
 **/
 
+var template_server_status = null;
 
 /**
  * Tell the server to set hostname to drain
  */
 function setServerDrain(hostname, drain)
 {
-    $.post("/config/drain", {hostname: hostname, drain: drain})
+    $.ajax({
+        url: "/config/drain",
+        type: "POST",
+        dataType: "json",
+        contentType: "application/json",
+        data: JSON.stringify({hostname: hostname, drain: drain})
+    })
     .done(function(data, textStatus, jqXHR) {
-        setupOverview();
+        refreshOverview();
     })
     .fail(function(jqXHR) {
         errorMessage(jqXHR);
     });
 }
 
+/**
+ * Compile templates embedded into the HTML
+ */
+function compileTemplates()
+{
+    template_server_status = Handlebars.compile(
+        $("#server-status-template").html()
+    );
+}
 
 /**
- * Setup the overview view
+ * Refresh the overview
  */
-function setupOverview()
+function refreshOverview()
 {
     var tbody = $("#server-statuses");
 
     $.ajax({
         url: "/config?",
         success: function (data) {
-            tbody.empty();
+            // Decorate each entry with its state
             $.each(data, function(i, server) {
-                var status, klass;
                 if (server.drain) {
-                    klass = 'btn-warning';
-                    status = 'Draining';
+                    server.status_klass = 'btn-warning';
+                    server.status_lbl = 'Draining';
+                    server.is_draining = true;
                 }
                 else if (new Date(server.beat) < (new Date().getTime() - (2 * 60 * 1000))) {
-                    klass = 'btn-danger';
-                    status = 'Offline';
+                    server.status_klass = 'btn-danger';
+                    server.status_lbl = 'Offline';
+                    server.is_draining = false;
                 }
                 else {
-                    klass = 'btn-success';
-                    status = 'Ok';
+                    server.status_klass = 'btn-success';
+                    server.status_lbl = 'Ok';
+                    server.is_draining = true;
                 }
-
-                var btnGroup = $("<div class='btn-group'></div>");
-                var btnStatus = $("<button></button>").text(status);
-                btnStatus.append(" <span class='caret'></span>");
-                btnStatus.addClass("btn btn-xs dropdown-toggle").addClass(klass);
-                btnStatus.attr("data-toggle", "dropdown");
-
-                btnGroup.append(btnStatus);
-
-                var dropDown = $("<ul class='dropdown-menu' role='menu'>");
-
-                var btnDrain;
-                if (status != 'Draining') {
-                    btnDrain = $("<li><a href='#'>Drain</a></li>");
-                    btnDrain.click(function(e) {
-                        btnStatus.prop("disabled", true); setServerDrain(server.hostname, true)
-                    });
-                }
-                else {
-                    btnDrain = $("<li><a href='#'>Undrain</a></li>");
-                    btnDrain.click(function(e) {
-                        btnStatus.prop("disabled", true); setServerDrain(server.hostname, false)
-                    });
-                }
-                dropDown.append(btnDrain);
-
-                btnGroup.append(dropDown);
-
-                var tr = $("<tr></tr>")
-                    .append($("<td></td>").text(server.hostname))
-                    .append($("<td></td>").text(server.service_name))
-                    .append($("<td></td>").text(server.beat).append(" ").append(btnGroup));
-                tbody.append(tr);
             });
+
+            tbody.empty();
+            var trs = $(template_server_status(data));
+            tbody.append(trs);
         }
     });
+}
+
+/**
+ * Setup the overview view
+ */
+function setupOverview()
+{
+    compileTemplates();
+    refreshOverview();
 }

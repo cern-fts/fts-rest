@@ -64,9 +64,10 @@ class DropboxConnector(object):
         tokens = request_tokens.split('&')
         newuser = CloudStorageUser(
             user_dn=self.user_dn,
-            cloudStorage_name=dropbox_info.cloudStorage_name,
+            storage_name=dropbox_info.storage_name,
             request_token=tokens[1].split('=')[1],
-            request_token_secret=tokens[0].split('=')[1]
+            request_token_secret=tokens[0].split('=')[1],
+            vo_name=''
         )
         try:
             Session.add(newuser)
@@ -94,7 +95,7 @@ class DropboxConnector(object):
                     raise
                 raise HTTPNotFound('No registered user for the service "%s" has been found' % self.service)
 
-        return info.cloudStorage_name
+        return info.storage_name
 
     def remove_token(self):
         info = self._get_dropbox_user_info()
@@ -146,12 +147,12 @@ class DropboxConnector(object):
 
     def get_file_link(self, path):
         # "dropbox" could be also "sandbox"
-        return self._make_call(dropboxApiEndpoint + "/1/media/dropbox/" + path, self._get_auth_key(), None)
+        return self._make_call(dropboxApiEndpoint + "/1/media/dropbox/" + path, self._get_auth_key(), '')
 
     #Internal functions
 
     def _get_dropbox_user_info(self):
-        dropbox_user_info = Session.query(CloudStorageUser).get((self.user_dn, self.service))
+        dropbox_user_info = Session.query(CloudStorageUser).get((self.user_dn, self.service, ''))
         return dropbox_user_info
 
     def _get_valid_surl(self):

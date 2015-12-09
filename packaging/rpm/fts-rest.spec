@@ -2,8 +2,8 @@
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
 
 Name:           fts-rest
-Version:        3.3.3
-Release:        2%{?dist}
+Version:        3.4.0
+Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
@@ -12,6 +12,7 @@ URL:            https://svnweb.cern.ch/trac/fts3
 Source0:        https://grid-deployment.web.cern.ch/grid-deployment/dms/fts3/tar/%{name}-%{version}.tar.gz
 
 BuildRequires:  gfal2-python
+BuildRequires:  gfal2-plugin-mock
 BuildRequires:  cmake
 BuildRequires:  python-jsonschema
 %if %{?rhel}%{!?rhel:0} == 6
@@ -26,7 +27,11 @@ BuildRequires:  scipy
 BuildRequires:  m2crypto
 BuildRequires:  python-mock
 BuildRequires:  python-m2ext
+%if %{?rhel}%{!?rhel:0} >= 7
 BuildRequires:  python-sqlalchemy
+%else
+BuildRequires:  python-sqlalchemy0.8
+%endif
 BuildRequires:  python-requests
 %if %{?rhel}%{!?rhel:0} == 6
 BuildRequires:  python-slimit
@@ -98,7 +103,11 @@ Summary:        FTS3 database model
 Group:          Applications/Internet
 Requires:       m2crypto
 Requires:       python-pycurl
+%if %{?rhel}%{!?rhel:0} >= 7
 Requires:       python-sqlalchemy
+%else
+Requires:       python-sqlalchemy0.8
+%endif
 
 %description -n python-fts
 This package provides an object model of the FTS3
@@ -148,7 +157,8 @@ make %{?_smp_mflags}
 %check
 pushd src/fts3rest
 %if %{?rhel}%{!?rhel:0} == 6
-PYTHONPATH=../ nosetests1.1 --with-xunit --xunit-file=/tmp/nosetests.xml
+PYTHONPATH=../:/usr/lib64/python2.6/site-packages/SQLAlchemy-0.8.2-py2.6-linux-x86_64.egg/ \
+    nosetests1.1 --with-xunit --xunit-file=/tmp/nosetests.xml
 %endif
 %if %{?rhel}%{!?rhel:0} >= 7
 PYTHONPATH=../ ./setup_pylons_plugin.py install --user
@@ -181,14 +191,16 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %{python_sitelib}/fts3rest/controllers/archive.py*
 %{python_sitelib}/fts3rest/controllers/autocomplete.py*
 %{python_sitelib}/fts3rest/controllers/banning.py*
-%{python_sitelib}/fts3rest/controllers/config.py*
+%{python_sitelib}/fts3rest/controllers/config/*.py*
 %{python_sitelib}/fts3rest/controllers/datamanagement.py*
 %{python_sitelib}/fts3rest/controllers/delegation.py*
 %{python_sitelib}/fts3rest/controllers/error.py*
 %{python_sitelib}/fts3rest/controllers/__init__.py*
+%{python_sitelib}/fts3rest/controllers/files.py*
 %{python_sitelib}/fts3rest/controllers/jobs.py*
 %{python_sitelib}/fts3rest/controllers/optimizer.py*
 %{python_sitelib}/fts3rest/controllers/snapshot.py*
+%{python_sitelib}/fts3rest/controllers/serverstatus.py*
 
 %{python_sitelib}/fts3rest/lib/api/
 %{python_sitelib}/fts3rest/lib/app_globals.py*
@@ -202,6 +214,10 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/*.py*
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/__init__.py*
 %{python_sitelib}/fts3rest/lib/middleware/fts3auth/methods/ssl.py*
+%{python_sitelib}/fts3rest/lib/scheduler/schd.py*
+%{python_sitelib}/fts3rest/lib/scheduler/db.py*
+%{python_sitelib}/fts3rest/lib/scheduler/Cache.py*
+%{python_sitelib}/fts3rest/lib/scheduler/__init__.py*
 
 %{python_sitelib}/fts3rest/model/
 

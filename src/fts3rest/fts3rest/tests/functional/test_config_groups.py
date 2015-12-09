@@ -13,8 +13,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
-
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model.config import ConfigAudit, Member
@@ -109,8 +107,7 @@ class TestConfigGroup(TestController):
         """
         self.test_add_two_members()
 
-        response = self.app.get_json("/config/groups", status=200)
-        group_list = json.loads(response.body)
+        group_list = self.app.get_json("/config/groups", status=200).json
 
         self.assertEqual(2, len(group_list))
 
@@ -120,8 +117,7 @@ class TestConfigGroup(TestController):
         """
         self.test_add_two_members()
 
-        response = self.app.get_json("/config/groups/bahbah", status=200)
-        member_list = json.loads(response.body)
+        member_list = self.app.get_json("/config/groups/bahbah", status=200).json
 
         self.assertEqual(2, len(member_list))
         self.assertIn('test.cern.ch', member_list)
@@ -132,3 +128,17 @@ class TestConfigGroup(TestController):
         Try to list members of a non existing group
         """
         self.app.get_json("/config/groups/bahbah", status=404)
+
+    def test_add_member_wrong(self):
+        """
+        Add missing values
+        """
+
+        config = {'member': 'test.cern.ch', 'groupname': 'bahbah'}
+
+        for i in config:
+            k = config
+            k[i] = ''
+            print k
+            self.app.post(url="/config/groups", params=k, status=400)
+            return config

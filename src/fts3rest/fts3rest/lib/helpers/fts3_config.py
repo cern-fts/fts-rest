@@ -41,7 +41,7 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
     db_pass = parser.get('fts3', 'DbPassword')
     db_conn = parser.get('fts3', 'DbConnectString')
 
-    if db_conn[0] == '"' and db_conn[-1] == '"':
+    if len(db_conn) > 0 and db_conn[0] == '"' and db_conn[-1] == '"':
         db_conn = db_conn[1:-1]
 
     fts3cfg = {}
@@ -50,7 +50,7 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
         fts3cfg['sqlalchemy.url'] = "mysql://%s:%s@%s" % (db_user, quote_plus(db_pass),
                                                           db_conn)
     elif db_type.lower() == 'sqlite':
-        if not db_conn.startswith('/'):
+        if db_conn and not db_conn.startswith('/'):
             db_conn = os.path.abspath(db_conn)
         fts3cfg['sqlalchemy.url'] = "sqlite:///%s" % db_conn
     elif db_type.lower() == 'oracle':

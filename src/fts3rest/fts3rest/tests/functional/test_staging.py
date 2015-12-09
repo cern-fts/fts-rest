@@ -52,13 +52,14 @@ class TestSubmitToStaging(TestController):
             }
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
@@ -90,13 +91,14 @@ class TestSubmitToStaging(TestController):
             }
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
@@ -135,13 +137,14 @@ class TestSubmitToStaging(TestController):
             }
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
@@ -179,13 +182,14 @@ class TestSubmitToStaging(TestController):
             }
         }
 
-        answer = self.app.post(url="/jobs",
-                               content_type='application/json',
-                               params=json.dumps(job),
-                               status=200)
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         # Make sure it was committed to the DB
-        job_id = json.loads(answer.body)['job_id']
         self.assertGreater(len(job_id), 0)
 
         db_job = Session.query(Job).get(job_id)
@@ -213,10 +217,22 @@ class TestSubmitToStaging(TestController):
             }
         }
 
-        answer=  self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=400)
+        error = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=400
+        ).json
 
-        error = json.loads(answer.body)
         # SRM has to be mentioned in the error message
         self.assertIn('SRM', error['message'])
+
+        # Mock must be let through (FTS-289)
+        job['files'][0]['sources'][0] = 'mock://test/path'
+        self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        )
+

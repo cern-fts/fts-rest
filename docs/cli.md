@@ -75,7 +75,7 @@ Of course, you can get the code from a branch or a tag if you wish. Just check [
 
 Usage
 -----
-The usage documentation is inside the [cli](cli/) subdirectory.
+The usage documentation is inside the [cli](cli/README.md) subdirectory.
 
 Bulk submission
 ---------------

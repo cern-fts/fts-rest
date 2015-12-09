@@ -14,6 +14,9 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
+
+    <script src="/js/config/common.js"></script>
 </head>
 
 <body>
@@ -42,10 +45,12 @@
             ${add_tab("/config/se", "Storage", "Manage per-storage settings")}
             ${add_tab("/config/groups", "Storage groups", "Manage storage groups")}
             ${add_tab("/config/links", "Links", "Manage link settings (standalone or pair)")}
+            ${add_tab("/config/activity_shares", "Activity shares", "Manage activity shares")}
             ${add_tab("/config/fixed", "Fix values", "Fix number of actives per link")}
             ${add_tab("/config/global", "Server", "Manage FTS3-wide settings")}
             ${add_tab("/config/debug", "Debug", "Manage debug levels per storage")}
             ${add_tab("/config/audit", "Audit", "View the configuration auditing")}
+            ${add_tab("/config/cloud_storage", "Cloud storage", "Configure cloud storage credentials (S3, Dropbox)")}
             ${add_tab("/config/authorize", "Static authorization", "Give permissions based on DN rather than VO extensions")}
         </ul>
     </div>

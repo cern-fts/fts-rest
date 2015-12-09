@@ -13,7 +13,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import ConfigAudit, AuthorizationByDn
@@ -63,9 +62,36 @@ class TestConfigAuthz(TestController):
         List special authorizations
         """
         self.test_add_authz()
-        response = self.app.get_json("/config/authorize", status=200)
-        authz = json.loads(response.body)
+        authz = self.app.get_json("/config/authorize", status=200).json
 
         self.assertEqual(1, len(authz))
         self.assertEqual(authz[0]['dn'], '/DN=a.test.user')
         self.assertEqual(authz[0]['operation'], 'config')
+
+    def test_add_authz_miss_dn_or_op(self):
+        """
+        Miss dn or op
+        """
+        config = {'dn': '/DN=a.test.user', 'operation': 'config'}
+
+        for i in config:
+            k = config
+            k[i] = ''
+            print k
+            self.app.post(url="/config/authorize", params=k, status=400)
+            return config
+
+    def test_list_authz_missing_dn_or_op(self):
+        """
+        List missing dn or op
+        """
+        self.app.get("/config/authorize?operation=config", status=200)
+        self.app.get("/config/authorize?dn=/DN=a.test.user", status=200)
+
+    def test_remove_authz_wrong(self):
+        """
+        Remove with missing dn or op
+        """
+        self.test_add_authz()
+        self.app.delete("/config/authorize?operation=config",  status=400)
+        self.app.delete("/config/authorize?dn=/DN=a.test.user",  status=204)

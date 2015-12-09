@@ -31,6 +31,7 @@ class TestDebug(TestController):
 
     def tearDown(self):
         super(TestDebug, self).tearDown()
+        Session.query(ConfigAudit).delete()
 
     def test_set_debug_source(self):
         """
@@ -197,13 +198,26 @@ class TestDebug(TestController):
             status=200
         )
 
-        response = self.app.get(url="/config/debug",
+        debugs = self.app.get(url="/config/debug",
             headers = {'Accept': 'application/json'},
             status=200
-        )
-        debugs = json.loads(response.body)
+        ).json
 
         self.assertEqual(2, len(debugs))
 
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(2, len(audits))
+
+    def test_set_debug_source_and_dest_wrong(self):
+        """
+        Set the debug with wrong source and destination
+        """
+
+        self.app.post_json(url="/config/debug",
+            params = {'source_se': 'nowhere', 'debug_level': 5},
+            status=400
+        )
+        self.app.post_json(url="/config/debug",
+            params = {'dest_se': 'nowhere', 'debug_level': 6},
+            status=400
+        )

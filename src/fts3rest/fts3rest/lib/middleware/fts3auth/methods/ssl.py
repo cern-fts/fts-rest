@@ -70,4 +70,8 @@ def do_authentication(credentials, env):
     if not credentials.vos and credentials.user_dn:
         credentials.vos.append(build_vo_from_dn(credentials.user_dn))
     credentials.method = 'certificate'
+    # If the user's DN matches the host DN, then grant all
+    host_dn = env.get('SSL_SERVER_S_DN', None)
+    if host_dn and host_dn == credentials.user_dn:
+        credentials.is_root = True
     return True

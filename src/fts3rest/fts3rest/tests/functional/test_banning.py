@@ -40,11 +40,11 @@ class TestBanning(TestController):
         """
         Just ban a DN and unban it, make sure changes go into the DB
         """
-        answer = self.app.post(url='/ban/dn',
-                    params={'user_dn': '/DC=cern/CN=someone', 'message': 'TEST BAN'},
-                    status=200
-        )
-        canceled = json.loads(answer.body)
+        canceled = self.app.post(
+            url='/ban/dn',
+            params={'user_dn': '/DC=cern/CN=someone', 'message': 'TEST BAN'},
+            status=200
+        ).json
         self.assertEqual(0, len(canceled))
 
         banned = Session.query(BannedDN).get('/DC=cern/CN=someone')
@@ -60,18 +60,19 @@ class TestBanning(TestController):
         """
         Ban a DN and make sure it is in the list
         """
-        answer = self.app.post(url='/ban/dn', params={'user_dn': '/DC=cern/CN=someone'}, status=200)
-        canceled = json.loads(answer.body)
+        canceled = self.app.post(
+            url='/ban/dn',
+            params={'user_dn': '/DC=cern/CN=someone'},
+            status=200
+        ).json
         self.assertEqual(0, len(canceled))
 
-        answer = self.app.get(url='/ban/dn', status=200)
-        banned = json.loads(answer.body)
+        banned = self.app.get(url='/ban/dn', status=200).json
         self.assertIn('/DC=cern/CN=someone', [b['dn'] for b in banned])
 
         self.app.delete(url="/ban/dn?user_dn=%s" % urllib.quote('/DC=cern/CN=someone'), status=204)
 
-        answer = self.app.get(url='/ban/dn', status=200)
-        banned = json.loads(answer.body)
+        banned = self.app.get(url='/ban/dn', status=200).json
         self.assertNotIn('/DC=cern/CN=someone', [b['dn'] for b in banned])
 
     def test_ban_dn_submission(self):
@@ -109,8 +110,11 @@ class TestBanning(TestController):
                        user_dn='/DC=cern/CN=someone')
         )
 
-        answer = self.app.post(url="/ban/dn", params={'user_dn': '/DC=cern/CN=someone'}, status=200)
-        canceled_ids = json.loads(answer.body)
+        canceled_ids = self.app.post(
+            url="/ban/dn",
+            params={'user_dn': '/DC=cern/CN=someone'},
+            status=200
+        ).json
 
         self.assertEqual(2, len(canceled_ids))
         self.assertIn(jobs[0], canceled_ids)
@@ -140,11 +144,11 @@ class TestBanning(TestController):
         """
         Just ban a SE and unban it, make sure changes go into the DB
         """
-        answer = self.app.post(url="/ban/se",
-                    params={'storage': 'gsiftp://nowhere', 'message': 'TEST BAN 42'},
-                    status=200
-        )
-        canceled = json.loads(answer.body)
+        canceled = self.app.post(
+            url="/ban/se",
+            params={'storage': 'gsiftp://nowhere', 'message': 'TEST BAN 42'},
+            status=200
+        ).json
         self.assertEqual(0, len(canceled))
 
         banned = Session.query(BannedSE).get('gsiftp://nowhere')
@@ -162,26 +166,30 @@ class TestBanning(TestController):
         """
         Ban a SE and make sure it is in the list
         """
-        answer = self.app.post(url='/ban/se', params={'storage': 'gsiftp://nowhere'}, status=200)
-        canceled = json.loads(answer.body)
+        canceled = self.app.post(
+            url='/ban/se',
+            params={'storage': 'gsiftp://nowhere'},
+            status=200
+        ).json
         self.assertEqual(0, len(canceled))
 
-        answer = self.app.get(url='/ban/se', status=200)
-        banned = json.loads(answer.body)
+        banned = self.app.get(url='/ban/se', status=200).json
         self.assertIn('gsiftp://nowhere', [b['se'] for b in banned])
 
         self.app.delete(url="/ban/se?storage=%s" % urllib.quote('gsiftp://nowhere'), status=204)
 
-        answer = self.app.get(url='/ban/se', status=200)
-        banned = json.loads(answer.body)
+        banned = self.app.get(url='/ban/se', status=200).json
         self.assertNotIn('gsiftp://nowhere', [b['se'] for b in banned])
 
     def test_ban_se_vo(self):
         """
         Just ban a SE and unban it, specifying a VO
         """
-        answer = self.app.post(url="/ban/se", params={'storage': 'gsiftp://nowhere', 'vo_name': 'dteam'}, status=200)
-        canceled = json.loads(answer.body)
+        canceled = self.app.post(
+            url="/ban/se",
+            params={'storage': 'gsiftp://nowhere', 'vo_name': 'dteam'},
+            status=200
+        ).json
         self.assertEqual(0, len(canceled))
 
         banned = Session.query(BannedSE).get('gsiftp://nowhere')
@@ -203,8 +211,11 @@ class TestBanning(TestController):
         jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination2', 'ACTIVE'))
         jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination2', 'FAILED', duration=10, queued=20))
 
-        answer = self.app.post(url="/ban/se", params={'storage': 'gsiftp://source'}, status=200)
-        canceled_ids = json.loads(answer.body)
+        canceled_ids = self.app.post(
+            url="/ban/se",
+            params={'storage': 'gsiftp://source'},
+            status=200
+        ).json
 
         self.assertEqual(2, len(canceled_ids))
         self.assertIn(jobs[0], canceled_ids)
@@ -237,8 +248,11 @@ class TestBanning(TestController):
             'dteam',
             multiple=[('gsiftp://source', 'gsiftp://destination'), ('gsiftp://other', 'gsiftp://destination')]
         )
-        answer = self.app.post(url="/ban/se", params={'storage': 'gsiftp://source'}, status=200)
-        canceled_ids = json.loads(answer.body)
+        canceled_ids = self.app.post(
+            url="/ban/se",
+            params={'storage': 'gsiftp://source'},
+            status=200
+        ).json
 
         self.assertEqual(1, len(canceled_ids))
         self.assertEqual(job_id, canceled_ids[0])
@@ -266,12 +280,11 @@ class TestBanning(TestController):
         jobs.append(insert_job('atlas', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
         jobs.append(insert_job('atlas', 'gsiftp://source', 'gsiftp://destination2', 'SUBMITTED'))
 
-        answer = self.app.post(
+        canceled_ids = self.app.post(
             url="/ban/se",
             params={'storage': 'gsiftp://source', 'status': 'cancel', 'vo_name': 'dteam'},
             status=200
-        )
-        canceled_ids = json.loads(answer.body)
+        ).json
 
         self.assertEqual(1, len(canceled_ids))
         self.assertIn(jobs[0], canceled_ids)
@@ -299,9 +312,11 @@ class TestBanning(TestController):
         jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination2', 'ACTIVE'))
         jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination2', 'FAILED', duration=10, queued=20))
 
-        answer = self.app.post(url="/ban/se", params={'storage': 'gsiftp://source', 'status': 'wait', 'timeout': 1234},
-                               status=200)
-        waiting_ids = json.loads(answer.body)
+        waiting_ids = self.app.post(
+            url="/ban/se",
+            params={'storage': 'gsiftp://source', 'status': 'wait', 'timeout': 1234},
+            status=200
+        ).json
 
         self.assertEqual(2, len(waiting_ids))
         self.assertIn(jobs[0], waiting_ids)
@@ -340,12 +355,11 @@ class TestBanning(TestController):
         jobs.append(insert_job('atlas', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
         jobs.append(insert_job('atlas', 'gsiftp://source', 'gsiftp://destination2', 'SUBMITTED'))
 
-        answer = self.app.post(
+        waiting_ids = self.app.post(
             url="/ban/se",
             params={'storage': 'gsiftp://source', 'status': 'wait', 'vo_name': 'dteam', 'timeout': 33},
             status=200
-        )
-        waiting_ids = json.loads(answer.body)
+        ).json
 
         self.assertEqual(1, len(waiting_ids))
         self.assertIn(jobs[0], waiting_ids)
@@ -404,8 +418,12 @@ class TestBanning(TestController):
                 'destinations': ['gsiftp://destination/file'],
             }]
         }
-        answer = self.app.post(url="/jobs", content_type='application/json', params=json.dumps(job), status=200)
-        job_id = json.loads(answer.body)['job_id']
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         files = Session.query(File).filter(File.job_id == job_id)
         for f in files:
@@ -419,20 +437,47 @@ class TestBanning(TestController):
                 'destinations': ['gsiftp://source/path/']
             }]
         }
-        answer = self.app.post(url="/jobs", content_type='application/json', params=json.dumps(job), status=200)
-        job_id = json.loads(answer.body)['job_id']
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
         files = Session.query(File).filter(File.job_id == job_id)
         for f in files:
             self.assertEqual(0, f.wait_timeout)
             self.assertGreater(f.wait_timestamp, datetime.utcnow() - timedelta(minutes=1))
 
+    def test_unban_wait(self):
+        """
+        Regression for FTS-297
+        When unbanning a storage, if any file was left on wait, they must re-enter the queue
+        """
+        job_id = insert_job('dteam', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED', user_dn='/DC=cern/CN=someone')
+        self.app.post(
+            url="/ban/se", params={'storage': 'gsiftp://source', 'status': 'wait', 'allow_submit': True},
+            status=200
+        )
+
+        files = Session.query(File).filter(File.job_id == job_id)
+        for f in files:
+            self.assertIsNotNone(f.wait_timestamp)
+            self.assertIsNotNone(f.wait_timeout)
+
+        self.app.delete(url="/ban/se?storage=%s" % urllib.quote('gsiftp://source'), status=204)
+
+        files = Session.query(File).filter(File.job_id == job_id)
+        for f in files:
+            self.assertIsNone(f.wait_timestamp)
+            self.assertIsNone(f.wait_timeout)
+
     # Some requests that must be rejected
     def test_ban_dn_empty(self):
         """
         Banning with a missing dn must fail
         """
-        self.app.post(url="/ban/dn", params={}, status=400)
+        self.app.post_json(url="/ban/dn", params={}, status=400)
 
     def test_unban_dn_empty(self):
         """
@@ -444,7 +489,7 @@ class TestBanning(TestController):
         """
         Ask for banning with a missing storage must fail
         """
-        self.app.post(url="/ban/se", params={}, status=400)
+        self.app.post_json(url="/ban/se", params={}, status=400)
 
     def test_unban_se_empty(self):
         """

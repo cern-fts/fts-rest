@@ -58,6 +58,7 @@ class Job(Base):
     bring_online             = Column(Integer)
     job_metadata             = Column(Json(255))
     retry                    = Column(Integer)
+    retry_delay              = Column(Integer, default=0)
 
     files = relation("File", uselist=True, lazy=True,
                      backref=backref("job", lazy=True))

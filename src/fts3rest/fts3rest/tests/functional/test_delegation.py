@@ -39,9 +39,8 @@ class TestDelegation(TestController):
         self.setup_gridsite_environment()
         creds = self.get_user_credentials()
 
-        answer = self.app.get(url="/delegation/%s" % creds.delegation_id, status=200)
-
-        self.assertEqual(json.loads(answer.body), None)
+        delegation_id = self.app.get(url="/delegation/%s" % creds.delegation_id, status=200).json
+        self.assertEqual(delegation_id, None)
 
     def test_get_termination_time(self):
         """
@@ -50,9 +49,12 @@ class TestDelegation(TestController):
         self.test_valid_proxy()
         creds = self.get_user_credentials()
 
-        answer = self.app.get(url="/delegation/%s" % creds.delegation_id, status=200)
+        termination_str = self.app.get(
+            url="/delegation/%s" % creds.delegation_id,
+            status=200
+        ).json['termination_time']
 
-        termination = datetime.strptime(json.loads(answer.body)['termination_time'], '%Y-%m-%dT%H:%M:%S')
+        termination = datetime.strptime(termination_str, '%Y-%m-%dT%H:%M:%S')
         self.assertGreater(termination, datetime.utcnow() + timedelta(hours=2, minutes=58))
 
     def test_put_cred_without_cache(self):
@@ -192,6 +194,7 @@ class TestDelegation(TestController):
                         status=404)
 
         proxy = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
+
         self.assertEqual(None, proxy)
 
     def test_set_voms(self):
@@ -216,9 +219,8 @@ class TestDelegation(TestController):
         Session.commit()
 
         # Now, request the voms extensions
-        self.app.post(url="/delegation/%s/voms" % creds.delegation_id,
-                      content_type='application/json',
-                      params=json.dumps(['dteam:/dteam/Role=lcgadmin']),
+        self.app.post_json(url="/delegation/%s/voms" % creds.delegation_id,
+                      params=['dteam:/dteam/Role=lcgadmin'],
                       status=203)
 
         # And validate
@@ -247,3 +249,15 @@ class TestDelegation(TestController):
 
         proxy = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
         self.assertNotEqual(None, proxy)
+
+    def test_cert(self, cert=None):
+        """
+        Test for returning the user certificate
+        """
+        self.setup_gridsite_environment()
+        if cert is None:
+            cert = 'SSL_CLIENT_CERT'
+        self.app.extra_environ['SSL_CLIENT_CERT'] = 'certificate:' + cert
+
+        returns = self.app.get(url='/whoami/certificate', status=200).body
+        self.assertEqual('certificate:' + cert, returns)

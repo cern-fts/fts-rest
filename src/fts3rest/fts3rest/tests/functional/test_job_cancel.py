@@ -19,13 +19,20 @@ import json
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import Job, File, JobActiveStates
+from fts3.model import Job, File, JobActiveStates, Credential, FileActiveStates, FileTerminalStates
+from datetime import datetime, timedelta
 
 
 class TestJobCancel(TestController):
     """
     Tests for the job cancellation
     """
+
+    def tearDown(self):
+        cert = 'SSL_SERVER_S_DN'
+        if cert in self.app.extra_environ:
+            del self.app.extra_environ['SSL_SERVER_S_DN']
+
 
     def _submit(self, count=1, reuse=False):
         """
@@ -50,12 +57,12 @@ class TestJobCancel(TestController):
             'params': {'overwrite': True, 'verify_checksum': True, 'reuse': reuse}
         }
 
-        answer = self.app.put(url="/jobs",
-                              params=json.dumps(job),
-                              status=200)
+        job_id = self.app.put(
+            url="/jobs",
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
 
-        # Make sure it was commited to the DB
-        job_id = json.loads(answer.body)['job_id']
         return str(job_id)
 
     def test_cancel(self):
@@ -63,9 +70,7 @@ class TestJobCancel(TestController):
         Cancel a job
         """
         job_id = self._submit()
-        answer = self.app.delete(url="/jobs/%s" % job_id,
-                                 status=200)
-        job = json.loads(answer.body)
+        job = self.app.delete(url="/jobs/%s" % job_id, status=200).json
 
         self.assertEqual(job['job_id'], job_id)
         self.assertEqual(job['job_state'], 'CANCELED')
@@ -94,9 +99,7 @@ class TestJobCancel(TestController):
         Session.merge(job)
         Session.commit()
 
-        answer = self.app.delete(url="/jobs/%s" % job_id,
-                                 status=200)
-        job = json.loads(answer.body)
+        job = self.app.delete(url="/jobs/%s" % job_id, status=200).json
 
         self.assertEqual(job['job_id'], job_id)
         self.assertEqual(job['job_state'], 'FINISHED')
@@ -122,9 +125,7 @@ class TestJobCancel(TestController):
         Session.merge(job)
         Session.commit()
 
-        answer = self.app.delete(url="/jobs/%s" % job_id,
-                                 status=200)
-        job = json.loads(answer.body)
+        job = self.app.delete(url="/jobs/%s" % job_id, status=200).json
 
         self.assertEqual(job['job_id'], job_id)
         self.assertEqual(job['job_state'], 'CANCELED')
@@ -146,11 +147,9 @@ class TestJobCancel(TestController):
         """
         job_ids = list()
         for i in range(10):
-          job_ids.append(self._submit())
+            job_ids.append(self._submit())
 
-        answer = self.app.delete(url="/jobs/%s" % ','.join(job_ids),
-                                 status=200)
-        jobs = json.loads(answer.body)
+        jobs = self.app.delete(url="/jobs/%s" % ','.join(job_ids), status=200).json
 
         self.assertEqual(len(jobs), 10)
         for job in jobs:
@@ -167,13 +166,11 @@ class TestJobCancel(TestController):
 
     def test_cancel_multiple_one(self):
         """
-        Use multiple cancellation convention but with only one
+        Use multiple cancellation convention but with only one job
         """
         job_id = self._submit()
 
-        answer = self.app.delete(url="/jobs/%s," % job_id,
-                                 status=200)
-        jobs = json.loads(answer.body)
+        jobs = self.app.delete(url="/jobs/%s," % job_id, status=200).json
 
         self.assertEqual(len(jobs), 1)
         self.assertEqual(jobs[0]['job_id'], job_id)
@@ -190,9 +187,7 @@ class TestJobCancel(TestController):
         One status per entry
         """
         job_id = self._submit()
-        answer = self.app.delete(url="/jobs/%s,fake-fake-fake" % job_id,
-                                 status=207)
-        jobs = json.loads(answer.body)
+        jobs = self.app.delete(url="/jobs/%s,fake-fake-fake" % job_id, status=207).json
 
         self.assertEqual(len(jobs), 2)
 
@@ -322,3 +317,94 @@ class TestJobCancel(TestController):
 
         file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
         self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=400)
+
+    def _become_root(self):
+        """
+        Helper function to become root superuser
+        """
+        self.app.extra_environ.update({'GRST_CRED_AURI_0': 'dn:/C=CH/O=CERN/OU=hosts/OU=cern.ch/CN=ftsdummyhost.cern.ch'})
+        self.app.extra_environ.update({'SSL_SERVER_S_DN': '/C=CH/O=CERN/OU=hosts/OU=cern.ch/CN=ftsdummyhost.cern.ch'})
+
+        creds = self.get_user_credentials()
+        delegated = Credential()
+        delegated.dlg_id     = creds.delegation_id
+        delegated.dn         = '/C=CH/O=CERN/OU=hosts/OU=cern.ch/CN=ftsdummyhost.cern.ch'
+        delegated.proxy      = '-NOT USED-'
+        delegated.voms_attrs = None
+        delegated.termination_time = datetime.utcnow() + timedelta(hours=7)
+
+        Session.merge(delegated)
+        Session.commit()
+
+    def _prepare_and_test_created_jobs_to_cancel(self):
+        """
+        Helper function to prepare and test created jobs for cancel tests
+        """
+        job_ids = list()
+        for i in range(len(FileActiveStates) + len(FileTerminalStates)):
+            job_ids.append(self._submit(8))
+        i = 0
+        for state in FileActiveStates + FileTerminalStates:
+            job = Session.query(Job).get(job_ids[i])
+            i += 1
+            job.job_state = state
+            for f in job.files:
+                f.file_state = state
+            Session.merge(job)
+            Session.commit()
+
+        i = 0
+        for state in FileActiveStates + FileTerminalStates:
+            job = Session.query(Job).get(job_ids[i])
+            self.assertEqual(job.job_state, state)
+            for f in job.files:
+                self.assertEqual(f.file_state, state)
+            i += 1
+        return job_ids
+
+    def _test_canceled_jobs(self, job_ids):
+        """
+        Helper function to test canceled jobs
+        """
+        i = 0
+        for _ in FileActiveStates:
+            job = Session.query(Job).get(job_ids[i])
+            self.assertEqual(job.job_state, 'CANCELED')
+            for f in job.files:
+                self.assertEqual(f.file_state, 'CANCELED')
+            i += 1
+        for state in FileTerminalStates:
+            job = Session.query(Job).get(job_ids[i])
+            self.assertEqual(job.job_state, state)
+            for f in job.files:
+                self.assertEqual(f.file_state, state)
+            i += 1
+
+
+    def test_cancel_all_by_vo(self):
+        """
+        Cancel all files by vo name.
+        """
+        self.setup_gridsite_environment()
+        creds = self.get_user_credentials()
+        if creds.vos:
+            vo_name = creds.vos[0]
+        else:
+            vo_name = "testvo"
+
+        job_ids = self._prepare_and_test_created_jobs_to_cancel()
+        self.app.delete(url="/jobs/vo/%s" % vo_name, status=403)
+        self._become_root()
+        self.app.delete(url="/jobs/vo/%s" % vo_name, status=200)
+        self._test_canceled_jobs(job_ids)         
+
+    def test_cancel_all(self):
+        """
+        Cancel all files.
+        """
+        job_ids = self._prepare_and_test_created_jobs_to_cancel() 
+        self.app.delete(url="/jobs/all", status=403) 
+        self._become_root()
+        self.app.delete(url="/jobs/all", status=200)
+        self._test_canceled_jobs(job_ids)
+

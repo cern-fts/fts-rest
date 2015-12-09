@@ -1,63 +1,51 @@
 Developer notes
 ===============
-This document briefly summarizes some points that can be of interest for anyone modifying the FTS3 RESTful API.
+This document briefly summarizes some points that can be of interest for anyone
+modifying the FTS3 RESTful API.
 
 **It is not intended for developers of client applications**. For them we have the
-[auto generated API documentation](api.md), the list of [curl examples](api-examples.md) or the [easy bindings](easy/README.md).
+[auto generated API documentation](api.md), the list of [curl examples](api-curl.md) or the [easy bindings](easy/README.md).
 
 Quick references
 ----------------
-A basic knowledge of git is obviously required. There are plenty of [tutorials](https://www.google.ch/search?q=git+tutorial) out there.
-
 The service is written using [Pylons 0.9.7](https://pylons-webframework.readthedocs.org/en/v0.9.7/)
 
-The database abstraction is done by [SQLAlchemy 0.5.5](http://docs.sqlalchemy.org/en/rel_0_5/)
+The database abstraction is done by [SQLAlchemy 0.8](http://docs.sqlalchemy.org/en/rel_0_8/)
 
 There are a bunch of tests written using Python's [unittest](https://docs.python.org/2/library/unittest.html) module, and they can be executed
 automatically with [nosetests](https://nose.readthedocs.org/en/latest/).
 
 Branches
 --------
-
 ### Main branches
 #### develop
 Integrated development version. Should be in a consistent state, but not necessarely stable.
 This means, new features go here, and they should be in a workable state.
 
-#### stage
-Pre-release branch. Only bugfixes. Runs on the FTS3 pilot service.
-
 #### master
-__Stable branch__. Only critical bugfixes. Runs on the FTS3 production service.
+__Stable branch__. Only critical bugfixes. Runs on the FTS3 pilot service first, and then
+in the FTS3 production services.
 
 ### Other branches
-develop should be consistent and workable. For big changesets, you can keep them in a separate branch, and merge them into
-develop when they are ready (remember to rebase first).
+develop should be consistent and workable. For big changesets, you can keep them in a
+separate branch, and merge them into develop when they are ready (remember to rebase first).
 You don't need to keep these branches in the remote repositories.
-
-### Remotes
-There are two clones of this repository:
-* https://github.com/cern-it-sdc-id/fts3-rest
-* https://git.cern.ch/web/fts3-rest.git
-
-Please, keep master and stage synchronized in both.
 
 Release cycle
 -------------
 1. New features are commited into develop. Big new features go into their own branch and later merged into develop.
     * Keep documentation up to date
-2. When develop is ready for being a release candidate, merge develop into stage.
+2. When develop is ready for being a release candidate, merge develop into master.
     * Increase the version of develop after this!
-3. When stage is stable and ready for release
+3. When master is stable and ready for release
     1. Make sure the documentation is up to date
     2. Write release notes for the new version (contained in docs/releases)
-    3. Merge into master
-    4. Tag, and mark version as released in JIRA (move any remaining tickets to the next release)
+    3. Tag, and mark version as released in JIRA (move any remaining tickets to the next release)
 
 Guidelines
 ----------
-
-This is just a small recopilatory of some guidelines that I consider worth considering when working on this project.
+This is just a small recopilatory of some guidelines that I consider worth considering when
+working on this project.
 They don't have to strictly be followed. Nevertheless, they are handy.
 
 ### A new source file is added
@@ -65,7 +53,7 @@ Remember to add the copyright notice
 
 ```
 #   Copyright notice:
-#   Copyright  CERN, 2014.
+#   Copyright  CERN, 2015.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -107,6 +95,12 @@ P.S I recognise I don't use it as much as I should.
     * They should not contain unrelated changes (i.e. two bug fixes in one commit, bad)
 4. Before pushing, group related commits (yes, [you can do this with git](http://stackoverflow.com/questions/6884022/collapsing-a-group-of-commits-into-one-on-git))
     * If you have two commits for one single bug fix, try grouping them whenever it makes sense.
+
+Formatting
+----------
+Use [PEP8](https://www.python.org/dev/peps/pep-0008/). There are tools and IDE's that
+check for consistency with this guidelines.
+Do not kill yourself over it, but try to follow as much as possible.
 
 FAQ
 ---

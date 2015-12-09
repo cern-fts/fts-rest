@@ -43,6 +43,28 @@ def _check_proxy_validity(proxy_path):
     proc = Popen(args, shell=False, stdin=None, stdout=None, stderr=None)
     return proc.wait() == 0
 
+def _get_proxy_fqans(proxy_path):
+    """
+    Get the VOMS FQAN from the proxy specified by proxy_path
+    """
+    args = ['voms-proxy-info', '--file', proxy_path, '--fqan',]
+    log.debug(' '.join(args))
+    proc = Popen(args, shell=False, stdin=None, stdout=PIPE, stderr=STDOUT)
+    out = ''
+    for l in proc.stdout:
+        out += l
+    rcode = proc.wait()
+    if rcode != 0:
+        raise VomsException('Failed to get the FQANs of a proxy: ' + out)
+    fqans = []
+    try:
+	for fqan in out.split('\n'):
+	        fqans.append(fqan)
+        return fqans
+    except Exception, e:
+        raise VomsException('Failed to get the FQANs of a proxy: ' + str(e))
+    
+
 
 def _get_proxy_termination_time(proxy_path):
     """
@@ -130,3 +152,9 @@ class VomsClient(object):
             raise VomsException("Failed to generate a proxy (%d): %s" % (rcode, out))
 
         return new_proxy
+   
+    def get_proxy_fqans(self):
+	"""
+        Get the proxy fqans
+        """
+	return _get_proxy_fqans(self.proxy_path)

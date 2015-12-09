@@ -14,130 +14,7 @@
  *  limitations under the License.
 **/
 
-/**
- * Returns a form-group containing the label and the input
- * with the given parameters
- */
-function generateField(name, label, type, value)
-{
-    return $("<div class='form-group'></div>")
-        .append($("<label></label>").text(label))
-        .append($("<input class='form-control'></input>")
-            .attr("name", name).attr("type", type).val(value)
-        );
-}
-
-
-/**
- * Returns a form-group containing a select with Yes/No values
- */
-function generateFlagField(name, label, value)
-{
-    return $("<div class='form-group'></div>")
-        .append($("<label></label>").text(label))
-        .append($("<select class='form-control'></select>")
-            .attr("name", name)
-            .append("<option value='true'>Yes</option><option value='false'>No</option>")
-            .val(value.toString())
-        );
-}
-
-
-/**
- * Returns a form with the given klass and title, prefilled
- * with the values contained in se.
- * Both as_source and as_destination configs are the same, so we avoid duplication here
- */
-function generateSubForm(klass, title, se)
-{
-    var bodyDiv = $("<div class='panel-body'></div>");
-    var innerDiv = $("<div class='panel-heading'></div>")
-        .append($("<h3 class='panel-title'></h3>").text(title));
-    var outerDiv = $("<div class='panel panel-default'></div>")
-        .append(innerDiv)
-        .append(bodyDiv)
-        .addClass(klass);
-
-    bodyDiv.append(generateField("active", "Active limit", "number", se.active))
-        .append(generateField("throughput", "Throughput limit (MB/s)", "number", se.throughput))
-        .append(generateFlagField("ipv6", "IPv6", se.ipv6))
-        .append(generateFlagField("udt", "UDT", se.udt));
-
-    return $("<div class='col-md-6'></div>").append(outerDiv);
-}
-
-
-/**
- * Returns a form with the operations per vo
- */
-function generateOpForm(klass, title, operations)
-{
-    var bodyDiv = $("<div class='panel-body'></div>");
-    var innerDiv = $("<div class='panel-heading'></div>")
-        .append($("<h3 class='panel-title'></h3>").text(title));
-    var outerDiv = $("<div class='panel panel-default'></div>")
-        .append(innerDiv)
-        .append(bodyDiv)
-        .addClass(klass);
-
-    var tbody = $("<tbody class='ops-list'></tbody>");
-
-    if (operations) {
-        $.each(operations, function (vo, op) {
-            $.each(op, function(op_name, value) {
-                var deleteBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></button>");
-                var limitField = $("<input type='number' name='limit' class='form-control'/>").val(value);
-
-                var row = $("<tr></tr>")
-                    .append($("<td></td>").append(deleteBtn))
-                    .append($("<td></td>").text(vo)
-                        .append($("<input type='hidden' name='vo'/>").val(vo))
-                    )
-                    .append($("<td></td>").text(op_name)
-                        .append($("<input type='hidden' name='operation'/>").val(op_name))
-                    )
-                    .append($("<td></td>").append(limitField));
-
-                deleteBtn.click(function(event) {
-                    event.preventDefault();
-                    limitField.val(-1);
-                    row.css("display", "none");
-                });
-
-                tbody.append(row);
-            });
-        });
-    }
-
-    var addOpBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-plus'></i></button>");
-
-    var addForm = $("<tbody></tbody>")
-        .append($("<tr></tr>")
-            .append($("<td></td>").append(addOpBtn))
-            .append($("<td></td>")
-                .append($("<input type='text' name='vo' class='form-control'/></td>").autocomplete({
-                    source: "/autocomplete/vo"
-                }))
-            )
-            .append("<td><select name='operation' class='form-control'><option value='delete'>Delete</option><option value='staging'>Staging</option></select></td>")
-            .append("<td><input type='number' name='limit' class='form-control'/></td>")
-        );
-
-    addOpBtn.click(function(event) {
-        event.preventDefault();
-        addOperation(addForm, tbody);
-    });
-
-    var table = $("<table class='table'></table>")
-        .append($("<thead><tr><th></th><th>VO</th><th>Operation</th><th>Limit</th></tr></thead>"))
-        .append(tbody)
-        .append(addForm);
-
-    bodyDiv.append(table);
-
-    return outerDiv;
-}
-
+var template_storage = null;
 
 /**
  * Helper function that adds to the given tbody a new row
@@ -154,7 +31,7 @@ function addOperation(form, tbody)
 
     var tr = $("<tr></tr>");
 
-    var deleteBtn = $("<button class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></button>");
+    var deleteBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></a>");
 
     tr.append($("<td></td>").append(deleteBtn))
         .append($("<td></td>").text(vo)
@@ -175,6 +52,8 @@ function addOperation(form, tbody)
 
     form.find("input[name='vo']").val("");
     form.find("input[name='limit']").val("");
+
+    form.find("input[name='vo']").focus();
 }
 
 
@@ -250,6 +129,31 @@ function handleSeSave(form)
 
 
 /**
+ * Delete a storage
+ */
+function deleteSe(form)
+{
+    var se = form.find("input[name='se']").val();
+
+    form.css("background", "#ff0000").css("transition", "background .50s ease-in-out");
+    $.ajax({
+        url: "/config/se?se=" + encodeURIComponent(se),
+        type: "DELETE",
+        dataType: "json",
+        contentType: "application/json"
+    })
+    .done(function(data, textStatus, jqXHR) {
+        form.fadeOut(300, function() {form.remove();})
+    })
+    .fail(function(jqXHR) {
+        errorMessage(jqXHR);
+    })
+    .always(function() {
+        form.css("background", "#ffffff").css("transition", "background .50s ease-in-out");
+    });
+}
+
+/**
  * Updates the list of storages configured
  */
 function refreshSeConfig()
@@ -261,82 +165,73 @@ function refreshSeConfig()
     })
     .done(function(data, textStatus, jqXHR) {
         parent.empty();
+        var divs = $(template_storage(data));
+        // Attach actions
+        $.each(divs, function(index) {
+            var div = $(this)
 
-        $.each(data, function(se, config) {
-            var div = $("<div class='panel panel-info panel-collapse'></div>");
-
-            var deleteBtn = $("<button class='btn btn-danger'></button>")
-                .append("<i class='glyphicon glyphicon-trash'></i> Delete");
-
-            deleteBtn.click(function(event) {
-                div.css("background", "#d9534f");
-                $.ajax({
-                    url: "/config/se?se=" + encodeURIComponent(se),
-                    type: "DELETE"
-                })
-                .done(function(data, textStatus, jqXHR) {
-                    div.fadeOut(300, function() {tr.remove();})
-                })
-                .fail(function(jqXHR) {
-                    errorMessage(jqXHR);
-                })
-                .always(function() {
-                     div.css("background", "#ffffff").css("transition", "background .50s ease-in-out");
-                });
-                event.preventDefault();
-            });
-
-            var submitBtn = $("<button class='btn btn-primary'>Save</button>");
-
-            var form = $("<form class='panel-body'></form>")
-                .append($("<input type='hidden' name='se'/>").val(se))
-                .append($("<div class='row'></div>")
-                    .append(generateSubForm("as-source", 'As source', config.as_source))
-                    .append(generateSubForm("as-destination", 'As destination', config.as_destination))
-                )
-                .append(generateOpForm("operations", 'Operations', config.operations))
-                .append($("<div class='panel-footer'></div>").append(submitBtn).append(deleteBtn));
-
-            form.submit(function(event) {
-                event.preventDefault();
-                div.css("background", "#5cb85c");
-                handleSeSave(form)
-                .fail(function(jqXHR) {
-                    errorMessage(jqXHR);
-                })
-                .always(function() {
-                     div.css("background", "#ffffff").css("transition", "background .50s ease-in-out");
-                });
-            });
-
-            var h2 = $("<h2 class='panel-title'></h2>").text(se);
-            var header = $("<div class='panel-heading'></div>").append(h2);
-
-            header.css("cursor", "pointer");
-            header.click(function (event) {
+            var header = div.find(".panel-heading");
+            header.click(function(event) {
                 div.toggleClass("panel-collapse");
-                div.toggleClass("panel-info panel-primary");
             });
 
-            div.append(header)
-                .append(form);
-
-            parent.append(div);
+            div.find(".btn-save").click(function(event) {
+                event.preventDefault();
+                handleSeSave(div)
+                .fail(function(jqXHR) {
+                    errorMessage(jqXHR);
+                });
+            });
+            div.find(".btn-delete").click(function(event) {
+                event.preventDefault();
+                deleteSe(div);
+            });
+            div.find(".frm-set-operation").each(function() {
+                var tr = $(this);
+                var buttonDelete = tr.find(".btn-delete-operation");
+                buttonDelete.click(function(event) {
+                    event.preventDefault();
+                    tr.remove();
+                });
+            });
+            var opList = div.find(".ops-list");
+            var frmAdd = div.find(".frm-add-operation");
+            var buttonAdd = frmAdd.find(".btn-add-operation");
+            buttonAdd.click(function(event) {
+                event.preventDefault();
+                addOperation(frmAdd, opList);
+            });
         });
+        parent.append(divs);
     })
     .fail(function(jqXHR) {
         errorMessage(jqXHR);
     });
 }
 
+/**
+ * Compile templates embedded into the HTML
+ */
+function compileTemplates()
+{
+    template_storage = Handlebars.compile(
+        $("#se-template").html()
+    );
+}
 
 /**
  * Initializes the SE view
  */
 function setupSe()
 {
+    compileTemplates();
+
     // Refresh list
     refreshSeConfig();
+
+    bindMethodToEnterOnInput($("#se-add-ops-add"), function(event) {
+        addOperation($("#se-add-ops-add"), $("#se-add-ops-list"));
+    });
 
     // Bind to form
     $("#se-add-frm").submit(function(event) {

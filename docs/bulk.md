@@ -17,7 +17,8 @@ This is the basic submission pattern: several files that belong to a single job.
       ],
       "metadata": "file-metadata",
       "checksum": "ADLER32:1234",
-      "filesize": 1024
+      "filesize": 1024,
+      "activity": "Production"
     },
     {
       "sources": [

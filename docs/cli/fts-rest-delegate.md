@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-delegate
 % fts-devel@cern.ch
-% June 17, 2015
+% October 05, 2015
 # NAME
 
 fts-rest-delegate
@@ -32,6 +32,9 @@ This command can be used to (re)delegate your credentials to the FTS3 server
 
 --cert
 :	The user certificate. 
+
+--capath
+:	Use the specified directory to verify the peer
 
 --insecure
 :	Do not validate the server certificate

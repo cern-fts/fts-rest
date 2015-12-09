@@ -108,8 +108,8 @@ class UserCredentials(object):
         Constructor
 
         Args:
-            env:             Environment (i.e. os.environ)
-            rolePermissions: The role permissions as configured in the FTS3 config file
+            env:              Environment (i.e. os.environ)
+            role_permissions: The role permissions as configured in the FTS3 config file
         """
         # Default
         self.user_dn   = None
@@ -120,6 +120,7 @@ class UserCredentials(object):
         self.level     = []
         self.delegation_id = None
         self.method    = None
+        self.is_root   = False
 
         got_creds = self.authenticator(self, env)
 
@@ -150,6 +151,14 @@ class UserCredentials(object):
         """
         if role_permissions is None:
             return {}
+
+        if self.is_root:
+            return {
+                'transfer': 'all',
+                'deleg': 'all',
+                'config': 'all',
+                'datamanagement': 'all'
+            }
 
         if 'public' in role_permissions:
             granted_level = copy.deepcopy(role_permissions['public'])

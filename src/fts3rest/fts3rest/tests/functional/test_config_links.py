@@ -1,4 +1,5 @@
 #   Copyright notice:
+#   Copyright notice:
 #   Copyright CERN, 2014.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +14,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import json
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import ConfigAudit, LinkConfig, OptimizerActive
@@ -55,6 +55,32 @@ class TestConfigLinks(TestController):
         self.assertEqual(10, link.urlcopy_tx_to)
         self.assertEqual(False, link.auto_tuning)
 
+    def test_wrong_config_link(self):
+        """
+        Set wrong config
+        """
+        self.app.post_json("/config/links", params={
+            'symbolicname': None,
+            'source': 'test.cern.ch',
+            'destination': 'test2.cern.ch',
+            'state': True,
+            'nostreams': 16,
+            'tcp_buffer_size': 4096,
+            'urlcopy_tx_to': 10,
+            'auto_tuning': False
+        }, status=400)
+
+        self.app.post_json("/config/links", params={
+            'symbolicname': 'test-link',
+            'source': '*',
+            'destination': '*',
+            'state': True,
+            'nostreams': 16,
+            'tcp_buffer_size': 4096,
+            'urlcopy_tx_to': 10,
+            'auto_tuning': False
+        }, status=400)
+
     def test_reconfig_link_se(self):
         """
         Reset a SE link configuration
@@ -89,8 +115,7 @@ class TestConfigLinks(TestController):
         Get the list of links configured
         """
         self.test_config_link_se()
-        response = self.app.get_json("/config/links")
-        links = json.loads(response.body)
+        links = self.app.get_json("/config/links").json
         self.assertEqual(1, len(links))
         self.assertEqual('test-link', links[0]['symbolicname'])
 
@@ -99,8 +124,7 @@ class TestConfigLinks(TestController):
         Get the configuration for a given link
         """
         self.test_config_link_se()
-        response = self.app.get_json("/config/links/test-link")
-        link = json.loads(response.body)
+        link = self.app.get_json("/config/links/test-link").json
         self.assertEqual('test.cern.ch', link['source'])
         self.assertEqual('test2.cern.ch', link['destination'])
         self.assertEqual(True, link['state'])
@@ -165,21 +189,18 @@ class TestConfigLinks(TestController):
         """
         Get the fixed number of active
         """
-        response = self.app.get_json("/config/fixed", status=200)
-        pairs = json.loads(response.body)
+        pairs = self.app.get_json("/config/fixed", status=200).json
         self.assertEqual(0, len(pairs))
 
         self.test_set_fixed_active()
 
-        response = self.app.get_json("/config/fixed", status=200)
-        pairs = json.loads(response.body)
+        pairs = self.app.get_json("/config/fixed", status=200).json
         self.assertEqual(1, len(pairs))
         self.assertEqual('test.cern.ch', pairs[0]['source_se'])
         self.assertEqual('test2.cern.ch', pairs[0]['dest_se'])
         self.assertEqual(5, pairs[0]['active'])
 
-        response = self.app.get_json("/config/fixed?source_se=test.cern.ch&dest_se=test2.cern.ch", status=200)
-        pairs = json.loads(response.body)
+        pairs = self.app.get_json("/config/fixed?source_se=test.cern.ch&dest_se=test2.cern.ch", status=200).json
         self.assertEqual(1, len(pairs))
         self.assertEqual('test.cern.ch', pairs[0]['source_se'])
         self.assertEqual('test2.cern.ch', pairs[0]['dest_se'])

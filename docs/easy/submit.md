@@ -66,7 +66,7 @@ Finally you can submit the job. You can [delegate](README.md#delegate) yourself 
 take care of it anyway.
 
 Also, there is no need to build the dictionary step by step as shown here. You can build the dictionary by yourself,
-as long as it follows the [expected schema](../api-examples.md#get-the-submit-schema)
+as long as it follows the [expected schema](../api-curl.md#get-the-submit-schema)
 
 ### Args:
 * **context**
