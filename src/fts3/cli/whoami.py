@@ -52,4 +52,7 @@ class WhoAmI(Base):
             self.logger.info("User DN: %s" % whoami['dn'][0])
             for vo in whoami['vos']:
                 self.logger.info("VO: %s" % vo)
+            for vo_id in whoami['vos_id']:
+                self.logger.info("VO id: %s" % vo_id)
             self.logger.info("Delegation id: %s" % whoami['delegation_id'])
+            self.logger.info("Base id: %s" % whoami['base_id'])

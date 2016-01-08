@@ -114,8 +114,10 @@ class UserCredentials(object):
         # Default
         self.user_dn   = None
         self.dn        = []
+        self.base_id   = []
         self.voms_cred = []
         self.vos       = []
+        self.vos_id    = []
         self.roles     = []
         self.level     = []
         self.delegation_id = None

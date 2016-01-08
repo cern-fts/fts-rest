@@ -19,8 +19,7 @@ try:
     import simplejson as json
 except:
     import json
-
-
+    
 class Submitter(object):
 
     def __init__(self, context):

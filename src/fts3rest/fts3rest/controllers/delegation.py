@@ -37,7 +37,7 @@ from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.helpers import voms
 from fts3rest.lib.http_exceptions import HTTPMethodFailure
 from fts3rest.lib.middleware.fts3auth import require_certificate
-
+from fts3rest.lib.JobBuilder import get_base_id, get_vo_id
 
 log = logging.getLogger(__name__)
 
@@ -208,7 +208,11 @@ class DelegationController(BaseController):
         """
         Returns the active credentials of the user
         """
-        return request.environ['fts3.User.Credentials']
+        whoami = request.environ['fts3.User.Credentials']
+        whoami.base_id = get_base_id()
+        for vo in whoami.vos:
+            whoami.vos_id.append(get_vo_id(vo))
+        return whoami
 
     @doc.return_type('dateTime')
     @jsonify
