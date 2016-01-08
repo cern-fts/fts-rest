@@ -18,6 +18,10 @@ from fts3.rest.client import Submitter
 from delegate import delegate
 from fts3.rest.client import ClientError
 
+class JobIdGenerator:
+    standard = 'standard'
+    deterministic = 'deterministic'
+    
 def cancel(context, job_id, file_ids=None):
     """
     Cancels a job
@@ -81,7 +85,8 @@ def add_alternative_source(transfer, alt_source):
 def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, overwrite=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
-            retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False):
+            retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False, 
+            id_generator=JobIdGenerator.standard, sid=None):
     """
     Creates a new dictionary representing a job
 
@@ -99,6 +104,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         retry:             Number of retries: <0 is no retries, 0 is server default, >0 is whatever value is passed
         metadata:          Metadata to bind to the job
         priority:          Job priority
+        
 
     Returns:
         An initialized dictionary representing a job
@@ -120,7 +126,9 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         retry=retry,
         retry_delay=retry_delay,
         priority=priority,
-        strict_copy=strict_copy
+        strict_copy=strict_copy,
+        id_generator=id_generator,
+        sid=sid
     )
     job = dict(
         files=transfers,
@@ -216,3 +224,4 @@ def submit(context, job, delegation_lifetime=timedelta(hours=7), force_delegatio
     submitter = Submitter(context)
     params = job.get('params', {})
     return submitter.submit(transfers=job.get('files', None), delete=job.get('delete', None), staging=job.get('staging', None), **params)
+

@@ -30,8 +30,11 @@ from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.scheduler.schd import Scheduler
 from fts3rest.lib.scheduler.db import Database
 from fts3rest.lib.scheduler.Cache import ThreadLocalCache
+from fts3.rest.client.exceptions import ClientError
 
 log = logging.getLogger(__name__)
+
+BASE_ID = uuid.UUID('urn:uuid:01874efb-4735-4595-bc9c-591aef8240c9')
 
 DEFAULT_PARAMS = {
     'bring_online': -1,
@@ -50,7 +53,12 @@ DEFAULT_PARAMS = {
     'max_time_in_queue': 0
 }
 
+def get_base_id():
+    return str(BASE_ID)
 
+def get_vo_id(vo_name):
+    return str(uuid.uuid5(BASE_ID, vo_name))
+    
 def get_storage_element(uri):
     """
     Returns the storage element of the given uri, which is the scheme +
@@ -545,8 +553,18 @@ class JobBuilder(object):
                 raise HTTPBadRequest('Simultaneous transfer and namespace operations not supported')
             if files_list is None and datamg_list is None:
                 raise HTTPBadRequest('No transfers or namespace operations specified')
-
-            self.job_id = str(uuid.uuid1())
+            
+            if self.params['id_generator'] =='deterministic':
+                log.debug("Deterministic")
+                sid = self.params['sid']
+                if sid is not None:
+                    vo_id = uuid.uuid5(BASE_ID, self.user.vos[0])
+                    self.job_id = str(uuid.uuid5(vo_id, str(sid)))
+                else:
+                    raise ClientError("Need sid for deterministic job id generation")
+            else:
+                log.debug("Standard")
+                self.job_id = str(uuid.uuid1())
             self.files = list()
             self.datamanagement = list()
 
