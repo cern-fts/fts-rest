@@ -28,6 +28,7 @@ from routes.middleware import RoutesMiddleware
 from fts3rest.lib.middleware.fts3auth import FTS3AuthMiddleware
 from fts3rest.lib.middleware.error_as_json import ErrorAsJson
 from fts3rest.lib.middleware.request_logger import RequestLogger
+from fts3rest.lib.middleware.timeout import TimeoutHandler
 from fts3rest.config.environment import load_environment
 
 
@@ -66,6 +67,9 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
 
     # FTS3 authentication/authorization middleware
     app = FTS3AuthMiddleware(app, config)
+
+    # Trap timeouts and the like
+    app = TimeoutHandler(app, config)
 
     # Convert errors to a json representation
     app = ErrorAsJson(app, config)

@@ -78,7 +78,7 @@ def load_environment(global_conf, app_conf):
     if config['sqlalchemy.url'].startswith('mysql://'):
         import MySQLdb
         kwargs['connect_args'] = {'cursorclass': MySQLdb.cursors.SSCursor}
-    engine = engine_from_config(config, 'sqlalchemy.', pool_recycle = 7200, **kwargs)
+    engine = engine_from_config(config, 'sqlalchemy.', pool_recycle=7200, **kwargs)
     init_model(engine)
 
     # Disable for sqlite the isolation level to work around issues with savepoints
