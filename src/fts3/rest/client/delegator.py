@@ -16,7 +16,7 @@
 #   limitations under the License.
 
 from datetime import datetime, timedelta
-from M2Crypto import X509, ASN1, m2
+from M2Crypto import X509, ASN1, m2, Err
 try:
     from M2Crypto.ASN1 import UTC
 except:
@@ -136,7 +136,7 @@ class Delegator(object):
         request_pem = self.context.get(request_url)
         x509_request = X509.load_request_string(request_pem)
         if x509_request.verify(x509_request.get_pubkey()) != 1:
-            raise ServerError('Error verifying signature on the request')
+            raise ServerError('Error verifying signature on the request:', Err.get_error())
         # Return
         return x509_request
 
@@ -248,7 +248,6 @@ class Delegator(object):
             self._put_proxy(delegation_id, x509_proxy_pem)
 
             return delegation_id
-        except FTS3ClientException, e:
-            raise e
+        
         except Exception, e:
             raise ClientError(str(e)), None, sys.exc_info()[2]
