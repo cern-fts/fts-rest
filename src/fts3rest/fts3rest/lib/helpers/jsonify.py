@@ -77,10 +77,6 @@ def stream_response(data):
         yield json.dumps(item, cls=ClassEncoder, indent=None, sort_keys=False)
         comma = True
     yield ']'
-    # Need to do this here explicitly or the connection will leak
-    # See FTS-269
-    if isinstance(data, Query):
-        data.session.close()
 
 
 @decorator

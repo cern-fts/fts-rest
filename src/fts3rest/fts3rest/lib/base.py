@@ -19,8 +19,36 @@
 
 Provides the BaseController class for subclassing.
 """
+
+import logging
+import types
 from pylons.controllers import WSGIController
 from fts3rest.model.meta import Session
+
+log = logging.getLogger(__name__)
+
+
+class DestroySessionWhenDone(object):
+    """
+    Used when returning a generator, so the Session lives longer, but it still
+    destroyed when the WSGI server finishes
+    """
+
+    def __init__(self, response):
+        log.debug('Wrapping response in DestroySessionWhenDone')
+        self.response = iter(response)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        try:
+            return self.response.next()
+        except StopIteration:
+            log.debug('Closing database session')
+            Session.rollback()  # Needed explicitly. See FTS-443
+            Session.remove()
+            raise
 
 
 class BaseController(WSGIController):
@@ -31,6 +59,12 @@ class BaseController(WSGIController):
         # the request is routed to. This routing information is
         # available in environ['pylons.routes_dict']
         try:
-            return WSGIController.__call__(self, environ, start_response)
-        finally:
+            response = WSGIController.__call__(self, environ, start_response)
+            if isinstance(response, types.GeneratorType):
+                response = DestroySessionWhenDone(response)
+            else:
+                Session.remove()
+            return response
+        except:
             Session.remove()
+            raise
