@@ -30,7 +30,7 @@ from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.scheduler.schd import Scheduler
 from fts3rest.lib.scheduler.db import Database
 from fts3rest.lib.scheduler.Cache import ThreadLocalCache
-from fts3.rest.client.exceptions import ClientError
+
 
 log = logging.getLogger(__name__)
 
@@ -561,9 +561,8 @@ class JobBuilder(object):
                     vo_id = uuid.uuid5(BASE_ID, self.user.vos[0])
                     self.job_id = str(uuid.uuid5(vo_id, str(sid)))
                 else:
-                    raise ClientError("Need sid for deterministic job id generation")
+                    raise HTTPBadRequest("Need sid for deterministic job id generation")
             else:
-                log.debug("Standard")
                 self.job_id = str(uuid.uuid1())
             self.files = list()
             self.datamanagement = list()
