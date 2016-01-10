@@ -553,15 +553,15 @@ class JobBuilder(object):
                 raise HTTPBadRequest('Simultaneous transfer and namespace operations not supported')
             if files_list is None and datamg_list is None:
                 raise HTTPBadRequest('No transfers or namespace operations specified')
-            
-            if self.params['id_generator'] =='deterministic':
+            id_generator = self.params.get('id_generator', 'standard')
+            if id_generator =='deterministic':
                 log.debug("Deterministic")
-                sid = self.params['sid']
+                sid = self.params.get('sid', None)
                 if sid is not None:
                     vo_id = uuid.uuid5(BASE_ID, self.user.vos[0])
                     self.job_id = str(uuid.uuid5(vo_id, str(sid)))
                 else:
-                    raise HTTPBadRequest("Need sid for deterministic job id generation")
+                    raise HTTPBadRequest('Need sid for deterministic job id generation')
             else:
                 self.job_id = str(uuid.uuid1())
             self.files = list()
