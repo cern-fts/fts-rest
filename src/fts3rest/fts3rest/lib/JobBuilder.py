@@ -54,10 +54,10 @@ DEFAULT_PARAMS = {
 }
 
 def get_base_id():
-    return str(BASE_ID)
+    return BASE_ID
 
 def get_vo_id(vo_name):
-    return str(uuid.uuid5(BASE_ID, vo_name))
+    return uuid.uuid5(BASE_ID, vo_name)
     
 def get_storage_element(uri):
     """

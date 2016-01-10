@@ -209,9 +209,9 @@ class DelegationController(BaseController):
         Returns the active credentials of the user
         """
         whoami = request.environ['fts3.User.Credentials']
-        whoami.base_id = get_base_id()
+        whoami.base_id = str(get_base_id())
         for vo in whoami.vos:
-            whoami.vos_id.append(get_vo_id(vo))
+            whoami.vos_id.append(str(get_vo_id(vo)))
         return whoami
 
     @doc.return_type('dateTime')
