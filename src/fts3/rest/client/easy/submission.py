@@ -19,8 +19,8 @@ from delegate import delegate
 from fts3.rest.client import ClientError
 
 class JobIdGenerator:
-    standard = 'standard'
-    deterministic = 'deterministic'
+    standard = 'standard' #Default algorithm using uuid1
+    deterministic = 'deterministic' #Deterministic algorithm using uuid5 with base_id+vo+sid given by the user
     
 def cancel(context, job_id, file_ids=None):
     """
@@ -104,8 +104,8 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         retry:             Number of retries: <0 is no retries, 0 is server default, >0 is whatever value is passed
         metadata:          Metadata to bind to the job
         priority:          Job priority
-	id_generator:      Job generator id algorithm
-	sid: 		   Specific id given by the client        
+	    id_generator:      Job id generator algorithm
+	    sid: 		       Specific id given by the client        
 
     Returns:
         An initialized dictionary representing a job
@@ -150,7 +150,7 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
         spacetoken: Deletion spacetoken
         metadata:   Metadata to bind to the job
         priority:          Job priority
- 	id_generator:      Job generator id algorithm
+ 	    id_generator:      Job id generator algorithm
         sid:               Specific id given by the client        
         
     Returns:
@@ -178,9 +178,9 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
         bring_online=bring_online,
         copy_pin_lifetime=copy_pin_lifetime,
         job_metadata=metadata,
-	priority=priority,
-	id_generator=id_generator,
-	sid=sid
+	    priority=priority,
+	    id_generator=id_generator,
+	    sid=sid
     )
     job = dict(
        files=transfers,
@@ -196,8 +196,8 @@ def new_delete_job(files, spacetoken=None, metadata=None, priority=None, id_gene
         files:      Array of surls to delete. Each item can be either a string or a dictionary with keys surl and metadata
         spacetoken: Deletion spacetoken
         metadata:   Metadata to bind to the job
-	id_generator:      Job generator id algorithm
-        sid:               Specific id given by the client        
+	    id_generator:    Job id generator algorithm
+        sid:    Specific id given by the client        
     Return
         An initialized dictionary representing a deletion job
     """
@@ -205,7 +205,7 @@ def new_delete_job(files, spacetoken=None, metadata=None, priority=None, id_gene
         source_spacetoken=spacetoken,
         job_metadata=metadata,
         priority=priority,
-	id_generator=id_generator,
+	    id_generator=id_generator,
         sid=sid
     )
     job = dict(

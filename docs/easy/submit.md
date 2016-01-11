@@ -50,14 +50,15 @@ Note that _all_ parameters are optional.
 * **copy_pin_lifetime** Pin lifetime
 * **retry**             Number of retries: <0 is no retries, 0 is server default, >0 is whatever value is passed
 * **metadata**          Metadata to bind to the job
-
+* **id_generator**      Job id generator algorithm: 'standard' is used by default with uuid1 and 'deterministic' is used for specific job id generation with uuid5 and the base_id+vo+sid
+* **sid** 				Specific id given by the user to be used with the deterministic job id generator algorithm
 ### Returns:
 A dictionary representing a new job submission
 
 ### Example
 ```python
 transfers = [transfer1, transfer2, ...]
-job = fts3.new_job(transfers, verify_checksum=True, reuse=True, ...)
+job = fts3.new_job(transfers, verify_checksum=True, reuse=True, id_generator=JobIdGenerator.deterministic, sid='6067830a-8596-4093-86f4-3ab940ebf876' ...)
 ```
 
 Submit the job
