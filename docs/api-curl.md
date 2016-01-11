@@ -271,6 +271,8 @@ Here you can see an example of a submission file
     "multihop": false,          // Boolean: If set to true, the transfer will be a multihop transfer
     "retry": 2,                 // Integer: Number of retries, if the error is recoverable
     "priority": 3               // Integer: Job priority
+    "id_generator": "deterministic" //String: Job id generator algorithm: 'standard' is used by default with uuid1 and 'deterministic' is used for specific job id generation with uuid5 and the base_id+vo+sid
+    "sid": "6067830a-8596-4093-86f4-3ab940ebf876" //String: Specific id given by the user to be used with the deterministic job id generator algorithm
   }
 }
 ```
