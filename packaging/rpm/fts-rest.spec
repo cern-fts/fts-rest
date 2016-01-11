@@ -158,11 +158,11 @@ make %{?_smp_mflags}
 pushd src/fts3rest
 %if %{?rhel}%{!?rhel:0} == 6
 PYTHONPATH=../:/usr/lib64/python2.6/site-packages/SQLAlchemy-0.8.2-py2.6-linux-x86_64.egg/ \
-    nosetests1.1 --with-xunit --xunit-file=/tmp/nosetests.xml
+    nosetests1.1 --with-xunit --xunit-file=nosetests.xml
 %endif
 %if %{?rhel}%{!?rhel:0} >= 7
 PYTHONPATH=../ ./setup_pylons_plugin.py install --user
-PYTHONPATH=../ nosetests --with-xunit --xunit-file=/tmp/nosetests.xml
+PYTHONPATH=../ nosetests --with-xunit --xunit-file=nosetests.xml
 %endif
 popd
 
