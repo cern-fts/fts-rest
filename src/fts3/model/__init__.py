@@ -32,7 +32,7 @@ from version import *
 
 # Convenience method
 def connect(connectString):
-    engine = sqlalchemy.create_engine(connectString)
+    engine = sqlalchemy.create_engine(connectString, isolation_level="READ-COMMITTED")
     Session = sqlalchemy.orm.sessionmaker(bind=engine)
     #Base.metadata.create_all(engine)
     return Session()
