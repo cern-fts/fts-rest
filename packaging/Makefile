@@ -46,10 +46,10 @@ override_release: $(SPEC)
 	$(if $(RELEASE), sed -i "s/Release:.*/Release: $(RELEASE)%{?dist}/g" "$(SPEC)")
 
 srpm: dist $(SPEC) $(RPMBUILD) override_release
-	/usr/bin/rpmbuild --nodeps -bs $(RPMDEFINES_SRC) $(SPEC)
+	/usr/bin/rpmbuild --nodeps -bs $(RPMDEFINES_SRC) $(RPMBUILD_SRC_FLAGS) $(SPEC)
 
 rpm: srpm
-	/usr/bin/rpmbuild --rebuild $(RPMDEFINES_BIN) $(NAME)-$(VERSION)-*.src.rpm
+	/usr/bin/rpmbuild --rebuild $(RPMDEFINES_BIN) $(RPMBUILD_FLAGS) $(NAME)-$(VERSION)-*.src.rpm
 
 mock: srpm
 	/usr/bin/mock $(MOCK_FLAGS) -r $(MOCK_CHROOT) $(NAME)-$(VERSION)-*.src.rpm

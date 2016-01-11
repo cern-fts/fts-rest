@@ -1,6 +1,8 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")}
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib(1))")}
 
+%{!?nosetest_path: %global nosetest_path "/tmp"}
+
 Name:           fts-rest
 Version:        3.4.0
 Release:        1%{?dist}
@@ -158,11 +160,11 @@ make %{?_smp_mflags}
 pushd src/fts3rest
 %if %{?rhel}%{!?rhel:0} == 6
 PYTHONPATH=../:/usr/lib64/python2.6/site-packages/SQLAlchemy-0.8.2-py2.6-linux-x86_64.egg/ \
-    nosetests1.1 --with-xunit --xunit-file=nosetests.xml
+    nosetests1.1 --with-xunit --xunit-file=%{?nosetest_path}/nosetests.xml
 %endif
 %if %{?rhel}%{!?rhel:0} >= 7
 PYTHONPATH=../ ./setup_pylons_plugin.py install --user
-PYTHONPATH=../ nosetests --with-xunit --xunit-file=nosetests.xml
+PYTHONPATH=../ nosetests --with-xunit --xunit-file=%{?nosetest_path}/nosetests.xml
 %endif
 popd
 
