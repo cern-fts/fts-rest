@@ -16,7 +16,7 @@
 #   limitations under the License.
 
 from file import ArchivedFile
-from sqlalchemy import Column, DateTime, Integer, String, LargeBinary
+from sqlalchemy import Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import relation, backref
 
 from base import Base, Flag, TernaryFlag, Json
@@ -41,7 +41,7 @@ class Job(Base):
     user_cred                = Column(String(255))
     cred_id                  = Column(String(100))
     vo_name                  = Column(String(50))
-    voms_cred                = Column(LargeBinary)
+    voms_cred                = Column(Text)
     reason                   = Column(String(2048))
     submit_time              = Column(DateTime)
     finish_time              = Column(DateTime)
@@ -90,7 +90,7 @@ class ArchivedJob(Base):
     user_cred                = Column(String(255))
     cred_id                  = Column(String(100))
     vo_name                  = Column(String(50))
-    voms_cred                = Column(LargeBinary)
+    voms_cred                = Column(Text)
     reason                   = Column(String(2048))
     submit_time              = Column(DateTime)
     finish_time              = Column(DateTime)
