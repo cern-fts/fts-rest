@@ -92,7 +92,8 @@ function refreshActivityShares()
     var parent = $("#activity-shares-list");
 
     $.ajax({
-        url: "/config/activity_shares?"
+        url: "/config/activity_shares?",
+        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         parent.empty();
@@ -107,6 +108,7 @@ function refreshActivityShares()
                 div.css("background", "#d9534f");
                 $.ajax({
                     url: "/config/activity_shares/" + encodeURIComponent(voName),
+                    contentType: "application/json",
                     type: "DELETE"
                 })
                 .done(function(data, textStatus, jqXHR) {

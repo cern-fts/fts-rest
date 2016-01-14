@@ -23,7 +23,8 @@ function refreshLinks()
     var tbody = $("#link-config-list");
 
     $.ajax({
-        url: "/config/links?"
+        url: "/config/links?",
+        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         tbody.empty();
@@ -38,7 +39,8 @@ function refreshLinks()
                 tr.css("background", "#d9534f");
                 $.ajax({
                     url: "/config/links/" + encodeURIComponent(link.symbolicname),
-                    type: "DELETE"
+                    type: "DELETE",
+                    contentType: "application/json"
                 })
                 .done(function(data, textStatus, jqXHR) {
                     tr.fadeOut(300, function() {tr.remove();})
@@ -76,6 +78,7 @@ function refreshShares()
 
     $.ajax({
         url: "/config/shares?",
+        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         tbody.empty();
@@ -92,7 +95,8 @@ function refreshShares()
                     url: "/config/shares?source=" + encodeURIComponent(share.source)
                         + "&destination=" + encodeURIComponent(share.destination)
                         + "&vo=" + encodeURIComponent(share.vo),
-                    type: "DELETE"
+                    type: "DELETE",
+                    contentType: "application/json"
                 })
                 .done(function(data, textStatus, jqXHR) {
                     tr.fadeOut(300, function() {tr.remove();})
@@ -133,6 +137,7 @@ function setupLinks()
             url: "/config/shares",
             type: "POST",
             dataType: "json",
+            contentType: "application/json",
             data: $(this).serialize()
         })
         .done(function(data, textStatus, jqXHR) {
@@ -158,6 +163,7 @@ function setupLinks()
             url: "/config/links",
             type: "POST",
             dataType: "json",
+            contentType: "application/json",
             data: $(this).serialize()
         })
         .done(function(data, textStatus, jqXHR) {

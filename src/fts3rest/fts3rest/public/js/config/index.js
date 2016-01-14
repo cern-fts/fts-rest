@@ -55,6 +55,7 @@ function refreshOverview()
 
     $.ajax({
         url: "/config?",
+        contentType: "application/json",
         success: function (data) {
             // Decorate each entry with its state
             $.each(data, function(i, server) {

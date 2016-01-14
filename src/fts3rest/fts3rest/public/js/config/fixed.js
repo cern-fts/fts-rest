@@ -20,7 +20,8 @@ function refreshFixList()
 	var tbody = $("#fixed-list");
 
     $.ajax({
-        url: "/config/fixed?"
+        url: "/config/fixed?",
+        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         tbody.empty();
@@ -36,6 +37,7 @@ function refreshFixList()
                 $.ajax({
                     url: "/config/fixed",
                     type: "POST",
+                    contentType: "application/json",
                     data: {
                         source_se: fix.source_se,
                         dest_se: fix.dest_se,
@@ -59,6 +61,7 @@ function refreshFixList()
                         url: "/config/fixed",
                         type: "POST",
                         dataType: "json",
+                        contentType: "application/json",
                         data: {
                             source_se: fix.source_se,
                             dest_se: fix.dest_se,
@@ -99,6 +102,7 @@ function setupFixed()
             url: "/config/fixed",
             type: "POST",
             dataType: "json",
+            contentType: "application/json",
             data: $(this).serialize()
         })
         .done(function(data, textStatus, jqXHR) {

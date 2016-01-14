@@ -23,7 +23,8 @@ function refreshAuthzList()
     var tbody = $("#authz-list");
 
     $.ajax({
-        url: "/config/authorize?"
+        url: "/config/authorize?",
+        contentType: "application/json"
     })
     .done(function (data) {
         tbody.empty();
@@ -37,6 +38,7 @@ function refreshAuthzList()
                 tr.css("background", "#d9534f");
                 $.ajax({
                     url: "/config/authorize?dn=" + encodeURIComponent(user.dn) + "&operation=" + encodeURIComponent(user.operation),
+                    contentType: "application/json",
                     type: "DELETE"
                 })
                 .done(function(data, textStatus, jqXHR) {
@@ -75,6 +77,7 @@ function setupAuthz()
             url: "/config/authorize?",
             type: "POST",
             dataType: "json",
+            contentType: "application/json",
             data: $(this).serialize()
         })
         .done(function(data, textStatus, jqXHR) {

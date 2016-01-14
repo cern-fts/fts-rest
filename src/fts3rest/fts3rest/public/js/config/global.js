@@ -23,7 +23,8 @@ function refreshVoConfigList()
 	var tbody = $("#vo-config-list");
 
 	$.ajax({
-		url: "/config/global?"
+		url: "/config/global?",
+		contentType: "application/json"
 	})
 	.done(function(data, textStatus, jqXHR) {
 		tbody.empty();
@@ -39,7 +40,8 @@ function refreshVoConfigList()
 	                tr.css("background", "#d9534f");
 	                $.ajax({
 	                    url: "/config/global?vo_name=" + encodeURIComponent(vo_name),
-	                    type: "DELETE"
+	                    type: "DELETE",
+	                    contentType: "application/json"
 	                })
 	                .done(function(data, textStatus, jqXHR) {
 	                    tr.fadeOut(300, function() {tr.remove();})
@@ -59,6 +61,7 @@ function refreshVoConfigList()
 	            			url: "/config/global?",
 	            			type: "POST",
 	            			dataType: "json",
+	            			contentType: "application/json",
 	            			data: {vo_name: vo_name, retry: retryInput.val()}
 	            		})
 	            		.done(function() {
@@ -97,6 +100,7 @@ function setupGlobalConfig()
             url: "/config/global?",
             type: "POST",
             dataType: "json",
+            contentType: "application/json",
             data: $(this).serialize()
         })
         .done(function(data, textStatus, jqXHR) {
@@ -121,6 +125,7 @@ function setupGlobalConfig()
             url: "/config/global?",
             type: "POST",
             dataType: "json",
+            contentType: "application/json",
             data: $(this).serialize()
         })
         .fail(function(jqXHR) {
