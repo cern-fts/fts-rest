@@ -23,7 +23,8 @@ function refreshGroupList()
 	var tbody = $("#group-list");
 
     $.ajax({
-        url: "/config/groups?"
+        url: "/config/groups?",
+        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         tbody.empty();
@@ -38,7 +39,8 @@ function refreshGroupList()
                 tr.css("background", "#d9534f");
                 $.ajax({
                     url: "/config/groups/" + encodeURIComponent(member.groupname) + "?member=" + encodeURIComponent(member.member),
-                    type: "DELETE"
+                    type: "DELETE",
+                    contentType: "application/json"
                 })
                 .done(function(data, textStatus, jqXHR) {
                     tr.fadeOut(300, function() {tr.remove();})
@@ -75,6 +77,7 @@ function setupGroups()
             url: "/config/groups",
             type: "POST",
             dataType: "json",
+            contentType: "application/json",
             data: $(this).serialize()
         })
         .done(function(data, textStatus, jqXHR) {

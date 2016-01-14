@@ -161,7 +161,8 @@ function refreshSeConfig()
     var parent = $("#se-list");
 
     $.ajax({
-        url: "/config/se?"
+        url: "/config/se?",
+        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         parent.empty();
