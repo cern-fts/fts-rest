@@ -18,6 +18,7 @@
 import urllib
 
 from fts3rest.lib.middleware.fts3auth.credentials import vo_from_fqan, build_vo_from_dn, generate_delegation_id
+import logging
 
 
 def _mod_gridsite_authn(credentials, env):
@@ -72,6 +73,8 @@ def do_authentication(credentials, env):
     credentials.method = 'certificate'
     # If the user's DN matches the host DN, then grant all
     host_dn = env.get('SSL_SERVER_S_DN', None)
+    logging.debug("Host dn: "+str(host_dn))
+    logging.debug("Credentials user_dn: "+str(credentials.user_dn))
     if host_dn and host_dn == credentials.user_dn:
         credentials.is_root = True
     return True
