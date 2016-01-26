@@ -75,9 +75,9 @@ def do_authentication(credentials, env):
     if host_dn and host_dn == credentials.user_dn:
         credentials.is_root = True
     else:
-        if '/' not in host_dn:
-            host_dn = host_dn.replace(',','/')
-            host_dn ='/'+'/'.join(reversed(host_dn.split('/')))
+        if '/' not in str(host_dn):
+            host_dn = str(host_dn).replace(',','/')
+            host_dn ='/'+'/'.join(reversed(str(host_dn).split('/')))
             if host_dn == credentials.user_dn :
                 credentials.is_root = True
     return True
