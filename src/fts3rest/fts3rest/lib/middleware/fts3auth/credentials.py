@@ -151,9 +151,6 @@ class UserCredentials(object):
         Get all granted levels for this user out of the configuration
         (all levels authorized for public, plus those for the given Roles)
         """
-        if role_permissions is None:
-            return {}
-
         if self.is_root:
             return {
                 'transfer': 'all',
@@ -161,7 +158,10 @@ class UserCredentials(object):
                 'config': 'all',
                 'datamanagement': 'all'
             }
-
+            
+        if role_permissions is None:
+            return {}
+        
         if 'public' in role_permissions:
             granted_level = copy.deepcopy(role_permissions['public'])
         else:

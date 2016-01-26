@@ -53,7 +53,6 @@ def _mod_ssl_authn(credentials, env):
         return True
     return False
 
-
 def do_authentication(credentials, env):
     """
     Try with a proxy or certificate, via mod_gridsite or mod_ssl
@@ -73,8 +72,12 @@ def do_authentication(credentials, env):
     credentials.method = 'certificate'
     # If the user's DN matches the host DN, then grant all
     host_dn = env.get('SSL_SERVER_S_DN', None)
-    logging.debug("Host dn: "+str(host_dn))
-    logging.debug("Credentials user_dn: "+str(credentials.user_dn))
     if host_dn and host_dn == credentials.user_dn:
         credentials.is_root = True
+    else:
+        if '/' not in host_dn:
+            host_dn = host_dn.replace(',','/')
+            host_dn ='/'+'/'.join(reversed(host_dn.split('/')))
+            if host_dn == credentials.user_dn :
+                credentials.is_root = True
     return True
