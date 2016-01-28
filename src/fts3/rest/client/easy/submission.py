@@ -96,7 +96,8 @@ def add_alternative_source(transfer, alt_source):
 def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, overwrite=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
-            retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False):
+            retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
+            max_time_in_queue=None):
     """
     Creates a new dictionary representing a job
 
@@ -114,6 +115,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         retry:             Number of retries: <0 is no retries, 0 is server default, >0 is whatever value is passed
         metadata:          Metadata to bind to the job
         priority:          Job priority
+        max_time_in_queue: Maximum number
 
     Returns:
         An initialized dictionary representing a job
@@ -135,7 +137,8 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         retry=retry,
         retry_delay=retry_delay,
         priority=priority,
-        strict_copy=strict_copy
+        strict_copy=strict_copy,
+        max_time_in_queue=max_time_in_queue
     )
     job = dict(
         files=transfers,
