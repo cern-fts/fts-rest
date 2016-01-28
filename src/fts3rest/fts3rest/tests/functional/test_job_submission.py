@@ -742,6 +742,62 @@ class TestJobSubmission(TestController):
         self.assertGreater(job.max_time_in_queue, time.time())
         self.assertLessEqual(job.max_time_in_queue, (8*60*60) + time.time())
 
+    def test_submit_max_time_in_queue_suffix(self):
+        """
+        Submits a job specifying the maximum time it should stay in the queue.
+        Use a suffix.
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://dest.ch:8447/file'],
+            }],
+            'params': {
+                'max_time_in_queue': '4s'
+            }
+        }
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        job = Session.query(Job).get(job_id)
+        self.assertGreater(job.max_time_in_queue, time.time())
+        self.assertLessEqual(job.max_time_in_queue, 8 + time.time())
+
+    def test_submit_max_time_in_queue_suffix2(self):
+        """
+        Submits a job specifying the maximum time it should stay in the queue.
+        Use a suffix.
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://dest.ch:8447/file'],
+            }],
+            'params': {
+                'max_time_in_queue': '2m'
+            }
+        }
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        job = Session.query(Job).get(job_id)
+        self.assertGreater(job.max_time_in_queue, time.time())
+        self.assertLessEqual(job.max_time_in_queue, 120 + time.time())
+
     def test_submit_ipv4(self):
         """
         Submit a job with IPv4 only

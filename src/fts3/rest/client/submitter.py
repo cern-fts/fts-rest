@@ -19,7 +19,8 @@ try:
     import simplejson as json
 except:
     import json
-    
+
+
 class Submitter(object):
 
     def __init__(self, context):
@@ -65,3 +66,9 @@ class Submitter(object):
             return json.loads(self.context.delete('/jobs/%s/files/%s' % (job_id, file_ids_str)))
         else:
             return json.loads(self.context.delete('/jobs/%s' % job_id))
+
+    def cancel_all(self, vo = None):
+        if vo is None:
+            return json.loads(self.context.delete('/jobs/all'))
+        else:
+            return json.loads(self.context.delete('/jobs/vo/%s' % vo))

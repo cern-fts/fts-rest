@@ -241,6 +241,32 @@ def _apply_banning(files):
             f['wait_timeout'] = timeout
 
 
+def _seconds_from_value(value):
+    """
+    Transform an interval value to seconds
+    If value is an integer, assume it is hours (backwards compatibility)
+    Otherwise, look at the suffix
+    """
+    if isinstance(value, int) and value != 0:
+        return value * 3600
+    elif not isinstance(value, basestring):
+        return None
+
+    try:
+        suffix = value[-1].lower()
+        value = value[:-1]
+        if suffix == 's':
+            return int(value)
+        elif suffix == 'm':
+            return int(value) * 60
+        elif suffix == 'h':
+            return int(value) * 3600
+        else:
+            return None
+    except:
+        return None
+
+
 class JobBuilder(object):
     """
     From a dictionary, build the internal representation of Job, Files and
@@ -377,10 +403,10 @@ class JobBuilder(object):
 
         job_initial_state = 'STAGING' if self.is_bringonline else 'SUBMITTED'
 
-        max_time_in_queue = int(self.params['max_time_in_queue'])
+        max_time_in_queue = _seconds_from_value(self.params.get('max_time_in_queue', None))
         expiration_time = None
-        if max_time_in_queue > 0:
-            expiration_time = time.time() + (max_time_in_queue * 60 * 60)
+        if max_time_in_queue is not None:
+            expiration_time = time.time() + max_time_in_queue
 
         self.job = dict(
             job_id=self.job_id,
