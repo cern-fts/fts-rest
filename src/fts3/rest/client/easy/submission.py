@@ -97,7 +97,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
-            max_time_in_queue=None):
+            max_time_in_queue=None, timeout=None):
     """
     Creates a new dictionary representing a job
 
@@ -138,7 +138,8 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         retry_delay=retry_delay,
         priority=priority,
         strict_copy=strict_copy,
-        max_time_in_queue=max_time_in_queue
+        max_time_in_queue=max_time_in_queue,
+        timeout=timeout
     )
     job = dict(
         files=transfers,
