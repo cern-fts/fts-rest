@@ -103,7 +103,8 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
-            max_time_in_queue=None, timeout=None):
+            max_time_in_queue=None, timeout=None,
+            id_generator=JobIdGenerator.standard, sid=None):
     """
     Creates a new dictionary representing a job
 
@@ -122,6 +123,8 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         metadata:          Metadata to bind to the job
         priority:          Job priority
         max_time_in_queue: Maximum number
+        id_generator:      Job id generator algorithm
+        sid:               Specific id given by the client 
 
     Returns:
         An initialized dictionary representing a job
@@ -145,7 +148,9 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         priority=priority,
         strict_copy=strict_copy,
         max_time_in_queue=max_time_in_queue,
-        timeout=timeout
+        timeout=timeout,
+        id_generator=id_generator,
+        sid=sid
     )
     job = dict(
         files=transfers,
@@ -154,18 +159,21 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
     )
     return job
 
-def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spacetoken=None, spacetoken=None, metadata=None, priority=None):
+def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spacetoken=None,
+                    spacetoken=None, metadata=None, priority=None, id_generator=JobIdGenerator.standard, sid=None):
     """
         Creates a new dictionary representing a staging job
         
     Args:
-        files:  Array of surls to stage.
+        files:  Array of surls to stage. Each item can be either a string or a dictionary with keys surl and metadata
         bring_online:      Bring online timeout
         copy_pin_lifetime: Pin lifetime
         source_spacetoken: Source space token
         spacetoken: Deletion spacetoken
         metadata:   Metadata to bind to the job
         priority:          Job priority
+        id_generator:      Job id generator algorithm
+        sid:               Specific id given by the client
         
     Returns:
         An initialized dictionary representing a staging job
@@ -174,8 +182,17 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
         raise ClientError('Bad request: bring_online and copy_pin_lifetime are not positive numbers')
         
     transfers = []
-    for i in range (0, len(files)-1):
-        transfers.append(new_transfer(source=files[i], destination=files[i]))
+    for trans in files:
+        if isinstance(trans, dict):
+            surl=trans['surl']
+            meta=trans['metadata']
+        elif isinstance(trans, basestring):
+            surl=trans
+            meta=None
+        else:
+            raise AttributeError("Unexpected input type %s"%type(files))
+
+        transfers.append(new_transfer(source=surl, destination=surl, metadata=meta))
         	 
     params = dict(
         source_spacetoken=source_spacetoken,
@@ -183,7 +200,9 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
         bring_online=bring_online,
         copy_pin_lifetime=copy_pin_lifetime,
         job_metadata=metadata,
-
+        priority=priority,
+        id_generator=id_generator,
+        sid=sid
     )
     job = dict(
        files=transfers,
@@ -191,7 +210,7 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
     )
     return job
 
-def new_delete_job(files, spacetoken=None, metadata=None):
+def new_delete_job(files, spacetoken=None, metadata=None, priority=None, id_generator=JobIdGenerator.standard, sid=None):
     """
     Creates a new dictionary representing a deletion job
 
@@ -199,13 +218,18 @@ def new_delete_job(files, spacetoken=None, metadata=None):
         files:      Array of surls to delete. Each item can be either a string or a dictionary with keys surl and metadata
         spacetoken: Deletion spacetoken
         metadata:   Metadata to bind to the job
+        id_generator:    Job id generator algorithm
+        sid:    Specific id given by the client
 
     Return
         An initialized dictionary representing a deletion job
     """
     params = dict(
         source_spacetoken=spacetoken,
-        job_metadata=metadata
+        job_metadata=metadata,
+        priority=priority,
+        id_generator=id_generator,
+        sid=sid
     )
     job = dict(
         delete=files,
