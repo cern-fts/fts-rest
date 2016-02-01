@@ -18,6 +18,12 @@ from fts3.rest.client import Submitter
 from delegate import delegate
 from fts3.rest.client import ClientError
 
+
+class JobIdGenerator:
+    standard = 'standard' #Default algorithm using uuid1
+    deterministic = 'deterministic' #Deterministic algorithm using uuid5 with base_id+vo+sid given by the user
+
+
 def cancel(context, job_id, file_ids=None):
     """
     Cancels a job
