@@ -66,7 +66,7 @@ Generating a deterministic id
 When a new job is created, we use the standard algorithm for generating the ids based on uuid1 by default. 
 However, the possibility of generating a deterministic id is implemented based on the base id and a vo id, which can be checked by executing the whoami command. 
 
-fts-rest-whoami -s "https://fts3-devel.cern.ch:8446"
+```fts-rest-whoami -s "https://fts3-devel.cern.ch:8446"
 User DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=ftssuite/CN=737188/CN=Robot: fts3 testsuite
 VO: dteam
 VO id: 6b10f4e4-8fdc-5555-baa2-7d4850d4f406
