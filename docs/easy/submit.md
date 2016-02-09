@@ -81,7 +81,7 @@ When you create the job, you can use the deterministic job id generator and a sp
 
 * **id_generator**      Job id generator algorithm: 
 						1. 'standard' uses uuid1 by default
-						2. 'deterministic' used uuid5 and provide specific job id generation based on:
+						2. 'deterministic' uses uuid5 and provides specific job id generation based on:
 							a. base_id (fixed)
 							b. vo id (uuid5+vo_name+base_id)
 							c. sid (user parameter)
