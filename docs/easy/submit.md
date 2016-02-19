@@ -83,14 +83,14 @@ When you create the job, you can use the deterministic job id generator and a sp
 						1. 'standard' uses uuid1 by default
 						2. 'deterministic' uses uuid5 and provides specific job id generation based on:
 							a. base_id (fixed)
-							b. vo id (uuid5+vo_name+base_id)
-							c. sid (user parameter)
+							b. vo_id (uuid5(base_id, vo_name))
+							c. sid (uuid5(vo_id, sid))
 * **sid** 				Specific id given by the user to be used with the deterministic job id generator algorithm. This parameter is mandatory if the deterministic job id generator is activated.
 
 ### Example
 ```python
 transfers = [transfer1, transfer2, ...]
-job = fts3.new_job(transfers, verify_checksum=True, reuse=True, **id_generator=JobIdGenerator.deterministic**, **sid='6067830a-8596-4093-86f4-3ab940ebf876'** ...)
+job = fts3.new_job(transfers, verify_checksum=True, reuse=True, id_generator=JobIdGenerator.deterministic, sid='6067830a-8596-4093-86f4-3ab940ebf876' ...)
 ```
 
 Submit the job
