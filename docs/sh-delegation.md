@@ -14,7 +14,7 @@ So let's cover the client steps one by one
 
 Get our delegation ID
 ---------------------
-`curl -E ~/proxy.pem --capath /etc/grid-security/certificates https://fts3-devel.cern.ch:8446/whoami`
+`curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}"--capath /etc/grid-security/certificates https://fts3-devel.cern.ch:8446/whoami`
 ```json
 {
   "delegation_id": "2d19e65bb16481cf", 
@@ -38,14 +38,14 @@ Get our delegation ID
 
 Check if we need to delegate
 ----------------------------
-`curl -E ~/proxy.pem --capath /etc/grid-security/certificates https://fts3-devel.cern.ch:8446/delegation/2d19e65bb16481cf`
+`curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}" --capath /etc/grid-security/certificates https://fts3-devel.cern.ch:8446/delegation/2d19e65bb16481cf`
 
 If you get null, you need to delegate. If you get a termination_time in the past, you need to delegate. Otherwise, is it
 up to you to decide if the proxy is long lived enough!
 
 Get a request
 -------------
-`curl -E ~/proxy.pem --capath /etc/grid-security/certificates https://fts3-devel.cern.ch:8446/delegation/2d19e65bb16481cf/request > request.pem`
+`curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}" --capath /etc/grid-security/certificates https://fts3-devel.cern.ch:8446/delegation/2d19e65bb16481cf/request > request.pem`
 
 You can know have a look into the request, if you like
 
@@ -94,12 +94,12 @@ $ SUBJECT=`openssl x509 -in ~/proxy.pem -noout -subject | grep '/.*' -o`
 $ mkdir -p demoCA/newcerts
 $ touch demoCA/index.txt
 $ echo "00000000000000000000" > demoCA/serial
-$ openssl ca -config openssl.cnf --policy policy_anything -keyfile ~/proxy.pem -cert ~/proxy.pem -in request.pem -subj "$SUBJECT/CN=proxy" -days 1 -batch -out newproxy.pem
+$ openssl ca -config openssl.cnf -policy policy_anything -keyfile ~/proxy.pem -cert ~/proxy.pem -in request.pem -subj "$SUBJECT/CN=proxy" -days 1 -batch -out newproxy.pem
 ```
 
 Remember you can specify as a parameter the lifetime of the new certificate!
 You may need to add manually to openssl.cnf, under \[policy_anything\] `domainComponent=optional`
-
+Remember to indicate in the openssl.cnf the demoCA directory or create the files in /etc/pki/CA.
 You can double check the output using openssl again.
 
 ```
@@ -161,12 +161,12 @@ $ sed -e '/-----BEGIN CERTIFICATE-----/,/----END CERTIFICATE-----/!d' ~/proxy.pe
 Upload the proxy
 ----------------
 ```
-$ curl -E ~/proxy.pem --capath /etc/grid-security/certificates https://fts3-devel.cern.ch:8446/delegation/2d19e65bb16481cf/credential -T fullproxy.pem
+$ curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}" --capath /etc/grid-security/certificates https://fts3-devel.cern.ch:8446/delegation/2d19e65bb16481cf/credential -T fullproxy.pem
 ```
 
 And you can now double check
 
-`curl -E ~/proxy.pem --capath /etc/grid-security/certificates https://fts3-devel.cern.ch:8446/delegation/2d19e65bb16481cf`
+`curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}"--capath /etc/grid-security/certificates https://fts3-devel.cern.ch:8446/delegation/2d19e65bb16481cf`
 ```json
 {
   "termination_time": "2014-06-27T14:32:00"
