@@ -32,7 +32,7 @@ from sqlalchemy import engine_from_config, event
 
 import fts3rest.lib.app_globals as app_globals
 import fts3rest.lib.helpers
-from fts3rest.lib.helpers import fts3_config
+from fts3.util.config import fts3_config_load
 from fts3rest.lib.helpers.connection_validator import connection_validator
 from fts3rest.config.routing import make_map
 from fts3rest.model import init_model
@@ -67,7 +67,7 @@ def load_environment(global_conf, app_conf):
     # If fts3.config is set, load configuration from there
     fts3_config_file = config.get('fts3.config')
     if fts3_config_file:
-        fts3cfg = fts3_config.fts3_config_load(fts3_config_file)
+        fts3cfg = fts3_config_load(fts3_config_file)
         # Let the database be overriden by fts3rest.ini
         if 'sqlalchemy.url' in config and 'sqlalchemy.url' in fts3cfg:
             del fts3cfg['sqlalchemy.url']
