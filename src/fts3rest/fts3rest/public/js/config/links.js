@@ -120,7 +120,27 @@ function refreshShares()
         errorMessage(jqXHR);
     });
 }
+/**
+ *  * Serializes data to JSON
+ *   */
+(function ($) {
+    $.fn.serializeFormJSON = function () {
 
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        }); 
+        return o; 
+    };
+})(jQuery);
 
 /**
  * Initialize the links view
@@ -138,7 +158,7 @@ function setupLinks()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: $(this).serialize()
+            data: $(this).serializeFormJSON()
         })
         .done(function(data, textStatus, jqXHR) {
             refreshShares();
@@ -164,7 +184,7 @@ function setupLinks()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: $(this).serialize()
+            data: $(this).serializeFormJSON()
         })
         .done(function(data, textStatus, jqXHR) {
             refreshLinks();
