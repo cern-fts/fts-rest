@@ -32,8 +32,6 @@ def get_input_as_dict(request, from_query=False):
     """
     if from_query:
         input_dict = request.params
-    elif request.content_type == 'application/json, application/x-www-form-urlencoded':
-        input_dict = json.loads(urllib.unquote_plus(request.body))
     elif request.content_type.startswith ('application/json') or request.method == 'PUT':
         try:
             input_dict = json.loads(request.body)
