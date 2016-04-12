@@ -61,17 +61,24 @@ function refreshAuthzList()
         errorMessage(jqXHR);
     });
 }
-function getFormData($form){
-    var unindexed_array = $form.serializeArray();
-    var indexed_array = {};
+(function ($) {
+    $.fn.serializeFormJSON = function () {
 
-    $.map(unindexed_array, function(n, i){
-        indexed_array[n['name']] = n['value'];
-    });
-
-    return indexed_array;
-}
-
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+})(jQuery);
 /**
  * Initialize the authz view
  */
@@ -87,7 +94,7 @@ function setupAuthz()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: getFormData($(this))
+            data: $(this).serializeFormJSON();
         })
         .done(function(data, textStatus, jqXHR) {
             refreshAuthzList();
