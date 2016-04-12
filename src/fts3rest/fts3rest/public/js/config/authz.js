@@ -78,7 +78,7 @@ function setupAuthz()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: $(this).serialize()
+            data: $(this).serializeArray()
         })
         .done(function(data, textStatus, jqXHR) {
             refreshAuthzList();
