@@ -61,7 +61,16 @@ function refreshAuthzList()
         errorMessage(jqXHR);
     });
 }
+function getFormData($form){
+    var unindexed_array = $form.serializeArray();
+    var indexed_array = {};
 
+    $.map(unindexed_array, function(n, i){
+        indexed_array[n['name']] = n['value'];
+    });
+
+    return indexed_array;
+}
 
 /**
  * Initialize the authz view
@@ -78,7 +87,7 @@ function setupAuthz()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: $(this).serializeArray()
+            data: getFormData($(this))
         })
         .done(function(data, textStatus, jqXHR) {
             refreshAuthzList();
