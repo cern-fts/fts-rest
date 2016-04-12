@@ -103,7 +103,7 @@ function setupFixed()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringify($(this))
+            data: JSON.stringify(this)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshFixList();
