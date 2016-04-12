@@ -90,7 +90,27 @@ function refreshFixList()
     });
 }
 
+/**
+ *  * Serializes data to JSON
+ *   */
+(function ($) {
+    $.fn.serializeFormJSON = function () {
 
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        }); 
+        return o; 
+    };
+})(jQuery);
 function setupFixed()
 {
 	// Refresh
@@ -103,7 +123,7 @@ function setupFixed()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringify(this)
+            data: $(this).serializeFormJSON()
         })
         .done(function(data, textStatus, jqXHR) {
             refreshFixList();
