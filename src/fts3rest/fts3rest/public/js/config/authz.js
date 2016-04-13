@@ -86,17 +86,32 @@ function setupAuthz()
 {
     // Load list
     refreshAuthzList();
-   
+   $.fn.serializeObject = function()
+	{
+	    var o = {};
+	    var a = this.serializeArray();
+	    $.each(a, function() {
+	        if (o[this.name] !== undefined) {
+	            if (!o[this.name].push) {
+	                o[this.name] = [o[this.name]];
+	            }
+	            o[this.name].push(this.value || '');
+	        } else {
+	            o[this.name] = this.value || '';
+	        }
+	    });
+	    return o;
+	};
+
     // Attach to the form
     $("#authz-add-frm").submit(function(event) {
-        var dn_value = $('[name=dn]').val()
-        var op_value = $('[name=operation]').val()
+        
         $.ajax({
             url: "/config/authorize?",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: {dn: dn_value, operation: op_value}
+            data: JSON.stringfy($(this).serializeObject())
         })
         .done(function(data, textStatus, jqXHR) {
             refreshAuthzList();
