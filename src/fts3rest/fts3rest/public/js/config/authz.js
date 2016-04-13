@@ -86,6 +86,13 @@ function setupAuthz()
 {
     // Load list
     refreshAuthzList();
+    var data = $("#authz-add-frm").serialize().split("&");
+    console.log(data);
+    var obj={};
+    for(var key in data)
+    {
+        obj[data[key].split("=")[0]] = data[key].split("=")[1];
+    }
 
     // Attach to the form
     $("#authz-add-frm").submit(function(event) {
@@ -94,7 +101,7 @@ function setupAuthz()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringify(jQuery(this).serializeArray())
+            data: JSON.stringify(data)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshAuthzList();
