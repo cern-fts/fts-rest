@@ -97,7 +97,7 @@ function setupAuthz()
     	{
         	console.log(data[key]);
         	
-        	obj[data[key].split("=")[0]] = decodeURIComponent(data[key].split("=")[1]);
+        	obj[data[key].split("=")[0]] = decodeURI(data[key].split("=")[1]);
     	}
         $.ajax({
             url: "/config/authorize?",
