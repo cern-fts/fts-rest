@@ -95,7 +95,7 @@ function setupFixed()
 {
 	// Refresh
 	refreshFixList();
-
+	
     // Attach to forms
     $("#fixed-add-frm").submit(function(event) {
         $.ajax({
@@ -103,7 +103,7 @@ function setupFixed()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringify($(this).serializeArray())
+            data: JSON.stringify(jQuery('#fixed-add-frm').serializeArray())
         })
         .done(function(data, textStatus, jqXHR) {
             refreshFixList();
