@@ -86,32 +86,24 @@ function setupAuthz()
 {
     // Load list
     refreshAuthzList();
-   $.fn.serializeObject = function()
-	{
-	    var o = {};
-	    var a = this.serializeArray();
-	    $.each(a, function() {
-	        if (o[this.name] !== undefined) {
-	            if (!o[this.name].push) {
-	                o[this.name] = [o[this.name]];
-	            }
-	            o[this.name].push(this.value || '');
-	        } else {
-	            o[this.name] = this.value || '';
-	        }
-	    });
-	    return o;
-	};
+   
 
     // Attach to the form
     $("#authz-add-frm").submit(function(event) {
-        
+        var data = $(this).serialize().split("&");
+   		console.log(data);
+    	var obj={};
+    	for(var key in data)
+    	{
+        	console.log(data[key]);
+        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
+    	}
         $.ajax({
             url: "/config/authorize?",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringfy($(this).serializeObject())
+            data: JSON.stringify(obj)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshAuthzList();

@@ -120,27 +120,7 @@ function refreshShares()
         errorMessage(jqXHR);
     });
 }
-/**
- *  * Serializes data to JSON
- *   */
-(function ($) {
-    $.fn.serializeFormJSON = function () {
 
-        var o = {};
-        var a = this.serializeArray();
-        $.each(a, function () {
-            if (o[this.name]) {
-                if (!o[this.name].push) {
-                    o[this.name] = [o[this.name]];
-                }
-                o[this.name].push(this.value || '');
-            } else {
-                o[this.name] = this.value || '';
-            }
-        }); 
-        return o; 
-    };
-})(jQuery);
 
 /**
  * Initialize the links view
@@ -153,12 +133,20 @@ function setupLinks()
 
     // Attach to forms
     $("#share-add-frm").submit(function(event) {
+    	var data = $(this).serialize().split("&");
+   		console.log(data);
+    	var obj={};
+    	for(var key in data)
+    	{
+        	console.log(data[key]);
+        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
+    	}
         $.ajax({
             url: "/config/shares",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: $(this).serializeFormJSON()
+            data: JSON.stringify(obj)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshShares();
@@ -179,12 +167,20 @@ function setupLinks()
     });
 
     $("#link-config-add-frm").submit(function(event) {
+    	var data = $(this).serialize().split("&");
+   		console.log(data);
+    	var obj={};
+    	for(var key in data)
+    	{
+        	console.log(data[key]);
+        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
+    	}
         $.ajax({
             url: "/config/links",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: $(this).serializeFormJSON()
+            data: JSON.stringify(obj)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshLinks();

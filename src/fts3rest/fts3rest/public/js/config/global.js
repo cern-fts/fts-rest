@@ -85,28 +85,6 @@ function refreshVoConfigList()
 	});
 }
 
-/**
- * Serializes data to JSON
- */
-(function ($) {
-    $.fn.serializeFormJSON = function () {
-
-        var o = {};
-        var a = this.serializeArray();
-        $.each(a, function () {
-            if (o[this.name]) {
-                if (!o[this.name].push) {
-                    o[this.name] = [o[this.name]];
-                }
-                o[this.name].push(this.value || '');
-            } else {
-                o[this.name] = this.value || '';
-            }
-        });
-        return o;
-    };
-})(jQuery);
-
 
 /**
  * Initializes the global config view
@@ -118,12 +96,20 @@ function setupGlobalConfig()
 
 	// Attach to vo-add form
 	$("#vo-config-add-frm").submit(function(event) {
+		var data = $(this).serialize().split("&");
+   		console.log(data);
+    	var obj={};
+    	for(var key in data)
+    	{
+        	console.log(data[key]);
+        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
+    	}
         $.ajax({
             url: "/config/global?",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: $(this).serializeFormJSON()
+            data: JSON.stringify(obj)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshVoConfigList();
@@ -143,12 +129,20 @@ function setupGlobalConfig()
 
 	// Attach to global form
 	$("#global-config-frm").submit(function(event) {
+		var data = $(this).serialize().split("&");
+   		console.log(data);
+    	var obj={};
+    	for(var key in data)
+    	{
+        	console.log(data[key]);
+        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
+    	}
         $.ajax({
             url: "/config/global?",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: $(this).serializeFormJSON()
+            data: JSON.stringify(obj)
         })
         .fail(function(jqXHR) {
             errorMessage(jqXHR);
