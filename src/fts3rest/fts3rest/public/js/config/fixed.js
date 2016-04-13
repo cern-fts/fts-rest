@@ -96,14 +96,24 @@ function setupFixed()
 	// Refresh
 	refreshFixList();
 	
+	
     // Attach to forms
     $("#fixed-add-frm").submit(function(event) {
+    	var data = $(this).serialize().split("&");
+   		console.log(data);
+    	var obj={};
+    	for(var key in data)
+    	{
+        	console.log(data[key]);
+        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
+    	}
+    	console.log(obj)
         $.ajax({
             url: "/config/fixed",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringify(jQuery('#fixed-add-frm').serialize())
+            data: JSON.stringify(obj)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshFixList();
