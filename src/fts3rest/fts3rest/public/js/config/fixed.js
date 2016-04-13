@@ -73,13 +73,13 @@ function refreshFixList()
                             dest_se: fix.dest_se,
                             active: changeActiveField.val()
                         }
-			        var string = data.serialize().split("&");
-			   		console.log(data);
+			        var str = data.serialize().split("&");
+			   		console.log(str);
 			    	var obj={};
-			    	for(var key in data)
+			    	for(var key in str)
 			    	{
-			        	console.log(data[key]);
-			        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
+			        	console.log(str[key]);
+			        	obj[str[key].split("=")[0]] = str[key].split("=")[1];
 			    	}
 			    	console.log(obj)           		
                     $.ajax({
