@@ -34,15 +34,26 @@ function refreshFixList()
 
             deleteBtn.click(function() {
                 tr.css("background", "#d9534f");
-                $.ajax({
-                    url: "/config/fixed",
-                    type: "POST",
-                    contentType: "application/json",
-                    data: {
+                var data = {
                         source_se: fix.source_se,
                         dest_se: fix.dest_se,
                         active: 0
                     }
+				var string = data.serialize().split("&");
+			   	console.log(data);
+			    var obj={};
+			    for(var key in data)
+			    {
+			        console.log(data[key]);
+			        obj[data[key].split("=")[0]] = data[key].split("=")[1];
+			    }
+			    console.log(obj)                 
+                $.ajax({
+                    url: "/config/fixed",
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify(obj)
                 })
                 .done(function(data, textStatus, jqXHR) {
                     tr.fadeOut(300, function() {tr.remove();})
@@ -57,16 +68,26 @@ function refreshFixList()
                 .attr("value", fix.active)
                 .attr("min", 2);
             changeActiveField.change(function() {
+            		var data = {
+                            source_se: fix.source_se,
+                            dest_se: fix.dest_se,
+                            active: changeActiveField.val()
+                        }
+			        var string = data.serialize().split("&");
+			   		console.log(data);
+			    	var obj={};
+			    	for(var key in data)
+			    	{
+			        	console.log(data[key]);
+			        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
+			    	}
+			    	console.log(obj)           		
                     $.ajax({
                         url: "/config/fixed",
                         type: "POST",
                         dataType: "json",
                         contentType: "application/json",
-                        data: {
-                            source_se: fix.source_se,
-                            dest_se: fix.dest_se,
-                            active: changeActiveField.val()
-                        }
+                        data: JSON.stringify(obj)
                     })
                     .done(function(data, textStatus, jqXHR) {
                         tr.css("background", "#ffffff").css("transition", "background .50s ease-in-out");
