@@ -103,7 +103,7 @@ function setupFixed()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringify(jQuery('#fixed-add-frm').serializeArray())
+            data: JSON.stringify(jQuery('#fixed-add-frm').serialize())
         })
         .done(function(data, textStatus, jqXHR) {
             refreshFixList();
