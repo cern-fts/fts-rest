@@ -86,7 +86,7 @@ function setupAuthz()
 {
     // Load list
     refreshAuthzList();
-
+   
     // Attach to the form
     $("#authz-add-frm").submit(function(event) {
         var dn_value = $('[name=dn]').val()
@@ -96,6 +96,7 @@ function setupAuthz()
             type: "POST",
             dataType: "json",
             contentType: "application/json",
+            data: {dn: dn_value, operation: op_value}
         })
         .done(function(data, textStatus, jqXHR) {
             refreshAuthzList();
