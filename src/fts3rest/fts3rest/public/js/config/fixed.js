@@ -34,11 +34,11 @@ function refreshFixList()
 
             deleteBtn.click(function() {
                 tr.css("background", "#d9534f");
-                var data =JSON.parse('{
+                var data =JSON.parse({
                         source_se: fix.source_se,
                         dest_se: fix.dest_se,
                         active: 0
-                    }')
+                    })
 			   	console.log(data);
 			    var obj={};
 			    for(var key in data)
@@ -69,11 +69,11 @@ function refreshFixList()
             changeActiveField.change(function() {
             		active: changeActiveField.val()
                         }
-			        var data = JSON.parse('{
+			        var data = JSON.parse({
                             source_se: fix.source_se,
                             dest_se: fix.dest_se,
                             active: changeActiveField.val()
-                        }')
+                        })
 			   		console.log(data);
 			    	var obj={};
 			    	for(var key in data)
