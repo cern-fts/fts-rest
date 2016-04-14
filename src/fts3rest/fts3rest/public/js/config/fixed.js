@@ -41,7 +41,7 @@ function refreshFixList()
                         active: 0
                     };
                 
-			    console.log(data)                 
+			    console.log(data);            
                 $.ajax({
                     url: "/config/fixed",
                     type: "POST",
