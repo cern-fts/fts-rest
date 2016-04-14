@@ -61,7 +61,7 @@ function refreshFixList()
             var changeActiveField = $("<input type='number' class='form-control'></input>")
                 .attr("value", fix.active)
                 .attr("min", 2);
-            changeActiveField.change(function() 
+            changeActiveField.change(function(){ 
 		var data = {
                    source_se: fix.source_se,
                    dest_se: fix.dest_se,
