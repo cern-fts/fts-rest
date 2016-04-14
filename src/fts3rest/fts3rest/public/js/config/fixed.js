@@ -41,7 +41,7 @@ function refreshFixList()
                         active: 0
                     };
                 
-			    console.log(data);            
+	        console.log(data);            
                 $.ajax({
                     url: "/config/fixed",
                     type: "POST",
@@ -62,14 +62,14 @@ function refreshFixList()
                 .attr("value", fix.active)
                 .attr("min", 2);
             changeActiveField.change(function() 
-			        var data = {
-                            source_se: fix.source_se,
-                            dest_se: fix.dest_se,
-                            active: changeActiveField.val()
-                        };
-			   		console.log(data);
+		var data = {
+                   source_se: fix.source_se,
+                   dest_se: fix.dest_se,
+                   active: changeActiveField.val()
+                };
+		console.log(data);
 			    	  		
-                    $.ajax({
+                $.ajax({
                         url: "/config/fixed",
                         type: "POST",
                         dataType: "json",
@@ -115,7 +115,7 @@ function setupFixed()
         	console.log(data[key]);
         	obj[data[key].split("=")[0]] = data[key].split("=")[1];
     	}
-    	console.log(obj)
+    	console.log(obj);
         $.ajax({
             url: "/config/fixed",
             type: "POST",
