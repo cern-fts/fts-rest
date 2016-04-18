@@ -20,12 +20,20 @@ import time
 import dateutil.parser
 import logging
 import urllib
+from M2Crypto.X509 import X509Error
 from base64 import b64decode
 from M2Crypto import X509, EVP
 from m2ext import SSL
 
 from fts3rest.lib.middleware.fts3auth.credentials import InvalidCredentials, build_vo_from_dn, generate_delegation_id, vo_from_fqan
 from fts3rest.lib.helpers.voms import VomsClient
+
+CAPATH = "/etc/grid-security/certificates"
+
+
+def set_capath(new_capath):
+    global CAPATH
+    CAPATH = new_capath
 
 
 def do_authentication(credentials, env):
@@ -64,8 +72,11 @@ def do_authentication(credentials, env):
         log.info("Authorization has expired by " + str(td) + " seconds")
         raise InvalidCredentials("Authorization has expired by " + str(td) + " seconds")
     if proxy:
-        x509 = X509.load_cert_string(proxy, X509.FORMAT_DER)
-        fileCertString = X509.load_cert_string(cert, X509.FORMAT_DER)
+        try:
+            x509 = X509.load_cert_string(proxy, X509.FORMAT_DER)
+            fileCertString = X509.load_cert_string(cert, X509.FORMAT_DER)
+        except X509Error, e:
+            raise InvalidCredentials("Invalid X509 proxy: %s", str(e))
         #print the cert DN
         certDN =  '/' + '/'.join(fileCertString.get_subject().as_text().split(', '))
         proxyDN = '/' + '/'.join(x509.get_subject().as_text().split(', '))
@@ -74,7 +85,10 @@ def do_authentication(credentials, env):
         chain_pem += x509.as_pem()
         chain = X509.load_cert_string(chain_pem)
     else:
-        x509 = X509.load_cert_string(cert, X509.FORMAT_DER)
+        try:
+            x509 = X509.load_cert_string(cert, X509.FORMAT_DER)
+        except X509Error, e:
+            raise InvalidCredentials("Invalid X509 certificate: %s", str(e))
         certDN = '/' + '/'.join(x509.get_subject().as_text().split(', '))
     pubkey = x509.get_pubkey().get_rsa()
     verify = EVP.PKey()
@@ -91,7 +105,8 @@ def do_authentication(credentials, env):
         raise InvalidCredentials()
 
     ctx = SSL.Context()
-    ctx.load_verify_locations(capath="/etc/grid-security/certificates")
+    ctx.load_verify_locations(capath=CAPATH)
+    print CAPATH
     if proxy:
         log.info("Trying to verify the proxy")
         if not ctx.validate_certificate(chain):
