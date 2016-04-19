@@ -10,8 +10,14 @@ BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
 License:        ASL 2.0
-URL:            https://svnweb.cern.ch/trac/fts3
-Source0:        https://grid-deployment.web.cern.ch/grid-deployment/dms/fts3/tar/%{name}-%{version}.tar.gz
+URL:            http://fts3-service.web.cern.ch/
+# git clone https://gitlab.cern.ch/fts/fts-rest.git --depth 1 -b master fts-rest-3.4.0
+# cd fts-rest-3.4.0
+# git checkout v3.4.0
+# git submodule init && git submodule update
+# cd ..
+# tar vczf fts-rest-3.4.0.tar.gz --exclude-vcs fts-rest-3.4.0
+Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  gfal2-python
 BuildRequires:  gfal2-plugin-mock
@@ -271,13 +277,28 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %doc LICENSE
 
 %changelog
-* Fri Aug 15 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.2.27-1
-- Package separately oauth2 and cloud storage support
+* Tue Apr 19 2016 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.4.0-1
+- Update for new upstream release
 
-* Mon Jun 30 2014 Michal Simon <michal.simon@cern.ch> - 3.2.6-1
+* Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 3.3.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.32-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
+* Fri Mar 13 2015 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.2.32-2
+- Missing dependencies
+
+* Fri Mar 13 2015 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.2.32-1
+- Update for new upstream release
+
+* Fri Aug 15 2014 Michal Simon <michal.simon@cern.ch> - 3.2.26-2
+- Update for new upstream release
+
+* Mon Jun 30 2014 Michal Simon <michal.simon@cern.ch> - 3.2.26-1
 - First EPEL release
 
-* Tue May 13 2014 Michal Simon <michal.simon@cern.ch> - 3.2.5-1
+* Tue May 13 2014 Michal Simon <michal.simon@cern.ch> - 3.2.25-1
 - Marging fts-rest and python-fts
 
 * Mon Mar 10 2014 Alejandro Álvarez <aalvarez@cern.ch> - 3.2.0-1
