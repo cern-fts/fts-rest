@@ -239,6 +239,9 @@ def _apply_banning(files):
         if timeout is not None:
             f['wait_timestamp'] = now
             f['wait_timeout'] = timeout
+        else:
+            f['wait_timestamp'] = None
+            f['wait_timeout'] = None
 
 
 def _seconds_from_value(value):
