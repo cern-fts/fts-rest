@@ -15,7 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, ForeignKeyConstraint
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text, ForeignKeyConstraint
 
 from base import Base, Flag
 
@@ -26,12 +26,14 @@ class OptimizerEvolution(Base):
     datetime   = Column(DateTime, primary_key=True)
     source_se  = Column(String(150), primary_key=True)
     dest_se    = Column(String(150), primary_key=True)
-    nostreams  = Column(Integer)
-    timeout    = Column(Integer)
+    throughput_limit = Column(Float)
     active     = Column(Integer)
     throughput = Column(Float)
-    branch     = Column(Integer, name='buffer')
-    success    = Column(Float, name='filesize')
+    success    = Column(Float)
+    rationale  = Column(Text)
+    diff       = Column(Integer)
+    actual_active = Column(Integer)
+    queue_size    = Column(Integer)
 
 
 class OptimizerActive(Base):
@@ -40,10 +42,11 @@ class OptimizerActive(Base):
     source_se = Column(String(150), primary_key=True)
     dest_se   = Column(String(150), primary_key=True)
     active    = Column(Integer, default=2)
-    message   = Column(String(512))
     datetime  = Column(DateTime, default=None)
     ema       = Column(Float, default=0)
     fixed     = Column(Flag(negative='off', positive='on'), default='off')
+    min_active = Column(Integer, default=None)
+    max_active = Column(Integer, default=None)
 
 
 class OptimizerStreams(Base):
