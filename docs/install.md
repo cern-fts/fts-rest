@@ -7,7 +7,13 @@ yum install fts-rest
 service httpd restart
 ```
 
-If you are going to connect to an Oracle database, you will need to install cx_oracle as well.
+If you are going to connect to a MySQL database, you will need to install MySQL-python
+
+```
+yum install MySQL-python
+```
+
+For Oracle, you will need to install cx_oracle:
 
 ```
 yum install cx_oracle
