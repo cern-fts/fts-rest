@@ -22,6 +22,10 @@ var template_server_status = null;
 function setServerDrain(hostname, drain)
 {
     $.ajax({
+    	headers: {          
+                 Accept : "application/json",         
+                "Content-Type": "application/json"   
+  				},
         url: "/config/drain",
         type: "POST",
         dataType: "json",

@@ -540,6 +540,7 @@ class JobsController(BaseController):
             try:
                 Session.execute(Job.__table__.insert(), [populated.job])
             except IntegrityError:
+                log.debug("IntegrityError catched")
                 raise HTTPConfict('The sid provided by the user is duplicated')
             if len(populated.files):
                 Session.execute(File.__table__.insert(), populated.files)
@@ -562,10 +563,12 @@ class JobsController(BaseController):
                             Session.add(optimizer_active)
                     except IntegrityError:
                         # Someone else inserted the same record after we did the check, so just skip
+                        log.debug("Second IntegrityError")
                         pass
                         
             Session.commit()      
         except:
+            log.debug("IntegrityError not catch")
             Session.rollback()
             raise
 
