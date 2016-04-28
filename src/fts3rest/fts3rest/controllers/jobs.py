@@ -561,6 +561,8 @@ class JobsController(BaseController):
                         # Someone else inserted the same record after we did the check, so just skip
                         pass
             Session.commit()
+        except IntegrityError:
+            raise HTTPConfict('The sid provided by the user is duplicated')
         except:
             Session.rollback()
             raise
@@ -573,9 +575,9 @@ class JobsController(BaseController):
             )
 
         return {'job_id': populated.job_id}
-
     @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job doesn\'t exist')
+    @doc.response(409, 'The request could not be completed due to a conflict with the current state of the resource')
     @doc.return_type('File final states (array if multiple files were given)')
     @jsonify
     def cancel_all_by_vo(self, vo_name):
