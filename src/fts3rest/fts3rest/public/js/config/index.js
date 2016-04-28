@@ -57,7 +57,7 @@ function refreshOverview()
      		headers: {          
                  Accept : "application/json",         
                 "Content-Type": "application/json"   
-  				} 
+  				},
         	url: "/config?",
         	contentType: "application/json",
         	success: function (data) {
