@@ -537,7 +537,10 @@ class JobsController(BaseController):
 
         # Insert the job
         try:
-            Session.execute(Job.__table__.insert(), [populated.job])
+            try:
+                Session.execute(Job.__table__.insert(), [populated.job])
+            except IntegrityError:
+                raise HTTPConfict('The sid provided by the user is duplicated')
             if len(populated.files):
                 Session.execute(File.__table__.insert(), populated.files)
             if len(populated.datamanagement):
@@ -560,9 +563,8 @@ class JobsController(BaseController):
                     except IntegrityError:
                         # Someone else inserted the same record after we did the check, so just skip
                         pass
-            Session.commit()
-        except IntegrityError:
-            raise HTTPConfict('The sid provided by the user is duplicated')
+                        
+            Session.commit()      
         except:
             Session.rollback()
             raise
