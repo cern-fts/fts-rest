@@ -54,9 +54,13 @@ function refreshOverview()
     var tbody = $("#server-statuses");
 
     $.ajax({
-        url: "/config?",
-        contentType: "application/json",
-        success: function (data) {
+     		headers: {          
+                 Accept : "application/json",         
+                "Content-Type": "application/json"   
+  				} 
+        	url: "/config?",
+        	contentType: "application/json",
+        	success: function (data) {
             // Decorate each entry with its state
             $.each(data, function(i, server) {
                 if (server.drain) {
