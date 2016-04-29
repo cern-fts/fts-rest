@@ -19,6 +19,9 @@ from datetime import datetime, timedelta
 from pylons import request
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import noload
+from httplib import HTTP
+from requests.exceptions import HTTPError
+import httplib
 
 try:
     import simplejson as json
@@ -53,7 +56,7 @@ def _multistatus(responses, start_response, expecting_multistatus=False):
         elif single['http_status'] not in ('200 Ok', '304 Not Modified'):
             start_response(single['http_status'], [('Content-Type', 'application/json')])
         return single
-
+    
     for response in responses:
         if isinstance(response, dict) and not response.get('http_status', '').startswith('2'):
             start_response("207 Multi-Status", [('Content-Type', 'application/json')])
@@ -76,7 +79,7 @@ class JobsController(BaseController):
                           env=env):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         return job
-
+    
     @doc.query_arg('user_dn', 'Filter by user DN')
     @doc.query_arg('vo_name', 'Filter by VO')
     @doc.query_arg('dlg_id', 'Filter by delegation ID')
@@ -540,8 +543,7 @@ class JobsController(BaseController):
             try:
                 Session.execute(Job.__table__.insert(), [populated.job])
             except IntegrityError:
-                log.debug("IntegrityError catched")
-                raise HTTPConfict('The sid provided by the user is duplicated')
+                raise httplib.CONFLICT('The sid provided by the user is duplicated')
             if len(populated.files):
                 Session.execute(File.__table__.insert(), populated.files)
             if len(populated.datamanagement):
@@ -563,12 +565,10 @@ class JobsController(BaseController):
                             Session.add(optimizer_active)
                     except IntegrityError:
                         # Someone else inserted the same record after we did the check, so just skip
-                        log.debug("Second IntegrityError")
                         pass
                         
             Session.commit()      
         except:
-            log.debug("IntegrityError not catch")
             Session.rollback()
             raise
 
