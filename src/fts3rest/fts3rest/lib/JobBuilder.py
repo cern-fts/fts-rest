@@ -588,6 +588,7 @@ class JobBuilder(object):
                 log.debug("Deterministic")
                 sid = self.params.get('sid', None)
                 if sid is not None:
+                    log.info("sid: "+sid)
                     vo_id = uuid.uuid5(BASE_ID, self.user.vos[0])
                     self.job_id = str(uuid.uuid5(vo_id, str(sid)))
                 else:
