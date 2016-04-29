@@ -63,12 +63,15 @@ function refreshOverview()
         	success: function (data) {
             // Decorate each entry with its state
             $.each(data, function(i, server) {
+            	var beat = server.beat;
+            	beat = beat.concat('Z');
+            	var ms = 2 * 60 * 1000;
                 if (server.drain) {
                     server.status_klass = 'btn-warning';
                     server.status_lbl = 'Draining';
                     server.is_draining = true;
                 }
-                else if (new Date(server.beat+'Z') < (new Date().getTime() - (2 * 60 * 1000))) {
+                else if (new Date(beat) < (new Date().getTime() - ms)) {
                     server.status_klass = 'btn-danger';
                     server.status_lbl = 'Offline';
                     server.is_draining = false;
