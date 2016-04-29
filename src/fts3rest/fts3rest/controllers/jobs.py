@@ -543,7 +543,7 @@ class JobsController(BaseController):
             try:
                 Session.execute(Job.__table__.insert(), [populated.job])
             except IntegrityError:
-                raise httplib.CONFLICT('The sid provided by the user is duplicated')
+                raise HTTPConflict('The sid provided by the user is duplicated')
             if len(populated.files):
                 Session.execute(File.__table__.insert(), populated.files)
             if len(populated.datamanagement):

@@ -30,6 +30,12 @@ class HTTPMethodFailure(HTTPClientError):
     code = 424
     title = 'Method Failure'
     explanation = ('Method failure')
+    
+class HTTPConflict(HTTPClientError):
+    code = 409
+    title = 'Conflict'
+    explanation = ('The request could not be completed due to a conflict with the current state of the target resource.')
 
 status_map[419] = HTTPAuthenticationTimeout
 status_map[424] = HTTPMethodFailure
+status_map[409] = HTTPConflict
