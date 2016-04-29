@@ -22,10 +22,6 @@ var template_server_status = null;
 function setServerDrain(hostname, drain)
 {
     $.ajax({
-    	headers: {          
-                 Accept : "application/json",         
-                "Content-Type": "application/json"   
-  				},
         url: "/config/drain",
         type: "POST",
         dataType: "json",
@@ -72,7 +68,7 @@ function refreshOverview()
                     server.status_lbl = 'Draining';
                     server.is_draining = true;
                 }
-                else if (new Date(server.beat) < (new Date().getTime() - (2 * 60 * 1000))) {
+                else if (new Date(server.beat+'Z') < (new Date().getTime() - (2 * 60 * 1000))) {
                     server.status_klass = 'btn-danger';
                     server.status_lbl = 'Offline';
                     server.is_draining = false;
