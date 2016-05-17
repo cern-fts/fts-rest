@@ -22,7 +22,7 @@ from sqlalchemy.orm import relation, backref
 from base import Base, Json
 
 
-FileActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING']
+FileActiveStates = ['SUBMITTED', 'READY', 'STARTED', 'ACTIVE', 'STAGING']
 FileTerminalStates = ['FINISHED', 'FAILED', 'CANCELED']
 
 
