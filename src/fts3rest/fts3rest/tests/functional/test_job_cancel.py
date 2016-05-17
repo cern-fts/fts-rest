@@ -347,7 +347,10 @@ class TestJobCancel(TestController):
         for state in FileActiveStates + FileTerminalStates:
             job = Session.query(Job).get(job_ids[i])
             i += 1
-            job.job_state = state
+            if state == 'STARTED':
+                job.job_state = 'STAGING'
+            else:
+                job.job_state = state
             for f in job.files:
                 f.file_state = state
             Session.merge(job)
