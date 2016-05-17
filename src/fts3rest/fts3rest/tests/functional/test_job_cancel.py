@@ -356,7 +356,10 @@ class TestJobCancel(TestController):
         i = 0
         for state in FileActiveStates + FileTerminalStates:
             job = Session.query(Job).get(job_ids[i])
-            self.assertEqual(job.job_state, state)
+            state_job = state
+            if state == 'STARTED':
+                state_job = 'STAGING'
+            self.assertEqual(job.job_state, state_job)
             for f in job.files:
                 self.assertEqual(f.file_state, state)
             i += 1
