@@ -504,6 +504,7 @@ class JobsController(BaseController):
     @doc.input('Submission description', 'SubmitSchema')
     @doc.response(400, 'The submission request could not be understood')
     @doc.response(403, 'The user doesn\'t have enough permissions to submit')
+    @doc.response(409, 'The request could not be completed due to a conflict with the current state of the resource')
     @doc.response(419, 'The credentials need to be re-delegated')
     @doc.return_type('{"job_id": <job id>}')
     @authorize(TRANSFER)
