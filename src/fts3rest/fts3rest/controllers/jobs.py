@@ -501,6 +501,7 @@ class JobsController(BaseController):
     @doc.input('Submission description', 'SubmitSchema')
     @doc.response(400, 'The submission request could not be understood')
     @doc.response(403, 'The user doesn\'t have enough permissions to submit')
+    @doc.response(409, 'The request could not be completed due to a conflict with the current state of the resource')
     @doc.response(419, 'The credentials need to be re-delegated')
     @doc.return_type('{"job_id": <job id>}')
     @authorize(TRANSFER)
@@ -579,7 +580,6 @@ class JobsController(BaseController):
         return {'job_id': populated.job_id}
     @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job doesn\'t exist')
-    @doc.response(409, 'The request could not be completed due to a conflict with the current state of the resource')
     @doc.return_type('File final states (array if multiple files were given)')
     @jsonify
     def cancel_all_by_vo(self, vo_name):
