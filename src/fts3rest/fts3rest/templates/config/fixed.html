@@ -15,7 +15,8 @@
 				<th style="width: 5em;"></th>
 				<th>Source</th>
 				<th>Destination</th>
-				<th style="width: 10em;">Active</th>
+				<th style="width: 10em;">Min_Active</th>
+				<th style="width: 10em;">Max_Active</th>
 			</tr>
 		</thead>
 		<tbody id="fixed-list">
@@ -37,7 +38,10 @@
 						placeholder="Destination"/>
 				</td>
 				<td>
-					<input type="number" name="active" class="form-control" value="2" min="2"/>
+					<input type="number" name="min_active" class="form-control" value="2" min="2"/>
+				</td>
+				<td>
+					<input type="number" name="max_active" class="form-control" value="60" min="60"/>
 				</td>
 			</form>
 			</tr>

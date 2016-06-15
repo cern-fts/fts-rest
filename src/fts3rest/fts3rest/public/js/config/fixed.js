@@ -72,7 +72,7 @@ function refreshFixList()
 				var data = {
                    	source_se: fix.source_se,
                   	dest_se: fix.dest_se,
-                   	min_active: changeMinActiveField.val()
+                   	min_active: changeMinActiveField.val(),
                    	max_active: changeMaxActiveField.val()
                 };
 			console.log(data);
