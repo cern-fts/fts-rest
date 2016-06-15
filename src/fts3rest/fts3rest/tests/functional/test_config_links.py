@@ -155,7 +155,8 @@ class TestConfigLinks(TestController):
         self.app.post_json("/config/fixed", params={
             'source_se': 'test.cern.ch',
             'dest_se': 'test2.cern.ch',
-            'active': 5
+            'min_active': 5,
+            'max_active': 100,
         }, status=200)
 
         audits = Session.query(ConfigAudit).all()
@@ -163,7 +164,8 @@ class TestConfigLinks(TestController):
 
         opt_active = Session.query(OptimizerActive).get(('test.cern.ch', 'test2.cern.ch'))
         self.assertIsNotNone(opt_active)
-        self.assertEqual(5, opt_active.active)
+        self.assertEqual(5, opt_active.min_active)
+        self.assertEqual(100, opt_active.max_active)
         self.assertEqual(True, opt_active.fixed)
 
     def test_unset_fixed_active(self):
@@ -174,7 +176,7 @@ class TestConfigLinks(TestController):
         self.app.post_json("/config/fixed", params={
             'source_se': 'test.cern.ch',
             'dest_se': 'test2.cern.ch',
-            'active': -1
+            'min_active': -1
         }, status=200)
 
         audits = Session.query(ConfigAudit).all()
@@ -182,7 +184,8 @@ class TestConfigLinks(TestController):
 
         opt_active = Session.query(OptimizerActive).get(('test.cern.ch', 'test2.cern.ch'))
         self.assertIsNotNone(opt_active)
-        self.assertEqual(2, opt_active.active)
+        self.assertEqual(2, opt_active.min_active)
+        self.assertEqual(60, opt_active.max_active)
         self.assertEqual(False, opt_active.fixed)
 
     def test_get_fixed_active(self):
@@ -198,10 +201,12 @@ class TestConfigLinks(TestController):
         self.assertEqual(1, len(pairs))
         self.assertEqual('test.cern.ch', pairs[0]['source_se'])
         self.assertEqual('test2.cern.ch', pairs[0]['dest_se'])
-        self.assertEqual(5, pairs[0]['active'])
+        self.assertEqual(5, pairs[0]['min_active'])
+        self.assertEqual(100, pairs[0]['max_active'])
 
         pairs = self.app.get_json("/config/fixed?source_se=test.cern.ch&dest_se=test2.cern.ch", status=200).json
         self.assertEqual(1, len(pairs))
         self.assertEqual('test.cern.ch', pairs[0]['source_se'])
         self.assertEqual('test2.cern.ch', pairs[0]['dest_se'])
-        self.assertEqual(5, pairs[0]['active'])
+        self.assertEqual(5, pairs[0]['min_active'])
+        self.assertEqual(100, pairs[0]['max_active'])

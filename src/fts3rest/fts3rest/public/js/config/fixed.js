@@ -38,7 +38,8 @@ function refreshFixList()
                 var data = {
                         source_se: fix.source_se,
                         dest_se: fix.dest_se,
-                        active: 0
+                        min_active: 0
+                        max_active: 60
                     };
                 
 	        console.log(data);            
@@ -58,16 +59,23 @@ function refreshFixList()
                 });
             });
 
-            var changeActiveField = $("<input type='number' class='form-control'></input>")
-                .attr("value", fix.active)
+            var changeMinActiveField = $("<input type='number' class='form-control'></input>")
+                .attr("value", fix.min_active)
                 .attr("min", 2);
+                
+            var changeMaxActiveField = $("<input type='number' class='form-control'></input>")
+                .attr("value", fix.max_active)
+                .attr("min", 60);
+            
+            
             changeActiveField.change(function(){ 
-		var data = {
-                   source_se: fix.source_se,
-                   dest_se: fix.dest_se,
-                   active: changeActiveField.val()
+				var data = {
+                   	source_se: fix.source_se,
+                  	dest_se: fix.dest_se,
+                   	min_active: changeMinActiveField.val()
+                   	max_active: changeMaxActiveField.val()
                 };
-		console.log(data);
+			console.log(data);
 			    	  		
                 $.ajax({
                         url: "/config/fixed",
@@ -89,7 +97,8 @@ function refreshFixList()
             tr.append($("<td></td>").append(deleteBtn))
               .append($("<td></td>").text(fix.source_se))
               .append($("<td></td>").text(fix.dest_se))
-              .append($("<td></td>").append(changeActiveField));
+              .append($("<td></td>").append(changeMinActiveField))
+              .append($("<td></td>").append(changeMaxActiveField));
             tbody.append(tr);
         });
     })

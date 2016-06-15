@@ -571,7 +571,7 @@ Set the drain status of a server
 
 ### Configure fixed limits
 #### POST /config/fixed
-Fixes the number of actives for a pair
+Fixes the range of actives for a pair
 
 ##### Responses
 

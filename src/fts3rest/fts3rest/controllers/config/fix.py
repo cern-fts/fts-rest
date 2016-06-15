@@ -37,7 +37,8 @@ from fts3rest.lib.middleware.fts3auth.constants import *
 __controller__ = 'FixConfigController'
 log = logging.getLogger(__name__)
 
-
+Min_Active = 2
+Max_Active = 60
 class FixConfigController(BaseController):
     """
     Configure fixed limits
@@ -54,14 +55,17 @@ class FixConfigController(BaseController):
         source = input_dict.get('source_se')
         destination = input_dict.get('dest_se')
         try:
-            active = int(input_dict.get('active', 0))
+            min_active = int(input_dict.get('min_active', 0))
+            max_active = int(input_dict.get('max_active', 0))
         except Exception, e:
             raise HTTPBadRequest('Active must be an integer (%s)' % str(e))
 
         if not source or not destination:
             raise HTTPBadRequest('Missing source and/or destination')
-        if active is None:
-            raise HTTPBadRequest('Missing active')
+        if min_active is None:
+            raise HTTPBadRequest('Missing min_active')
+        if max_active is None:
+            raise HTTPBadRequest('Missing max_active')
 
         opt_active = Session.query(OptimizerActive).get((source, destination))
         if not opt_active:
@@ -71,14 +75,24 @@ class FixConfigController(BaseController):
             )
 
         try:
-            if active > 0:
-                opt_active.active = active
-                opt_active.fixed = True
-                audit_configuration('fix-active', '%s => %s actives fixed to %s' % (source, destination, active))
+            if min_active > 0 and max_active > 0:
+                if max_active > min_active:
+                    opt_active.min_active = min_active
+                    opt_active.max_active = max_active
+                    opt_active.fixed = True
+                    audit_configuration('fix-active', '%s => %s actives fixed to range(%s, %s)' % (source, destination, min_active, max_active))
+                else:
+                    opt_active.min_active = Min_Active
+                    opt_active.max_active = Max_Active
+                    opt_active.fixed = False
+                    audit_configuration('fix-active', '%s => %s actives unfixed' % (source, destination))
+                    
             else:
-                opt_active.active = 2
+                opt_active.min_active = Min_Active
+                opt_active.max_active = Max_Active
                 opt_active.fixed = False
                 audit_configuration('fix-active', '%s => %s actives unfixed' % (source, destination))
+                    
             Session.merge(opt_active)
             Session.commit()
         except:
