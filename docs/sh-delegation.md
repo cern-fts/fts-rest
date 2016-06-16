@@ -113,7 +113,7 @@ Certificate:
         Validity
             Not Before: Jun 26 14:29:19 2014 GMT
             Not After : Jun 26 14:29:19 2015 GMT
-        Subject: DC=ch, DC=cern, OU=Organic Units, OU=Users, CN=aalvarez, CN=678984, CN=Alejandro Alvarez Ayllon, CN=proxy
+        Subject: DC=ch, DC=cern, OU=Organic Units, OU=Users, CN=aalvarez, CN=678984, CN=Alejandro Alvarez Ayllon, CN=proxy, CN=proxy
         Subject Public Key Info:
             Public Key Algorithm: rsaEncryption
                 Public-Key: (1024 bit)
