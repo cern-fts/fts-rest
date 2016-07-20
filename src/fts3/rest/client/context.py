@@ -145,7 +145,8 @@ class Context(object):
             raise BadEndpoint("%s (%s)" % (self.endpoint, str(e))), None, sys.exc_info()[2]
         return endpoint_info
 
-    def __init__(self, endpoint, ucert=None, ukey=None, verify=True, access_token=None, no_creds=False, capath=None, request_class=PycurlRequest):
+    def __init__(self, endpoint, ucert=None, ukey=None, verify=True, access_token=None, no_creds=False, capath=None,
+                 request_class=PycurlRequest, connectTimeout=30, timeout=30):
         self.passwd = None
 
         self._set_endpoint(endpoint)
@@ -160,9 +161,9 @@ class Context(object):
                 self._set_x509(ucert, ukey)
                 
         self._requester = request_class(
-        self.ucert, self.ukey, passwd=self.passwd, verify=verify, access_token=self.access_token, capath=capath)
-            
-            
+        self.ucert, self.ukey, passwd=self.passwd, verify=verify, access_token=self.access_token, capath=capath,
+            connectTimeout=connectTimeout, timeout=timeout)
+
         self.endpoint_info = self._validate_endpoint()
         # Log obtained information
         log.debug("Using endpoint: %s" % self.endpoint_info['url'])
