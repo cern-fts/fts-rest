@@ -132,16 +132,16 @@ curl https://fts3-devel.cern.ch:8446/jobs/1234-5678-abcde-fghi -H "Content-Type:
 #### Drain
 ```bash
 # fts-config-set --drain on
-curl https://fts3devel01.cern.ch:8446/config/drain -H "Content-Type: application/json" -X POST -d '{"hostname": "fts3devel01.cern.ch", "drain": true}'
+curl https://fts3-devel.cern.ch:8446/config/drain -H "Content-Type: application/json" -X POST -d '{"hostname": "fts3-devel.cern.ch", "drain": true}'
 # fts-config-set --drain off
-curl https://fts3devel01.cern.ch:8446/config/drain -H "Content-Type: application/json" -X POST -d '{"hostname": "fts3devel01.cern.ch", "drain": false}'
+curl https://fts3-devel.cern.ch:8446/config/drain -H "Content-Type: application/json" -X POST -d '{"hostname": "fts3-devel.cern.ch", "drain": false}'
 ```
 
 ### Global configuration
 This is a replacement for the flags `--retry`, `--optimizer-mode`, `--queue-timeout`, `--global-timeout`, `--max-per-link`, `--max-per-se`, `--sec-per-mb` and `--show-user-dn`
 
 ```bash
-curl https://fts3devel01.cern.ch:8446/config/global -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/global -H "Content-Type: application/json" -X POST -d "config"
 ```
 
 Where config is a json with the following parameters
@@ -164,7 +164,7 @@ Where config is a json with the following parameters
 This is a replacement for the flags `--bring-online`, `--delete`, `--protocol`, `--max-bandwidth`, `--max-se-source-active` and `--max-se-dest-active`
 
 ```bash
-curl https://fts3devel01.cern.ch:8446/config/se -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/se -H "Content-Type: application/json" -X POST -d "config"
 ```
 
 Where config is a json with the following parameters
@@ -201,7 +201,7 @@ Note that you don't need to configure everything necessarily. `operations`, `as_
 There are no flags for this in the CLI.
 
 ```bash
-curl https://fts3devel01.cern.ch:8446/config/links -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/links -H "Content-Type: application/json" -X POST -d "config"
 ```
 
 Where config is a json with the following parameters
@@ -219,11 +219,47 @@ Where config is a json with the following parameters
 }
 ```
 
+### VO shares
+For seeing which shares are configured:
+
+```bash
+curl https://fts3-devel.cern.ch:8446/config/shares -H "Accept: application/json"
+```
+
+For adding a new share, remember to configure first a link as shown in the previous section. Then do
+
+```bash
+curl https://fts3-devel.cern.ch:8446/config/shares -H "Content-Type: application/json" -X POST -d "config"
+```
+
+Where config is a json with the following parameters
+
+```json
+{
+    "source": "gsiftp://test.cern.ch",
+    "destination": "gsiftp://test2.cern.ch",
+    "vo": "dteam",
+    "share": 100
+}
+```
+
+Note: due to a bug in versions older than 3.5.1, the parameters must be passed as part of the query:
+
+```bash
+curl "https://fts3-devel.cern.ch:8446/config/shares?source=mock%3A%2F%2Fsource&destination=mock%3A%2F%2Fdestination&vo=dteam&share=100" -X POST
+```
+
+For removing an existing share:
+
+```bash
+curl "https://fts3-devel.cern.ch:8446/config/shares?source=mock%3A%2F%2Fsource&destination=mock%3A%2F%2Fdestination&vo=dteam -X DELETE
+```
+
 ### Activity shares
 There are no flags for this in the CLI.
 
 ```bash
-curl https://fts3devel01.cern.ch:8446/config/activity_shares -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/activity_shares -H "Content-Type: application/json" -X POST -d "config"
 ```
 
 Where config is a json with the following parameters
@@ -237,17 +273,18 @@ Where config is a json with the following parameters
     ]
 }
 ```
+
 ### S3 configuration
 
 S3 storage registration:
 
 ```bash
-curl https://fts3devel01.cern.ch:8446/config/cloud_storage -H "Content-Type: application/json" -X POST -d '{"storage_name":"S3:CS3.CERN.CH"}'
+curl https://fts3-devel.cern.ch:8446/config/cloud_storage -H "Content-Type: application/json" -X POST -d '{"storage_name":"S3:CS3.CERN.CH"}'
 ```
 Provide S3 credentials:
 
 ```bash
-curl https://fts3devel01.cern.ch:8446/config/cloud_storage/S3:CS3.CERN.CH -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/cloud_storage/S3:CS3.CERN.CH -H "Content-Type: application/json" -X POST -d "config"
 ```
 Where config is a json with the following parameters
 ```json
@@ -257,9 +294,4 @@ Where config is a json with the following parameters
     "secret_key": "SECRET_KEY"
 }
 ```
-
-
-
-
-
 
