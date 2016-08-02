@@ -571,7 +571,7 @@ Set the drain status of a server
 
 ### Configure fixed limits
 #### POST /config/fixed
-Fixes the range of actives for a pair
+Fixes the number of actives for a pair
 
 ##### Responses
 
@@ -1283,11 +1283,12 @@ Submission description (SubmitSchema)
 
 ##### Responses
 
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|419 |The credentials need to be re-delegated           |
-|403 |The user doesn't have enough permissions to submit|
-|400 |The submission request could not be understood    |
+|Code|Description                                                                                |
+|----|-------------------------------------------------------------------------------------------|
+|419 |The credentials need to be re-delegated                                                    |
+|409 |The request could not be completed due to a conflict with the current state of the resource|
+|403 |The user doesn't have enough permissions to submit                                         |
+|400 |The submission request could not be understood                                             |
 
 #### POST /jobs
 Submits a new job
@@ -1303,11 +1304,12 @@ Submission description (SubmitSchema)
 
 ##### Responses
 
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|419 |The credentials need to be re-delegated           |
-|403 |The user doesn't have enough permissions to submit|
-|400 |The submission request could not be understood    |
+|Code|Description                                                                                |
+|----|-------------------------------------------------------------------------------------------|
+|419 |The credentials need to be re-delegated                                                    |
+|409 |The request could not be completed due to a conflict with the current state of the resource|
+|403 |The user doesn't have enough permissions to submit                                         |
+|400 |The submission request could not be understood                                             |
 
 #### DELETE /jobs/all
 Cancel all files
@@ -1372,10 +1374,11 @@ File final states (array if multiple files were given)
 
 ##### Responses
 
-|Code|Description                            |
-|----|---------------------------------------|
-|404 |The job doesn't exist                  |
-|403 |The user doesn't have enough privileges|
+|Code|Description                                                                                |
+|----|-------------------------------------------------------------------------------------------|
+|409 |The request could not be completed due to a conflict with the current state of the resource|
+|404 |The job doesn't exist                                                                      |
+|403 |The user doesn't have enough privileges                                                    |
 
 ### OAuth2.0 controller
 #### GET /oauth2/token
@@ -1611,17 +1614,19 @@ Models
 
 ### OptimizerEvolution
 
-|Field     |Type    |
-|----------|--------|
-|dest_se   |string  |
-|branch    |integer |
-|success   |float   |
-|datetime  |dateTime|
-|throughput|float   |
-|nostreams |integer |
-|timeout   |integer |
-|active    |integer |
-|source_se |string  |
+|Field           |Type    |
+|----------------|--------|
+|dest_se         |string  |
+|success         |float   |
+|actual_active   |integer |
+|throughput_limit|float   |
+|datetime        |dateTime|
+|queue_size      |integer |
+|throughput      |float   |
+|rationale       |string  |
+|active          |integer |
+|diff            |integer |
+|source_se       |string  |
 
 ### FileRetryLog
 
@@ -1680,6 +1685,7 @@ Models
 |------------------------|--------|
 |cred_id                 |string  |
 |user_dn                 |string  |
+|voms_cred               |string  |
 |retry                   |integer |
 |job_id                  |string  |
 |cancel_job              |boolean |
@@ -1715,6 +1721,7 @@ Models
 |------------------------|--------|
 |cred_id                 |string  |
 |user_dn                 |string  |
+|voms_cred               |string  |
 |retry                   |integer |
 |job_id                  |string  |
 |cancel_job              |boolean |

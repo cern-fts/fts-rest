@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-delete-submit
 % fts-devel@cern.ch
-% October 05, 2015
+% August 02, 2016
 # NAME
 
 fts-rest-delete-submit
