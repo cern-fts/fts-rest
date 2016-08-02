@@ -336,13 +336,13 @@ class TestJobCancel(TestController):
         Session.merge(delegated)
         Session.commit()
 
-    def _prepare_and_test_created_jobs_to_cancel(self):
+    def _prepare_and_test_created_jobs_to_cancel(self, files_per_job=8):
         """
         Helper function to prepare and test created jobs for cancel tests
         """
         job_ids = list()
         for i in range(len(FileActiveStates) + len(FileTerminalStates)):
-            job_ids.append(self._submit(8))
+            job_ids.append(self._submit(files_per_job))
         i = 0
         for state in FileActiveStates + FileTerminalStates:
             job = Session.query(Job).get(job_ids[i])
@@ -398,19 +398,24 @@ class TestJobCancel(TestController):
         else:
             vo_name = "testvo"
 
-        job_ids = self._prepare_and_test_created_jobs_to_cancel()
+        job_ids = self._prepare_and_test_created_jobs_to_cancel(files_per_job=8)
         self.app.delete(url="/jobs/vo/%s" % vo_name, status=403)
         self._become_root()
-        self.app.delete(url="/jobs/vo/%s" % vo_name, status=200)
-        self._test_canceled_jobs(job_ids)         
+        response = self.app.delete(url="/jobs/vo/%s" % vo_name, status=200).json
+        self._test_canceled_jobs(job_ids)
+        self.assertEqual(response['affected_files'], len(FileActiveStates) * 8)
+        self.assertEqual(response['affected_dm'], 0)
+        self.assertEqual(response['affected_jobs'], len(FileActiveStates))
 
     def test_cancel_all(self):
         """
         Cancel all files.
         """
-        job_ids = self._prepare_and_test_created_jobs_to_cancel() 
+        job_ids = self._prepare_and_test_created_jobs_to_cancel(files_per_job=8)
         self.app.delete(url="/jobs/all", status=403) 
         self._become_root()
-        self.app.delete(url="/jobs/all", status=200)
+        response = self.app.delete(url="/jobs/all", status=200).json
         self._test_canceled_jobs(job_ids)
-
+        self.assertEqual(response['affected_files'], len(FileActiveStates) * 8)
+        self.assertEqual(response['affected_dm'], 0)
+        self.assertEqual(response['affected_jobs'], len(FileActiveStates))
