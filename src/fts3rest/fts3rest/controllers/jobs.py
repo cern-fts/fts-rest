@@ -21,6 +21,8 @@ from requests.exceptions import HTTPError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import noload
 
+from fts3rest.lib.helpers.msgbus import submit_state_change
+
 try:
     import simplejson as json
 except ImportError:
@@ -581,6 +583,15 @@ class JobsController(BaseController):
         except:
             Session.rollback()
             raise
+
+        # Send messages
+        # Need to re-query so we get the file ids
+        job = Session.query(Job).get(populated.job_id)
+        for transfer in job.files:
+            try:
+                submit_state_change(job, transfer)
+            except Exception, e:
+                log.warning("Failed to write state message to disk: %s" % e.message)
 
         if len(populated.files):
             log.info("Job %s submitted with %d transfers" % (populated.job_id, len(populated.files)))

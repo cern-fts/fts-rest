@@ -8,9 +8,10 @@ DbConnectString=
 
 Alias=Testing
 Infosys=lcg-bdii.cern.ch:2170
-AuthorizedVO=testers.eu-emi.eu;*
+AuthorizedVO=dteam;*
 CleanRecordsHost=false
 
+MessagingDirectory=/tmp/rest-msgs
 
 [roles]
 Public=vo:transfer;all:datamanagement

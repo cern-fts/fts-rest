@@ -26,6 +26,7 @@ setup-app`) and provides the base testing objects.
 """
 import os
 import pylons.test
+import shutil
 import time
 import types
 
@@ -34,7 +35,7 @@ from unittest import TestCase
 from M2Crypto import ASN1, X509, RSA, EVP
 from M2Crypto.ASN1 import UTC
 from paste.script.appinstall import SetupCommand
-from pylons import url
+from pylons import url, config
 from routes.util import URLGenerator
 from webtest import TestApp, TestRequest
 
@@ -264,6 +265,13 @@ class TestController(TestCase):
         Session.query(OptimizerActive).delete()
         Session.query(ServerConfig).delete()
         Session.commit()
+
+        # Delete messages
+        if 'fts3.MessagingDirectory' in config:
+            try:
+                shutil.rmtree(config['fts3.MessagingDirectory'])
+            except:
+                pass
 
     # Handy asserts not available in the EPEL-6 version
     def assertGreater(self, a, b):

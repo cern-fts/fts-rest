@@ -45,10 +45,12 @@ BuildRequires:  python-requests
 BuildRequires:  python-slimit
 %endif
 BuildRequires:  pandoc
+BuildRequires:  python-dirq
 
 Requires:       gridsite%{?_isa} >= 1.7
 Requires:       httpd%{?_isa}
 Requires:       mod_wsgi
+Requires:       python-dirq
 Requires:       python-fts = %{version}-%{release}
 Requires:       python-paste-deploy
 Requires:       python-pylons
