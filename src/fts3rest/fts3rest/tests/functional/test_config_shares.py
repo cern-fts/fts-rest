@@ -31,7 +31,7 @@ class TestConfigShares(TestController):
         """
         Set up shares config
         """
-        self.app.post(url="/config/shares",
+        self.app.post_json(url="/config/shares",
             params=dict(
                 source='gsiftp://source',
                 destination='gsiftp://nowhere',
@@ -45,7 +45,7 @@ class TestConfigShares(TestController):
         """
         Test wrong value for share in params
         """
-        self.app.post(url="/config/shares",
+        self.app.post_json(url="/config/shares",
             params=dict(
                 source='gsiftp://source',
                 destination='gsiftp://nowhere',
@@ -65,14 +65,14 @@ class TestConfigShares(TestController):
             k = config
             k[i] = ''
             print k
-            self.app.post(url="/config/shares", params=k, status=400)
+            self.app.post_json(url="/config/shares", params=k, status=400)
             return config
 
     def test_wrong_config_shares2(self):
         """
         Test wrong source or destination
         """
-        self.app.post(url="/config/shares",
+        self.app.post_json(url="/config/shares",
             params=dict(
                 source='dfgsdfsg',
                 destination='gsiftp://nowhere',
@@ -82,7 +82,7 @@ class TestConfigShares(TestController):
             status=400
         )
 
-        self.app.post(url="/config/shares",
+        self.app.post_json(url="/config/shares",
             params=dict(
                 source='gsiftp://source',
                 destination='klhjkhjk',

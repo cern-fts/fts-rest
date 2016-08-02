@@ -28,7 +28,7 @@ def average(iterable, start=None, transform=None):
 
 def get_input_as_dict(request, from_query=False):
     """
-    Return a valid dictionary from the request imput
+    Return a valid dictionary from the request input
     """
     if from_query:
         input_dict = request.params

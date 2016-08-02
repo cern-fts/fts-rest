@@ -51,7 +51,7 @@ class VoShareConfigController(BaseController):
         """
         Add or modify a share
         """
-        input_dict = get_input_as_dict(request, from_query=True)
+        input_dict = get_input_as_dict(request)
         source = input_dict.get('source')
         destination = input_dict.get('destination')
         vo = input_dict.get('vo')
