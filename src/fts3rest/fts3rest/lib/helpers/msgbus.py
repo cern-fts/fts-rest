@@ -29,7 +29,7 @@ def submit_state_change(job, transfer):
     Writes a state change message to the dirq
     """
     msg_dir = pylons.config.get('fts3.MessagingDirectory', '/var/lib/fts3')
-    msg_dir = os.path.join(msg_dir, 'status')
+    msg_dir = os.path.join(msg_dir, 'monitoring')
 
     msg = dict(
         endpnt=socket.getfqdn(),
