@@ -125,6 +125,11 @@ database, using sqlalchemy ORM.
 
 %post
 /sbin/service httpd condrestart >/dev/null 2>&1 || :
+if [ "$1" -eq "2" ]; then # Upgrade
+    # 3.5.1 needs owner to be fts3, since fts3rest runs as fts3
+    chown fts3.fts3 /var/log/fts3rest
+    chown fts3.fts3 /var/log/fts3rest/fts3rest.log || true
+fi
 
 %postun
 if [ "$1" -eq "0" ] ; then
@@ -239,8 +244,8 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.ini
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/fts3rest.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/fts-rest
-%dir %attr(0755,apache,apache) %{_var}/cache/fts3rest
-%dir %attr(0755,apache,apache) %{_var}/log/fts3rest
+%dir %attr(0755,fts3,fts3) %{_var}/cache/fts3rest
+%dir %attr(0755,fts3,fts3) %{_var}/log/fts3rest
 %doc docs/README.md
 %doc docs/install.md
 %doc docs/api.md
