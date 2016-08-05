@@ -50,7 +50,8 @@ DEFAULT_PARAMS = {
     'retry': 0,
     'retry_delay': 0,
     'priority': 3,
-    'max_time_in_queue': 0
+    'max_time_in_queue': 0,
+    's3alternate': False,
 }
 
 def get_base_id():
@@ -307,6 +308,8 @@ class JobBuilder(object):
             param_list.append('ipv4')
         elif self.params.get('ipv6', False):
             param_list.append('ipv6')
+        if self.params.get('s3alternate', False):
+            param_list.append('s3alternate')
 
         if len(param_list) == 0:
             return None
