@@ -123,7 +123,8 @@ job.
     "job_metadata": "My Custom Tag",
     "credential": "S3:whatnot.com",
     "id_generator": "standard",
-    "sid": "abcd"
+    "sid": "abcd",
+    "s3alternate": true
   }
 }
 ```
@@ -172,3 +173,4 @@ or "deterministic" (UUID 5).
 
 `01874efb-4735-4595-bc9c-591aef8240c9` is the global root UUID for FTS3. It remains constant
 across FTS3 installations.
+* **s3alternate** (Introduced in 3.5.1). Sign S3 urls where the bucket is on the path.
