@@ -126,8 +126,10 @@ function refreshCloudStorage()
     var parent = $("#storage-list");
 
     $.ajax({
+        headers: {
+            Accept : "application/json",
+        },
         url: "/config/cloud_storage?",
-        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         parent.empty();

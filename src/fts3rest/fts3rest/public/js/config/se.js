@@ -106,6 +106,8 @@ function getOperations(form, klass)
  */
 function handleSeSave(form)
 {
+    form.css("background", "#3c763d").css("transition", "none");
+
     var setup = {};
     var se = form.find("input[name='se']").val();
 
@@ -124,6 +126,9 @@ function handleSeSave(form)
         dataType: "json",
         contentType: "application/json",
         data: JSON.stringify(msg)
+    })
+    .always(function() {
+        form.css("background", "#ffffff").css("transition", "background .50s ease-in-out");
     });
 }
 
@@ -161,8 +166,10 @@ function refreshSeConfig()
     var parent = $("#se-list");
 
     $.ajax({
+        headers: {
+            Accept : "application/json",
+        },
         url: "/config/se?",
-        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         parent.empty();

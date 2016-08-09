@@ -66,6 +66,9 @@ function refreshDebugList()
 	var tbody = $("#debug-list");
 
     $.ajax({
+		headers: {
+            Accept : "application/json",
+        },
         url: "/config/debug?"
     })
     .done(function (data) {

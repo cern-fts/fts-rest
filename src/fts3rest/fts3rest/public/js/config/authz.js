@@ -23,8 +23,10 @@ function refreshAuthzList()
     var tbody = $("#authz-list");
 
     $.ajax({
+        headers: {
+            Accept : "application/json",
+        },
         url: "/config/authorize?",
-        contentType: "application/json"
     })
     .done(function (data) {
         tbody.empty();

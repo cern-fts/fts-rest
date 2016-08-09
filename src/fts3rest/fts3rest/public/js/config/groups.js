@@ -23,8 +23,10 @@ function refreshGroupList()
 	var tbody = $("#group-list");
 
     $.ajax({
+        headers: {
+            Accept : "application/json",
+        },
         url: "/config/groups?",
-        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         tbody.empty();
@@ -74,20 +76,16 @@ function setupGroups()
 
     // Attach to forms
     $("#group-add-frm").submit(function(event) {
-    	var data = $(this).serialize().split("&");
-   		console.log(data);
-    	var obj={};
-    	for(var key in data)
-    	{
-        	console.log(data[key]);
-        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
-    	}
+        var payload = {
+            groupname: $("#group-add-field-groupname").val(),
+            member: $("#group-add-field-member").val()
+        };
         $.ajax({
             url: "/config/groups",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringify(obj)
+            data: JSON.stringify(payload)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshGroupList();

@@ -92,8 +92,10 @@ function refreshActivityShares()
     var parent = $("#activity-shares-list");
 
     $.ajax({
+        headers: {
+            Accept : "application/json",
+        },
         url: "/config/activity_shares?",
-        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         parent.empty();

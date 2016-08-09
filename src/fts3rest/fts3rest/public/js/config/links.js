@@ -24,7 +24,9 @@ function refreshLinks()
 
     $.ajax({
         url: "/config/links?",
-        contentType: "application/json"
+        headers: {
+            Accept : "application/json",
+        },
     })
     .done(function(data, textStatus, jqXHR) {
         tbody.empty();
@@ -133,20 +135,21 @@ function setupLinks()
 
     // Attach to forms
     $("#share-add-frm").submit(function(event) {
-    	var data = $(this).serialize().split("&");
-   		console.log(data);
-    	var obj={};
-    	for(var key in data)
-    	{
-        	console.log(data[key]);
-        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
-    	}
+        var addFrm = $("#share-add");
+        var payload = {
+            source: addFrm.find("[name=source]").val(),
+            destination: addFrm.find("[name=destination]").val(),
+            vo: addFrm.find("[name=vo]").val(),
+            share: addFrm.find("[name=share]").val(),
+        };
+        console.log(payload);
+
         $.ajax({
             url: "/config/shares",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringify(obj)
+            data: JSON.stringify(payload)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshShares();
@@ -166,24 +169,29 @@ function setupLinks()
         event.preventDefault();
     });
 
-    $("#link-config-add-frm").submit(function(event) {
-    	var data = $(this).serialize().split("&");
-   		console.log(data);
-    	var obj={};
-    	for(var key in data)
-    	{
-        	console.log(data[key]);
-        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
-    	}
+    $("#link-config-add").submit(function(event) {
+        var addFrm = $("#link-config-add");
+        var payload = {
+            symbolicname: addFrm.find("[name=symbolicname]").val(),
+            source: addFrm.find("[name=source]").val(),
+            destination: addFrm.find("[name=destination]").val(),
+            state: addFrm.find("[name=state]").val(),
+            nostreams: addFrm.find("[name=nostreams]").val(),
+            tcp_buffer_size: addFrm.find("[name=tcp_buffer_size]").val(),
+            urlcopy_tx_to: addFrm.find("[name=urlcopy_tx_to]").val(),
+        };
+        console.log(payload);
+
         $.ajax({
             url: "/config/links",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringify(obj)
+            data: JSON.stringify(payload)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshLinks();
+            refreshShares();
             $("#link-config-add-frm").trigger("reset");
         })
         .fail(function(jqXHR) {

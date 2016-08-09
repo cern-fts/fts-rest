@@ -37,10 +37,10 @@ from datetime import datetime, timedelta
                             {{status_lbl}} <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" role="menu">
-                            {{#if is_draining}}
-                                <li><a href="#" onclick="setServerDrain('{{hostname}}', false)">Undrain</a></li>
+                            {{#if drain}}
+                                <li><a onclick="setServerDrain('{{hostname}}', false)">Undrain</a></li>
                             {{else}}
-                                <li><a href="#" onclick="setServerDrain('{{hostname}}', true)">Drain</a></li>
+                                <li><a onclick="setServerDrain('{{hostname}}', true)">Drain</a></li>
                             {{/if}}
                         </ul>
                     </div>

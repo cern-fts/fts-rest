@@ -23,8 +23,10 @@ function refreshVoConfigList()
 	var tbody = $("#vo-config-list");
 
 	$.ajax({
+		headers: {
+            Accept : "application/json",
+        },
 		url: "/config/global?",
-		contentType: "application/json"
 	})
 	.done(function(data, textStatus, jqXHR) {
 		tbody.empty();

@@ -20,8 +20,10 @@ function refreshFixList()
 	var tbody = $("#fixed-list");
 
     $.ajax({
+        headers: {
+            Accept : "application/json",
+        },
         url: "/config/fixed?",
-        contentType: "application/json"
     })
     .done(function(data, textStatus, jqXHR) {
         tbody.empty();
