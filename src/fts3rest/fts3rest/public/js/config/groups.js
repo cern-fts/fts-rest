@@ -34,7 +34,7 @@ function refreshGroupList()
         $.each(data, function(i, member) {
             var tr = $("<tr></tr>");
 
-            var deleteBtn = $("<button class='btn btn-link'></button>")
+            var deleteBtn = $("<button class='btn btn-link' type='button'></button>")
                 .append("<i class='glyphicon glyphicon-trash'></i>");
 
             deleteBtn.click(function() {

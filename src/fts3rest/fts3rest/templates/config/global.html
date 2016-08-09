@@ -8,6 +8,7 @@
         These settings apply to all transfers belonging to the same Virtual Organization.
     </p>
 
+    <form method="POST" id="vo-config-add-frm">
     <table class="table">
         <thead>
             <tr>
@@ -23,7 +24,6 @@
         </tbody>
         <tbody id="vo-config-add">
             <tr>
-                <form method="POST" id="vo-config-add-frm">
                 <td>
                     <button class="btn btn-link" type="submit">
                         <i class="glyphicon glyphicon-plus"></i>
@@ -36,10 +36,10 @@
                 <td>
                     <input type="number" name="retry" value="1" min="1" max="10" class="form-control"/>
                 </td>
-                </form>
             </tr>
         </tbody>
     </table>
+    </form>
 
     <h3>Global configuration</h3>
     <p>
@@ -90,7 +90,7 @@
                 <p class="form-group">
                     <label for="optimizer_mode">Optimizer mode</label>
                     <span class="input-group">
-                        <select id="optimizer_mode" name="optimizer_mode" class="form-control" value="3" class="form-control">
+                        <select id="optimizer_mode" name="optimizer_mode" class="form-control">
                             % if not data['*']['optimizer_mode']:
                             <option>-- Default --</option>
                             % endif

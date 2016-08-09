@@ -34,7 +34,7 @@ function refreshLinks()
         $.each(data, function(i, link) {
             var tr = $("<tr></tr>");
 
-            var deleteBtn = $("<button class='btn btn-link'></button>")
+            var deleteBtn = $("<button class='btn btn-link' type='button'></button>")
                 .append("<i class='glyphicon glyphicon-trash'></i>");
 
             deleteBtn.click(function() {
@@ -135,7 +135,7 @@ function setupLinks()
 
     // Attach to forms
     $("#share-add-frm").submit(function(event) {
-        var addFrm = $("#share-add");
+        var addFrm = $("#share-add-frm");
         var payload = {
             source: addFrm.find("[name=source]").val(),
             destination: addFrm.find("[name=destination]").val(),
@@ -169,8 +169,8 @@ function setupLinks()
         event.preventDefault();
     });
 
-    $("#link-config-add").submit(function(event) {
-        var addFrm = $("#link-config-add");
+    $("#link-config-add-frm").submit(function(event) {
+        var addFrm = $("#link-config-add-frm");
         var payload = {
             symbolicname: addFrm.find("[name=symbolicname]").val(),
             source: addFrm.find("[name=source]").val(),
@@ -198,7 +198,7 @@ function setupLinks()
             alert(jqXHR.responseJSON.message);
         })
         .always(function() {
-            $("#link-config-add-frm").prop("disabled", false);
+            $("#link-config-add-frm input").prop("disabled", false);
             $("#link-config-add-frm>i").attr("class", "glyphicon glyphicon-plus");
         });
 

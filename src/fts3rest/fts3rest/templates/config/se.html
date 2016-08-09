@@ -161,7 +161,7 @@
 			<div class="panel-heading">
 				<h2 class="panel-title">
 					<input type="text" name="se" placeholder="Storage" class="form-control"
-						id="se-add-field-se"/>
+						id="se-add-field-se"/>&nbsp;
 				</h2>
 			</div>
 			<div class="panel-body">
@@ -174,15 +174,15 @@
         					<div class="panel-body">
         						<div class="form-group">
         							<label for="as_source-active">Active limit</label>
-        							<input class="form-control" name="active" type="number">
+        							<input class="form-control" name="active" id="as_source-active" type="number">
         						</div>
         						<div class="form-group">
         							<label for="as_source-throughput">Throughput limit (MB/s)</label>
-        							<input class="form-control" name="throughput" type="number">
+        							<input class="form-control" name="throughput" id="as_source-throughput" type="number">
         						</div>
         						<div class="form-group">
         							<label for="as_source-ipv6">IPv6</label>
-        							<select class="form-control" name="ipv6">
+        							<select class="form-control" name="ipv6" id="as_source-ipv6">
         								<option value="true">Yes</option>
         								<option value="false">No</option>
         							</select>
@@ -213,11 +213,11 @@
         						</div>
         						<div class="form-group">
         							<label for="as_destination-throughput">Throughput limit (MB/s)</label>
-        							<input class="form-control" name="throughput" type="number">
+        							<input class="form-control" name="throughput" id="as_destination-throughput" type="number">
         						</div>
         						<div class="form-group">
         							<label for="as_destination-ipv6">IPv6</label>
-        							<select class="form-control" name="ipv6">
+        							<select class="form-control" name="ipv6" id="as_destination-ipv6">
         								<option value="true">Yes</option>
         								<option value="false">No</option>
         							</select>
@@ -228,7 +228,7 @@
                                         <i class="glyphicon glyphicon-question-sign"
                                             title="If set, FTS3 will enable UDT for this endpoint, but will fallback to non-UDT on error"></i>
                                     </label>
-        							<select class="form-control" name="udt">
+        							<select class="form-control" name="udt" id="as_destination-udt">
         								<option value="true">Yes</option>
         								<option value="false">No</option>
         							</select>
@@ -277,6 +277,7 @@
                     </table>
                 </div>
 			</div>
+            </div>
             <div class="panel-footer">
                 <button type="submit" class="btn btn-primary">Add</button>
             </div>

@@ -35,7 +35,7 @@ function refreshVoConfigList()
 			if (vo_name && vo_name != "*") {
 				var tr = $("<tr></tr>");
 
-				var deleteBtn = $("<button class='btn btn-link'></button>")
+				var deleteBtn = $("<button class='btn btn-link' type='button'></button>")
 	                .append("<i class='glyphicon glyphicon-trash'></i>");
 
 	            deleteBtn.click(function() {
@@ -64,7 +64,7 @@ function refreshVoConfigList()
 	            			type: "POST",
 	            			dataType: "json",
 	            			contentType: "application/json",
-	            			data: {vo_name: vo_name, retry: retryInput.val()}
+	            			data: JSON.stringify({vo_name: vo_name, retry: retryInput.val()})
 	            		})
 	            		.done(function() {
 	            			retryInput.prop("disabled", false);

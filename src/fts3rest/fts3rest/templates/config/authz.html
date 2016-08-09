@@ -11,6 +11,7 @@
         This is particularly handy precisely for the web configuration.
     </p>
 
+    <form method="POST" id="authz-add-frm">
     <table class="table">
         <thead>
             <tr>
@@ -23,7 +24,6 @@
         </tbody>
         <tbody id="authz-add">
             <tr>
-                <form method="POST" id="authz-add-frm">
                 <td>
                     <button class="btn btn-link" type="submit" id="auth-add-frm-submit">
                         <i class="glyphicon glyphicon-plus" onclick=""></i>
@@ -37,10 +37,10 @@
                         <option value="config">Configure</option>
                     </select>
                 </td>
-                </form>
             </tr>
         </tbody>
     </table>
+    </form>
 </div>
 
 <script src="/js/config/authz.js" onload="setupAuthz()"></script>

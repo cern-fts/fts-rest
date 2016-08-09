@@ -9,6 +9,7 @@
         to the same site, or having similar characteristics.
     </p>
 
+	<form id="group-add-frm" method="POST">
 	<table class="table">
 		<thead>
 			<tr>
@@ -21,7 +22,6 @@
 		</tbody>
 		<tbody id="group-add">
 			<tr>
-			<form id="group-add-frm" method="POST">
 				<td>
                     <button class="btn btn-link" type="submit">
                         <i class="glyphicon glyphicon-plus"></i>
@@ -33,10 +33,10 @@
 				<td>
 					<input type="text" name="member" id="group-add-field-member" class="form-control"/>
 				</td>
-			</form>
 			</tr>
 		</tbody>
 	</table>
+	</form>
 </div>
 
 <script src="/js/config/groups.js" onload="setupGroups()"></script>

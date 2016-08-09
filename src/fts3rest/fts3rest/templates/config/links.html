@@ -8,6 +8,7 @@
         transfer from/to that storage.
     </p>
 
+    <form id="link-config-add-frm">
     <table class="table">
         <thead>
             <tr>
@@ -25,7 +26,6 @@
         </tbody>
         <tbody id="link-config-add">
             <tr>
-            <form id="link-config-add-frm">
                 <td>
                     <button class="btn btn-link" type="submit">
                         <i class="glyphicon glyphicon-plus"></i>
@@ -57,10 +57,10 @@
                     <input class="form-control" type="number" placeholder="Timeout" name="urlcopy_tx_to"
                         min="0" max="999999"/>
                 </td>
-            </form>
             </tr>
         </tbody>
     </table>
+    </form>
 
     <h2>Share configuration</h2>
     <p>
@@ -71,6 +71,7 @@
         When configuring shares, do not forget the <kbd>public</kbd> "VO", so any other VO can have access too.
     </p>
 
+    <form id="share-add-frm">
     <table class="table">
         <thead>
             <tr>
@@ -85,7 +86,6 @@
         </tbody>
         <tbody id="share-add">
             <tr>
-            <form id="share-add-frm">
                 <td>
                     <button class="btn btn-link" type="submit">
                         <i class="glyphicon glyphicon-plus"></i>
@@ -105,10 +105,10 @@
                 <td>
                     <input type="number" name="share" placeholder="Share" class="form-control" min="0" max="100"/>
                 </td>
-            </form>
             </tr>
         </tbody>
     </table>
+    </form>
 </div>
 
 <script src="/js/config/links.js" onload="setupLinks()"></script>
