@@ -17,7 +17,7 @@
 
 function refreshFixList()
 {
-	var tbody = $("#fixed-list");
+    var tbody = $("#fixed-list");
 
     $.ajax({
         headers: {
@@ -40,11 +40,11 @@ function refreshFixList()
                 var data = {
                         source_se: fix.source_se,
                         dest_se: fix.dest_se,
-                        min_active: 0
-                        max_active: 60
+                        min_active: 0,
+                        max_active: 0
                     };
                 
-	        console.log(data);            
+            console.log(data);
                 $.ajax({
                     url: "/config/fixed",
                     type: "POST",
@@ -61,24 +61,15 @@ function refreshFixList()
                 });
             });
 
-            var changeMinActiveField = $("<input type='number' class='form-control'></input>")
-                .attr("value", fix.min_active)
-                .attr("min", 2);
-                
-            var changeMaxActiveField = $("<input type='number' class='form-control'></input>")
-                .attr("value", fix.max_active)
-                .attr("min", 60);
-            
-            
-            changeActiveField.change(function(){ 
-				var data = {
-                   	source_se: fix.source_se,
-                  	dest_se: fix.dest_se,
-                   	min_active: changeMinActiveField.val(),
-                   	max_active: changeMaxActiveField.val()
+            var changeFunction = function(){
+                var data = {
+                    source_se: fix.source_se,
+                    dest_se: fix.dest_se,
+                    min_active: changeMinActiveField.val(),
+                    max_active: changeMaxActiveField.val()
                 };
-			console.log(data);
-			    	  		
+                console.log(data);
+
                 $.ajax({
                         url: "/config/fixed",
                         type: "POST",
@@ -93,8 +84,18 @@ function refreshFixList()
                         alert(jqXHR.responseJSON.message);
                     });
 
-                    tr.css("background", "#5bb75b");
-                });
+                    tr.css("background", "#5bb75b").css("transition", "none");
+            };
+
+            var changeMinActiveField = $("<input type='number' class='form-control'></input>")
+                .attr("value", fix.min_active)
+                .attr("min", 2)
+                .change(changeFunction);
+
+            var changeMaxActiveField = $("<input type='number' class='form-control'></input>")
+                .attr("value", fix.max_active)
+                .attr("min", 60)
+            .change(changeFunction);
 
             tr.append($("<td></td>").append(deleteBtn))
               .append($("<td></td>").text(fix.source_se))
@@ -112,27 +113,23 @@ function refreshFixList()
 
 function setupFixed()
 {
-	// Refresh
-	refreshFixList();
-	
-	
+    // Refresh
+    refreshFixList();
+
     // Attach to forms
     $("#fixed-add-frm").submit(function(event) {
-    	var data = $(this).serialize().split("&");
-   		console.log(data);
-    	var obj={};
-    	for(var key in data)
-    	{
-        	console.log(data[key]);
-        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
-    	}
-    	console.log(obj);
+        var payload = {
+            source_se: $(this).find("[name=source_se]").val(),
+            dest_se: $(this).find("[name=dest_se]").val(),
+            min_active: $(this).find("[name=min_active]").val(),
+            max_active: $(this).find("[name=max_active]").val(),
+        };
         $.ajax({
             url: "/config/fixed",
             type: "POST",
             dataType: "json",
             contentType: "application/json",
-            data: JSON.stringify(obj)
+            data: JSON.stringify(payload)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshFixList();
@@ -152,11 +149,11 @@ function setupFixed()
         event.preventDefault();
     });
 
-	// Autocomplete
-	$("#fixed-add-field-source").autocomplete({
-		source: "/autocomplete/source"
-	});
-	$("#fixed-add-field-destination").autocomplete({
-		source: "/autocomplete/destination"
-	});
+    // Autocomplete
+    $("#fixed-add-field-source").autocomplete({
+        source: "/autocomplete/source"
+    });
+    $("#fixed-add-field-destination").autocomplete({
+        source: "/autocomplete/destination"
+    });
 }
