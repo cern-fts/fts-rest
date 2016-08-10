@@ -128,6 +128,10 @@ class TestAuthorization(unittest.TestCase):
         Session.merge(authz)
         Session.commit()
 
+        # Force reload of creds
+        self.creds = fts3auth.UserCredentials(env, TestAuthorization.ROLES)
+        self.env['fts3.User.Credentials'] = self.creds
+
         self.assertTrue(fts3auth.authorized(fts3auth.CONFIG, env = self.env))
 
     def test_authorize_root(self):

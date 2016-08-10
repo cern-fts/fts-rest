@@ -16,10 +16,15 @@
 #   limitations under the License.
 
 import copy
+import logging
 import re
 from M2Crypto import EVP
 
+from fts3.model import AuthorizationByDn
+from fts3rest.lib.base import Session
 from methods import Authenticator
+
+log = logging.getLogger(__name__)
 
 
 def vo_from_fqan(fqan):
@@ -158,18 +163,24 @@ class UserCredentials(object):
                 'config': 'all',
                 'datamanagement': 'all'
             }
-            
-        if role_permissions is None:
-            return {}
-        
-        if 'public' in role_permissions:
-            granted_level = copy.deepcopy(role_permissions['public'])
-        else:
-            granted_level = dict()
 
-        for role in self.roles:
-            if role in role_permissions:
-                granted_level.update(copy.deepcopy(role_permissions[role]))
+        granted_level = dict()
+
+        # Public apply to anyone
+        if role_permissions is not None:
+            if 'public' in role_permissions:
+                granted_level = copy.deepcopy(role_permissions['public'])
+
+            # Roles from the proxy
+            for grant in self.roles:
+                if grant in role_permissions:
+                    granted_level.update(copy.deepcopy(role_permissions[grant]))
+
+        # DB Configuration
+        for grant in Session.query(AuthorizationByDn).filter(AuthorizationByDn.dn == self.user_dn).all():
+            log.info('%s granted to "%s" because it is configured in the database' % (grant.operation, self.user_dn))
+            granted_level[grant.operation] = 'all'
+
         return granted_level
 
     def get_granted_level_for(self, operation):

@@ -15,27 +15,12 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from fts3.model import AuthorizationByDn
-from fts3rest.lib.base import Session
-from constants import *
-from decorator import decorator
-from pylons.controllers.util import abort
 import logging
 import pylons
+from decorator import decorator
+from pylons.controllers.util import abort
 
-log = logging.getLogger(__name__)
-
-
-def _is_dn_authorized_in_db(user_dn, operation):
-    """
-    Returns a boolean indicating if user_dn is configured in the database as
-    allowed to peform operation
-    """
-    authz_entry = Session.query(AuthorizationByDn).get((user_dn, operation))
-    if authz_entry is not None:
-        log.info('%s granted to "%s" because it is configured in the database' % (operation, user_dn))
-        return True
-    return False
+from constants import *
 
 
 def authorized(operation, resource_owner=None, resource_vo=None, env=None):
@@ -67,9 +52,6 @@ def authorized(operation, resource_owner=None, resource_vo=None, env=None):
         return resource_vo is None or user.has_vo(resource_vo)
     elif granted_level == PRIVATE:
         return resource_owner is None or resource_owner == user.user_dn
-    else:
-        # Give it a last try querying the DB for admin dns
-        return _is_dn_authorized_in_db(user.user_dn, operation)
 
 
 def authorize(op, env=None):
@@ -82,11 +64,13 @@ def authorize(op, env=None):
     Returns:
         A method that can be used to decorate the resource/method
     """
+
     @decorator
     def authorize_inner(f, *args, **kwargs):
         if not authorized(op, env=env):
             abort(403, 'Not enough permissions')
         return f(*args, **kwargs)
+
     return authorize_inner
 
 
