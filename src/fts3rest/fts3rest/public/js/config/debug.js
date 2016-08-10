@@ -118,19 +118,18 @@ function setupDebug()
 
 	// Attach to the form
 	$("#debug-add-frm").submit(function() {
-		var data = $(this).serialize().split("&");
-   		console.log(data);
-    	var obj={};
-    	for(var key in data)
-    	{
-        	console.log(data[key]);
-        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
-    	}
+        var payload = {
+            source_se: $(this).find("[name=source_se]").val(),
+            dest_se: $(this).find("[name=dest_se]").val(),
+            debug_level: $(this).find("[name=debug_level]").val(),
+        };
+        console.log(payload);
         $.ajax({
             url: "/config/debug?",
             type: "POST",
             dataType: "json",
-            data: JSON.stringify(obj)
+            contentType: "application/json",
+            data: JSON.stringify(payload)
         })
         .done(function(data, textStatus, jqXHR) {
             refreshDebugList();

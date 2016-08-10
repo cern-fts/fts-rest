@@ -121,15 +121,13 @@ class DebugConfigController(BaseController):
 
         if source:
             source = str(source)
-            debug = Session.query(DebugConfig).get((source, ''))
-            if debug:
-                Session.delete(debug)
+            affected = Session.query(DebugConfig).filter(DebugConfig.source_se == source).delete()
+            if affected > 0:
                 audit_configuration('debug', 'Delete debug for source %s' % (source))
         if destin:
             destin = str(destin)
-            debug = Session.query(DebugConfig).get(('', destin))
-            if debug:
-                Session.delete(debug)
+            affected = Session.query(DebugConfig).filter(DebugConfig.dest_se == destin).delete()
+            if affected > 0:
                 audit_configuration('debug', 'Delete debug for destination %s' % (destin))
 
         try:
