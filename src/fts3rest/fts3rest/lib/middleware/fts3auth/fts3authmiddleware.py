@@ -96,6 +96,7 @@ class FTS3AuthMiddleware(object):
             return True
         for v in credentials.vos:
             if v in self.config['fts3.AuthorizedVO']:
+                log.info("Authorized VO: %s" % str(v))
                 return True
         return False
 
