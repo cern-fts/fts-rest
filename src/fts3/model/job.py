@@ -23,6 +23,7 @@ from base import Base, Flag, TernaryFlag, Json
 
 
 JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING', 'DELETE']
+JobTerminalStates = ['FINISHED', 'CANCELED', 'FAILED', 'FINISHEDDIRTY']
 
 
 class Job(Base):
