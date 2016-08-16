@@ -56,7 +56,7 @@ def _multistatus(responses, start_response, expecting_multistatus=False):
         elif single['http_status'] not in ('200 Ok', '304 Not Modified'):
             start_response(single['http_status'], [('Content-Type', 'application/json')])
         return single
-    
+
     for response in responses:
         if isinstance(response, dict) and not response.get('http_status', '').startswith('2'):
             start_response("207 Multi-Status", [('Content-Type', 'application/json')])
@@ -79,7 +79,7 @@ class JobsController(BaseController):
                           env=env):
             raise HTTPForbidden('Not enough permissions to check the job "%s"' % job_id)
         return job
-    
+
     @doc.query_arg('user_dn', 'Filter by user DN')
     @doc.query_arg('vo_name', 'Filter by VO')
     @doc.query_arg('dlg_id', 'Filter by delegation ID')
@@ -539,6 +539,8 @@ class JobsController(BaseController):
         # Populate the job and files
         populated = JobBuilder(user, **submitted_dict)
 
+        log.info("%s (%s) is submitting a transfer job" % (user.user_dn, user.vos[0]))
+
         # Insert the job
         try:
             try:
@@ -578,8 +580,8 @@ class JobsController(BaseController):
                     except IntegrityError:
                         # Someone else inserted the same record after we did the check, so just skip
                         pass
-                        
-            Session.commit()      
+
+            Session.commit()
         except:
             Session.rollback()
             raise
