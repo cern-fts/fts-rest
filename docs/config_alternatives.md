@@ -274,6 +274,26 @@ Where config is a json with the following parameters
 }
 ```
 
+### Link ranges
+For setting the working range for a given pair on the Optimizer:
+
+```bash
+curl https://fts3-devel.cern.ch:8446/config/fixed -H "Content-Type: application/json" -X POST -d "config" 
+```
+
+Where config is a json with the content
+
+```json
+{
+    "source_se": "gsiftp://eosatlassftp.cern.ch",
+    "dest_se": "srm://dcache-se-atlas.desy.de",
+    "min_active": "100",
+    "max_active": "200"
+}
+```
+
+For resetting the values, just send a similar config where min\_active and/or max\_active are 0.
+
 ### S3 configuration
 
 S3 storage registration:
