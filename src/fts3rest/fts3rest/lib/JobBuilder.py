@@ -60,7 +60,7 @@ def get_base_id():
 def get_vo_id(vo_name):
     log.debug("VO name: "+vo_name)
     return uuid.uuid5(BASE_ID, vo_name.encode('utf-8'))
-    
+
 def get_storage_element(uri):
     """
     Returns the storage element of the given uri, which is the scheme +
@@ -129,79 +129,6 @@ def _has_multiple_options(files):
     id_count = len(ids)
     unique_id_count = len(set(ids))
     return unique_id_count != id_count, unique_id_count
-
-
-def _select_best_replica(files, vo_name, entry_state, strategy):
-
-    dst = files[0]['dest_se']
-    activity = files[0]['activity']
-    user_filesize = files[0]['user_filesize']
-
-    queue_provider = Database(Session)
-    cache_provider = ThreadLocalCache(queue_provider)
-    # s = Scheduler(queue_provider)
-    s = Scheduler (cache_provider)
-    source_se_list = map(lambda f: f['source_se'], files)
-
-    if strategy == "orderly":
-        sorted_ses = source_se_list
-
-    elif strategy == "queue" or strategy == "auto":
-        sorted_ses = map(lambda x: x[0], s.rank_submitted(source_se_list,
-                                                        dst,
-                                                        vo_name))
-
-    elif strategy == "success":
-        sorted_ses = map(lambda x: x[0], s.rank_success_rate(source_se_list,
-                                                           dst))
-
-    elif strategy == "throughput":
-        sorted_ses = map(lambda x: x[0], s.rank_throughput(source_se_list,
-                                                         dst))
-
-    elif strategy == "file-throughput":
-        sorted_ses = map(lambda x: x[0], s.rank_per_file_throughput(
-                                                           source_se_list,
-                                                           dst))
-
-    elif strategy == "pending-data":
-        sorted_ses = map(lambda x: x[0], s.rank_pending_data(source_se_list,
-                                                           dst,
-                                                           vo_name,
-                                                           activity))
-
-    elif strategy == "waiting-time":
-        sorted_ses = map(lambda x: x[0], s.rank_waiting_time(source_se_list,
-                                                           dst,
-                                                           vo_name,
-                                                           activity))
-
-    elif strategy == "waiting-time-with-error":
-        sorted_ses = map(lambda x: x[0], s.rank_waiting_time_with_error(
-                                                               source_se_list,
-                                                               dst,
-                                                               vo_name,
-                                                               activity))
-
-    elif strategy == "duration":
-        sorted_ses = map(lambda x: x[0], s.rank_finish_time(source_se_list,
-                                                          dst,
-                                                          vo_name,
-                                                          activity,
-                                                          user_filesize))
-    else:
-        raise HTTPBadRequest(strategy + " algorithm is not supported by Scheduler")
-
-    # We got the storages sorted from better to worst following
-    # the chosen strategy.
-    # We need to find the file with the source matching that best_se
-    best_index = 0
-    best_se = sorted_ses[0]
-    for index, transfer in enumerate(files):
-        if transfer['source_se'] == best_se:
-            best_index = index
-            break
-    files[best_index]['file_state'] = entry_state
 
 
 def _apply_banning(files):
@@ -359,8 +286,9 @@ class JobBuilder(object):
         if len(file_dict['sources']) > 1:
             if self.is_bringonline:
                 raise HTTPBadRequest('Staging with multiple replicas is not allowed')
-            # On multiple replica job, we mark all files initially with NOT_USED
-            initial_file_state = 'NOT_USED'
+            # On multiple replica job, we mark all files initially with CANDIDATE, which is
+            # like submitted, only they can transition into NOT_USED
+            initial_file_state = 'CANDIDATE'
             # Multiple replicas, all must share the hashed-id
             if shared_hashed_id is None:
                 shared_hashed_id = _generate_hashed_id()
@@ -386,14 +314,6 @@ class JobBuilder(object):
                 hashed_id=shared_hashed_id if shared_hashed_id else _generate_hashed_id()
             )
             self.files.append(f)
-
-    def _apply_selection_strategy(self):
-        """
-        On multiple-replica jobs, select the adecuate file to go active
-        """
-        entry_state = "STAGING" if self.is_bringonline else "SUBMITTED"
-        _select_best_replica(self.files, self.user.vos[0], entry_state,
-                             self.files[0].get('selection_strategy', 'auto'))
 
     def _populate_transfers(self, files_list):
         """
@@ -480,8 +400,6 @@ class JobBuilder(object):
             if unique_files > 1:
                 raise HTTPBadRequest('Multiple replicas jobs can only have one unique file')
             self.job['reuse_job'] = 'R'
-            # Apply selection strategy
-            self._apply_selection_strategy()
 
         self._set_job_source_and_destination(self.files)
 

@@ -73,28 +73,28 @@ class TestMultiple(TestController):
         self.assertEqual(db_job.files[0].dest_surl, 'http://dest.ch:8447/file')
         self.assertEqual(db_job.files[0].activity, 'something something')
         self.assertEqual(db_job.files[0].file_metadata['mykey'], 'myvalue')
-        self.assertEqual(db_job.files[0].file_state, 'SUBMITTED')
+        self.assertEqual(db_job.files[0].file_state, 'CANDIDATE')
 
         self.assertEqual(db_job.files[1].file_index, 0)
         self.assertEqual(db_job.files[1].source_surl, 'http://source.es:8446/file')
         self.assertEqual(db_job.files[1].dest_surl, 'root://dest.ch/file')
         self.assertEqual(db_job.files[1].activity, 'something something')
         self.assertEqual(db_job.files[1].file_metadata['mykey'], 'myvalue')
-        self.assertEqual(db_job.files[1].file_state, 'NOT_USED')
+        self.assertEqual(db_job.files[1].file_state, 'CANDIDATE')
 
         self.assertEqual(db_job.files[2].file_index, 0)
         self.assertEqual(db_job.files[2].source_surl, 'root://source.es/file')
         self.assertEqual(db_job.files[2].dest_surl, 'http://dest.ch:8447/file')
         self.assertEqual(db_job.files[2].activity, 'something something')
         self.assertEqual(db_job.files[2].file_metadata['mykey'], 'myvalue')
-        self.assertEqual(db_job.files[2].file_state, 'NOT_USED')
+        self.assertEqual(db_job.files[2].file_state, 'CANDIDATE')
 
         self.assertEqual(db_job.files[3].file_index, 0)
         self.assertEqual(db_job.files[3].source_surl, 'root://source.es/file')
         self.assertEqual(db_job.files[3].dest_surl, 'root://dest.ch/file')
         self.assertEqual(db_job.files[3].activity, 'something something')
         self.assertEqual(db_job.files[3].file_metadata['mykey'], 'myvalue')
-        self.assertEqual(db_job.files[3].file_state, 'NOT_USED')
+        self.assertEqual(db_job.files[3].file_state, 'CANDIDATE')
 
         # Same file index, same hashed id
         uniq_hashes = set(map(lambda f: f.hashed_id, db_job.files))
@@ -141,14 +141,14 @@ class TestMultiple(TestController):
         self.assertEqual(db_job.files[0].dest_surl, 'http://dest.ch/file')
         self.assertEqual(db_job.files[0].activity, 'something something')
         self.assertEqual(db_job.files[0].file_metadata['mykey'], 'myvalue')
-        self.assertEqual(db_job.files[0].file_state, 'SUBMITTED')
+        self.assertEqual(db_job.files[0].file_state, 'CANDIDATE')
 
         self.assertEqual(db_job.files[1].file_index, 0)
         self.assertEqual(db_job.files[1].source_surl, 'http://source.fr/file')
         self.assertEqual(db_job.files[1].dest_surl, 'http://dest.ch/file')
         self.assertEqual(db_job.files[1].activity, 'something something')
         self.assertEqual(db_job.files[1].file_metadata['mykey'], 'myvalue')
-        self.assertEqual(db_job.files[1].file_state, 'NOT_USED')
+        self.assertEqual(db_job.files[1].file_state, 'CANDIDATE')
 
         # Same file index, same hashed id
         uniq_hashes = set(map(lambda f: f.hashed_id, db_job.files))
