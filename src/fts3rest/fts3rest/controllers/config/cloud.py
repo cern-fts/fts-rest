@@ -137,7 +137,7 @@ class CloudConfigController(BaseController):
         if not input_dict.get('user_dn', None) and not input_dict.get('vo_name', None):
             raise HTTPBadRequest('One of user_dn or vo_name must be specified')
         elif input_dict.get('user_dn', None) and input_dict.get('vo_name', None):
-            raise HTTPBadRequest('One of user_dn or vo_name must be specified')
+            raise HTTPBadRequest('Only one of user_dn or vo_name must be specified')
 
         cuser = CloudStorageUser(
             user_dn=input_dict.get('user_dn', ''),
