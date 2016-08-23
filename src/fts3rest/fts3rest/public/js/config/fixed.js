@@ -31,7 +31,7 @@ function refreshFixList()
         $.each(data, function(i, fix) {
             var tr = $("<tr></tr>");
 
-            var deleteBtn = $("<button class='btn btn-link'></button>")
+            var deleteBtn = $("<button class='btn btn-link' type='button'></button>")
                 .append("<i class='glyphicon glyphicon-trash'></i>");
 
             deleteBtn.click(function() {
@@ -94,7 +94,7 @@ function refreshFixList()
 
             var changeMaxActiveField = $("<input type='number' class='form-control'></input>")
                 .attr("value", fix.max_active)
-                .attr("min", 60)
+                .attr("min", 2)
             .change(changeFunction);
 
             tr.append($("<td></td>").append(deleteBtn))
