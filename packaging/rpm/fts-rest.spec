@@ -4,7 +4,7 @@
 %{!?nosetest_path: %global nosetest_path "/tmp"}
 
 Name:           fts-rest
-Version:        3.5.1
+Version:        3.5.2
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
