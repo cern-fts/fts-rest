@@ -217,7 +217,7 @@ class Delegator(object):
             delegation_id = self._get_delegation_id()
         return json.loads(self.context.get('/delegation/' + delegation_id))
 
-    def delegate(self, lifetime=timedelta(hours=7), force=False):
+    def delegate(self, lifetime=timedelta(hours=7), force=False, delegate_when_lifetime_lt=timedelta(hours=2)):
         try:
             delegation_id = self._get_delegation_id()
             log.debug("Delegation ID: " + delegation_id)
@@ -228,7 +228,7 @@ class Delegator(object):
                 log.debug("No previous delegation found")
             elif remaining_life <= timedelta(0):
                 log.debug("The delegated credentials expired")
-            elif remaining_life >= timedelta(hours=1):
+            elif remaining_life >= delegate_when_lifetime_lt:
                 if not force:
                     log.debug("Not bothering doing the delegation")
                     return delegation_id
@@ -248,6 +248,6 @@ class Delegator(object):
             self._put_proxy(delegation_id, x509_proxy_pem)
 
             return delegation_id
-        
+
         except Exception, e:
             raise ClientError(str(e)), None, sys.exc_info()[2]

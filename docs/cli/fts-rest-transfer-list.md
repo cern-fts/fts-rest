@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-transfer-list
 % fts-devel@cern.ch
-% August 02, 2016
+% August 24, 2016
 # NAME
 
 fts-rest-transfer-list

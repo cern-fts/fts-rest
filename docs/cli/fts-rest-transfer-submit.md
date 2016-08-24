@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-transfer-submit
 % fts-devel@cern.ch
-% August 02, 2016
+% August 24, 2016
 # NAME
 
 fts-rest-transfer-submit
@@ -82,6 +82,9 @@ format is as follows:
 
 -e/--expire
 :	Expiration time of the delegation in minutes. 
+
+--delegate-when-lifetime-lt
+:	Delegate the proxy when the remote lifetime is less than this value (in minutes)
 
 -o/--overwrite
 :	Overwrite files. 

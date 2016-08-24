@@ -124,7 +124,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         priority:          Job priority
         max_time_in_queue: Maximum number
         id_generator:      Job id generator algorithm
-        sid:               Specific id given by the client 
+        sid:               Specific id given by the client
 
     Returns:
         An initialized dictionary representing a job
@@ -163,7 +163,7 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
                     spacetoken=None, metadata=None, priority=None, id_generator=JobIdGenerator.standard, sid=None):
     """
         Creates a new dictionary representing a staging job
-        
+
     Args:
         files:  Array of surls to stage. Each item can be either a string or a dictionary with keys surl and metadata
         bring_online:      Bring online timeout
@@ -174,13 +174,13 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
         priority:          Job priority
         id_generator:      Job id generator algorithm
         sid:               Specific id given by the client
-        
+
     Returns:
         An initialized dictionary representing a staging job
     """
     if bring_online <= 0 and copy_pin_lifetime <= 0:
         raise ClientError('Bad request: bring_online and copy_pin_lifetime are not positive numbers')
-        
+
     transfers = []
     for trans in files:
         if isinstance(trans, dict):
@@ -193,7 +193,7 @@ def new_staging_job(files, bring_online=None, copy_pin_lifetime=None, source_spa
             raise AttributeError("Unexpected input type %s"%type(files))
 
         transfers.append(new_transfer(source=surl, destination=surl, metadata=meta))
-        	 
+
     params = dict(
         source_spacetoken=source_spacetoken,
         spacetoken=spacetoken,
@@ -238,7 +238,7 @@ def new_delete_job(files, spacetoken=None, metadata=None, priority=None, id_gene
     return job
 
 
-def submit(context, job, delegation_lifetime=timedelta(hours=7), force_delegation=False):
+def submit(context, job, delegation_lifetime=timedelta(hours=7), force_delegation=False, delegate_when_lifetime_lt=timedelta(hours=2)):
     """
     Submits a job
 
@@ -247,11 +247,16 @@ def submit(context, job, delegation_lifetime=timedelta(hours=7), force_delegatio
         job:     Dictionary representing the job
         delegation_lifetime: Delegation lifetime
         force_delegation:    Force delegation even if there is a valid proxy
+        delegate_when_lifetime_lt: If the remaining lifetime on the delegated proxy is less than this interval,
+                  do a new delegation
 
     Returns:
         The job id
     """
-    delegate(context, delegation_lifetime, force_delegation)
+    delegate(context, delegation_lifetime, force_delegation, delegate_when_lifetime_lt)
     submitter = Submitter(context)
     params = job.get('params', {})
-    return submitter.submit(transfers=job.get('files', None), delete=job.get('delete', None), staging=job.get('staging', None), **params)
+    return submitter.submit(
+        transfers=job.get('files', None), delete=job.get('delete', None), staging=job.get('staging', None),
+        **params
+    )

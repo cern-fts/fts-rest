@@ -91,6 +91,8 @@ class JobSubmitter(Base):
                                    help='interval between two poll operations in blocking mode.')
         self.opt_parser.add_option('-e', '--expire', dest='proxy_lifetime', type='int', default=420,
                                    help='expiration time of the delegation in minutes.')
+        self.opt_parser.add_option('--delegate-when-lifetime-lt', type=int, default=120,
+                                   help='delegate the proxy when the remote lifetime is less than this value (in minutes)')
         self.opt_parser.add_option('-o', '--overwrite', dest='overwrite', default=False, action='store_true',
                                    help='overwrite files.')
         self.opt_parser.add_option('-r', '--reuse', dest='reuse', default=False, action='store_true',
@@ -175,7 +177,10 @@ class JobSubmitter(Base):
             verify_checksum = True
 
         delegator = Delegator(context)
-        delegator.delegate(timedelta(minutes=self.options.proxy_lifetime))
+        delegator.delegate(
+            timedelta(minutes=self.options.proxy_lifetime),
+            delegate_when_lifetime_lt=timedelta(minutes=self.options.delegate_when_lifetime_lt)
+        )
 
         submitter = Submitter(context)
 

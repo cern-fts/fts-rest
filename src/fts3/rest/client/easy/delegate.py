@@ -17,7 +17,7 @@ from datetime import timedelta
 from fts3.rest.client import Delegator
 
 
-def delegate(context, lifetime=timedelta(hours=7), force=False):
+def delegate(context, lifetime=timedelta(hours=7), force=False, delegate_when_lifetime_lt=timedelta(hours=2)):
     """
     Delegates the credentials
 
@@ -26,9 +26,11 @@ def delegate(context, lifetime=timedelta(hours=7), force=False):
         lifetime: The delegation life time
         force:    If true, credentials will be re-delegated regardless
                   of the remaining life of the previous delegation
+        delegate_when_lifetime_lt: If the remaining lifetime on the delegated proxy is less than this interval,
+                  do a new delegation
 
     Returns:
         The delegation ID
     """
     delegator = Delegator(context)
-    return delegator.delegate(lifetime, force)
+    return delegator.delegate(lifetime, force, delegate_when_lifetime_lt)

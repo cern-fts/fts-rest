@@ -443,6 +443,9 @@ Usage: fts-rest-transfer-submit [options] SOURCE DESTINATION [CHECKSUM]
 -e/--expire
 :	Expiration time of the delegation in minutes. 
 
+--delegate-when-lifetime-lt
+:	Delegate the proxy when the remote lifetime is less than this value (in minutes)
+
 -o/--overwrite
 :	Overwrite files. 
 
