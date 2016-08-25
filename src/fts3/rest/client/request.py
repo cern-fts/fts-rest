@@ -29,7 +29,11 @@ class Request(object):
         self.ukey  = ukey
         self.passwd = passwd
         self.access_token = access_token
-        self.verify = False
+        self.verify = verify
+        # Disable the warnings
+        if not verify:
+          requests.packages.urllib3.disable_warnings()
+
         self.connectTimeout = connectTimeout
         self.timeout = timeout
 
@@ -83,7 +87,7 @@ class Request(object):
             _headers['Authorization'] = 'Bearer ' + self.access_token
         
         response = self.session.request(method=method, url=str(url), 
-                             data=body, headers=_headers, 
+                             data=body, headers=_headers, verify = self.verify, 
                              timeout=(self.connectTimeout, self.timeout), 
                              cert=(self.ucert, self.ukey))
         
