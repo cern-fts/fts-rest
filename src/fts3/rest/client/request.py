@@ -96,7 +96,7 @@ class Request(object):
 
         self._handle_error(url, response.status_code, response.text)
 
-        return response.text
+        return str(response.text)
 
 
 __all__ = ['Request']
