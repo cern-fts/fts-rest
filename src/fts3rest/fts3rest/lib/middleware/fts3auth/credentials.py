@@ -16,9 +16,9 @@
 #   limitations under the License.
 
 import copy
+import hashlib
 import logging
 import re
-from M2Crypto import EVP
 
 from fts3.model import AuthorizationByDn
 from fts3rest.lib.base import Session
@@ -57,15 +57,14 @@ def generate_delegation_id(dn, fqans):
     Returns:
         The associated delegation id
     """
-    d = EVP.MessageDigest('sha1')
+    d = hashlib.sha1()
     d.update(dn)
 
     for fqan in fqans:
         d.update(fqan)
 
-    digest_hex = d.digest().encode('hex')
     # Original implementation only takes into account first 16 characters
-    return digest_hex[:16]
+    return d.hexdigest()[:16]
 
 
 def build_vo_from_dn(user_dn):
