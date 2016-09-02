@@ -23,6 +23,7 @@ import logging
 import os
 import shlex
 import types
+import M2Crypto.threading
 
 from datetime import datetime
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPNotFound
@@ -169,6 +170,8 @@ class DelegationController(BaseController):
         """
         Constructor
         """
+        M2Crypto.threading.init()
+
         vomses_dir = '/etc/vomses'
         vo_set = set()
         try:
