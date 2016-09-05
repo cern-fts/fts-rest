@@ -82,6 +82,15 @@ class TestAuthorization(unittest.TestCase):
                                              resource_owner = 'someone', resource_vo = 'othervo',
                                              env = self.env))
 
+    def test_authorized_same_dn_different_vo(self):
+        """
+        If the user is the owner of the resource, even if the DN does not match, it must be granted
+        permissions.
+        """
+        self.assertTrue(fts3auth.authorized(fts3auth.TRANSFER,
+                                            resource_owner = TestAuthorization.DN, resource_vo = 'othervo',
+                                            env = self.env))
+
     def test_authorized_all(self):
         """
         Try to perform an action that is configured to be executed by anyone (all)

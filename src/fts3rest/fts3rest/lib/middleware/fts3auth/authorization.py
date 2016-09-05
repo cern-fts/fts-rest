@@ -49,7 +49,7 @@ def authorized(operation, resource_owner=None, resource_vo=None, env=None):
     if granted_level == ALL:
         return True
     elif granted_level == VO:
-        return resource_vo is None or user.has_vo(resource_vo)
+        return resource_vo is None or user.has_vo(resource_vo) or resource_owner == user.user_dn
     elif granted_level == PRIVATE:
         return resource_owner is None or resource_owner == user.user_dn
 
