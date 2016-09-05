@@ -15,6 +15,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import glob
 import pylons
 
 from routes import request_config
@@ -30,6 +31,21 @@ from fts3rest.lib import api
 API_VERSION = dict(major=3, minor=5, patch=2)
 
 
+def _get_fts_core_version():
+    versions = []
+    for match in glob.glob('/usr/share/doc/fts-libs-*'):
+        try:
+            major, minor, patch = match.split('-')[-1].split('.')
+            versions.append(dict(major=major, minor=minor, patch=patch))
+        except:
+            pass
+    if len(versions) == 0:
+        return None
+    elif len(versions) == 1:
+        return versions[0]
+    else:
+        return versions
+
 class ApiController(BaseController):
     """
     API documentation
@@ -44,6 +60,8 @@ class ApiController(BaseController):
         for r in self.resources:
             r['path'] = '/' + r['id']
 
+        self.fts_core_version = _get_fts_core_version()
+
     @jsonify
     def api_version(self):
         cred_v = Session.query(CredentialVersion).all()
@@ -52,6 +70,7 @@ class ApiController(BaseController):
         schema_v = schema_v[0] if schema_v else None
         return {
             'api': API_VERSION,
+            'core': self.fts_core_version,
             'schema': cred_v,
             'delegation': schema_v,
             '_links': {
