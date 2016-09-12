@@ -149,7 +149,7 @@ class Group(Base):
 
 class Member(Base):
     __tablename__ = 't_group_members'
-    __table_args__ = ({'useexisting': True})
+    __table_args__ = ({'extend_existing': True})
 
     groupname = Column(String(255), primary_key=True)
     member    = Column(String(255), primary_key=True)
