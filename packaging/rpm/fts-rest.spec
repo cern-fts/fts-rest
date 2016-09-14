@@ -56,7 +56,7 @@ Requires:       python-paste-deploy
 Requires:       python-pylons
 Requires:       python-simplejson%{?_isa}
 Requires:       gfal2-python%{?_isa}
-
+Requires: 	python-requests
 %description
 This package provides the FTS3 REST interface
 
