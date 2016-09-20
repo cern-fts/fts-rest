@@ -53,7 +53,7 @@ base_dir = os.path.dirname(__file__)
 
 setup(
     name='fts3-rest',
-    version='3.3.0',
+    version='3.6.0',
     description='FTS3 Python Libraries',
     author='FTS3 Developers',
     author_email='fts-devel@cern.ch',
