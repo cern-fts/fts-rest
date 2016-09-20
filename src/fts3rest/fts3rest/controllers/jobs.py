@@ -558,25 +558,16 @@ class JobsController(BaseController):
             for source_se, dest_se in unique_pairs:
                 if len(Session.query(OptimizerActive.fixed)\
                         .filter(OptimizerActive.source_se==source_se, OptimizerActive.dest_se==dest_se).all()) < 1:
-                    # Explicit insert to work with schema versions 1 and 2
-                    # See FTS-630
-                    #optimizer_active = OptimizerActive()
-                    #optimizer_active.source_se = source_se
-                    #optimizer_active.dest_se = dest_se
-                    #optimizer_active.ema = 0
-                    #optimizer_active.datetime = datetime.utcnow()
+                    optimizer_active = OptimizerActive()
+                    optimizer_active.source_se = source_se
+                    optimizer_active.dest_se = dest_se
+                    optimizer_active.active = 2
+                    optimizer_active.ema = 0
+                    optimizer_active.datetime = datetime.utcnow()
 
                     try:
                         with Session.begin_nested():
-                            Session.execute(
-                                "INSERT INTO %s (source_se, dest_se, active, ema, datetime) "
-                                "VALUES (:src, :dst, :active, :ema, :now)" % OptimizerActive.__tablename__,
-                                [dict(
-                                    src=source_se, dst=dest_se,
-                                    active=2, ema=0,
-                                    now=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-                                )]
-                            )
+                            Session.add(optimizer_active)
                     except IntegrityError:
                         # Someone else inserted the same record after we did the check, so just skip
                         pass
