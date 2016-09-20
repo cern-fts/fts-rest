@@ -21,7 +21,7 @@ import pylons
 from routes import request_config
 from webob.exc import HTTPNotFound
 
-from fts3.model import CredentialVersion, SchemaVersion
+from fts3.model import SchemaVersion
 
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
@@ -64,15 +64,12 @@ class ApiController(BaseController):
 
     @jsonify
     def api_version(self):
-        cred_v = Session.query(CredentialVersion).all()
-        cred_v = cred_v[0] if cred_v else None
         schema_v = Session.query(SchemaVersion).all()
         schema_v = schema_v[0] if schema_v else None
         return {
             'api': API_VERSION,
             'core': self.fts_core_version,
-            'schema': cred_v,
-            'delegation': schema_v,
+            'schema': schema_v,
             '_links': {
                 'curies': [{'name': 'fts', 'href': 'https://svnweb.cern.ch/trac/fts3'}],
 
