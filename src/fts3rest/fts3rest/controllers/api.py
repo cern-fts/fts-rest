@@ -64,8 +64,9 @@ class ApiController(BaseController):
 
     @jsonify
     def api_version(self):
-        schema_v = Session.query(SchemaVersion).all()
-        schema_v = schema_v[0] if schema_v else None
+        schema_v = Session.query(SchemaVersion)\
+            .order_by(SchemaVersion.major.desc(), SchemaVersion.minor.desc(), SchemaVersion.patch.desc())\
+            .first()
         return {
             'api': API_VERSION,
             'core': self.fts_core_version,
