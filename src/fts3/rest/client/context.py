@@ -168,7 +168,6 @@ class Context(object):
         # Log obtained information
         log.debug("Using endpoint: %s" % self.endpoint_info['url'])
         log.debug("REST API version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['api'])
-        log.debug("Delegation version: %(major)d.%(minor)d.%(patch)d" % self.endpoint_info['delegation'])
 
     def get_endpoint_info(self):
         return self.endpoint_info
