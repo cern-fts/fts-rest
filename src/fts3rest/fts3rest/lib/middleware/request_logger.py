@@ -64,8 +64,11 @@ class RequestLogger(object):
         except:
             code = 0
 
-        if code >= 400:
+        if code >= 500:
             log.error(entry)
+            self._log_request_details()
+        elif code >= 400:
+            log.info(entry)
             self._log_request_details()
         else:
             log.info(entry)
