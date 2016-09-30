@@ -83,7 +83,35 @@ class TestJobCancel(TestController):
         self.assertNotEqual(None, job.finish_time)
         for f in job.files:
             self.assertEqual(f.file_state, 'CANCELED')
-            self.assertEqual(None, f.job_finished) # Actually expected like this by FTS3 to trigger the KILL
+            self.assertNotEqual(None, f.job_finished)
+            self.assertNotEqual(None, f.finish_time)
+
+    def test_cancel_running(self):
+        """
+        Cancel a job, but the transfer is running (pid is set)
+        """
+        job_id = self._submit()
+
+        # Add pid
+        transfer = Session.query(File).filter(File.job_id == job_id).first()
+        transfer.pid = 1234
+        Session.merge(transfer)
+        Session.commit()
+
+        job = self.app.delete(url="/jobs/%s" % job_id, status=200).json
+
+        self.assertEqual(job['job_id'], job_id)
+        self.assertEqual(job['job_state'], 'CANCELED')
+        self.assertEqual(job['reason'], 'Job canceled by the user')
+
+        # Is it in the database?
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.job_state, 'CANCELED')
+        self.assertNotEqual(None, job.job_finished)
+        self.assertNotEqual(None, job.finish_time)
+        for f in job.files:
+            self.assertEqual(f.file_state, 'CANCELED')
+            self.assertEqual(None, f.job_finished)
             self.assertNotEqual(None, f.finish_time)
 
     def test_cancel_terminal(self):

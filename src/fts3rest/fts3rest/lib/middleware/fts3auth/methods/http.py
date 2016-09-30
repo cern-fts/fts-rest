@@ -58,7 +58,7 @@ def do_authentication(credentials, env):
         sign = b64decode(cred['sign'])
         proxy = None
         try:
-                proxy =  b64decode(cred['prx'])
+                proxy = b64decode(cred['prx'])
                 log.info("found a proxy on the request")
         except:
                 pass
