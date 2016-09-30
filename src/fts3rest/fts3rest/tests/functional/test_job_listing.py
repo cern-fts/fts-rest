@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 
 from fts3.model import FileRetryLog, Job, File
 from fts3rest.lib.base import Session
-from fts3rest.lib.middleware.fts3auth import UserCredentials
+from fts3rest.lib.middleware.fts3auth import UserCredentials, constants
 from fts3rest.tests import TestController
 
 
@@ -265,19 +265,6 @@ class TestJobListing(TestController):
             status=200
         ).json
         self.assertTrue(job_id not in map(lambda j: j['job_id'], job_list))
-
-    def test_list_with_state_no_dlg_id(self):
-        """
-        When specifying the statuses in the query, dlg_id is mandatory
-        """
-        self.setup_gridsite_environment()
-        self.push_delegation()
-
-        self.app.get(
-            url="/jobs",
-            params={'state_in': 'SUBMITTED,ACTIVE'},
-            status=403
-        )
 
     def test_list_no_vo(self):
         """
@@ -571,3 +558,63 @@ class TestJobListing(TestController):
 
         self.assertIn(job1, map(lambda f: f['job_id'], files))
         self.assertNotIn(job2, map(lambda f: f['job_id'], files))
+
+    def test_list_granted_private(self):
+        """
+        Configure access level to PRIVATE, so the user can only see their own transfers
+        """
+        self.setup_gridsite_environment(dn='/CN=fakeson')
+        self.push_delegation()
+
+        self._submit()
+        self._submit()
+
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job3 = self._submit()
+
+        old_granted = UserCredentials.get_granted_level_for
+        UserCredentials.get_granted_level_for = lambda self_, op: constants.PRIVATE
+
+        jobs = self.app.get(url="/jobs", status=200).json
+
+        UserCredentials.get_granted_level_for = old_granted
+
+        self.assertEqual(1, len(jobs))
+        self.assertEqual(job3, jobs[0]['job_id'])
+
+    def test_list_granted_vo(self):
+        """
+        Configure access level to VO, so the user can see their own transfers and others, if they
+        belong to the same vo
+        """
+        self.setup_gridsite_environment(dn='/CN=fakeson', no_vo=True)
+        self.push_delegation()
+
+        self._submit()
+        self._submit()
+
+        self.setup_gridsite_environment(dn='/CN=jameson')
+        self.push_delegation()
+
+        job1 = self._submit()
+        job2 = self._submit()
+
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job3 = self._submit()
+
+        old_granted = UserCredentials.get_granted_level_for
+        UserCredentials.get_granted_level_for = lambda self_, op: constants.VO
+
+        jobs = self.app.get(url="/jobs", status=200).json
+
+        UserCredentials.get_granted_level_for = old_granted
+
+        self.assertEqual(3, len(jobs))
+        job_ids = map(lambda j: j['job_id'], jobs)
+        self.assertIn(job1, job_ids)
+        self.assertIn(job2, job_ids)
+        self.assertIn(job3, job_ids)

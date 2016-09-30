@@ -30,6 +30,7 @@ from fts3rest.lib.JobBuilder import get_storage_element
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib.middleware.fts3auth import authorize
 from fts3rest.lib.middleware.fts3auth.constants import *
+from fts3rest.lib.http_exceptions import *
 
 
 log = logging.getLogger(__name__)
@@ -56,6 +57,8 @@ class FilesController(BaseController):
         """
         Get a list of active jobs, or those that match the filter requirements
         """
+        user = request.environ['fts3.User.Credentials']
+
         filter_vo = request.params.get('vo_name', None)
         filter_state = request.params.get('state_in', None)
         filter_source = request.params.get('source_se', None)
@@ -77,6 +80,13 @@ class FilesController(BaseController):
 
         if filter_dest is None and filter_dest_surl is not None:
             filter_dest = get_storage_element(urlparse(filter_dest_surl))
+
+        # Automatically apply filters depending on granted level
+        granted_level = user.get_granted_level_for(TRANSFER)
+        if granted_level in (PRIVATE, VO):
+            filter_vo = user.vos[0]
+        elif granted_level == NONE:
+            raise HTTPForbidden('User not allowed to list jobs')
 
         files = Session.query(File)
         if filter_vo:

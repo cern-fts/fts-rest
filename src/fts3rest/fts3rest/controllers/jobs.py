@@ -123,12 +123,19 @@ class JobsController(BaseController):
 
         if filter_dlg_id and filter_dlg_id != user.delegation_id:
             raise HTTPForbidden('The provided delegation id does not match your delegation id')
-        if filter_dlg_id and filter_dn and filter_dn != user.user_dn:
+        if filter_dn and filter_dn != user.user_dn:
             raise HTTPBadRequest('The provided DN and delegation id do not correspond to the same user')
-        if not filter_dlg_id and filter_state:
-            raise HTTPForbidden('To filter by state, you need to provide dlg_id')
         if filter_limit is not None and filter_limit < 0 or filter_limit > 500:
             raise HTTPBadRequest('The limit must be positive and less or equal than 500')
+
+        # Automatically apply filters depending on granted level
+        granted_level = user.get_granted_level_for(TRANSFER)
+        if granted_level == PRIVATE:
+            filter_dlg_id = user.delegation_id
+        elif granted_level == VO:
+            filter_vo = user.vos[0]
+        elif granted_level == NONE:
+            raise HTTPForbidden('User not allowed to list jobs')
 
         if filter_state:
             filter_state = filter_state.split(',')
