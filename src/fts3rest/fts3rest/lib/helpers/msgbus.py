@@ -32,7 +32,7 @@ def submit_state_change(job, transfer):
     msg_dir = os.path.join(msg_dir, 'monitoring')
 
     msg = dict(
-        endpnt=socket.getfqdn(),
+        endpnt = pylons.config['fts3.Alias'],
         user_dn=job['user_dn'],
         src_url=transfer['source_surl'],
         dst_url=transfer['dest_surl'],
