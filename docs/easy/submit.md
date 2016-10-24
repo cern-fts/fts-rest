@@ -52,6 +52,9 @@ Note that _all_ parameters are optional.
 * **metadata**          Metadata to bind to the job
 * **id_generator**      Job id generator algorithm: 'standard' is used by default with uuid1 and 'deterministic' is used for specific job id generation with uuid5 and the base_id+vo+sid
 * **sid** 				Specific id given by the user to be used with the deterministic job id generator algorithm
+* **max_time_in_queue** Max time the job can be on the queue. Accepts an integer without suffix (interpreted as hours), or with a suffix s (seconds), m (minutes) or h (hours). e.g `60s`
+* **priority**          Job priority. It should be a number between 1 and 5. The higher the number, the higher the priority.
+
 ### Returns:
 A dictionary representing a new job submission
 
