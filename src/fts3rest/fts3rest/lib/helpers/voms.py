@@ -86,28 +86,6 @@ def _get_proxy_termination_time(proxy_path):
         return datetime.utcnow() + timedelta(seconds=timeleft)
     except Exception, e:
         raise VomsException('Failed to get the termination time of a proxy: ' + str(e))
-    
-
-def _get_proxy_type(proxy_path):
-    """
-    Get the type of the proxy specified by proxy_path
-    """
-    args = ['voms-proxy-info', '--file', proxy_path, '--type']
-    log.debug(' '.join(args))
-
-    proc = Popen(args, shell=False, stdin=None, stdout=PIPE, stderr=STDOUT)
-    out = ''
-    for l in proc.stdout:
-        out += l
-    rcode = proc.wait()
-    if rcode != 0:
-        raise VomsException('Failed to get the type of a proxy: ' + out)
-
-    try:
-        type = out.split(' ')[0]
-        return type
-    except Exception, e:
-        raise VomsException('Failed to get the type of a proxy: ' + str(e))
 
 
 class VomsClient(object):
@@ -151,9 +129,8 @@ class VomsClient(object):
         """
         Call voms-proxy-init to get the new voms extensions
         """
-        
         new_proxy = NamedTemporaryFile(mode='w', suffix='.pem', delete=False).name
-            
+
         args = ['voms-proxy-init',
                 '--cert', self.proxy_path,
                 '--key', self.proxy_path,
@@ -163,8 +140,6 @@ class VomsClient(object):
             args.extend(('--voms', v))
         if lifetime:
             args.extend(('--valid', "%d:%d" % (lifetime / 60, lifetime % 60)))
-        if _get_proxy_type(self.proxy_path) == 'RFC':
-            args.extend(('--rfc'))
 
         log.debug(' '.join(args))
 
@@ -183,5 +158,3 @@ class VomsClient(object):
         Get the proxy fqans
         """
 	return _get_proxy_fqans(self.proxy_path)
-    
-     
