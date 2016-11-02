@@ -17,6 +17,7 @@
 
 import re
 import time
+import calendar
 import dateutil.parser
 import dateutil.tz
 import logging
@@ -70,7 +71,7 @@ def do_authentication(credentials, env):
         log.info("Cannot decode certificate, signature or timestamp")
         raise InvalidCredentials("Cannot decode certificate, signature or timestamp")
 
-    td = abs(int(time.mktime(time.gmtime())) - int(ts))
+    td = abs(int(calendar.timegm(time.gmtime())) - int(ts))
     if td > 600:
         log.info("Authorization has expired by " + str(td) + " seconds")
         raise InvalidCredentials("Authorization has expired by " + str(td) + " seconds")
