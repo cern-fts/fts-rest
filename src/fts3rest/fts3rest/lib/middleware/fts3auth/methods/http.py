@@ -18,6 +18,7 @@
 import re
 import time
 import dateutil.parser
+import dateutil.tz
 import logging
 import urllib
 from M2Crypto.X509 import X509Error
@@ -62,7 +63,9 @@ def do_authentication(credentials, env):
                 log.info("found a proxy on the request")
         except:
                 pass
-        ts = dateutil.parser.parse(cred['ts']).strftime('%s')
+        uct = dateutil.tz.gettz('UTC')
+        ts = dateutil.parser.parse(cred['ts'], tzinfos=uct).strftime('%s')
+        
     except (TypeError, ValueError):
         log.info("Cannot decode certificate, signature or timestamp")
         raise InvalidCredentials("Cannot decode certificate, signature or timestamp")
