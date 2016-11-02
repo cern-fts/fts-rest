@@ -17,8 +17,8 @@
 
 import re
 import time
-import calendar
 import dateutil.parser
+import calendar
 import logging
 import urllib
 from M2Crypto.X509 import X509Error
@@ -69,8 +69,9 @@ def do_authentication(credentials, env):
     except (TypeError, ValueError):
         log.info("Cannot decode certificate, signature or timestamp")
         raise InvalidCredentials("Cannot decode certificate, signature or timestamp")
-
+    
     td = abs(int(calendar.timegm(time.gmtime())) - int(ts))
+    
     if td > 600:
         log.info("Authorization has expired by " + str(td) + " seconds")
         raise InvalidCredentials("Authorization has expired by " + str(td) + " seconds")
