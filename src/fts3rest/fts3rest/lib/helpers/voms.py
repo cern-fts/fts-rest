@@ -150,18 +150,14 @@ class VomsClient(object):
         Call voms-proxy-init to get the new voms extensions
         """
         new_proxy = NamedTemporaryFile(mode='w', suffix='.pem', delete=False).name
+        args = ['voms-proxy-init',
+            '--cert', self.proxy_path,
+            '--key', self.proxy_path,
+            '--out', new_proxy,
+            '--noregen', '--ignorewarn']
+        
         if _get_proxy_type(self.proxy_path) == 'RFC':
-            args = ['voms-proxy-init', '--rfc',
-                '--cert', self.proxy_path,
-                '--key', self.proxy_path,
-                '--out', new_proxy,
-                '--noregen', '--ignorewarn']
-        else:
-            args = ['voms-proxy-init',
-                '--cert', self.proxy_path,
-                '--key', self.proxy_path,
-                '--out', new_proxy,
-                '--noregen', '--ignorewarn']
+            args.append('--rfc')
             
         for v in voms_list:
             args.extend(('--voms', v))
