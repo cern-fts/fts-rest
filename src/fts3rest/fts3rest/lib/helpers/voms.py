@@ -87,6 +87,26 @@ def _get_proxy_termination_time(proxy_path):
     except Exception, e:
         raise VomsException('Failed to get the termination time of a proxy: ' + str(e))
 
+def _get_proxy_type(proxy_path):
+    """
+    Get the type of the proxy specified by proxy_path
+    """
+    args = ['voms-proxy-info', '--file', proxy_path, '--type']
+    log.debug(' '.join(args))
+
+    proc = Popen(args, shell=False, stdin=None, stdout=PIPE, stderr=STDOUT)
+    out = ''
+    for l in proc.stdout:
+        out += l
+    rcode = proc.wait()
+    if rcode != 0:
+        raise VomsException('Failed to get the type of a proxy: ' + out)
+
+    try:
+        type = out.split(' ')[0]
+        return type
+    except Exception, e:
+        raise VomsException('Failed to get the type of a proxy: ' + str(e))
 
 class VomsClient(object):
     """
