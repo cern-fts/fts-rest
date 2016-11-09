@@ -500,7 +500,7 @@ class JobBuilder(object):
                     small_files +=1
             if small_files == len(self.files):
                 #self.job['reuse_job'] = 'Y'
-                log.debug("Reuse jobs with "+small_files+" small files up to "+len(self.files)+" total files")
+                log.debug("Reuse jobs with "+str(small_files)+" small files up to "+str(len(self.files))+" total files")
 
     def _populate_deletion(self, deletion_dict):
         """
