@@ -499,7 +499,7 @@ class JobBuilder(object):
                 if file['user_filesize'] < 104857600:
                     small_files +=1
             if small_files == len(self.files):
-                #self.job['reuse_job'] = 'Y'
+                self.job['reuse_job'] = 'Y'
                 log.debug("Reuse jobs with "+str(small_files)+" small files up to "+str(len(self.files))+" total files")
 
     def _populate_deletion(self, deletion_dict):
