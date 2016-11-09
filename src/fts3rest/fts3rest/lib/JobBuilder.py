@@ -456,6 +456,7 @@ class JobBuilder(object):
         for file_dict in files_list:
             self._populate_files(file_dict, f_index, shared_hashed_id)
             f_index += 1
+            
 
         if len(self.files) == 0:
             raise HTTPBadRequest('No valid pairs available')
@@ -484,7 +485,15 @@ class JobBuilder(object):
             self._apply_selection_strategy()
 
         self._set_job_source_and_destination(self.files)
-
+        
+        if (self.job['source_se'] and self.job['dest_se']) :
+            small_files = 0 
+            for file in self.files:
+                if (self.files[f_index]['user_filesize']) < 104857600:
+                    small_files +=1
+            if small_files >= len(self.files) - 2:
+                reuse_flag = 'Y'
+                log.info("Reuse jobs with "+small_files+" small files up to "+len(self.files)+" total files")
         # If reuse is enabled, source and destination SE must be the same
         # for all entries
         if reuse_flag == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
