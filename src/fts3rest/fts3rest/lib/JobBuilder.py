@@ -498,7 +498,7 @@ class JobBuilder(object):
                 log.debug(file['user_filesize'])
                 if file['user_filesize'] < 104857600:
                     small_files +=1
-            if small_files >= (len(self.files) - 2):
+            if small_files == len(self.files):
                 #self.job['reuse_job'] = 'Y'
                 log.debug("Reuse jobs with "+small_files+" small files up to "+len(self.files)+" total files")
 
