@@ -489,7 +489,7 @@ class JobBuilder(object):
         if (self.job['source_se'] and self.job['dest_se']) :
             small_files = 0 
             for file in self.files:
-                if (self.files[f_index]['user_filesize']) < 104857600:
+                if (file['user_filesize']) < 104857600:
                     small_files +=1
             if small_files >= len(self.files) - 2:
                 reuse_flag = 'Y'
