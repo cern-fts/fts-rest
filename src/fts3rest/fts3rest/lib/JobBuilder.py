@@ -495,7 +495,7 @@ class JobBuilder(object):
         if (self.job['source_se'] and self.job['dest_se']) :
             small_files = 0 
             for file in self.files:
-                log.debug(file['user_filesize'])
+                log.debug(str(file['user_filesize']))
                 if file['user_filesize'] < 104857600:
                     small_files +=1
             if small_files == len(self.files):
