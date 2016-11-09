@@ -486,18 +486,20 @@ class JobBuilder(object):
 
         self._set_job_source_and_destination(self.files)
         
+        
+        # If reuse is enabled, source and destination SE must be the same
+        # for all entries
+        if reuse_flag == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
+            raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
+       
         if (self.job['source_se'] and self.job['dest_se']) :
             small_files = 0 
             for file in self.files:
                 if (file['user_filesize']) < 104857600:
                     small_files +=1
             if small_files >= len(self.files) - 2:
-                reuse_flag = 'Y'
+                self.job['reuse_job'] = 'Y'
                 log.info("Reuse jobs with "+small_files+" small files up to "+len(self.files)+" total files")
-        # If reuse is enabled, source and destination SE must be the same
-        # for all entries
-        if reuse_flag == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
-            raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
 
     def _populate_deletion(self, deletion_dict):
         """
