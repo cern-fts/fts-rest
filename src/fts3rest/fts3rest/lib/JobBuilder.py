@@ -43,7 +43,7 @@ DEFAULT_PARAMS = {
     'gridftp': '',
     'job_metadata': None,
     'overwrite': False,
-    'reuse': False,
+    'reuse': None,
     'multihop': False,
     'source_spacetoken': '',
     'spacetoken': '',
@@ -403,10 +403,11 @@ class JobBuilder(object):
         reuse_flag = None
         if self.params['multihop']:
             reuse_flag = 'H'
-        elif _safe_flag(self.params['reuse']):
-            reuse_flag = 'Y'
         elif self.params['reuse'] is not None:
-            reuse_flag = 'N'
+            if _safe_flag(self.params['reuse']):
+                reuse_flag = 'Y'
+            else:
+                reuse_flag = 'N'
 
         self.is_bringonline = self.params['copy_pin_lifetime'] > 0 or self.params['bring_online'] > 0
 
