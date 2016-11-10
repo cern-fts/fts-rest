@@ -48,13 +48,53 @@ class TestJobCancel(TestController):
                 'destinations': ['root://dest.ch/file%d' % i],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
-                'filesize': 104857600,
+                'filesize': 1024,
                 'metadata': {'mykey': 'myvalue'},
             })
 
         job = {
             'files': files,
             'params': {'overwrite': True, 'verify_checksum': True, 'reuse': reuse}
+        }
+
+        job_id = self.app.put(
+            url="/jobs",
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        return str(job_id)
+    
+    def _submit_none_reuse(self, count=1, big_files=0):
+        """
+        Submit a valid job without specifying reuse
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        files = []
+        for i in xrange(count):
+            files.append({
+                'sources': ['root://source.es/file%d' % i],
+                'destinations': ['root://dest.ch/file%d' % i],
+                'selection_strategy': 'orderly',
+                'checksum': 'adler32:1234',
+                'filesize': 1024,
+                'metadata': {'mykey': 'myvalue'},
+            })
+        for j in xrange(big_files):
+            files.append({
+                'sources': ['root://source.es/file%d' % i],
+                'destinations': ['root://dest.ch/file%d' % i],
+                'selection_strategy': 'orderly',
+                'checksum': 'adler32:1234',
+                'filesize': 104857600,
+                'metadata': {'mykey': 'myvalue'},
+            })
+
+        job = {
+            'files': files,
+            'params': {'overwrite': True, 'verify_checksum': True}
         }
 
         job_id = self.app.put(
@@ -79,6 +119,8 @@ class TestJobCancel(TestController):
         # Is it in the database?
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.job_state, 'CANCELED')
+        self.assertEqual(job.reuse_job, 'N')
+
         self.assertNotEqual(None, job.job_finished)
         self.assertNotEqual(None, job.finish_time)
         for f in job.files:
@@ -345,6 +387,49 @@ class TestJobCancel(TestController):
 
         file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
         self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=400)
+        
+    def test_cancel_reuse_small_files(self):
+        """
+        Jobs with small files can not be cancelled file per file
+        """
+        job_id = self._submit_none_reuse(10)
+        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
+
+        file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
+        self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=400)
+    
+    def test_cancel_reuse_big_files(self):
+        """
+        Jobs with small files and one big file can not be cancelled file per file
+        """
+        job_id = self._submit_none_reuse(10, 1)
+        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
+
+        file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
+        self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=400)
+    
+    def test_cancel_reuse_small_files_and_big_files(self):
+        """
+        Cancel a job with small files and two big files cannot be reused
+        """
+        job_id = self._submit_none_reuse(100, 2)
+        job = self.app.delete(url="/jobs/%s" % job_id, status=200).json
+
+        self.assertEqual(job['job_id'], job_id)
+        self.assertEqual(job['job_state'], 'CANCELED')
+        self.assertEqual(job['reason'], 'Job canceled by the user')
+
+        # Is it in the database?
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.job_state, 'CANCELED')
+        self.assertEqual(job.reuse_job, 'N')
+
+        self.assertNotEqual(None, job.job_finished)
+        self.assertNotEqual(None, job.finish_time)
+        for f in job.files:
+            self.assertEqual(f.file_state, 'CANCELED')
+            self.assertNotEqual(None, f.job_finished)
+            self.assertNotEqual(None, f.finish_time)
 
     def _become_root(self):
         """
