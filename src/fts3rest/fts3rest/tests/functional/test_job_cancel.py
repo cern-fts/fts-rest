@@ -48,7 +48,7 @@ class TestJobCancel(TestController):
                 'destinations': ['root://dest.ch/file%d' % i],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
-                'filesize': 1024,
+                'filesize': 104857600,
                 'metadata': {'mykey': 'myvalue'},
             })
 
