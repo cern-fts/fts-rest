@@ -399,11 +399,14 @@ class JobBuilder(object):
         """
         Initializes the list of transfers
         """
-        reuse_flag = 'N'
+        
+        reuse_flag = None
         if self.params['multihop']:
             reuse_flag = 'H'
         elif _safe_flag(self.params['reuse']):
             reuse_flag = 'Y'
+        elif self.params['reuse'] is not None:
+            reuse_flag = 'N'
 
         self.is_bringonline = self.params['copy_pin_lifetime'] > 0 or self.params['bring_online'] > 0
 
@@ -491,8 +494,8 @@ class JobBuilder(object):
         # for all entries
         if reuse_flag == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
-       
-        if (self.job['source_se'] and self.job['dest_se']) :
+        
+        if (self.job['source_se'] and self.job['dest_se'] and reuse_flag is None) :
             small_files = 0 
             for file in self.files:
                 log.debug(str(file['user_filesize']))
