@@ -388,25 +388,6 @@ class TestJobCancel(TestController):
         file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
         self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=400)
         
-    def test_cancel_reuse_small_files(self):
-        """
-        Jobs with small files can not be cancelled file per file
-        """
-        job_id = self._submit_none_reuse(10)
-        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
-
-        file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
-        self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=400)
-    
-    def test_cancel_reuse_big_files(self):
-        """
-        Jobs with small files and one big file can not be cancelled file per file
-        """
-        job_id = self._submit_none_reuse(10, 1)
-        files = self.app.get(url="/jobs/%s/files" % job_id, status=200).json
-
-        file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
-        self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=400)
     
     def test_cancel_reuse_small_files_and_big_files(self):
         """
@@ -423,6 +404,29 @@ class TestJobCancel(TestController):
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.job_state, 'CANCELED')
         self.assertEqual(job.reuse_job, 'N')
+
+        self.assertNotEqual(None, job.job_finished)
+        self.assertNotEqual(None, job.finish_time)
+        for f in job.files:
+            self.assertEqual(f.file_state, 'CANCELED')
+            self.assertNotEqual(None, f.job_finished)
+            self.assertNotEqual(None, f.finish_time)
+            
+    def test_cancel_reuse_small_files_and_big_files(self):
+        """
+        Cancel a job with small files and one big file is reused
+        """
+        job_id = self._submit_none_reuse(100, 1)
+        job = self.app.delete(url="/jobs/%s" % job_id, status=200).json
+
+        self.assertEqual(job['job_id'], job_id)
+        self.assertEqual(job['job_state'], 'CANCELED')
+        self.assertEqual(job['reason'], 'Job canceled by the user')
+
+        # Is it in the database?
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.job_state, 'CANCELED')
+        self.assertEqual(job.reuse_job, 'Y')
 
         self.assertNotEqual(None, job.job_finished)
         self.assertNotEqual(None, job.finish_time)
