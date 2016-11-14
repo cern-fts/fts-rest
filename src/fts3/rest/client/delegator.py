@@ -64,11 +64,19 @@ def _init_m2_ctx(m2_ctx, issuer=None):
 
 
 def _workaround_new_extension(name, value, critical=False, issuer=None, _pyfree=1):
-    lhash = m2.x509v3_lhash()
-    ctx = m2.x509v3_set_conf_lhash(lhash)
-    _init_m2_ctx(ctx, issuer)
+    # m2crypto removes x509v3_lhash with 0.25.1
+    try:
+        ctx = m2.x509v3_set_nconf()
+        if ctx is None:
+            raise MemoryError()
+        _init_m2_ctx(ctx, issuer)
+        x509_ext_ptr = m2.x509v3_ext_conf(None, ctx, name, value)
+    except AttributeError:
+        lhash = m2.x509v3_lhash()
+        ctx = m2.x509v3_set_conf_lhash(lhash)
+        _init_m2_ctx(ctx, issuer)
+        x509_ext_ptr = m2.x509v3_ext_conf(lhash, ctx, name, value)
 
-    x509_ext_ptr = m2.x509v3_ext_conf(lhash, ctx, name, value)
     if x509_ext_ptr is None:
         raise Exception('Could not create the X509v3 extension')
 
