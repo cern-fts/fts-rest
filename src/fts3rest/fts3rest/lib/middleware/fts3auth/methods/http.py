@@ -16,11 +16,10 @@
 #   limitations under the License.
 
 import re
-import time
 import dateutil.parser
-import calendar
 import logging
 import urllib
+from datetime import datetime, timedelta
 from M2Crypto.X509 import X509Error
 from base64 import b64decode
 from M2Crypto import X509, EVP
@@ -64,17 +63,18 @@ def do_authentication(credentials, env):
         except:
                 pass
         
-        ts = dateutil.parser.parse(cred['ts']).strftime('%s')
+        ts = dateutil.parser.parse(cred['ts'])
         
     except (TypeError, ValueError):
         log.info("Cannot decode certificate, signature or timestamp")
         raise InvalidCredentials("Cannot decode certificate, signature or timestamp")
+
+    td = datetime.utcnow() - ts
     
-    td = abs(int(calendar.timegm(time.gmtime())) - int(ts))
-    
-    if td > 600:
-        log.info("Authorization has expired by " + str(td) + " seconds")
-        raise InvalidCredentials("Authorization has expired by " + str(td) + " seconds")
+    if td > timedelta(seconds=600):
+        msg = "Authorization has left %s" % td
+        log.info(msg)
+        raise InvalidCredentials(msg)
     if proxy:
         try:
             x509 = X509.load_cert_string(proxy, X509.FORMAT_DER)
