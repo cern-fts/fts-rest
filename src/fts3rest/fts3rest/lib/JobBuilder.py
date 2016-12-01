@@ -322,7 +322,7 @@ class JobBuilder(object):
         'overall' job source and destination Storage Elements
         """
         # Multihop
-        if self.job['reuse_job'] == 'H':
+        if self.job['job_type'] == 'H':
             self.job['source_se'] = entries[0]['source_se']
             self.job['dest_se'] = entries[-1]['dest_se']
         # Regular transfers
@@ -400,14 +400,14 @@ class JobBuilder(object):
         Initializes the list of transfers
         """
         
-        reuse_flag = None
+        job_type = None
         if self.params['multihop']:
-            reuse_flag = 'H'
+            job_type = 'H'
         elif self.params['reuse'] is not None:
             if _safe_flag(self.params['reuse']):
-                reuse_flag = 'Y'
+                job_type = 'Y'
             else:
-                reuse_flag = 'N'
+                job_type = 'N'
 
         self.is_bringonline = self.params['copy_pin_lifetime'] > 0 or self.params['bring_online'] > 0
 
@@ -421,7 +421,7 @@ class JobBuilder(object):
         self.job = dict(
             job_id=self.job_id,
             job_state=job_initial_state,
-            reuse_job=reuse_flag,
+            job_type=job_type,
             retry=int(self.params['retry']),
             retry_delay=int(self.params['retry_delay']),
             job_params=self.params['gridftp'],
@@ -450,7 +450,7 @@ class JobBuilder(object):
             self.job['user_cred'] = self.params['credentials']
 
         # If reuse is enabled, or it is a bring online job, generate one single "hash" for all files
-        if reuse_flag in ('H', 'Y') or self.is_bringonline:
+        if job_type in ('H', 'Y') or self.is_bringonline:
             shared_hashed_id = _generate_hashed_id()
         else:
             shared_hashed_id = None
@@ -479,12 +479,12 @@ class JobBuilder(object):
         self.is_multiple, unique_files = _has_multiple_options(self.files)
         if self.is_multiple:
             # Multiple replicas can not use the reuse flag, nor multihop
-            if reuse_flag in ('H', 'Y'):
+            if job_type in ('H', 'Y'):
                 raise HTTPBadRequest('Can not specify reuse and multiple replicas at the same time')
             # Only one unique file per multiple-replica job
             if unique_files > 1:
                 raise HTTPBadRequest('Multiple replicas jobs can only have one unique file')
-            self.job['reuse_job'] = 'R'
+            self.job['job_type'] = 'R'
             # Apply selection strategy
             self._apply_selection_strategy()
 
@@ -493,10 +493,10 @@ class JobBuilder(object):
         
         # If reuse is enabled, source and destination SE must be the same
         # for all entries
-        if reuse_flag == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
+        if job_type == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
         
-        if (self.job['source_se'] and self.job['dest_se'] and (reuse_flag is None) and (len(self.files) > 1)) :
+        if (self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
             small_files = 0
             min_small_files = len(self.files) - 2
             for file in self.files:
@@ -504,11 +504,11 @@ class JobBuilder(object):
                 if file['user_filesize'] < 104857600:
                     small_files +=1
             if small_files >= min_small_files:
-                self.job['reuse_job'] = 'Y'
+                self.job['job_type'] = 'Y'
                 log.debug("Reuse jobs with "+str(small_files)+" small files up to "+str(len(self.files))+" total files")
         
-        if self.job['reuse_job'] is None:
-            self.job['reuse_job'] = 'N'
+        if self.job['job_type'] is None:
+            self.job['job_type'] = 'N'
 
     def _populate_deletion(self, deletion_dict):
         """
@@ -517,7 +517,7 @@ class JobBuilder(object):
         self.job = dict(
             job_id=self.job_id,
             job_state='DELETE',
-            reuse_job=None,
+            job_type=None,
             retry=int(self.params['retry']),
             retry_delay=int(self.params['retry_delay']),
             job_params=self.params['gridftp'],

@@ -23,7 +23,7 @@ from sqlalchemy import Column, DateTime, Text, String
 class CredentialCache(Base):
     __tablename__ = 't_credential_cache'
 
-    dlg_id       = Column(String(100), primary_key=True)
+    dlg_id       = Column(String(16), primary_key=True)
     dn           = Column(String(255), primary_key=True)
     cert_request = Column(Text)
     priv_key     = Column(Text)
@@ -33,7 +33,7 @@ class CredentialCache(Base):
 class Credential(Base):
     __tablename__ = 't_credential'
 
-    dlg_id           = Column(String(100), primary_key=True)
+    dlg_id           = Column(String(16), primary_key=True)
     dn               = Column(String(255), primary_key=True)
     proxy            = Column(Text)
     voms_attrs       = Column(Text)

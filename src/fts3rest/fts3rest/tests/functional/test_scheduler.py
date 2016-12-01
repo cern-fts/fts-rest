@@ -179,7 +179,7 @@ class TestScheduler(TestController):
     def validate(self, job_id, expected_submitted='http://site03.fr/file'):
         db_job = Session.query(Job).get(job_id)
 
-        self.assertEqual(db_job.reuse_job, 'R')
+        self.assertEqual(db_job.job_type, 'R')
         self.assertEqual(len(db_job.files), 3)
 
         for f in db_job.files:

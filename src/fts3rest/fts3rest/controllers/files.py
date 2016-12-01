@@ -103,6 +103,6 @@ class FilesController(BaseController):
             filter_not_before = datetime.utcnow() - filter_time
             files = files.filter(File.job_finished >= filter_not_before)
         else:
-            files = files.filter(File.job_finished == None)
+            files = files.filter(File.finish_time == None)
 
         return files[:filter_limit]

@@ -87,13 +87,13 @@ class SnapshotController(BaseController):
                 # Files for this pair+vo
                 files = Session.query(
                     File.file_state, File.tx_duration, File.throughput,
-                    File.reason, Job.submit_time, File.start_time, File.job_finished, File.file_id
+                    File.reason, Job.submit_time, File.start_time, File.finish_time, File.file_id
                 )\
                     .filter(File.job_id == Job.job_id)\
                     .filter(File.source_se == source)\
                     .filter(File.dest_se == destination)\
                     .filter(File.vo_name == vo)\
-                    .filter((File.job_finished >= not_before) | (File.job_finished == None))\
+                    .filter((File.finish_time >= not_before) | (File.finish_time == None))\
                     .all()
 
                 # Current number of active

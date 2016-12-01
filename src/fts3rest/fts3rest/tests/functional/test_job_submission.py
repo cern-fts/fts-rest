@@ -49,7 +49,7 @@ class TestJobSubmission(TestController):
         self.assertEqual(job.dest_se, 'root://dest.ch')
         self.assertEqual(job.overwrite_flag, True)
         self.assertEqual(job.verify_checksum, True)
-        self.assertEqual(job.reuse_job, 'N')
+        self.assertEqual(job.job_type, 'N')
         self.assertEqual(job.priority, 3)
         self.assertIsNone(job.max_time_in_queue)
 
@@ -80,7 +80,6 @@ class TestJobSubmission(TestController):
 
         # Validate submitter
         self.assertEqual(socket.getfqdn(), job.submit_host)
-        self.assertEqual('rest', job.agent_dn)
 
     def test_submit(self):
         """
@@ -212,7 +211,7 @@ class TestJobSubmission(TestController):
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
-        self.assertEqual(job.reuse_job, 'Y')
+        self.assertEqual(job.job_type, 'Y')
 
         return job_id
 
@@ -246,7 +245,7 @@ class TestJobSubmission(TestController):
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
-        self.assertEqual(job.reuse_job, 'Y')
+        self.assertEqual(job.job_type, 'Y')
 
     def test_submit_post(self):
         """
@@ -698,7 +697,7 @@ class TestJobSubmission(TestController):
                 'filesize': 1024,
                 'metadata': {'mykey': 'myvalue'},
             }],
-            'params': {'overwrite': True, 'verify_checksum': True, 'credential': 'dropbox'}
+            'params': {'overwrite': True, 'verify_checksum': True}
         }
 
         job_id = self.app.post(
@@ -712,7 +711,6 @@ class TestJobSubmission(TestController):
         self.assertEqual(1, len(job.files))
         self.assertEqual('dropbox://dropbox.com/file', job.files[0].source_surl)
         self.assertEqual('root://dest.ch:8447/file', job.files[0].dest_surl)
-        self.assertEqual('dropbox', job.user_cred)
 
     def test_submit_protocol_params(self):
         """

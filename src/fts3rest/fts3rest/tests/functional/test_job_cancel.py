@@ -119,13 +119,11 @@ class TestJobCancel(TestController):
         # Is it in the database?
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.job_state, 'CANCELED')
-        self.assertEqual(job.reuse_job, 'N')
+        self.assertEqual(job.job_type, 'N')
 
         self.assertNotEqual(None, job.job_finished)
-        self.assertNotEqual(None, job.finish_time)
         for f in job.files:
             self.assertEqual(f.file_state, 'CANCELED')
-            self.assertNotEqual(None, f.job_finished)
             self.assertNotEqual(None, f.finish_time)
 
     def test_cancel_running(self):
@@ -150,11 +148,9 @@ class TestJobCancel(TestController):
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.job_state, 'CANCELED')
         self.assertNotEqual(None, job.job_finished)
-        self.assertNotEqual(None, job.finish_time)
         for f in job.files:
             self.assertEqual(f.file_state, 'CANCELED')
-            self.assertEqual(None, f.job_finished)
-            self.assertNotEqual(None, f.finish_time)
+            self.assertEqual(None, f.finish_time)
 
     def test_cancel_terminal(self):
         """
@@ -281,13 +277,8 @@ class TestJobCancel(TestController):
             self.assertIsNotNone(job.job_finished)
         self.assertEqual('CANCELED', job.files[0].file_state)
         self.assertIsNotNone(job.files[0].finish_time)
-        self.assertIsNone(job.files[0].job_finished)
         for f in job.files[1:]:
             self.assertEqual(expect_files, f.file_state)
-            if expect_job in JobActiveStates:
-                self.assertIsNone(f.job_finished)
-            else:
-                self.assertIsNotNone(f.job_finished)
 
     def test_cancel_file(self):
         """
@@ -403,13 +394,11 @@ class TestJobCancel(TestController):
         # Is it in the database?
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.job_state, 'CANCELED')
-        self.assertEqual(job.reuse_job, 'N')
+        self.assertEqual(job.job_type, 'N')
 
         self.assertNotEqual(None, job.job_finished)
-        self.assertNotEqual(None, job.finish_time)
         for f in job.files:
             self.assertEqual(f.file_state, 'CANCELED')
-            self.assertNotEqual(None, f.job_finished)
             self.assertNotEqual(None, f.finish_time)
             
     def test_cancel_reuse_small_files_and_big_files(self):
@@ -426,13 +415,11 @@ class TestJobCancel(TestController):
         # Is it in the database?
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.job_state, 'CANCELED')
-        self.assertEqual(job.reuse_job, 'Y')
+        self.assertEqual(job.job_type, 'Y')
 
         self.assertNotEqual(None, job.job_finished)
-        self.assertNotEqual(None, job.finish_time)
         for f in job.files:
             self.assertEqual(f.file_state, 'CANCELED')
-            self.assertNotEqual(None, f.job_finished)
             self.assertNotEqual(None, f.finish_time)
 
     def _become_root(self):

@@ -295,8 +295,8 @@ class JobsController(BaseController):
         """
         job = self._get_job(job_id)
 
-        if job.reuse_job != 'N':
-            raise HTTPBadRequest('Multihop or reuse jobs must be cancelled at once (%s)' % str(job.reuse_job))
+        if job.job_type != 'N':
+            raise HTTPBadRequest('Multihop or reuse jobs must be cancelled at once (%s)' % str(job.job_type))
 
         file_ids = file_ids.split(',')
         changed_states = list()
@@ -334,12 +334,6 @@ class JobsController(BaseController):
                 job.job_state = 'CANCELED'
                 job.cancel_job = True
                 job.job_finished = datetime.utcnow()
-                # Remember, job_finished must be NULL so FTS3 kills the fts_url_copy process
-                # Update job_finished for all the others
-                Session.query(File).filter(File.job_id == job_id).filter(~File.file_id.in_(file_ids))\
-                    .update({
-                        'job_finished': job.job_finished
-                    }, synchronize_session=False)
             else:
                 log.warning('Cancelling files within a job with others still active (%s)' % job_id)
 
@@ -412,23 +406,22 @@ class JobsController(BaseController):
             for job in cancellable_jobs:
                 job.job_state = 'CANCELED'
                 job.cancel_job = True
-                job.finish_time = now
                 job.job_finished = now
                 job.reason = 'Job canceled by the user'
 
-                # FTS3 daemon expects job_finished to be NULL in order to trigger the signal
+                # FTS3 daemon expects finish_time to be NULL in order to trigger the signal
                 # to fts_url_copy, but this only makes sense if pid is set
                 Session.query(File).filter(File.job_id == job.job_id)\
                     .filter(File.file_state.in_(FileActiveStates), File.pid != None)\
                     .update({
                         'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
-                        'finish_time': now, 'job_finished': None,
+                        'finish_time': None 
                     }, synchronize_session=False)
                 Session.query(File).filter(File.job_id == job.job_id)\
                     .filter(File.file_state.in_(FileActiveStates), File.pid == None) \
                     .update({
                     'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
-                    'finish_time': now, 'job_finished': now,
+                    'finish_time': now
                 }, synchronize_session=False)
                 # However, for data management operations there is nothing to signal, so
                 # set job_finished
@@ -626,13 +619,13 @@ class JobsController(BaseController):
             )
 
         try:
-            # FTS3 daemon expects job_finished to be NULL in order to trigger the signal
+            # FTS3 daemon expects finish_time to be NULL in order to trigger the signal
             # to fts_url_copy
             file_count = Session.query(File).filter(File.vo_name == vo_name)\
                 .filter(File.file_state.in_(FileActiveStates))\
                 .update({
                     'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
-                    'finish_time': now
+                    'finish_time': None
                 }, synchronize_session=False)
 
             # However, for data management operations there is nothing to signal, so
@@ -648,7 +641,7 @@ class JobsController(BaseController):
                 .filter(Job.job_state.in_(JobActiveStates))\
                 .update({
                     'job_state': 'CANCELED', 'reason': 'Job canceled by the user',
-                    'job_finished': now, 'finish_time': now
+                    'job_finished': now
                  }, synchronize_session=False)
             Session.commit()
             Session.expire_all()
@@ -679,12 +672,12 @@ class JobsController(BaseController):
             )
 
         try:
-            # FTS3 daemon expects job_finished to be NULL in order to trigger the signal
+            # FTS3 daemon expects finish_time to be NULL in order to trigger the signal
             # to fts_url_copy
             file_count = Session.query(File).filter(File.file_state.in_(FileActiveStates))\
                 .update({
                     'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
-                    'finish_time': now
+                    'finish_time': None
                 }, synchronize_session=False)
 
             # However, for data management operations there is nothing to signal, so
@@ -699,7 +692,7 @@ class JobsController(BaseController):
             job_count = Session.query(Job).filter(Job.job_state.in_(JobActiveStates))\
                 .update({
                     'job_state': 'CANCELED', 'reason': 'Job canceled by the user',
-                    'job_finished': now, 'finish_time': now
+                    'job_finished': now
                 }, synchronize_session=False)
             Session.commit()
             Session.expire_all()

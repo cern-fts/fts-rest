@@ -126,11 +126,9 @@ class TestBanning(TestController):
             files = Session.query(File).filter(File.job_id == job_id)
             self.assertEqual('CANCELED', job.job_state)
             self.assertNotEqual(None, job.job_finished)
-            self.assertNotEqual(None, job.finish_time)
             self.assertEqual('User banned', job.reason)
             for f in files:
                 self.assertEqual('CANCELED', f.file_state)
-                self.assertNotEqual(None, f.job_finished)
                 self.assertNotEqual(None, f.finish_time)
                 self.assertEqual('User banned', f.reason)
 
@@ -227,10 +225,8 @@ class TestBanning(TestController):
             files = Session.query(File).filter(File.job_id == job_id)
             self.assertEqual('CANCELED', job.job_state)
             self.assertNotEqual(None, job.job_finished)
-            self.assertNotEqual(None, job.finish_time)
             for f in files:
                 self.assertEqual('CANCELED', f.file_state)
-                self.assertNotEqual(None, f.job_finished)
                 self.assertNotEqual(None, f.finish_time)
                 self.assertEqual('Storage banned', f.reason)
 
@@ -260,7 +256,6 @@ class TestBanning(TestController):
         job = Session.query(Job).get(job_id)
         self.assertEqual('SUBMITTED', job.job_state)
         self.assertEqual(None, job.job_finished)
-        self.assertEqual(None, job.finish_time)
 
         files = Session.query(File).filter(File.job_id == job_id)
         for f in files:
@@ -269,7 +264,6 @@ class TestBanning(TestController):
                 self.assertNotEqual(None, f.finish_time)
             else:
                 self.assertEqual('SUBMITTED', f.file_state)
-            self.assertEqual(None, f.job_finished)
 
     def test_ban_se_cancel_vo(self):
         """
@@ -328,10 +322,8 @@ class TestBanning(TestController):
             files = Session.query(File).filter(File.job_id == job_id)
             self.assertIn(job.job_state, ['ACTIVE', 'SUBMITTED'])
             self.assertEqual(None, job.job_finished)
-            self.assertEqual(None, job.finish_time)
             for f in files:
                 self.assertIn(f.file_state, ['ACTIVE', 'SUBMITTED'])
-                self.assertEqual(None, f.job_finished)
                 self.assertEqual(None, f.finish_time)
                 self.assertEqual(1234, f.wait_timeout)
                 self.assertGreater(f.wait_timestamp, datetime.utcnow() - timedelta(minutes=1))

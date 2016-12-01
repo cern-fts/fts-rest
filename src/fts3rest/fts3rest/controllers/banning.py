@@ -128,11 +128,7 @@ def _cancel_transfers(storage=None, vo_name=None):
                 Session.query(Job).filter(Job.job_id == job_id).update({
                     'job_state': 'CANCELED',
                     'job_finished': now,
-                    'finish_time': now,
                     'reason': reason
-                })
-                Session.query(File).filter(File.job_id == job_id).update({
-                    'job_finished': now
                 })
 
         Session.commit()
@@ -156,12 +152,12 @@ def _cancel_jobs(dn):
             Session.query(File).filter(File.job_id == job_id).filter(File.file_state.in_(FileActiveStates))\
                 .update({
                     'file_state': 'CANCELED', 'reason': 'User banned',
-                    'job_finished': now, 'finish_time': now
+                    'finish_time': now
                 }, synchronize_session=False)
             Session.query(Job).filter(Job.job_id == job_id)\
                 .update({
                     'job_state': 'CANCELED', 'reason': 'User banned',
-                    'job_finished': now, 'finish_time': now
+                    'job_finished': now
                 }, synchronize_session=False)
         Session.commit()
         Session.expire_all()
@@ -316,7 +312,6 @@ class BanningController(BaseController):
                 Session.delete(banned)
                 Session.query(File)\
                     .filter(File.file_state == 'SUBMITTED')\
-                    .filter(File.job_finished == None)\
                     .filter((File.source_se == storage) | (File.dest_se == storage))\
                     .update({
                         'wait_timestamp': None,

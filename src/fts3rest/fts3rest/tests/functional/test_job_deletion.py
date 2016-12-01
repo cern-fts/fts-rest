@@ -98,7 +98,6 @@ class TestJobDeletion(TestController):
 
         self.assertEqual('CANCELED', job.job_state)
         self.assertEqual(job.reason, 'Job canceled by the user')
-        self.assertIsNotNone(job.finish_time)
         self.assertIsNotNone(job.job_finished)
 
         dm = Session.query(DataManagement).filter(DataManagement.job_id == job_id).all()
