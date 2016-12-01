@@ -359,6 +359,8 @@ class TestJobSubmission(TestController):
         db_job = Session.query(Job).get(job_id)
         self.assertEqual(db_job.job_state, 'STAGING')
         self.assertEqual(db_job.files[0].file_state, 'STAGING')
+        self.assertEqual(db_job.copy_pin_lifetime, 3600)
+        self.assertEqual(db_job.bring_online, 60)
 
         return job_id
 
