@@ -14,7 +14,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-
+from sqlalchemy import BigInteger
 from sqlalchemy import Boolean, Column, DateTime, Float
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import relation, backref
@@ -29,7 +29,7 @@ FileTerminalStates = ['FINISHED', 'FAILED', 'CANCELED']
 class File(Base):
     __tablename__ = 't_file'
 
-    file_id              = Column(Integer, primary_key=True)
+    file_id              = Column(BigInteger, primary_key=True)
     hashed_id            = Column(Integer)
     file_index           = Column(Integer)
     job_id               = Column(String(36), ForeignKey('t_job.job_id'))
@@ -43,7 +43,7 @@ class File(Base):
     staging_host         = Column(String(1024))
     reason               = Column(String(2048))
     recoverable          = Column('current_failures', Boolean)
-    filesize             = Column(Float)
+    filesize             = Column(BigInteger)
     checksum             = Column(String(100))
     finish_time          = Column(DateTime)
     start_time           = Column(DateTime)
@@ -52,7 +52,7 @@ class File(Base):
     tx_duration          = Column(Float)
     throughput           = Column(Float)
     retry                = Column(Integer)
-    user_filesize        = Column(Float)
+    user_filesize        = Column(BigInteger)
     file_metadata        = Column(Json(255))
     staging_start        = Column(DateTime)
     staging_finished     = Column(DateTime)
@@ -77,7 +77,7 @@ class File(Base):
 class ArchivedFile(Base):
     __tablename__ = 't_file_backup'
 
-    file_id              = Column(Integer, primary_key=True)
+    file_id              = Column(BigInteger, primary_key=True)
     file_index           = Column(Integer)
     job_id               = Column(String(36),
                                   ForeignKey('t_job_backup.job_id'))
@@ -90,7 +90,7 @@ class ArchivedFile(Base):
     staging_host         = Column(String(1024))
     reason               = Column(String(2048))
     current_failures     = Column(Integer)
-    filesize             = Column(Float)
+    filesize             = Column(BigInteger)
     checksum             = Column(String(100))
     finish_time          = Column(DateTime)
     start_time           = Column(DateTime)
@@ -100,7 +100,7 @@ class ArchivedFile(Base):
     tx_duration          = Column(Float)
     throughput           = Column(Float)
     retry                = Column(Integer)
-    user_filesize        = Column(Float)
+    user_filesize        = Column(BigInteger)
     file_metadata        = Column(Json(255))
     staging_start        = Column(DateTime)
     staging_finished     = Column(DateTime)
