@@ -17,6 +17,7 @@
 from sqlalchemy import BigInteger
 from sqlalchemy import Boolean, Column, DateTime, Float
 from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy.dialects import sqlite
 from sqlalchemy.orm import relation, backref
 
 from base import Base, Json
@@ -25,11 +26,15 @@ from base import Base, Json
 FileActiveStates = ['SUBMITTED', 'READY', 'STARTED', 'ACTIVE', 'STAGING']
 FileTerminalStates = ['FINISHED', 'FAILED', 'CANCELED']
 
+# sqlite doesn't like auto increment with BIGINT, so we need to use a variant
+# on that case
+FileId = BigInteger().with_variant(sqlite.INTEGER(), 'sqlite')
+
 
 class File(Base):
     __tablename__ = 't_file'
 
-    file_id              = Column(BigInteger, primary_key=True)
+    file_id              = Column(FileId, primary_key=True)
     hashed_id            = Column(Integer)
     file_index           = Column(Integer)
     job_id               = Column(String(36), ForeignKey('t_job.job_id'))
@@ -77,7 +82,7 @@ class File(Base):
 class ArchivedFile(Base):
     __tablename__ = 't_file_backup'
 
-    file_id              = Column(BigInteger, primary_key=True)
+    file_id              = Column(FileId, primary_key=True)
     file_index           = Column(Integer)
     job_id               = Column(String(36),
                                   ForeignKey('t_job_backup.job_id'))
