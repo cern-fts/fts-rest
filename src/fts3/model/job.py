@@ -81,7 +81,6 @@ class ArchivedJob(Base):
     job_params               = Column(String(255))
     submit_host              = Column(String(255))
     user_dn                  = Column(String(1024))
-    agent_dn                 = Column(String(1024))
     cred_id                  = Column(String(100))
     vo_name                  = Column(String(50))
     reason                   = Column(String(2048))
