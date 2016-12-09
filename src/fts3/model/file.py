@@ -16,15 +16,16 @@
 #   limitations under the License.
 from sqlalchemy import BigInteger
 from sqlalchemy import Boolean, Column, DateTime, Float
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import ForeignKey, Integer, String, Enum
 from sqlalchemy.dialects import sqlite
 from sqlalchemy.orm import relation, backref
 
 from base import Base, Json
 
-
-FileActiveStates = ['SUBMITTED', 'READY', 'STARTED', 'ACTIVE', 'STAGING']
+FileActiveStates = ['STAGING', 'STARTED', 'SUBMITTED', 'READY', 'ACTIVE']
 FileTerminalStates = ['FINISHED', 'FAILED', 'CANCELED']
+# NOT_USED is not terminal, nor not-terminal
+FileOnHoldStates = ['NOT_USED']
 
 # sqlite doesn't like auto increment with BIGINT, so we need to use a variant
 # on that case
@@ -41,7 +42,7 @@ class File(Base):
     vo_name              = Column(String(50))
     source_se            = Column(String(255))
     dest_se              = Column(String(255))
-    file_state           = Column(String(32))
+    file_state           = Column(Enum(*(FileActiveStates + FileTerminalStates + FileOnHoldStates)))
     transfer_host        = Column(String(255))
     source_surl          = Column(String(1100))
     dest_surl            = Column(String(1100))

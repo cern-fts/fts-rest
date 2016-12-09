@@ -16,14 +16,14 @@
 #   limitations under the License.
 
 from file import ArchivedFile
-from sqlalchemy import Column, DateTime, Integer, String, Text
+from sqlalchemy import Column, DateTime, Integer, String, Enum
 from sqlalchemy.orm import relation, backref
 
 from base import Base, Flag, TernaryFlag, Json
 
 
-JobActiveStates = ['SUBMITTED', 'READY', 'ACTIVE', 'STAGING', 'DELETE']
-JobTerminalStates = ['FINISHED', 'CANCELED', 'FAILED', 'FINISHEDDIRTY']
+JobActiveStates = ['STAGING', 'SUBMITTED', 'READY', 'ACTIVE', 'DELETE']
+JobTerminalStates = ['FINISHED', 'FAILED', 'FINISHEDDIRTY', 'CANCELED']
 
 
 class Job(Base):
@@ -32,7 +32,7 @@ class Job(Base):
     job_id                   = Column(String(36), primary_key=True)
     source_se                = Column(String(255))
     dest_se                  = Column(String(255))
-    job_state                = Column(String(32))
+    job_state                = Column(Enum(*(JobActiveStates + JobTerminalStates)))
     job_type                 = Column(String(1), default='N')
     cancel_job               = Column(Flag(negative=None))
     submit_host              = Column(String(255))
