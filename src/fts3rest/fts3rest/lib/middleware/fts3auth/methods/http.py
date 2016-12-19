@@ -64,12 +64,11 @@ def do_authentication(credentials, env):
                 pass
         
         ts = dateutil.parser.parse(cred['ts'])
-        
     except (TypeError, ValueError):
         log.info("Cannot decode certificate, signature or timestamp")
         raise InvalidCredentials("Cannot decode certificate, signature or timestamp")
 
-    td = datetime.utcnow() - ts
+    td = datetime.utcnow() - ts.replace(tzinfo=None)
     
     if td > timedelta(seconds=600):
         msg = "Authorization has left %s" % td
