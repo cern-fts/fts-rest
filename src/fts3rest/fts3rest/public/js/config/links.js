@@ -54,6 +54,7 @@ function refreshLinks()
             });
 
             tr.append($("<td></td>").append(deleteBtn))
+              .append($("<td></td>").text(link.vo))
               .append($("<td></td>").text(link.symbolicname))
               .append($("<td></td>").text(link.source))
               .append($("<td></td>").text(link.destination))
@@ -172,6 +173,7 @@ function setupLinks()
     $("#link-config-add-frm").submit(function(event) {
         var addFrm = $("#link-config-add-frm");
         var payload = {
+            vo: addFrm.find("[name=vo]").val(),
             symbolicname: addFrm.find("[name=symbolicname]").val(),
             source: addFrm.find("[name=source]").val(),
             destination: addFrm.find("[name=destination]").val(),

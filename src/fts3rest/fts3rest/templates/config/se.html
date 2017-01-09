@@ -25,6 +25,10 @@
                                     <h3 class="panel-title">As source</h3>
                                 </div>
                                 <div class="panel-body">
+  									<div class="form-group">
+                                        <label>VO</label>
+                                        <input class="form-control" name="vo" type="number" value="{{as_source/vo}}"/>
+                                    </div>
                                     <div class="form-group">
                                         <label>Active limit</label>
                                         <input class="form-control" name="active" type="number" value="{{as_source/active}}"/>
@@ -56,6 +60,10 @@
                                     <h3 class="panel-title">As destination</h3>
                                 </div>
                                 <div class="panel-body">
+									<div class="form-group">
+                                        <label>VO</label>
+                                        <input class="form-control" name="vo" type="number" value="{{as_destination/vo}}"/>
+                                    </div>
                                     <div class="form-group">
                                         <label>Active limit</label>
                                         <input class="form-control" name="active" type="number" value="{{as_destination/active}}"/>
@@ -173,6 +181,10 @@
         					</div>
         					<div class="panel-body">
         						<div class="form-group">
+        							<label for="as_source-vo">VO</label>
+        							<input class="form-control" name="vo" id="as_source-vo" type="text">
+        						</div>
+        						<div class="form-group">
         							<label for="as_source-active">Active limit</label>
         							<input class="form-control" name="active" id="as_source-active" type="number">
         						</div>
@@ -207,6 +219,10 @@
         						<h3 class="panel-title">As destination</h3>
         					</div>
         					<div class="panel-body">
+        					    <div class="form-group">
+        							<label for="as_destination-vo">VO</label>
+        							<input class="form-control" name="vo" id="as_destination-vo" type="text">
+        						</div>
         						<div class="form-group">
         							<label>Active limit</label>
         							<input class="form-control" name="active" type="number">

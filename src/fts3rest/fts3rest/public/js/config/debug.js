@@ -96,6 +96,7 @@ function refreshDebugList()
 
             tbody.append(
                 tr.append($("<td></td>").append(deleteBtn))
+                  .append($("<td></td>").append($("<span class='monospace'></span>").text(debug.vo)))
                   .append($("<td></td>").append($("<span class='monospace'></span>").text(debug.source_se)))
                   .append($("<td></td>").append($("<span class='monospace'></span>").text(debug.dest_se)))
                   .append($("<td></td>").append(debugLevelSelect(debug)))
@@ -119,6 +120,7 @@ function setupDebug()
 	// Attach to the form
 	$("#debug-add-frm").submit(function() {
         var payload = {
+            vo: $(this).find("[name=vo]").val(),
             source_se: $(this).find("[name=source_se]").val(),
             dest_se: $(this).find("[name=dest_se]").val(),
             debug_level: $(this).find("[name=debug_level]").val(),

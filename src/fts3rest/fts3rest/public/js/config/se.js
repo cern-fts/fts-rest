@@ -66,7 +66,8 @@ function getSubForm(form, klass)
 {
     var subform = form.find("." + klass);
     var subset = {};
-
+    
+    subset.vo = (subform.find("select[name='vo']").val());
     subset.active = parseInt(subform.find("input[name='active']").val());
     subset.ipv6 = (subform.find("select[name='ipv6']").val() == "true");
     subset.throughput = parseFloat(subform.find("input[name='throughput']").val());

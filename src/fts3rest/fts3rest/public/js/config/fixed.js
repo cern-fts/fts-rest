@@ -38,6 +38,7 @@ function refreshFixList()
                 tr.css("background", "#d9534f");
                 
                 var data = {
+                		vo: fix.vo,
                         source_se: fix.source_se,
                         dest_se: fix.dest_se,
                         min_active: 0,
@@ -63,6 +64,7 @@ function refreshFixList()
 
             var changeFunction = function(){
                 var data = {
+                    vo: fix.vo,
                     source_se: fix.source_se,
                     dest_se: fix.dest_se,
                     min_active: changeMinActiveField.val(),
@@ -98,6 +100,7 @@ function refreshFixList()
             .change(changeFunction);
 
             tr.append($("<td></td>").append(deleteBtn))
+              .append($("<td></td>").text(fix.vo))
               .append($("<td></td>").text(fix.source_se))
               .append($("<td></td>").text(fix.dest_se))
               .append($("<td></td>").append(changeMinActiveField))
@@ -119,6 +122,7 @@ function setupFixed()
     // Attach to forms
     $("#fixed-add-frm").submit(function(event) {
         var payload = {
+            vo: $(this).find("[name=vo]").val(),
             source_se: $(this).find("[name=source_se]").val(),
             dest_se: $(this).find("[name=dest_se]").val(),
             min_active: $(this).find("[name=min_active]").val(),
