@@ -35,5 +35,6 @@ RUN useradd fts3 && usermod -a -G fts3 apache
 RUN mkdir -p /var/log/fts3rest && chown fts3:fts3 /var/log/fts3rest
 
 #expose port
-
 EXPOSE 8446
+
+CMD ["/usr/sbin/apachectl","-DFOREGROUND"]
