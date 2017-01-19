@@ -31,9 +31,9 @@ RUN /usr/bin/yum install -y fts-rest-selinux fts-rest httpd MySQL-python
 RUN /usr/bin/yum install -y voms-config-wlcg  voms-config-vo-dteam
 
 #add user
-RUN useradd fts3
-RUN usermod -a -G fts3 apache
+RUN useradd fts3 && usermod -a -G fts3 apache
+RUN mkdir -p /var/log/fts3rest && chown fts3:fts3 /var/log/fts3rest
 
-#expose ports
+#expose port
 
 EXPOSE 8446
