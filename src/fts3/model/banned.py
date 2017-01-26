@@ -28,7 +28,6 @@ class BannedDN(Base):
     addition_time = Column(DateTime)
     admin_dn      = Column(String(1024))
     status        = Column(String(10))
-    wait_timeout  = Column(Integer(), default=0)
 
 
 class BannedSE(Base):
@@ -38,6 +37,6 @@ class BannedSE(Base):
     message       = Column(String(256))
     addition_time = Column(DateTime)
     admin_dn      = Column(String(1024))
-    vo            = Column(String(100))
+    vo            = Column(String(100), primary_key=True, nullable=True)
     status        = Column(String(10))
-    wait_timeout  = Column(Integer(), default=0)
+

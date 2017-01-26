@@ -149,15 +149,15 @@ class TestBanning(TestController):
         ).json
         self.assertEqual(0, len(canceled))
 
-        banned = Session.query(BannedSE).get('gsiftp://nowhere')
+        banned = Session.query(BannedSE).get(('gsiftp://nowhere', '*'))
         self.assertNotEqual(None, banned)
         self.assertEqual(self.get_user_credentials().user_dn, banned.admin_dn)
         self.assertEqual('CANCEL', banned.status)
-        self.assertEqual(None, banned.vo)
+        self.assertEqual('*', banned.vo)
         self.assertEqual('TEST BAN 42', banned.message)
 
         self.app.delete(url="/ban/se?storage=%s" % urllib.quote('gsiftp://nowhere'), status=204)
-        banned = Session.query(BannedSE).get('gsiftp://nowhere')
+        banned = Session.query(BannedSE).get(('gsiftp://nowhere', '*'))
         self.assertEqual(None, banned)
 
     def test_list_banned_ses(self):
@@ -190,14 +190,14 @@ class TestBanning(TestController):
         ).json
         self.assertEqual(0, len(canceled))
 
-        banned = Session.query(BannedSE).get('gsiftp://nowhere')
+        banned = Session.query(BannedSE).get(('gsiftp://nowhere', 'dteam'))
         self.assertNotEqual(None, banned)
         self.assertEqual(self.get_user_credentials().user_dn, banned.admin_dn)
         self.assertEqual('CANCEL', banned.status)
         self.assertEqual('dteam', banned.vo)
 
-        self.app.delete(url="/ban/se?storage=%s" % urllib.quote('gsiftp://nowhere'), status=204)
-        banned = Session.query(BannedSE).get('gsiftp://nowhere')
+        self.app.delete(url="/ban/se?storage=%s&vo_name=dteam" % urllib.quote('gsiftp://nowhere'), status=204)
+        banned = Session.query(BannedSE).get(('gsiftp://nowhere', 'dteam'))
         self.assertEqual(None, banned)
 
     def test_ban_se_cancel(self):
@@ -323,10 +323,8 @@ class TestBanning(TestController):
             self.assertIn(job.job_state, ['ACTIVE', 'SUBMITTED'])
             self.assertEqual(None, job.job_finished)
             for f in files:
-                self.assertIn(f.file_state, ['ACTIVE', 'SUBMITTED'])
+                self.assertIn(f.file_state, ['ACTIVE', 'ON_HOLD'])
                 self.assertEqual(None, f.finish_time)
-                self.assertEqual(1234, f.wait_timeout)
-                self.assertGreater(f.wait_timestamp, datetime.utcnow() - timedelta(minutes=1))
 
         job = Session.query(Job).get(jobs[2])
         self.assertEqual(job.job_state, 'FAILED')
@@ -334,9 +332,8 @@ class TestBanning(TestController):
         for f in files:
             self.assertEqual('FAILED', f.file_state)
 
-        banned = Session.query(BannedSE).get('gsiftp://source')
+        banned = Session.query(BannedSE).get(('gsiftp://source', '*'))
         self.assertEqual('WAIT', banned.status)
-        self.assertEqual(1234, banned.wait_timeout)
 
     def test_ban_se_wait_vo(self):
         """
@@ -362,11 +359,10 @@ class TestBanning(TestController):
 
             self.assertEqual('SUBMITTED', job.job_state)
             for f in files:
-                self.assertEqual('SUBMITTED', f.file_state)
                 if job_id in waiting_ids:
-                    self.assertEqual(33, f.wait_timeout)
+                    self.assertEqual('ON_HOLD', f.file_state)
                 else:
-                    self.assertEqual(None, f.wait_timeout)
+                    self.assertEqual('SUBMITTED', f.file_state)
 
     def test_ban_se_no_submit(self):
         """
@@ -419,8 +415,7 @@ class TestBanning(TestController):
 
         files = Session.query(File).filter(File.job_id == job_id)
         for f in files:
-            self.assertEqual(0, f.wait_timeout)
-            self.assertGreater(f.wait_timestamp, datetime.utcnow() - timedelta(minutes=1))
+            self.assertEqual('ON_HOLD', f.file_state)
 
         # The other way around
         job = {
@@ -438,8 +433,7 @@ class TestBanning(TestController):
 
         files = Session.query(File).filter(File.job_id == job_id)
         for f in files:
-            self.assertEqual(0, f.wait_timeout)
-            self.assertGreater(f.wait_timestamp, datetime.utcnow() - timedelta(minutes=1))
+            self.assertEqual('ON_HOLD', f.file_state)
 
     def test_unban_wait(self):
         """
@@ -454,15 +448,13 @@ class TestBanning(TestController):
 
         files = Session.query(File).filter(File.job_id == job_id)
         for f in files:
-            self.assertIsNotNone(f.wait_timestamp)
-            self.assertIsNotNone(f.wait_timeout)
+            self.assertEqual('ON_HOLD', f.file_state)
 
         self.app.delete(url="/ban/se?storage=%s" % urllib.quote('gsiftp://source'), status=204)
 
         files = Session.query(File).filter(File.job_id == job_id)
         for f in files:
-            self.assertIsNone(f.wait_timestamp)
-            self.assertIsNone(f.wait_timeout)
+            self.assertEqual('SUBMITTED', f.file_state)
 
     # Some requests that must be rejected
     def test_ban_dn_empty(self):
@@ -489,19 +481,6 @@ class TestBanning(TestController):
         """
         self.app.delete(url="/ban/se", status=400)
 
-    def test_ban_se_bad_timeout(self):
-        """
-        Ban SE with invalid timeout values
-        """
-        self.app.post(
-            url="/ban/se", params={'storage': 'gsiftp://source', 'status': 'wait', 'timeout': 'xxx'},
-            status=400
-        )
-        self.app.post(
-            url="/ban/se", params={'storage': 'gsiftp://source', 'status': 'wait', 'timeout': -1},
-            status=400
-        )
-
     def test_ban_se_cancel_and_submit(self):
         """
         Setting status = cancel and ask for allow_submit must fail
@@ -519,3 +498,46 @@ class TestBanning(TestController):
             url="/ban/se", params={'storage': 'gsiftp://source', 'status': 'blahblah'},
             status=400
         )
+
+    def test_ban_se_staging(self):
+        """
+        Ban a storage with transfers queued as STAGING, submit a new STAGING, unban.
+        Final state must be STAGING
+        """
+        self.push_delegation()
+
+        pre_job_id = insert_job('dteam', 'srm://source', 'srm://destination', 'STAGING', user_dn='/DC=cern/CN=someone')
+        self.app.post(
+            url="/ban/se", params={'storage': 'srm://source', 'status': 'wait', 'allow_submit': True},
+            status=200
+        )
+
+        files = Session.query(File).filter(File.job_id == pre_job_id)
+        for f in files:
+            self.assertEqual('ON_HOLD_STAGING', f.file_state)
+
+        job = {
+            'files': [{
+                'sources': ['srm://source/file'],
+                'destinations': ['gsiftp://destination2/path/']
+            }],
+            'params': {
+                'copy_pin_lifetime': 1234
+            }
+        }
+        post_job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        files = Session.query(File).filter(File.job_id == post_job_id)
+        for f in files:
+            self.assertEqual('ON_HOLD_STAGING', f.file_state)
+
+        self.app.delete(url="/ban/se?storage=%s" % urllib.quote('srm://source'), status=204)
+
+        files = Session.query(File).filter(File.job_id.in_((pre_job_id, post_job_id)))
+        for f in files:
+            self.assertEqual('STAGING', f.file_state)

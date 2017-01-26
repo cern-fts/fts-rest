@@ -216,33 +216,32 @@ def _apply_banning(files):
     # We then build a dictionary to make look up easy
     banned_ses = dict()
     for b in Session.query(BannedSE):
-        banned_ses[str(b.se)] = (b.vo, b.status, b.wait_timeout)
+        banned_ses[str(b.se)] = (b.vo, b.status)
 
-    now = datetime.utcnow()
     for f in files:
         source_banned = banned_ses.get(str(f['source_se']), None)
         dest_banned = banned_ses.get(str(f['dest_se']), None)
-        timeout = None
+        banned = False
 
-        if source_banned and (source_banned[0] == f['vo_name'] or source_banned[0] is None):
+        if source_banned and (source_banned[0] == f['vo_name'] or source_banned[0] == '*'):
             if source_banned[1] != 'WAIT_AS':
                 raise HTTPForbidden("%s is banned" % f['source_se'])
-            timeout = source_banned[2]
+            banned = True
 
-        if dest_banned and (dest_banned[0] == f['vo_name'] or dest_banned[0] is None):
+        if dest_banned and (dest_banned[0] == f['vo_name'] or dest_banned[0] == '*'):
             if dest_banned[1] != 'WAIT_AS':
                 raise HTTPForbidden("%s is banned" % f['dest_se'])
-            if not timeout:
-                timeout = dest_banned[2]
-            else:
-                timeout = max(timeout, dest_banned[2])
+            banned = True
 
-        if timeout is not None:
-            f['wait_timestamp'] = now
-            f['wait_timeout'] = timeout
-        else:
-            f['wait_timestamp'] = None
-            f['wait_timeout'] = None
+        if banned:
+            if f['file_state'] == 'SUBMITTED':
+                f['file_state'] = 'ON_HOLD'
+            elif f['file_state'] == 'STAGING':
+                f['file_state'] = 'ON_HOLD_STAGING'
+            elif f['file_state'] == 'DELETE':
+                continue
+            else:
+                HTTPInternalServerError('Unexpected initial state: %s' % f['file_state'])
 
 
 def _seconds_from_value(value):

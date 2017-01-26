@@ -33,7 +33,7 @@ from fts3rest.lib.middleware.fts3auth.constants import *
 log = logging.getLogger(__name__)
 
 
-def _ban_se(storage, vo_name, allow_submit, status, timeout, message):
+def _ban_se(storage, vo_name, allow_submit, status, message):
     """
     Mark in the db the given storage as banned
     """
@@ -48,7 +48,6 @@ def _ban_se(storage, vo_name, allow_submit, status, timeout, message):
         banned.status = 'WAIT_AS'
     else:
         banned.status = status
-    banned.wait_timeout = timeout
     try:
         Session.merge(banned)
         Session.commit()
@@ -85,7 +84,7 @@ def _cancel_transfers(storage=None, vo_name=None):
     files = Session.query(File)\
         .filter((File.source_se == storage) | (File.dest_se == storage))\
         .filter(File.file_state.in_(FileActiveStates + ['NOT_USED']))
-    if vo_name:
+    if vo_name and vo_name != '*':
         files = files.filter(File.vo_name == vo_name)
 
     now = datetime.utcnow()
@@ -167,7 +166,7 @@ def _cancel_jobs(dn):
         raise
 
 
-def _set_to_wait(storage=None, vo_name=None, timeout=0):
+def _set_to_wait(storage, vo_name):
     """
     Updates the transfers that have the given storage either in source or destination,
     and belong to the given VO.
@@ -175,21 +174,47 @@ def _set_to_wait(storage=None, vo_name=None, timeout=0):
     """
     job_ids = Session.query(distinct(File.job_id))\
         .filter((File.source_se == storage) | (File.dest_se == storage)).filter(File.file_state.in_(FileActiveStates))
-    if vo_name:
+    if vo_name and vo_name != '*':
         job_ids = job_ids.filter(File.vo_name == vo_name)
     job_ids = map(lambda j: j[0], job_ids.all())
 
     try:
         for job_id in job_ids:
-            Session.query(File).filter(File.job_id == job_id).filter(File.file_state.in_(FileActiveStates))\
-                .update({'wait_timestamp': datetime.utcnow(), 'wait_timeout': timeout}, synchronize_session=False)
+            Session.query(File).filter(File.job_id == job_id, File.file_state == 'STAGING')\
+                .update({'file_state': 'ON_HOLD_STAGING'}, synchronize_session=False)
+            Session.query(File).filter(File.job_id == job_id, File.file_state == 'SUBMITTED')\
+                .update({'file_state': 'ON_HOLD'}, synchronize_session=False)
 
         Session.commit()
         Session.expire_all()
-        return job_ids
     except Exception:
         Session.rollback()
         raise
+
+    return job_ids
+
+def _reenter_queue(storage, vo_name):
+    """
+    Resets to SUBMITTED or STAGING those transfers that were set ON_HOLD with a previous banning
+    Returns the list of affects job ids.
+    """
+    job_ids = Session.query(distinct(File.job_id))\
+        .filter((File.source_se == storage) | (File.dest_se == storage)).filter(File.file_state.in_(['ON_HOLD', 'ON_HOLD_STAGING']))
+    if vo_name and vo_name != '*':
+        job_ids = job_ids.filter(File.vo_name == vo_name)
+    job_ids = map(lambda j: j[0], job_ids.all())
+
+    try:
+        for job_id in job_ids:
+            Session.query(File).filter(File.job_id == job_id, File.file_state == 'ON_HOLD_STAGING')\
+                .update({'file_state': 'STAGING'}, synchronize_session=False)
+            Session.query(File).filter(File.job_id == job_id, File.file_state == 'ON_HOLD')\
+                .update({'file_state': 'SUBMITTED'}, synchronize_session=False)
+    except Exception:
+        Session.rollback()
+        raise
+
+    return job_ids
 
 
 class BanningController(BaseController):
@@ -232,7 +257,9 @@ class BanningController(BaseController):
         if not storage:
             raise HTTPBadRequest('Missing storage parameter')
 
-        vo_name = input_dict.get('vo_name', None)
+        vo_name = input_dict.get('vo_name', '*')
+        if vo_name is None:
+            raise HTTPBadRequest('vo_name can not be null')
         allow_submit = bool(input_dict.get('allow_submit', False))
         status = input_dict.get('status', 'cancel').upper()
 
@@ -242,19 +269,12 @@ class BanningController(BaseController):
         if allow_submit and status == 'CANCEL':
             raise HTTPBadRequest('allow_submit and status = CANCEL can not be combined')
 
-        try:
-            timeout = int(input_dict.get('timeout', 0))
-            if timeout < 0:
-                raise ValueError()
-        except ValueError:
-            raise HTTPBadRequest('timeout expects an integer equal or greater than zero')
-
-        _ban_se(storage, vo_name, allow_submit, status, timeout, input_dict.get('message', ''))
+        _ban_se(storage, vo_name, allow_submit, status, input_dict.get('message', ''))
 
         if status == 'CANCEL':
             affected = _cancel_transfers(storage=storage, vo_name=vo_name)
         else:
-            affected = _set_to_wait(storage=storage, vo_name=vo_name, timeout=timeout)
+            affected = _set_to_wait(storage=storage, vo_name=vo_name)
 
         log.warn("Storage %s banned (%s), %d jobs affected" % (storage, status, len(affected)))
         return affected
@@ -298,6 +318,7 @@ class BanningController(BaseController):
     @doc.response(400, 'storage is empty or missing')
     @doc.response(403, 'The user is not allowed to perform configuration actions')
     @authorize(CONFIG)
+    @jsonify
     def unban_se(self, start_response):
         """
         Unban a storage element
@@ -305,18 +326,16 @@ class BanningController(BaseController):
         storage = request.params.get('storage', None)
         if not storage:
             raise HTTPBadRequest('Missing storage parameter')
+        vo_name = request.params.get('vo_name', '*')
+        if vo_name is None:
+            raise HTTPBadRequest('vo_name can not be null')
 
-        banned = Session.query(BannedSE).get(storage)
+        banned = Session.query(BannedSE).get((storage, vo_name))
+        job_ids = []
         if banned:
             try:
                 Session.delete(banned)
-                Session.query(File)\
-                    .filter(File.file_state == 'SUBMITTED')\
-                    .filter((File.source_se == storage) | (File.dest_se == storage))\
-                    .update({
-                        'wait_timestamp': None,
-                        'wait_timeout': None
-                    }, synchronize_session=False)
+                job_ids= _reenter_queue(storage, vo_name)
                 Session.commit()
             except Exception:
                 Session.rollback()
@@ -326,7 +345,7 @@ class BanningController(BaseController):
             log.warn("Unban of storage %s without effect" % storage)
 
         start_response('204 No Content', [])
-        return ['']
+        return job_ids
 
     @doc.query_arg('user_dn', 'User DN to unban', required=True)
     @doc.response(204, 'Success')

@@ -25,7 +25,7 @@ from base import Base, Json
 FileActiveStates = ['STAGING', 'STARTED', 'SUBMITTED', 'READY', 'ACTIVE']
 FileTerminalStates = ['FINISHED', 'FAILED', 'CANCELED']
 # NOT_USED is not terminal, nor not-terminal
-FileOnHoldStates = ['NOT_USED']
+FileOnHoldStates = ['NOT_USED', 'ON_HOLD', 'ON_HOLD_STAGING']
 
 # sqlite doesn't like auto increment with BIGINT, so we need to use a variant
 # on that case
@@ -67,8 +67,6 @@ class File(Base):
     log_file             = Column(String(2048))
     log_debug            = Column('log_file_debug', Integer)
     activity             = Column(String(255), default = 'default')
-    wait_timestamp       = Column(DateTime)
-    wait_timeout         = Column(Integer)
 
     retries = relation("FileRetryLog", uselist=True, lazy=True,
                        backref=backref("file", lazy=False))
