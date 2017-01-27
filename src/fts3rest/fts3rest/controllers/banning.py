@@ -12,6 +12,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+from fts3rest.controllers.config import audit_configuration
 
 try:
     import simplejson as json
@@ -258,7 +259,7 @@ class BanningController(BaseController):
             raise HTTPBadRequest('Missing storage parameter')
 
         vo_name = input_dict.get('vo_name', '*')
-        if vo_name is None:
+        if vo_name is None or vo_name == '':
             raise HTTPBadRequest('vo_name can not be null')
         allow_submit = bool(input_dict.get('allow_submit', False))
         status = input_dict.get('status', 'cancel').upper()
@@ -270,6 +271,7 @@ class BanningController(BaseController):
             raise HTTPBadRequest('allow_submit and status = CANCEL can not be combined')
 
         _ban_se(storage, vo_name, allow_submit, status, input_dict.get('message', ''))
+        audit_configuration('ban-se', "Storage %s for %s banned (%s)" % (storage, vo_name, status))
 
         if status == 'CANCEL':
             affected = _cancel_transfers(storage=storage, vo_name=vo_name)
@@ -309,6 +311,7 @@ class BanningController(BaseController):
         _ban_dn(dn, input_dict.get('message', ''))
         affected = _cancel_jobs(dn=dn)
 
+        audit_configuration('ban-dn', "User %s banned" % (dn))
         log.warn("User %s banned, %d jobs affected" % (dn, len(affected)))
 
         return affected
@@ -344,6 +347,7 @@ class BanningController(BaseController):
         else:
             log.warn("Unban of storage %s without effect" % storage)
 
+        audit_configuration('unban-se', "Storage %s for %s unbanned" % (storage, vo_name))
         start_response('204 No Content', [])
         return job_ids
 
@@ -372,6 +376,7 @@ class BanningController(BaseController):
         else:
             log.warn("Unban of user %s without effect" % dn)
 
+        audit_configuration('unban-dn', "User %s unbanned" % (dn))
         start_response('204 No Content', [])
         return ['']
 
