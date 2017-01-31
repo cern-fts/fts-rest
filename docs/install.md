@@ -7,16 +7,10 @@ yum install fts-rest
 service httpd restart
 ```
 
-If you are going to connect to a MySQL database, you will need to install MySQL-python
+To connect to a MySQL database, you will need to install MySQL-python
 
 ```
 yum install MySQL-python
-```
-
-For Oracle, you will need to install cx_oracle:
-
-```
-yum install cx_oracle
 ```
 
 If you are installing in a different host, the steps are the same, but you will need to copy the FTS3 configuration file to the new host (since it is used by the rest front-end) and make sure you have installed the proper certificates under /etc/grid-security/certificates.
@@ -84,6 +78,4 @@ Installing the package will enable the FTS3 server to act as a OAuth2 provider. 
 applications can be developed so they use the FTS3 REST API in name of a user that grant them access.
 This allows the development of additional tools that use FTS3 as their workhorse, without worrying with credential
 delegation, proxy support (the built-in one can be used instead), etc.
-
-
 
