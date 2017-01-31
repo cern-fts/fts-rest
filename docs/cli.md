@@ -32,10 +32,10 @@ Or, for EPEL5
 yum install python26 python26-pycurl python26-m2crypto
 ```
 
-Now, you can get the code checking out from the stage branch (this is, release candidate)
+Now, you can get the code checking out from the master branch (this is, stable)
 
 ```
-git clone https://github.com/cern-it-sdc-id/fts3-rest.git --branch stage
+git clone https://github.com/cern-it-sdc-id/fts3-rest.git --branch master
 ```
 
 Finally, you just need to set the PATH and PYTHONPATH acordingly
