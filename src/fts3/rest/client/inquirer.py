@@ -64,19 +64,18 @@ class Inquirer(object):
     def whoami(self):
         return json.loads(self.context.get("/whoami"))
 
-    def get_snapshot(self, vo=None, source=None, destination=None):
-        if vo:
-            vo = urllib.quote(vo, '')
-        else:
-            vo = ''
-        if source:
-            source = urllib.quote(source, '')
-        else:
-            source = ''
-        if destination:
-            destination = urllib.quote(destination, '')
-        else:
-            destination = ''
-        return json.loads(
-            self.context.get("/snapshot?vo_name=%s&source_se=%s&dest_se=%s" % (vo, source, destination))
-        )
+
+
+
+
+
+
+
+
+ 
+  
+   
+    
+     
+      
+       

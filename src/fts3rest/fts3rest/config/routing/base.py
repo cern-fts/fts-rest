@@ -223,10 +223,6 @@ def do_connect(config, map):
     map.connect('/dm/rename', controller='datamanagement', action='rename',
                 conditions=dict(method=['POST']))
 
-    # Snapshot
-    map.connect('/snapshot', controller='snapshot', action='snapshot',
-                conditions=dict(method=['GET']))
-
     # Banning
     map.connect('/ban/se', controller='banning', action='ban_se',
                 conditions=dict(method=['POST']))

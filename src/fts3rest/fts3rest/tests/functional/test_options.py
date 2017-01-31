@@ -108,15 +108,6 @@ class TestOptions(TestController):
         response = self.app.options('/optimizer/evolution', status=200)
         self.assertItemsEqual(['GET', 'OPTIONS'], response.allow)
 
-    def test_options_snapshot(self):
-        """
-        Test OPTIONS on snapshot urls
-        """
-        self.setup_gridsite_environment()
-
-        response = self.app.options('/snapshot', status=200)
-        self.assertItemsEqual(['GET', 'OPTIONS'], response.allow)
-
     def test_options_404(self):
         """
         Test OPTIONS on a non-existing url

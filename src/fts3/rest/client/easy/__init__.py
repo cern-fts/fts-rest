@@ -16,7 +16,6 @@
 from ban import *
 from delegate import *
 from state import *
-from snapshot import *
 from submission import *
 from whoami import *
 from fts3.rest.client.context import Context

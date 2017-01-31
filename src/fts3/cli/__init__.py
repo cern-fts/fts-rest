@@ -23,7 +23,6 @@ from jobshower import JobShower
 from jobsubmitter import JobSubmitter
 from jobdeletionsubmitter import JobDeletionSubmitter
 from serverstatus import ServerStatus
-from snapshot import Snapshot
 from whoami import WhoAmI
 import logging
 import sys
