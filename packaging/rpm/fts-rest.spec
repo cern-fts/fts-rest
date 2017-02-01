@@ -214,7 +214,6 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 %{python_sitelib}/fts3rest/controllers/files.py*
 %{python_sitelib}/fts3rest/controllers/jobs.py*
 %{python_sitelib}/fts3rest/controllers/optimizer.py*
-%{python_sitelib}/fts3rest/controllers/snapshot.py*
 %{python_sitelib}/fts3rest/controllers/serverstatus.py*
 
 %{python_sitelib}/fts3rest/lib/api/
