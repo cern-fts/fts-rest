@@ -98,8 +98,8 @@ function saveS3User(storage_name, form)
     var msg = {
         user_dn: form.find("input[name='user-dn']").val(),
         vo_name: form.find("input[name='vo-name']").val(),
-        access-key: form.find("input[name='access-key']").val(),
-        secret-key: form.find("input[name='secret-key']").val(),
+        access-key: form.find("input[name='access-token']").val(),
+        secret-key: form.find("input[name='access-secret']").val(),
     };
 
     console.log(msg);
