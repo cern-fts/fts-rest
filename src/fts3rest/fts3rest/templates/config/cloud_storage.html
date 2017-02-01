@@ -17,7 +17,6 @@
         <dd>The name should have the form S3:hostname (i.e. S3:s3.example.com). App key and secret are not used.</dd>
         <dt>Grant access to a set of VO and/or users</dt>
         <dd>Empty user with a value in VO grant access to all members from that VO.
-            Access token = access key, access secret = secret key. Leave request fields empty.
         </dd>
     </dl>
 
@@ -78,7 +77,7 @@
                     <tr class="user-entry">
                         <td>
                             <a><i class="glyphicon glyphicon-trash btn-delete-user"></i></a>
-                            <a><i class="glyphicon glyphicon-floppy-disk btn-save-user"></i></a>
+                            <a><i class="glyphicon glyphicon-floppy-disk btn-save-dropbox-user"></i></a>
                         </td>
                         <td>
                             <input type="hidden" name="user-dn" value="{{user_dn}}"/>
@@ -103,10 +102,10 @@
                     </tr>
                     {{/each}}
                 </tbody>
-                <tbody class="frm-add-user">
+                <tbody class="frm-add-dropbox-user">
                     <tr>
                         <td>
-                            <a><i class="glyphicon glyphicon-plus btn-add-user"></i></a>
+                            <a><i class="glyphicon glyphicon-plus btn-add-dropbox-user"></i></a>
                         </td>
                         <td>
                             <input name="user-dn" type="text" class="form-control" value=""/>
@@ -126,6 +125,62 @@
                         <td>
                             <input name="request-secret" type="text" class="form-control" value=""/>
                         </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>User</th>
+                        <th>VO</th>
+                        <th>Access key</th>
+                        <th>Secret key</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each users}}
+                    <tr class="user-entry">
+                        <td>
+                            <a><i class="glyphicon glyphicon-trash btn-delete-user"></i></a>
+                            <a><i class="glyphicon glyphicon-floppy-disk btn-save-s3user"></i></a>
+                        </td>
+                        <td>
+                            <input type="hidden" name="user-dn" value="{{user_dn}}"/>
+                            {{user_dn}}
+                        </td>
+                        <td>
+                            <input type="hidden" name="vo-name" value="{{vo_name}}"/>
+                            {{vo_name}}
+                        </td>
+                        <td>
+                            <input type="text" name="access-key" class="form-control" value="{{access_token}}"/>
+                        </td>
+                        <td>
+                            <input type="text" name="secret-key" class="form-control" value="{{access_token_secret}}"/>
+                        </td>
+                        
+                    </tr>
+                    {{/each}}
+                </tbody>
+                <tbody class="frm-add-s3-user">
+                    <tr>
+                        <td>
+                            <a><i class="glyphicon glyphicon-plus btn-add-s3-user"></i></a>
+                        </td>
+                        <td>
+                            <input name="user-dn" type="text" class="form-control" value=""/>
+                        </td>
+                        <td>
+                            <input name="vo-name" type="text" class="form-control" value=""/>
+                        </td>
+                        <td>
+                            <input name="access-key" type="text" class="form-control" value=""/>
+                        </td>
+                        <td>
+                            <input name="secret-key" type="text" class="form-control" value=""/>
+                        </td>
+                        
                     </tr>
                 </tbody>
             </table>
