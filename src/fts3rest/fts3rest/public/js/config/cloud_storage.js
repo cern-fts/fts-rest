@@ -18,9 +18,9 @@
 var template_cloud_storage_entry = null;
 
 /**
- * Save a new dropbox storage, or change it
+ * Save a new storage, or change it
  */
-function saveDropboxStorage(form)
+function saveStorage(form)
 {
     var msg = {
         storage_name: form.find("input[name='storage-name']").val(),
@@ -39,28 +39,6 @@ function saveDropboxStorage(form)
         data: JSON.stringify(msg)
     });
 }
-
-/**
- * Save a new S3 storage, or change it
- */
-function saveS3Storage(form)
-{
-    var msg = {
-        storage_name: form.find("input[name='storage-name']").val(),
-        service_api_url: form.find("input[name='service-api']").val(),
-    };
-
-    console.log(msg);
-
-    return $.ajax({
-        url: "/config/cloud_storage?",
-        type: "POST",
-        dataType: "json",
-        contentType: "application/json",
-        data: JSON.stringify(msg)
-    });
-}
-
 
 /**
  * Delete a storage
@@ -86,9 +64,9 @@ function deleteStorage(storage_name, div)
 }
 
 /**
- * Save a dropbox user
+ * Save a user
  */
-function saveDropboxUser(storage_name, form)
+function saveUser(storage_name, form)
 {
     var msg = {
         user_dn: form.find("input[name='user-dn']").val(),
@@ -97,29 +75,6 @@ function saveDropboxUser(storage_name, form)
         access_token_secret: form.find("input[name='access-secret']").val(),
         request_token: form.find("input[name='request-token']").val(),
         request_token_secret: form.find("input[name='request-secret']").val()
-    };
-
-    console.log(msg);
-
-    return $.ajax({
-        url: "/config/cloud_storage/" + encodeURIComponent(storage_name),
-        type: "POST",
-        dataType: "json",
-        contentType: "application/json",
-        data: JSON.stringify(msg)
-    });
-}
-
-/**
- * Save a S3 user
- */
-function saveS3User(storage_name, form)
-{
-    var msg = {
-        user_dn: form.find("input[name='user-dn']").val(),
-        vo_name: form.find("input[name='vo-name']").val(),
-        access: form.find("input[name='access']").val(),
-        password: form.find("input[name='password']").val(),
     };
 
     console.log(msg);
@@ -166,9 +121,9 @@ function deleteUser(storage_name, form)
 /**
  * Refresh the storage list
  */
-function refreshDropboxCloudStorage()
+function refreshCloudStorage()
 {
-    var parent = $("#storage-dropbox-list");
+    var parent = $("#storage-list");
 
     $.ajax({
         headers: {
@@ -199,11 +154,11 @@ function refreshDropboxCloudStorage()
             });
 
             // Attach to add a user
-            var addUserFrm = div.find(".frm-add-dropbox-user");
-            var addUserBtn = addUserFrm.find(".btn-add-dropbox-user");
+            var addUserFrm = div.find(".frm-add-user");
+            var addUserBtn = addUserFrm.find(".btn-add-user");
             addUserBtn.click(function(event) {
                 event.preventDefault();
-                saveUser(storage.storage_name, addDropboxUserFrm)
+                saveUser(storage.storage_name, addUserFrm)
                 .done(function(data, textStatus, jqXHR) {
                     refreshCloudStorage();
                 })
@@ -235,77 +190,6 @@ function refreshDropboxCloudStorage()
     });
 }
 
-/**
- * Refresh the S3 storage list
- */
-function refreshS3CloudStorage()
-{
-    var parent = $("#storage-S3-list");
-
-    $.ajax({
-        headers: {
-            Accept : "application/json",
-        },
-        url: "/config/cloud_storage?",
-    })
-    .done(function(data, textStatus, jqXHR) {
-        parent.empty();
-        $.each(data, function(index, storage) {
-            var div = $(template_cloud_storage_entry(storage));
-
-            // Attach to the delete button
-            var deleteBtn = div.find(".btn-delete");
-            deleteBtn.click(function(event) {
-                event.preventDefault();
-                deleteStorage(storage.storage_name, div);
-            });
-
-            // Attach to the save button
-            var saveBtn = div.find(".btn-save");
-            saveBtn.click(function(event) {
-                event.preventDefault();
-                saveStorage(div)
-                .fail(function(jqXHR) {
-                    errorMessage(jqXHR);
-                });
-            });
-
-            // Attach to add a user
-            var addUserFrm = div.find(".frm-add-s3-user");
-            var addUserBtn = addUserFrm.find(".btn-add-s3-user");
-            addUserBtn.click(function(event) {
-                event.preventDefault();
-                saveUser(storage.storage_name, addS3UserFrm)
-                .done(function(data, textStatus, jqXHR) {
-                    refreshCloudStorage();
-                })
-                .fail(function(jqXHR) {
-                    errorMessage(jqXHR);
-                });
-            });
-
-            // Attach to remove and modify a user
-            div.find(".user-entry").each(function() {
-                var tr = $(this);
-                var deleteUserBtn = tr.find(".btn-delete-user");
-                deleteUserBtn.click(function(event) {
-                    event.preventDefault();
-                    deleteUser(storage.storage_name, tr);
-                });
-                var saveUserBtn = tr.find(".btn-save-user");
-                saveUserBtn.click(function(event) {
-                    event.preventDefault();
-                    saveUser(storage.storage_name, tr)
-                });
-            });
-
-            parent.append(div);
-        });
-    })
-    .fail(function(jqXHR) {
-        errorMessage(jqXHR);
-    });
-}
 /**
  * Compile templates embedded into the HTML
  */
@@ -322,16 +206,15 @@ function compileTemplates()
 function setupCloudStorage()
 {
     compileTemplates();
-    refreshDropboxCloudStorage();
-	refreshS3CloudStorage();
+    refreshCloudStorage();
+
     // Bind to form
     $("#add-cloud-frm").submit(function(event) {
         event.preventDefault();
         saveStorage($("#add-cloud-frm"))
         .done(function(data, textStatus, jqXHR) {
             $("#add-cloud-frm").trigger("reset");
-            refreshDropboxCloudStorage();
-            refreshS3CloudStorage();
+            refreshCloudStorage();
         })
         .fail(function(jqXHR) {
             errorMessage(jqXHR);
