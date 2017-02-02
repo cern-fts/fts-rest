@@ -40,8 +40,6 @@ function saveStorage(form)
     });
 }
 
-
-
 /**
  * Delete a storage
  */
@@ -66,9 +64,9 @@ function deleteStorage(storage_name, div)
 }
 
 /**
- * Save a dropbox user
+ * Save a user
  */
-function saveDropboxUser(storage_name, form)
+function saveUser(storage_name, form)
 {
     var msg = {
         user_dn: form.find("input[name='user-dn']").val(),
@@ -77,29 +75,6 @@ function saveDropboxUser(storage_name, form)
         access_token_secret: form.find("input[name='access-secret']").val(),
         request_token: form.find("input[name='request-token']").val(),
         request_token_secret: form.find("input[name='request-secret']").val()
-    };
-
-    console.log(msg);
-
-    return $.ajax({
-        url: "/config/cloud_storage/" + encodeURIComponent(storage_name),
-        type: "POST",
-        dataType: "json",
-        contentType: "application/json",
-        data: JSON.stringify(msg)
-    });
-}
-
-/**
- * Save a S3 user
- */
-function saveS3User(storage_name, form)
-{
-    var msg = {
-        user_dn: form.find("input[name='user-dn']").val(),
-        vo_name: form.find("input[name='vo-name']").val(),
-        access-key: form.find("input[name='access-key']").val(),
-        secret-key: form.find("input[name='secret-key']").val(),
     };
 
     console.log(msg);
@@ -178,26 +153,12 @@ function refreshCloudStorage()
                 });
             });
 
-            // Attach to add a dropbox user
-            var addDropboxUserFrm = div.find(".frm-add-dropbox-user");
-            var addDropboxUserBtn = addDropboxUserFrm.find(".btn-add-dropbox-user");
-            addDropboxUserBtn.click(function(event) {
+            // Attach to add a user
+            var addUserFrm = div.find(".frm-add-user");
+            var addUserBtn = addUserFrm.find(".btn-add-user");
+            addUserBtn.click(function(event) {
                 event.preventDefault();
-                saveDropboxUser(storage.storage_name, addDropboxUserFrm)
-                .done(function(data, textStatus, jqXHR) {
-                    refreshCloudStorage();
-                })
-                .fail(function(jqXHR) {
-                    errorMessage(jqXHR);
-                });
-            });
-            
-             // Attach to add a s3 user
-            var addS3UserFrm = div.find(".frm-add-s3-user");
-            var addS3UserBtn = addS3UserFrm.find(".btn-add-s3-user");
-            addS3UserBtn.click(function(event) {
-                event.preventDefault();
-                saveS3User(storage.storage_name, addS3UserFrm)
+                saveUser(storage.storage_name, addUserFrm)
                 .done(function(data, textStatus, jqXHR) {
                     refreshCloudStorage();
                 })
@@ -209,29 +170,15 @@ function refreshCloudStorage()
             // Attach to remove and modify a user
             div.find(".user-entry").each(function() {
                 var tr = $(this);
-                var deleteDropboxUserBtn = tr.find(".btn-delete-dropbox-user");
-                deleteDropboxUserBtn.click(function(event) {
+                var deleteUserBtn = tr.find(".btn-delete-user");
+                deleteUserBtn.click(function(event) {
                     event.preventDefault();
                     deleteUser(storage.storage_name, tr);
                 });
-                var saveDropboxUserBtn = tr.find(".btn-save-dropbox-user");
-                saveDropboxUserBtn.click(function(event) {
+                var saveUserBtn = tr.find(".btn-save-user");
+                saveUserBtn.click(function(event) {
                     event.preventDefault();
-                    saveDropboxUser(storage.storage_name, tr)
-                });
-            });
-            / Attach to remove and modify a user
-            div.find(".user-entry").each(function() {
-                var tr = $(this);
-                var deleteS3UserBtn = tr.find(".btn-delete-s3-user");
-                deleteS3UserBtn.click(function(event) {
-                    event.preventDefault();
-                    deleteUser(storage.storage_name, tr);
-                });
-                var saveS3UserBtn = tr.find(".btn-save-s3-user");
-                saveS3UserBtn.click(function(event) {
-                    event.preventDefault();
-                    saveS3User(storage.storage_name, tr)
+                    saveUser(storage.storage_name, tr)
                 });
             });
 
@@ -242,7 +189,6 @@ function refreshCloudStorage()
         errorMessage(jqXHR);
     });
 }
-
 
 /**
  * Compile templates embedded into the HTML
@@ -261,15 +207,14 @@ function setupCloudStorage()
 {
     compileTemplates();
     refreshCloudStorage();
-    
+
     // Bind to form
     $("#add-cloud-frm").submit(function(event) {
         event.preventDefault();
         saveStorage($("#add-cloud-frm"))
         .done(function(data, textStatus, jqXHR) {
             $("#add-cloud-frm").trigger("reset");
-            refreshDropboxCloudStorage();
-            refreshS3CloudStorage();
+            refreshCloudStorage();
         })
         .fail(function(jqXHR) {
             errorMessage(jqXHR);
