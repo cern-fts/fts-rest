@@ -312,9 +312,9 @@ class TestBanning(TestController):
             status=200
         ).json
 
-        self.assertEqual(2, len(waiting_ids))
+        self.assertEqual(1, len(waiting_ids))
         self.assertIn(jobs[0], waiting_ids)
-        self.assertIn(jobs[1], waiting_ids)
+        self.assertNotIn(jobs[1], waiting_ids)
         self.assertNotIn(jobs[2], waiting_ids)
 
         for job_id in jobs[0:2]:
