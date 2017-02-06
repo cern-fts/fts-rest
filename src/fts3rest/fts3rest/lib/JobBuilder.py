@@ -491,6 +491,12 @@ class JobBuilder(object):
         if job_type == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
         
+        if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']):
+            self.job['job_type'] == 'Y'
+        
+        if job_type == 'N':
+            self.job['job_type'] = 'N'
+        
         if (self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
             small_files = 0
             min_small_files = len(self.files) - 2
