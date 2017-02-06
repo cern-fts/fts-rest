@@ -157,7 +157,9 @@ def _cancel_jobs(dn):
     Cancel all jobs that belong to dn.
     Returns the list of affected jobs ids.
     """
-    jobs = Session.query(Job.job_id).filter(Job.job_state.in_(JobActiveStates)).filter(Job.user_dn == dn)
+    jobs = Session.query(Job.job_id).filter(
+        Job.job_state.in_(JobActiveStates), Job.user_dn == dn, Job.job_finished == None
+    )
     job_ids = map(lambda j: j[0], jobs)
 
     try:
