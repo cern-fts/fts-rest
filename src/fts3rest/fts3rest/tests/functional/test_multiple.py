@@ -188,6 +188,40 @@ class TestMultiple(TestController):
 
         self.assertEqual(db_job.job_type, 'R')
 
+    def test_submit_with_alternatives3(self):
+        """
+        Same as before, but reuse is set explicitly to False, which should be a no-op
+        (Regression bug)
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [
+                {
+                    'sources': ['http://source.es/file', 'http://source.fr/file'],
+                    'destinations': ['http://dest.ch/file'],
+                    'selection_strategy': 'orderly',
+                    'checksum': 'adler32:1234',
+                    'filesize': 1024,
+                    'activity': 'something something',
+                    'metadata': {'mykey': 'myvalue'},
+                }
+            ],
+            'params': {'reuse': False}
+        }
+
+        answer = self.app.post(url="/jobs",
+                               content_type='application/json',
+                               params=json.dumps(job),
+                               status=200)
+
+        # Validate job in the database
+        job_id = json.loads(answer.body)['job_id']
+        db_job = Session.query(Job).get(job_id)
+
+        self.assertEqual(db_job.job_type, 'R')
+
     def test_submit_multiple_transfers(self):
         """
         Submit one job with multiple independent transfers

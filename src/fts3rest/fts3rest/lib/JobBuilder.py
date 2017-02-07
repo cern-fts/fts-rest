@@ -485,16 +485,15 @@ class JobBuilder(object):
 
         self._set_job_source_and_destination(self.files)
         
-        
-        # If reuse is enabled, source and destination SE must be the same
-        # for all entries
+        # If reuse is enabled, source and destination SE must be the same for all entries
+        # Ignore for multiple replica jobs!
         if job_type == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
         
         if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']):
             self.job['job_type'] == 'Y'
         
-        if job_type == 'N':
+        if job_type == 'N' and not self.is_multiple:
             self.job['job_type'] = 'N'
         
         if (self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
