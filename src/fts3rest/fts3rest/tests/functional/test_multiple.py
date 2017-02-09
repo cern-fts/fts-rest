@@ -385,6 +385,83 @@ class TestMultiple(TestController):
         for f in files:
             self.assertEqual(hashed, f.hashed_id)
 
+    def test_submit_reuse_auto_small(self):
+        """
+        Submit small files with reuse not set (auto). It should be enabled.
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [
+                {
+                    'sources': ['http://source.es:8446/file'],
+                    'destinations': ['http://dest.ch:8447/file'],
+                    'filesize': 1024,
+                },
+                {
+                    'sources': ['http://source.es:8446/otherfile'],
+                    'destinations': ['http://dest.ch:8447/otherfile'],
+                    'filesize': 1024,
+                }
+            ],
+            'params': {'overwrite': True, 'reuse': None}
+        }
+
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.job_type, 'Y')
+
+        files = Session.query(File).filter(File.job_id == job_id)
+        hashed = files[0].hashed_id
+        for f in files:
+            self.assertEqual(1024, f.user_filesize)
+            self.assertEqual(hashed, f.hashed_id)
+
+    def test_submit_reuse_auto_big(self):
+        """
+        Submit big files with reuse not set (auto). It should be disabled.
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [
+                {
+                    'sources': ['http://source.es:8446/file'],
+                    'destinations': ['http://dest.ch:8447/file'],
+                    'filesize': 2**30,
+                },
+                {
+                    'sources': ['http://source.es:8446/otherfile'],
+                    'destinations': ['http://dest.ch:8447/otherfile'],
+                    'filesize': 2**30,
+                }
+            ],
+            'params': {'overwrite': True, 'reuse': None}
+        }
+
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.job_type, 'N')
+
+        files = Session.query(File).filter(File.job_id == job_id)
+        hashed = files[0].hashed_id
+        for f in files:
+            self.assertEqual(2**30, f.user_filesize)
+
     def test_multihop(self):
         """
         Submit a multihop transfer
