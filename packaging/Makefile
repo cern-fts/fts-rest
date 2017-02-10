@@ -1,6 +1,6 @@
 NAME=fts-rest
 SPEC=rpm/$(NAME).spec
-VERSION=${shell grep '^Version:' $(SPEC) | awk '{print $$2}' }
+VERSION=${shell grep -m1 '^Version:' $(SPEC) | awk '{print $$2}' }
 # Leave blank. To be overriden by CI tools.
 RELEASE=
 

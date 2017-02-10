@@ -52,8 +52,8 @@ if dist[0] in ('redhat', 'centos'):
 base_dir = os.path.dirname(__file__)
 
 setup(
-    name='fts3-rest',
-    version='3.6.0',
+    name='fts3',
+    version='3.6.2',
     description='FTS3 Python Libraries',
     author='FTS3 Developers',
     author_email='fts-devel@cern.ch',
