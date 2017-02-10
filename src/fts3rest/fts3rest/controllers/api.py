@@ -68,6 +68,7 @@ class ApiController(BaseController):
             .order_by(SchemaVersion.major.desc(), SchemaVersion.minor.desc(), SchemaVersion.patch.desc())\
             .first()
         return {
+            'delegation': dict(major=1, minor=0, patch=0),
             'api': API_VERSION,
             'core': self.fts_core_version,
             'schema': schema_v,
