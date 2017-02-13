@@ -28,7 +28,7 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib import api
 
-API_VERSION = dict(major=3, minor=6, patch=0)
+API_VERSION = dict(major=3, minor=6, patch=2)
 
 
 def _get_fts_core_version():
@@ -68,6 +68,7 @@ class ApiController(BaseController):
             .order_by(SchemaVersion.major.desc(), SchemaVersion.minor.desc(), SchemaVersion.patch.desc())\
             .first()
         return {
+            'delegation': dict(major=1, minor=0, patch=0),
             'api': API_VERSION,
             'core': self.fts_core_version,
             'schema': schema_v,

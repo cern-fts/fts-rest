@@ -4,19 +4,19 @@
 %{!?nosetest_path: %global nosetest_path "/tmp"}
 
 Name:           fts-rest
-Version:        3.6.0
+Version:        3.6.2
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
 License:        ASL 2.0
 URL:            http://fts3-service.web.cern.ch/
-# git clone https://gitlab.cern.ch/fts/fts-rest.git --depth 1 -b master fts-rest-3.4.0
-# cd fts-rest-3.4.0
-# git checkout v3.4.0
+# git clone https://gitlab.cern.ch/fts/fts-rest.git --depth 1 -b master fts-rest-3.6.2
+# cd fts-rest-3.6.2
+# git checkout v3.6.2
 # git submodule init && git submodule update
 # cd ..
-# tar vczf fts-rest-3.4.0.tar.gz --exclude-vcs fts-rest-3.4.0
+# tar vczf fts-rest-3.6.2.tar.gz --exclude-vcs fts-rest-3.6.2
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  gfal2-python
@@ -190,6 +190,17 @@ mkdir -p %{buildroot}/%{_var}/log/fts3rest/
 
 cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 
+cat > %{buildroot}/%{python_sitelib}/fts3.egg-info <<EOF
+Metadata-Version: 1.0
+Name: fts3
+Version: %{version}
+Summary: FTS3 Python Libraries.
+Home-page: http://fts3-service.web.cern.ch
+Author: FTS Developers
+Author-email: fts-devel@cern.ch
+License: Apache2
+EOF
+
 %files
 %dir %{python_sitelib}/fts3rest/
 
@@ -280,6 +291,7 @@ cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 
 %files -n python-fts
 %{python_sitelib}/fts3
+%{python_sitelib}/fts3.egg-info
 %doc LICENSE
 
 %changelog

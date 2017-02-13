@@ -455,7 +455,6 @@ class JobBuilder(object):
         for file_dict in files_list:
             self._populate_files(file_dict, f_index, shared_hashed_id)
             f_index += 1
-            
 
         if len(self.files) == 0:
             raise HTTPBadRequest('No valid pairs available')
@@ -485,16 +484,15 @@ class JobBuilder(object):
 
         self._set_job_source_and_destination(self.files)
         
-        
-        # If reuse is enabled, source and destination SE must be the same
-        # for all entries
+        # If reuse is enabled, source and destination SE must be the same for all entries
+        # Ignore for multiple replica jobs!
         if job_type == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
         
         if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']):
             self.job['job_type'] == 'Y'
         
-        if job_type == 'N':
+        if job_type == 'N' and not self.is_multiple:
             self.job['job_type'] = 'N'
         
         if (self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
@@ -504,9 +502,13 @@ class JobBuilder(object):
                 log.debug(str(file['user_filesize']))
                 if file['user_filesize'] < 104857600:
                     small_files +=1
-            if small_files >= min_small_files:
+            if small_files > min_small_files:
                 self.job['job_type'] = 'Y'
                 log.debug("Reuse jobs with "+str(small_files)+" small files up to "+str(len(self.files))+" total files")
+                # Need to reset their hashed_id so they land on the same machine
+                shared_hashed_id = _generate_hashed_id()
+                for file in self.files:
+                    file['hashed_id'] = shared_hashed_id
         
         if self.job['job_type'] is None:
             self.job['job_type'] = 'N'
