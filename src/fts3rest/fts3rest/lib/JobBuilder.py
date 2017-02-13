@@ -501,7 +501,7 @@ class JobBuilder(object):
         if job_type == 'N' and not self.is_multiple:
             self.job['job_type'] = 'N'
         
-        if (self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (user_file_size is None) and (len(self.files) > 1)) :
+        if (self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
             small_files = 0
             min_small_files = len(self.files) - 2
             for file in self.files:
