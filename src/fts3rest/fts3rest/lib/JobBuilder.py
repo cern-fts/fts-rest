@@ -36,6 +36,9 @@ log = logging.getLogger(__name__)
 
 BASE_ID = uuid.UUID('urn:uuid:01874efb-4735-4595-bc9c-591aef8240c9')
 
+MAX_REUSE_FILES = 1000
+MAX_SIZE_SMALL_FILE = 104857600 #100MB
+
 DEFAULT_PARAMS = {
     'bring_online': -1,
     'verify_checksum': False,
@@ -489,18 +492,21 @@ class JobBuilder(object):
         if job_type == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
         
+        if job_type == 'Y' and len(self.files) >= MAX_REUSE_FILES:
+            job_type == 'N'
+        
         if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']):
             self.job['job_type'] == 'Y'
         
         if job_type == 'N' and not self.is_multiple:
             self.job['job_type'] = 'N'
         
-        if (self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
+        if (self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (user_file_size is None) and (len(self.files) > 1)) :
             small_files = 0
             min_small_files = len(self.files) - 2
             for file in self.files:
                 log.debug(str(file['user_filesize']))
-                if file['user_filesize'] < 104857600:
+                if file['user_filesize'] < MAX_SIZE_SMALL_FILE and file['user_filesize'] > 0:
                     small_files +=1
             if small_files > min_small_files:
                 self.job['job_type'] = 'Y'
