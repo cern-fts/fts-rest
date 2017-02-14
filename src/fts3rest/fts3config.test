@@ -5,7 +5,6 @@ DbType=sqlite
 DbUserName=
 DbPassword=
 DbConnectString=
-AutoSessionReuse=false
 Alias=Testing
 Infosys=lcg-bdii.cern.ch:2170
 AuthorizedVO=dteam;*
