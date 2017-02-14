@@ -502,10 +502,8 @@ class JobBuilder(object):
         if job_type == 'N' and not self.is_multiple:
             self.job['job_type'] = 'N'
         
-        if pylons.config.get('fts3.AutoSessionReuse', None):
-            auto_session_reuse = 'false'
-        else:
-            auto_session_reuse = pylons.config['fts3.AutoSessionReuse']
+        auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false');
+        
         if (auto_session_reuse == 'true' and self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
             small_files = 0
             min_small_files = len(self.files) - 2
