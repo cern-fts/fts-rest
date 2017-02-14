@@ -19,6 +19,7 @@ import socket
 import time
 import types
 import uuid
+import pylons
 
 from datetime import datetime
 from urlparse import urlparse
@@ -501,7 +502,8 @@ class JobBuilder(object):
         if job_type == 'N' and not self.is_multiple:
             self.job['job_type'] = 'N'
         
-        if (self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
+        auto_session_reuse = pylons.config['fts3.AutoSessionReuse']
+        if (auto_session_reuse == True and self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
             small_files = 0
             min_small_files = len(self.files) - 2
             for file in self.files:
