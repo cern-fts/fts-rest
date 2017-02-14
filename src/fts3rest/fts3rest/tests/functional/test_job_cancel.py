@@ -415,7 +415,12 @@ class TestJobCancel(TestController):
         # Is it in the database?
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.job_state, 'CANCELED')
-        self.assertEqual(job.job_type, 'Y')
+        
+        auto_session_reuse = pylons.config['fts3.AutoSessionReuse']
+        if auto_session_reuse == 'true':
+            self.assertEqual(job.job_type, 'Y')
+        else:
+            self.assertEqual(job.job_type, 'N')
 
         self.assertNotEqual(None, job.job_finished)
         for f in job.files:

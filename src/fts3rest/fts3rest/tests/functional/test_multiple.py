@@ -20,7 +20,7 @@ import json
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Job, File
-
+import pylons
 
 class TestMultiple(TestController):
     """
@@ -416,8 +416,12 @@ class TestMultiple(TestController):
         ).json['job_id']
 
         job = Session.query(Job).get(job_id)
-        self.assertEqual(job.job_type, 'Y')
-
+        auto_session_reuse = pylons.config['fts3.AutoSessionReuse']
+        if auto_session_reuse == 'true':
+            self.assertEqual(job.job_type, 'Y')
+        else:
+            self.assertEqual(job.job_type, 'N')
+            
         files = Session.query(File).filter(File.job_id == job_id)
         hashed = files[0].hashed_id
         for f in files:
