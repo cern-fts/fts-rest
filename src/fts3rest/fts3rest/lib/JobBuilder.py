@@ -503,7 +503,7 @@ class JobBuilder(object):
             self.job['job_type'] = 'N'
         
         auto_session_reuse = pylons.config['fts3.AutoSessionReuse']
-        if (auto_session_reuse == True and self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
+        if (auto_session_reuse == 'true' and self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
             small_files = 0
             min_small_files = len(self.files) - 2
             for file in self.files:
