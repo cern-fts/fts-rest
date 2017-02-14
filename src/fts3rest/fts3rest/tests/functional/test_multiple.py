@@ -416,7 +416,7 @@ class TestMultiple(TestController):
         ).json['job_id']
 
         job = Session.query(Job).get(job_id)
-        auto_session_reuse = pylons.config['fts3.AutoSessionReuse']
+        auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false');
         if auto_session_reuse == 'true':
             self.assertEqual(job.job_type, 'Y')
             files = Session.query(File).filter(File.job_id == job_id)
