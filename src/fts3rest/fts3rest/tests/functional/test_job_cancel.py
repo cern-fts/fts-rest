@@ -21,7 +21,7 @@ from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import Job, File, JobActiveStates, Credential, FileActiveStates, FileTerminalStates
 from datetime import datetime, timedelta
-
+import pylons
 
 class TestJobCancel(TestController):
     """

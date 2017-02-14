@@ -417,17 +417,17 @@ class TestMultiple(TestController):
 
         job = Session.query(Job).get(job_id)
         auto_session_reuse = pylons.config['fts3.AutoSessionReuse']
-        self.assertEqual(auto_session_reuse, 'false')
         if auto_session_reuse == 'true':
             self.assertEqual(job.job_type, 'Y')
+            files = Session.query(File).filter(File.job_id == job_id)
+            hashed = files[0].hashed_id
+            for f in files:
+                self.assertEqual(1024, f.user_filesize)
+                self.assertEqual(hashed, f.hashed_id)
         else:
             self.assertEqual(job.job_type, 'N')
         
-        files = Session.query(File).filter(File.job_id == job_id)
-        hashed = files[0].hashed_id
-        for f in files:
-            self.assertEqual(1024, f.user_filesize)
-            self.assertEqual(hashed, f.hashed_id)
+       
 
     def test_submit_reuse_auto_big(self):
         """
