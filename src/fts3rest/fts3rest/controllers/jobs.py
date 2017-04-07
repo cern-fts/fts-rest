@@ -31,7 +31,7 @@ import logging
 
 from fts3.model import Job, File, JobActiveStates, FileActiveStates
 from fts3.model import DataManagement, DataManagementActiveStates
-from fts3.model import Credential, OptimizerActive, FileRetryLog
+from fts3.model import Credential, FileRetryLog
 from fts3rest.lib.JobBuilder import JobBuilder
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
@@ -559,26 +559,6 @@ class JobsController(BaseController):
             if len(populated.datamanagement):
                 Session.execute(DataManagement.__table__.insert(), populated.datamanagement)
             Session.flush()
-
-            # Insert into the optimizer
-            unique_pairs = set(map(lambda f: (f['source_se'], f['dest_se']), populated.files))
-            for source_se, dest_se in unique_pairs:
-                if len(Session.query(OptimizerActive.fixed)\
-                        .filter(OptimizerActive.source_se==source_se, OptimizerActive.dest_se==dest_se).all()) < 1:
-                    optimizer_active = OptimizerActive()
-                    optimizer_active.source_se = source_se
-                    optimizer_active.dest_se = dest_se
-                    optimizer_active.active = 2
-                    optimizer_active.ema = 0
-                    optimizer_active.datetime = datetime.utcnow()
-
-                    try:
-                        with Session.begin_nested():
-                            Session.add(optimizer_active)
-                    except IntegrityError:
-                        # Someone else inserted the same record after we did the check, so just skip
-                        pass
-
             Session.commit()
         except:
             Session.rollback()
