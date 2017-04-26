@@ -274,8 +274,6 @@ class DatamanagementController(BaseController):
                 return m(rename_dict)
             except Gfal2Error, e:
                 _http_error_from_gfal2_error(e)
-            finally:
-                os.unlink(proxy.name)
 
         except ValueError, e:
             raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
@@ -283,6 +281,8 @@ class DatamanagementController(BaseController):
             raise HTTPBadRequest('Malformed request: %s' % str(e))
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
+        finally:
+            os.unlink(proxy.name)
 
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
     @doc.response(403, 'Permission denied')
@@ -315,8 +315,6 @@ class DatamanagementController(BaseController):
                 return m(unlink_dict)
             except Gfal2Error, e:
                 _http_error_from_gfal2_error(e)
-            finally:
-                os.unlink(proxy.name)
 
         except ValueError, e:
             raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
@@ -324,6 +322,8 @@ class DatamanagementController(BaseController):
             raise HTTPBadRequest('Malformed request: %s' % str(e))
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
+        finally:
+            os.unlink(proxy.name)
 
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
     @doc.response(403, 'Permission denied')
@@ -355,8 +355,6 @@ class DatamanagementController(BaseController):
                 return m(rmdir_dict)
             except Gfal2Error, e:
                 _http_error_from_gfal2_error(e)
-            finally:
-                os.unlink(proxy.name)
 
         except ValueError, e:
             raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
@@ -364,6 +362,8 @@ class DatamanagementController(BaseController):
             raise HTTPBadRequest('Malformed request: %s' % str(e))
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
+        finally:
+            os.unlink(proxy.name)
 
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
@@ -395,12 +395,11 @@ class DatamanagementController(BaseController):
                 return m(mkdir_dict)
             except Gfal2Error, e:
                 _http_error_from_gfal2_error(e)
-            finally:
-                os.unlink(proxy.name)
-
         except ValueError, e:
             raise HTTPBadRequest('Invalid value within the request: %s' % str(e))
         except TypeError, e:
             raise HTTPBadRequest('Malformed request: %s' % str(e))
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
+        finally:
+            os.unlink(proxy.name)
