@@ -29,9 +29,10 @@ def accept(html_template=None, html_redirect=None, json=True):
     """
     assert (html_template and not html_redirect) or (not html_template and html_redirect)
 
-    offers = ['text/html']
+    # We give a higher server quality to json, so */* matches it best
+    offers = [('text/html', 0.5)]
     if json:
-        offers.append('application/json')
+        offers.append(('application/json', 1))
 
     @decorator
     def accept_inner(f, *args, **kwargs):
