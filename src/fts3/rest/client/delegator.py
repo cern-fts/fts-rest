@@ -155,10 +155,12 @@ class Delegator(object):
         not_after.set_datetime(datetime.now(UTC) + lifetime)
 
         proxy_subject = X509.X509_Name()
-        for key, value in map(lambda e: e.split('='), self.context.x509.get_subject().as_text().split(',')):
-            key = key.strip()
-            value = value.strip()
-            m2.x509_name_set_by_nid(proxy_subject._ptr(), Delegator.nid[key], value)
+        for entry in self.context.x509.get_subject():
+            ret = m2.x509_name_add_entry(proxy_subject._ptr(), entry._ptr(), -1, 0)
+            if ret == 0:
+                raise Exception(
+                    "%s: '%s'" % (m2.err_reason_error_string(m2.err_get_error()), entry)
+                )
 
         proxy = X509.X509()
         proxy.set_serial_number(self.context.x509.get_serial_number())
