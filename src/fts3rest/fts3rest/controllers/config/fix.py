@@ -37,8 +37,8 @@ from fts3rest.lib.middleware.fts3auth.constants import *
 __controller__ = 'FixConfigController'
 log = logging.getLogger(__name__)
 
-Min_Active = 2
-Max_Active = 60
+Preset_Min_Active = 2
+Preset_Max_Active = 60
 class FixConfigController(BaseController):
     """
     Configure fixed limits
@@ -66,6 +66,8 @@ class FixConfigController(BaseController):
             raise HTTPBadRequest('Missing min_active')
         if max_active is None:
             raise HTTPBadRequest('Missing max_active')
+        if min_active > max_active:
+            raise HTTPBadRequest('max_active is lower than min_active')
 
         opt_active = Session.query(OptimizerActive).get((source, destination))
         if not opt_active:
@@ -76,20 +78,14 @@ class FixConfigController(BaseController):
 
         try:
             if min_active > 0 and max_active > 0:
-                if max_active > min_active:
-                    opt_active.min_active = min_active
-                    opt_active.max_active = max_active
-                    opt_active.fixed = True
-                    audit_configuration('fix-active', '%s => %s actives fixed to range(%s, %s)' % (source, destination, min_active, max_active))
-                else:
-                    opt_active.min_active = Min_Active
-                    opt_active.max_active = Max_Active
-                    opt_active.fixed = False
-                    audit_configuration('fix-active', '%s => %s actives unfixed' % (source, destination))
-                    
+                opt_active.active = min_active
+                opt_active.min_active = min_active
+                opt_active.max_active = max_active
+                opt_active.fixed = True
+                audit_configuration('fix-active', '%s => %s actives fixed to range(%s, %s)' % (source, destination, min_active, max_active))
             else:
-                opt_active.min_active = Min_Active
-                opt_active.max_active = Max_Active
+                opt_active.min_active = Preset_Min_Active
+                opt_active.max_active = Preset_Max_Active
                 opt_active.fixed = False
                 audit_configuration('fix-active', '%s => %s actives unfixed' % (source, destination))
                     

@@ -166,7 +166,29 @@ class TestConfigLinks(TestController):
         self.assertIsNotNone(opt_active)
         self.assertEqual(5, opt_active.min_active)
         self.assertEqual(100, opt_active.max_active)
+        self.assertEqual(5, opt_active.active)
         self.assertEqual(True, opt_active.fixed)
+
+    def test_set_fixed_active_no_range(self):
+            """
+            Set the fixed number of actives for a pair
+            """
+            self.app.post_json("/config/fixed", params={
+                'source_se': 'test.cern.ch',
+                'dest_se': 'test2.cern.ch',
+                'min_active': 10,
+                'max_active': 10,
+            }, status=200)
+
+            audits = Session.query(ConfigAudit).all()
+            self.assertEqual(1, len(audits))
+
+            opt_active = Session.query(OptimizerActive).get(('test.cern.ch', 'test2.cern.ch'))
+            self.assertIsNotNone(opt_active)
+            self.assertEqual(10, opt_active.min_active)
+            self.assertEqual(10, opt_active.max_active)
+            self.assertEqual(10, opt_active.active)
+            self.assertEqual(True, opt_active.fixed)
 
     def test_unset_fixed_active(self):
         """
@@ -210,3 +232,31 @@ class TestConfigLinks(TestController):
         self.assertEqual('test2.cern.ch', pairs[0]['dest_se'])
         self.assertEqual(5, pairs[0]['min_active'])
         self.assertEqual(100, pairs[0]['max_active'])
+
+    def test_update_fixed_active(self):
+        """
+        Set fixed, update again.
+        Number of actives should be bumped to match the minimum.
+        """
+        self.app.post_json("/config/fixed", params={
+            'source_se': 'test.cern.ch',
+            'dest_se': 'test2.cern.ch',
+            'min_active': 5,
+            'max_active': 100,
+        }, status=200)
+        self.app.post_json("/config/fixed", params={
+            'source_se': 'test.cern.ch',
+            'dest_se': 'test2.cern.ch',
+            'min_active': 20,
+            'max_active': 50,
+        }, status=200)
+
+        audits = Session.query(ConfigAudit).all()
+        self.assertEqual(2, len(audits))
+
+        opt_active = Session.query(OptimizerActive).get(('test.cern.ch', 'test2.cern.ch'))
+        self.assertIsNotNone(opt_active)
+        self.assertEqual(20, opt_active.min_active)
+        self.assertEqual(50, opt_active.max_active)
+        self.assertEqual(20, opt_active.active)
+        self.assertEqual(True, opt_active.fixed)
