@@ -32,7 +32,7 @@ class TestConfigLinks(TestController):
         """
         Set a SE link configuration
         """
-        self.app.post_json("/config/links", params={
+        resp = self.app.post_json("/config/links", params={
             'symbolicname': 'test-link',
             'source': 'test.cern.ch',
             'destination': 'test2.cern.ch',
@@ -41,7 +41,7 @@ class TestConfigLinks(TestController):
             'tcp_buffer_size': 4096,
             'urlcopy_tx_to': 10,
             'auto_tuning': False
-        }, status=200)
+        }, status=200).json
 
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(1, len(audits))
@@ -54,6 +54,10 @@ class TestConfigLinks(TestController):
         self.assertEqual(4096, link.tcp_buffer_size)
         self.assertEqual(10, link.urlcopy_tx_to)
         self.assertEqual(False, link.auto_tuning)
+
+        self.assertEqual(link.symbolicname, resp['symbolicname'])
+        self.assertEqual(link.source, resp['source'])
+        self.assertEqual(link.destination, resp['destination'])
 
     def test_wrong_config_link(self):
         """
@@ -86,7 +90,7 @@ class TestConfigLinks(TestController):
         Reset a SE link configuration
         """
         self.test_config_link_se()
-        self.app.post_json("/config/links", params={
+        resp = self.app.post_json("/config/links", params={
             'symbolicname': 'test-link',
             'source': 'test.cern.ch',
             'destination': 'test2.cern.ch',
@@ -95,7 +99,7 @@ class TestConfigLinks(TestController):
             'tcp_buffer_size': 1024,
             'urlcopy_tx_to': 5,
             'auto_tuning': True
-        }, status=200)
+        }, status=200).json
 
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(2, len(audits))
@@ -108,6 +112,10 @@ class TestConfigLinks(TestController):
         self.assertEqual(1024, link.tcp_buffer_size)
         self.assertEqual(5, link.urlcopy_tx_to)
         self.assertEqual(True, link.auto_tuning)
+
+        self.assertEqual(link.symbolicname, resp['symbolicname'])
+        self.assertEqual(link.source, resp['source'])
+        self.assertEqual(link.destination, resp['destination'])
 
 
     def test_get_link_list(self):
@@ -152,12 +160,12 @@ class TestConfigLinks(TestController):
         """
         Set the fixed number of actives for a pair
         """
-        self.app.post_json("/config/fixed", params={
+        resp = self.app.post_json("/config/fixed", params={
             'source_se': 'test.cern.ch',
             'dest_se': 'test2.cern.ch',
             'min_active': 5,
             'max_active': 100,
-        }, status=200)
+        }, status=200).json
 
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(1, len(audits))
@@ -169,26 +177,36 @@ class TestConfigLinks(TestController):
         self.assertEqual(5, opt_active.active)
         self.assertEqual(True, opt_active.fixed)
 
+        self.assertEqual(opt_active.source_se, resp['source_se'])
+        self.assertEqual(opt_active.dest_se, resp['dest_se'])
+        self.assertEqual(opt_active.min_active, resp['min_active'])
+        self.assertEqual(opt_active.max_active, resp['max_active'])
+
     def test_set_fixed_active_no_range(self):
-            """
-            Set the fixed number of actives for a pair
-            """
-            self.app.post_json("/config/fixed", params={
-                'source_se': 'test.cern.ch',
-                'dest_se': 'test2.cern.ch',
-                'min_active': 10,
-                'max_active': 10,
-            }, status=200)
+        """
+        Set the fixed number of actives for a pair
+        """
+        resp = self.app.post_json("/config/fixed", params={
+            'source_se': 'test.cern.ch',
+            'dest_se': 'test2.cern.ch',
+            'min_active': 10,
+            'max_active': 10,
+        }, status=200).json
 
-            audits = Session.query(ConfigAudit).all()
-            self.assertEqual(1, len(audits))
+        audits = Session.query(ConfigAudit).all()
+        self.assertEqual(1, len(audits))
 
-            opt_active = Session.query(OptimizerActive).get(('test.cern.ch', 'test2.cern.ch'))
-            self.assertIsNotNone(opt_active)
-            self.assertEqual(10, opt_active.min_active)
-            self.assertEqual(10, opt_active.max_active)
-            self.assertEqual(10, opt_active.active)
-            self.assertEqual(True, opt_active.fixed)
+        opt_active = Session.query(OptimizerActive).get(('test.cern.ch', 'test2.cern.ch'))
+        self.assertIsNotNone(opt_active)
+        self.assertEqual(10, opt_active.min_active)
+        self.assertEqual(10, opt_active.max_active)
+        self.assertEqual(10, opt_active.active)
+        self.assertEqual(True, opt_active.fixed)
+
+        self.assertEqual(opt_active.source_se, resp['source_se'])
+        self.assertEqual(opt_active.dest_se, resp['dest_se'])
+        self.assertEqual(opt_active.min_active, resp['min_active'])
+        self.assertEqual(opt_active.max_active, resp['max_active'])
 
     def test_unset_fixed_active(self):
         """
@@ -238,18 +256,21 @@ class TestConfigLinks(TestController):
         Set fixed, update again.
         Number of actives should be bumped to match the minimum.
         """
-        self.app.post_json("/config/fixed", params={
+        resp = self.app.post_json("/config/fixed", params={
             'source_se': 'test.cern.ch',
             'dest_se': 'test2.cern.ch',
             'min_active': 5,
             'max_active': 100,
-        }, status=200)
-        self.app.post_json("/config/fixed", params={
+        }, status=200).json
+
+        self.assertEqual('test.cern.ch', resp['source_se'])
+
+        resp = self.app.post_json("/config/fixed", params={
             'source_se': 'test.cern.ch',
             'dest_se': 'test2.cern.ch',
             'min_active': 20,
             'max_active': 50,
-        }, status=200)
+        }, status=200).json
 
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(2, len(audits))
@@ -260,3 +281,8 @@ class TestConfigLinks(TestController):
         self.assertEqual(50, opt_active.max_active)
         self.assertEqual(20, opt_active.active)
         self.assertEqual(True, opt_active.fixed)
+
+        self.assertEqual(opt_active.source_se, resp['source_se'])
+        self.assertEqual(opt_active.dest_se, resp['dest_se'])
+        self.assertEqual(opt_active.min_active, resp['min_active'])
+        self.assertEqual(opt_active.max_active, resp['max_active'])

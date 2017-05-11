@@ -75,6 +75,8 @@ class FixConfigController(BaseController):
                 source_se=source,
                 dest_se=destination
             )
+        else:
+            Session.expunge(opt_active)
 
         try:
             if min_active > 0 and max_active > 0:
