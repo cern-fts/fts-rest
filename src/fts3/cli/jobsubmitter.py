@@ -27,6 +27,7 @@ import time
 from base import Base
 from fts3.rest.client import Submitter, Delegator, Inquirer
 
+DEFAULT_CHECKSUM = 'ADLER32' 
 
 def _metadata(data):
     try:
@@ -110,7 +111,9 @@ class JobSubmitter(Base):
         self.opt_parser.add_option('-S', '--source-token', dest='source_token',
                                    help='the source space token or its description.')
         self.opt_parser.add_option('-K', '--compare-checksum', dest='compare_checksum', default=False, action='store_true',
-                                   help='compare checksums between source and destination.')
+                                   help='deprecated: compare checksums between source and destination.')
+        self.opt_parser.add_option('-C', '--checksum-mode', dest='checksum_mode', type='string', default='none',
+                                   help='compare checksums in source, target, both or none.')
         self.opt_parser.add_option('--copy-pin-lifetime', dest='pin_lifetime', type='long', default=-1,
                                    help='pin lifetime of the copy in seconds.')
         self.opt_parser.add_option('--bring-online', dest='bring_online', type='long', default=None,
@@ -136,6 +139,7 @@ class JobSubmitter(Base):
                                    help='force ipv6')
 
     def validate(self):
+        self.checksum = None
         if not self.options.bulk_file:
             if len(self.args) < 2:
                 self.logger.critical("Need a source and a destination")
@@ -156,11 +160,13 @@ class JobSubmitter(Base):
 
         if self.options.verbose:
             self.logger.setLevel(logging.DEBUG)
+        
 
     def _build_transfers(self):
         if self.options.bulk_file:
             filecontent = open(self.options.bulk_file).read()
             bulk = json.loads(filecontent)
+            self.logger.info(bulk)
             if "files" in bulk:
                 return bulk["files"]
             elif "Files" in bulk:
@@ -168,14 +174,32 @@ class JobSubmitter(Base):
             else:
                 self.logger.critical("Could not find any transfers")
                 sys.exit(1)
+                
+            
         else:
             return [{"sources": [self.source], "destinations": [self.destination]}]
 
     def _do_submit(self, context):
-        verify_checksum = None
+        checksum_mode = 'none'
+        #Backwards compatibility: compare_checksum parameter 
         if self.options.compare_checksum:
-            verify_checksum = True
-
+            checksum_mode = 'both' 
+        if self.checksum and not self.options.compare_checksum:
+            checksum_mode = 'target'
+        
+         
+        if not self.options.compare_checksum:   
+        #Checksum mode has major priority than the deprecated compare_checksum
+            if len(self.options.checksum_mode) > 0:
+                checksum_mode = self.options.checksum_mode
+                #Backwards compatibility: target checksum when checksum is provided and not verify option
+                if self.checksum:
+                    checksum_mode = 'target'
+                    
+        if not self.checksum:
+            self.checksum = DEFAULT_CHECKSUM
+        
+                
         delegator = Delegator(context)
         delegator.delegate(
             timedelta(minutes=self.options.proxy_lifetime),
@@ -188,7 +212,7 @@ class JobSubmitter(Base):
             self._build_transfers(),
             checksum=self.checksum,
             bring_online=self.options.bring_online,
-            verify_checksum=verify_checksum,
+            verify_checksum=checksum_mode[0],
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,
             fail_nearline=self.options.fail_nearline,
@@ -212,7 +236,6 @@ class JobSubmitter(Base):
         else:
             self.logger.info("Job successfully submitted.")
             self.logger.info("Job id: %s" % job_id)
-
         if job_id and self.options.blocking:
             inquirer = Inquirer(context)
             job = inquirer.get_job_status(job_id)
@@ -228,16 +251,31 @@ class JobSubmitter(Base):
         return job_id
 
     def _do_dry_run(self, context):
-        verify_checksum = None
+        checksum_mode = 'none'
+        #Backwards compatibility: compare_checksum parameter 
         if self.options.compare_checksum:
-            verify_checksum = True
-
+            checksum_mode = 'both' 
+        if self.checksum and not self.options.compare_checksum:
+            checksum_mode = 'target'
+        
+         
+        if not self.options.compare_checksum:   
+        #Checksum mode has major priority than the deprecated compare_checksum
+            if len(self.options.checksum_mode) > 0:
+                checksum_mode = self.options.checksum_mode
+                #Backwards compatibility: target checksum when checksum is provided and not verify option
+                if self.checksum:
+                    checksum_mode = 'target'
+                    
+        if not self.checksum:
+            self.checksum = DEFAULT_CHECKSUM
+                
         submitter = Submitter(context)
         print submitter.build_submission(
             self._build_transfers(),
             checksum=self.checksum,
             bring_online=self.options.bring_online,
-            verify_checksum=verify_checksum,
+            verify_checksum=checksum_mode[0],
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,
             fail_nearline=self.options.fail_nearline,

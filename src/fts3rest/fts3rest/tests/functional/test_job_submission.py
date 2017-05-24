@@ -238,7 +238,8 @@ class TestJobSubmission(TestController):
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.job_type, 'Y')
-
+    
+    
     def test_submit_post(self):
         """
         Submit a valid job using POST instead of PUT
@@ -424,6 +425,149 @@ class TestJobSubmission(TestController):
         self.assertEqual(job.verify_checksum, 'r')
 
         return job_id
+    
+    def test_verify_checksum_target(self):
+        """
+        Valid job, verify checksum in destination.
+        In the DB, it must end as 'r' (compatibility with FTS3 behaviour) or destination
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['root://source.es/file'],
+                'destinations': ['root://dest.ch/file'],
+                'selection_strategy': 'orderly',
+                'checksum': '1234F',
+                'filesize': 1024,
+                'metadata': {'mykey': 'myvalue'},
+            }],
+            'params': {'overwrite': True, 'verify_checksum':'target'}
+        }
+
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        # Make sure it was committed to the DB
+        self.assertGreater(len(job_id), 0)
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.files[0].checksum, '1234F')
+        self.assertEqual(job.verify_checksum, 't')
+
+        return job_id
+    
+    def test_verify_checksum_source(self):
+        """
+        Valid job, verify checksum in source.
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['root://source.es/file'],
+                'destinations': ['root://dest.ch/file'],
+                'selection_strategy': 'orderly',
+                'checksum': '1234F',
+                'filesize': 1024,
+                'metadata': {'mykey': 'myvalue'},
+            }],
+            'params': {'overwrite': True, 'verify_checksum':'source'}
+        }
+
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        # Make sure it was committed to the DB
+        self.assertGreater(len(job_id), 0)
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.files[0].checksum, '1234F')
+        self.assertEqual(job.verify_checksum, 's')
+
+        return job_id
+    
+    def test_verify_checksum_both(self):
+        """
+        Valid job, verify checksum in source.
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['root://source.es/file'],
+                'destinations': ['root://dest.ch/file'],
+                'selection_strategy': 'orderly',
+                'checksum': '1234F',
+                'filesize': 1024,
+                'metadata': {'mykey': 'myvalue'},
+            }],
+            'params': {'overwrite': True, 'verify_checksum':'both'}
+        }
+
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        # Make sure it was committed to the DB
+        self.assertGreater(len(job_id), 0)
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.files[0].checksum, '1234F')
+        self.assertEqual(job.verify_checksum, 'b')
+
+        return job_id
+
+    
+    def test_verify_checksum_none(self):
+        """
+        Valid job, verify checksum none.
+        """
+        self.setup_gridsite_environment()
+        self.push_delegation()
+
+        job = {
+            'files': [{
+                'sources': ['root://source.es/file'],
+                'destinations': ['root://dest.ch/file'],
+                'selection_strategy': 'orderly',
+                'filesize': 1024,
+                'metadata': {'mykey': 'myvalue'},
+            }],
+            'params': {'overwrite': True, 'verify_checksum':'none'}
+        }
+
+        job_id = self.app.post(
+            url="/jobs",
+            content_type='application/json',
+            params=json.dumps(job),
+            status=200
+        ).json['job_id']
+
+        # Make sure it was committed to the DB
+        self.assertGreater(len(job_id), 0)
+
+        job = Session.query(Job).get(job_id)
+        self.assertEqual(job.files[0].checksum, '1234F')
+        self.assertEqual(job.verify_checksum, 'n')
+
+        return job_id
+    
+    
 
     def test_null_user_filesize(self):
         """

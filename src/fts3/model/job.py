@@ -49,7 +49,7 @@ class Job(Base):
     job_finished             = Column(DateTime)
     source_space_token       = Column(String(255))
     copy_pin_lifetime        = Column(Integer)
-    verify_checksum          = Column(TernaryFlag(positive='c'),
+    verify_checksum          = Column(String(1),
                                       name='checksum_method')
     bring_online             = Column(Integer)
     job_metadata             = Column(Json(255))
@@ -93,7 +93,7 @@ class ArchivedJob(Base):
     job_finished             = Column(DateTime)
     source_space_token       = Column(String(255))
     copy_pin_lifetime        = Column(Integer)
-    verify_checksum          = Column(Flag(positive='c'),
+    verify_checksum          = Column(String(1),
                                       name='checksum_method')
     bring_online             = Column(Integer)
     job_metadata             = Column(Json(255))

@@ -77,7 +77,7 @@ class Flag(TypeDecorator):
 
 
 # This is used for flags that can be True, False, or some other thing
-# i.e. verify_checksum flag, which can be True, False and 'Relaxed' (r)
+# i.e. verify_checksum flag, which can be True, False, 'Relaxed' (r), 'Destination' (d), 'Source' (s), 'Both' (b), 'None' (n)
 #      reuse_job, which can be True, False and 'Multihop' (h)
 class TernaryFlag(TypeDecorator):
     impl = String
