@@ -160,13 +160,11 @@ class JobSubmitter(Base):
 
         if self.options.verbose:
             self.logger.setLevel(logging.DEBUG)
-        
 
     def _build_transfers(self):
         if self.options.bulk_file:
             filecontent = open(self.options.bulk_file).read()
             bulk = json.loads(filecontent)
-            self.logger.info(bulk)
             if "files" in bulk:
                 return bulk["files"]
             elif "Files" in bulk:
@@ -174,8 +172,6 @@ class JobSubmitter(Base):
             else:
                 self.logger.critical("Could not find any transfers")
                 sys.exit(1)
-                
-            
         else:
             return [{"sources": [self.source], "destinations": [self.destination]}]
 
@@ -184,22 +180,19 @@ class JobSubmitter(Base):
         #Backwards compatibility: compare_checksum parameter 
         if self.options.compare_checksum:
             checksum_mode = 'both' 
-        if self.checksum and not self.options.compare_checksum:
-            checksum_mode = 'target'
-        
-         
+        else:
+            if self.checksum:
+                checksum_mode = 'target'  
+        #Compare checksum has major priority than checksum_mode     
         if not self.options.compare_checksum:   
-        #Checksum mode has major priority than the deprecated compare_checksum
             if len(self.options.checksum_mode) > 0:
                 checksum_mode = self.options.checksum_mode
                 #Backwards compatibility: target checksum when checksum is provided and not verify option
-                if self.checksum:
-                    checksum_mode = 'target'
-                    
+                if self.checksum and checksum_mode=='none':
+                    checksum_mode = 'target'             
         if not self.checksum:
             self.checksum = DEFAULT_CHECKSUM
-        
-                
+            
         delegator = Delegator(context)
         delegator.delegate(
             timedelta(minutes=self.options.proxy_lifetime),
@@ -255,18 +248,16 @@ class JobSubmitter(Base):
         #Backwards compatibility: compare_checksum parameter 
         if self.options.compare_checksum:
             checksum_mode = 'both' 
-        if self.checksum and not self.options.compare_checksum:
-            checksum_mode = 'target'
-        
-         
+        else:
+            if self.checksum:
+                checksum_mode = 'target'  
+        #Compare checksum has major priority than checksum_mode     
         if not self.options.compare_checksum:   
-        #Checksum mode has major priority than the deprecated compare_checksum
             if len(self.options.checksum_mode) > 0:
                 checksum_mode = self.options.checksum_mode
                 #Backwards compatibility: target checksum when checksum is provided and not verify option
-                if self.checksum:
-                    checksum_mode = 'target'
-                    
+                if self.checksum and checksum_mode=='none':
+                    checksum_mode = 'target'             
         if not self.checksum:
             self.checksum = DEFAULT_CHECKSUM
                 
