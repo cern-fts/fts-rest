@@ -176,20 +176,21 @@ class JobSubmitter(Base):
             return [{"sources": [self.source], "destinations": [self.destination]}]
 
     def _do_submit(self, context):
-        checksum_mode = 'none'
         #Backwards compatibility: compare_checksum parameter 
         if self.options.compare_checksum:
             checksum_mode = 'both' 
         else:
             if self.checksum:
-                checksum_mode = 'target'  
+                checksum_mode = 'target'
+            else: 
+                checksum = 'none'  
         #Compare checksum has major priority than checksum_mode     
         if not self.options.compare_checksum:   
             if len(self.options.checksum_mode) > 0:
-                checksum_mode = self.options.checksum_mode
-                #Backwards compatibility: target checksum when checksum is provided and not verify option
-                if self.checksum and checksum_mode=='none':
-                    checksum_mode = 'target'             
+                checksum_mode = self.options.checksum_mode   
+            else:
+                 checksum_mode = 'none'        
+        
         if not self.checksum:
             self.checksum = DEFAULT_CHECKSUM
             
@@ -244,20 +245,21 @@ class JobSubmitter(Base):
         return job_id
 
     def _do_dry_run(self, context):
-        checksum_mode = 'none'
         #Backwards compatibility: compare_checksum parameter 
         if self.options.compare_checksum:
             checksum_mode = 'both' 
         else:
             if self.checksum:
-                checksum_mode = 'target'  
+                checksum_mode = 'target'
+            else: 
+                checksum = 'none'  
         #Compare checksum has major priority than checksum_mode     
         if not self.options.compare_checksum:   
             if len(self.options.checksum_mode) > 0:
-                checksum_mode = self.options.checksum_mode
-                #Backwards compatibility: target checksum when checksum is provided and not verify option
-                if self.checksum and checksum_mode=='none':
-                    checksum_mode = 'target'             
+                checksum_mode = self.options.checksum_mode   
+            else:
+                 checksum_mode = 'none'        
+        
         if not self.checksum:
             self.checksum = DEFAULT_CHECKSUM
                 
@@ -266,7 +268,7 @@ class JobSubmitter(Base):
             self._build_transfers(),
             checksum=self.checksum,
             bring_online=self.options.bring_online,
-            verify_checksum=checksum_mode[0],
+            verify_checksum=checksum_mode,
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,
             fail_nearline=self.options.fail_nearline,

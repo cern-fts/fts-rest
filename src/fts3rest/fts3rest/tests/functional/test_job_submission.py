@@ -422,7 +422,7 @@ class TestJobSubmission(TestController):
 
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.files[0].checksum, '1234F')
-        self.assertEqual(job.verify_checksum, 'r')
+        self.assertEqual(job.verify_checksum, 't')
 
         return job_id
     

@@ -99,7 +99,7 @@ def add_alternative_source(transfer, alt_source):
     return transfer
 
 
-def new_job(transfers=None, deletion=None, verify_checksum='target', reuse=False, overwrite=False, multihop=False,
+def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=False, overwrite=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
@@ -134,13 +134,7 @@ def new_job(transfers=None, deletion=None, verify_checksum='target', reuse=False
     if transfers is None:
         transfers = []
         
-    if isinstance(verify_checksum, bool):
-        if verify_checksum:
-            verify_checksum = 'both'
-        else:
-            verify_checksum = 'none'
-    else:
-        if isinstance(verify_checksum, basestring):
+    if isinstance(verify_checksum, basestring):
             if not verify_checksum in ('source','target','both', 'none'):
                 raise ClientError('Bad request: verify_checksum does not contain a valid value')
     params = dict(
