@@ -47,7 +47,7 @@ class TestJobSubmission(TestController):
         self.assertEqual(job.source_se, 'root://source.es')
         self.assertEqual(job.dest_se, 'root://dest.ch')
         self.assertEqual(job.overwrite_flag, True)
-        self.assertEqual(job.verify_checksum, True)
+        self.assertEqual(job.verify_checksum, 'b')
         self.assertEqual(job.job_type, 'N')
         self.assertEqual(job.priority, 3)
         self.assertIsNone(job.max_time_in_queue)
@@ -386,7 +386,7 @@ class TestJobSubmission(TestController):
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
-        self.assertEqual(job.files[0].checksum, None)
+        self.assertEqual(job.files[0].checksum, 'ADLER32')
 
         return job_id
 
@@ -562,7 +562,6 @@ class TestJobSubmission(TestController):
         self.assertGreater(len(job_id), 0)
 
         job = Session.query(Job).get(job_id)
-        self.assertEqual(job.files[0].checksum, '1234F')
         self.assertEqual(job.verify_checksum, 'n')
 
         return job_id
