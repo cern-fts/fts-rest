@@ -463,16 +463,25 @@ class JobBuilder(object):
         if len(self.files) == 0:
             raise HTTPBadRequest('No valid pairs available')
 
-        # If a checksum is provided, but no checksum is available, 'relaxed' comparison
-        # (Not nice, but need to keep functionality!)
+        # If a checksum is provided, but no checksum is available, 'target' comparison
+        # (Not nice, but need to keep functionality!) Also by default all files will have ADLER32 checksum type
         has_checksum = False
         for file_dict in self.files:
             if file_dict['checksum'] is not None:
                 has_checksum = len(file_dict['checksum']) > 0
-                break
-        if not self.job['checksum_method'] and has_checksum:
-            self.job['checksum_method'] = 'r'
-
+            else: 
+                file_dict['checksum'] = 'ADLER32'
+                
+        if type(self.job['checksum_method']) == bool:
+            if not self.job['checksum_method'] and has_checksum:
+                self.job['checksum_method'] = 'target'
+            else:
+                if not self.job['checksum_method'] and not has_checksum:
+                    self.job['checksum_method'] = 'none'
+                else: 
+                    self.job['checksum_method'] = 'both'
+            
+        self.job['checksum_method'] = self.job['checksum_method'][0]
         # Validate that if this is a multiple replica job, that there is one single unique file
         self.is_multiple, unique_files = _has_multiple_options(self.files)
         if self.is_multiple:

@@ -55,7 +55,7 @@ def cancel_all(context, vo_name=None):
     return submitter.cancel_all(vo_name)
 
 
-def new_transfer(source, destination, checksum=None, filesize=None, metadata=None, activity=None):
+def new_transfer(source, destination, checksum='ADLER32', filesize=None, metadata=None, activity=None):
     """
     Creates a new transfer pair
 
@@ -99,7 +99,7 @@ def add_alternative_source(transfer, alt_source):
     return transfer
 
 
-def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, overwrite=False, multihop=False,
+def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=False, overwrite=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
@@ -111,7 +111,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
     Args:
         transfers:         Initial list of transfers
         deletion:          Delete files
-        verify_checksum:   Enable checksum verification
+        verify_checksum:   Enable checksum verification: source, destination, both or none
         reuse:             Enable reuse (all transfers are handled by the same process)
         overwrite:         Overwrite the destinations if exist
         multihop:          Treat the transfer as a multihop transfer
@@ -133,6 +133,10 @@ def new_job(transfers=None, deletion=None, verify_checksum=True, reuse=False, ov
         raise ClientError('Bad request: No transfers or deletion jobs are provided')
     if transfers is None:
         transfers = []
+        
+    if isinstance(verify_checksum, basestring):
+            if not verify_checksum in ('source','target','both', 'none'):
+                raise ClientError('Bad request: verify_checksum does not contain a valid value')
     params = dict(
         verify_checksum=verify_checksum,
         reuse=reuse,
