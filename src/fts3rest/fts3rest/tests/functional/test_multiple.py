@@ -265,7 +265,7 @@ class TestMultiple(TestController):
 
         self.assertEqual(len(db_job.files), 2)
 
-        self.assertEqual(db_job.verify_checksum, True)
+        self.assertEqual(db_job.verify_checksum, 'b')
 
         self.assertEqual(db_job.files[0].file_index, 0)
         self.assertEqual(db_job.files[0].source_surl, 'srm://source.es:8446/file')
