@@ -118,7 +118,7 @@ function setupDebug()
 	refreshDebugList();
 
 	// Attach to the form
-	$("#debug-add-frm").submit(function() {
+	$("#debug-add-frm").submit(function(event) {
         var payload = {
             vo: $(this).find("[name=vo]").val(),
             source_se: $(this).find("[name=source_se]").val(),
