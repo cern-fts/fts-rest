@@ -144,3 +144,14 @@ class TestConfigActivityShare(TestController):
         self.app.post_json(url="/config/activity_shares", params=msg, status=403)
         self.app.delete(url="/config/activity_shares/dteam", status=403)
         self.app.get_json(url="/config/activity_shares", status=403)
+
+    def test_activiy_shares_too_long(self):
+        """
+        Activity share too long
+        """
+        self.setup_gridsite_environment()
+        shares = {}
+        for i in range(100):
+            shares["activity%d" % i] = i
+        msg = {"vo": "dteam", "active": True, "share": shares}
+        self.app.post_json(url="/config/activity_shares", params=msg, status=400)

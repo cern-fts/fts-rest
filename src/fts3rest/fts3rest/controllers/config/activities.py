@@ -121,13 +121,16 @@ class ActivitiesConfigController(BaseController):
                 if not type(value) in (float, int):
                     raise HTTPBadRequest('Share weight must be a number')
 
-        activity_share = ActivityShare(
-            vo=input_dict['vo'], active=input_dict['active'], activity_share=input_dict['share']
-        )
         try:
+            activity_share = ActivityShare(
+                vo=input_dict['vo'], active=input_dict['active'], activity_share=input_dict['share']
+            )
+
             Session.merge(activity_share)
             audit_configuration('activity-share', json.dumps(input_dict))
             Session.commit()
+        except ValueError, e:
+            raise HTTPBadRequest(str(e))
         except:
             Session.rollback()
             raise
