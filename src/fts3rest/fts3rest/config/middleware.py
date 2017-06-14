@@ -25,6 +25,7 @@ from pylons.middleware import ErrorHandler
 from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
 
+from fts3rest.lib.heartbeat import Heartbeat
 from fts3rest.lib.middleware.fts3auth import FTS3AuthMiddleware
 from fts3rest.lib.middleware.error_as_json import ErrorAsJson
 from fts3rest.lib.middleware.request_logger import RequestLogger
@@ -90,4 +91,8 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
         static_app = StaticURLParser(config['pylons.paths']['static_files'])
         app = Cascade([static_app, app])
     app.config = config
+
+    # Heartbeat thread
+    Heartbeat('fts_rest', int(config.get('fts3.HeartBeatInterval', 60))).start()
+
     return app

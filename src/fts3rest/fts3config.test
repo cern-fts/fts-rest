@@ -11,6 +11,7 @@ AuthorizedVO=dteam;*
 CleanRecordsHost=false
 
 MessagingDirectory=/tmp/rest-msgs
+HeartBeatInterval=0
 
 [roles]
 Public=vo:transfer;all:datamanagement
