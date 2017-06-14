@@ -42,3 +42,9 @@ def connection_validator(dbapi_con, con_record, con_proxy):
     if exc is not None:
         log.warning(exc.message)
         raise exc
+
+
+def connection_set_sqlmode(dbapi_con, con_record):
+    cur = dbapi_con.cursor()
+    if isinstance(dbapi_con, MySQLConnection):
+        cur.execute("SET SESSION sql_mode='STRICT_TRANS_TABLES'")

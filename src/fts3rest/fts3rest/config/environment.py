@@ -33,7 +33,7 @@ from sqlalchemy import engine_from_config, event
 import fts3rest.lib.app_globals as app_globals
 import fts3rest.lib.helpers
 from fts3.util.config import fts3_config_load
-from fts3rest.lib.helpers.connection_validator import connection_validator
+from fts3rest.lib.helpers.connection_validator import connection_validator, connection_set_sqlmode
 from fts3rest.config.routing import make_map
 from fts3rest.model import init_model
 
@@ -89,6 +89,7 @@ def load_environment(global_conf, app_conf):
 
     # Catch dead connections
     event.listens_for(engine, 'checkout')(connection_validator)
+    event.listens_for(engine, 'connect')(connection_set_sqlmode)
 
     # Mako templating
     config['pylons.app_globals'].mako_lookup = TemplateLookup(
