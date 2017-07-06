@@ -16,7 +16,7 @@
 #   limitations under the License.
 
 from distutils.version import StrictVersion
-from sqlalchemy import Column, DateTime, ForeignKeyConstraint
+from sqlalchemy import Column, DateTime, ForeignKeyConstraint, Float
 from sqlalchemy import Integer, String
 from sqlalchemy import and_
 from sqlalchemy import __version__ as sqlalchemy_version

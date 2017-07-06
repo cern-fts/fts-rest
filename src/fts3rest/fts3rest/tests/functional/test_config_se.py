@@ -47,9 +47,9 @@ class TestConfigSe(TestController):
                 },
                 'se_info': {
                     'ipv6': True,
-                    'outbound_min_active': 55,
-                    'inbound_min_active': 1,
-                    'inbound_min_throughput': 33
+                    'outbound_max_active': 55,
+                    'inbound_max_active': 1,
+                    'inbound_max_throughput': 33
                 }
             }
         }
@@ -68,9 +68,9 @@ class TestConfigSe(TestController):
 
         se = Session.query(Se).filter(Se.storage == 'test.cern.ch').first()
         self.assertEqual(True, se.ipv6)
-        self.assertEqual(55, se.outbound_min_active)
-        self.assertEqual(1, se.inbound_min_active)
-        self.assertEqual(33, se.inbound_min_throughput)
+        self.assertEqual(55, se.outbound_max_active)
+        self.assertEqual(1, se.inbound_max_active)
+        self.assertEqual(33, se.inbound_max_throughput)
 
     def test_reset_se_config(self):
         """
@@ -92,9 +92,9 @@ class TestConfigSe(TestController):
                 },
                 'se_info': {
                     'ipv6': False,
-                    'outbound_min_active': 88,
-                    'inbound_min_active': 11,
-                    'inbound_min_throughput': 10
+                    'outbound_max_active': 88,
+                    'inbound_max_active': 11,
+                    'inbound_max_throughput': 10
                 }
             }
         }
@@ -113,9 +113,9 @@ class TestConfigSe(TestController):
 
         se = Session.query(Se).filter(Se.storage == 'test.cern.ch').first()
         self.assertEqual(False, se.ipv6)
-        self.assertEqual(88, se.outbound_min_active)
-        self.assertEqual(11, se.inbound_min_active)
-        self.assertEqual(10, se.inbound_min_throughput)
+        self.assertEqual(88, se.outbound_max_active)
+        self.assertEqual(11, se.inbound_max_active)
+        self.assertEqual(10, se.inbound_max_throughput)
 
     def test_get_se_config(self):
         """
@@ -137,9 +137,9 @@ class TestConfigSe(TestController):
         )
 
         self.assertEqual(True, se_cfg['se_info']['ipv6'])
-        self.assertEqual(55, se_cfg['se_info']['outbound_min_active'])
-        self.assertEqual(1, se_cfg['se_info']['inbound_min_active'])
-        self.assertEqual(33, se_cfg['se_info']['inbound_min_throughput'])
+        self.assertEqual(55, se_cfg['se_info']['outbound_max_active'])
+        self.assertEqual(1, se_cfg['se_info']['inbound_max_active'])
+        self.assertEqual(33, se_cfg['se_info']['inbound_max_throughput'])
 
     def test_set_malformed(self):
         """
@@ -160,9 +160,9 @@ class TestConfigSe(TestController):
                     },
                     'se_info': {
                         'ipv6': False,
-                        'outbound_min_active': 88,
-                        'inbound_min_active': 11,
-                        'inbound_min_throughput': 10
+                        'outbound_max_active': 88,
+                        'inbound_max_active': 11,
+                        'inbound_max_throughput': 10
                     }
                 }
             },
@@ -179,8 +179,8 @@ class TestConfigSe(TestController):
                     'se_info': {
                         'ipv6': False,
                         'active': 'not again!',
-                        'inbound_min_active': 11,
-                        'inbound_min_throughput': 10
+                        'inbound_max_active': 11,
+                        'inbound_max_throughput': 10
                     }
                 }
             },
@@ -191,8 +191,8 @@ class TestConfigSe(TestController):
                 'test.cern.ch': {
                     'se_info': {
                         'ipv6': True,
-                        'inbound_min_active': 0.5,
-                        'inbound_min_throughput': 10
+                        'inbound_max_active': 0.5,
+                        'inbound_max_throughput': 10
                     }
                 }
             },
