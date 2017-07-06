@@ -60,7 +60,7 @@ class Se(Base):
 
     storage                 = Column(String(150), primary_key=True)
     site                    = Column(String(45))
-    metadata                = Column(String(255))
+    se_metadata                = Column(String(255))
     ipv6                    = Column(Flag(negative='off', positive='on'), default='off')
     udt                     = Column(Flag(negative='off', positive='on'))
     debug_level             = Column(Integer)

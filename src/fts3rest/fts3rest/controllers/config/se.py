@@ -112,12 +112,9 @@ class SeConfigurationController(BaseController):
             se = opt.storage
             config = response.get(se, dict())
             link_config = dict()
-            for attr in ['inbound_min_actives', 'inbound_max_actives', 'inbound_min_throughput','inbound_max_throughput', 'udt', 'ipv6']:
+            for attr in ['inbound_max_actives', 'inbound_max_throughput', 'outbound_max_actives', 'out_max_throughput', 'udt', 'ipv6', 'se_metadata', 'site', 'debug_level']:
                 link_config[attr] = getattr(opt, attr)
-                config['as_destination'] = link_config
-            for attr in ['outbound_min_actives', 'outbound_max_actives', 'out_min_throughput','out_max_throughput', 'udt', 'ipv6']:
-                link_config[attr] = getattr(opt, attr)
-                config['as_source'] = link_config              
+                config['se_info'] = link_config
             response[se] = config
 
         for op in from_ops:
