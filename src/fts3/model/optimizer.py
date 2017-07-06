@@ -33,9 +33,9 @@ class OptimizerEvolution(Base):
     diff       = Column(Integer)
     actual_active = Column(Integer)
     queue_size    = Column(Integer)
-    ema         = Column(Double)
-    filesize_avg = Column(Double)
-    filesize_stddeve = Column(Double)
+    ema         = Column(Float)
+    filesize_avg = Column(Float)
+    filesize_stddeve = Column(Float)
 
 
 class OptimizerActive(Base):
