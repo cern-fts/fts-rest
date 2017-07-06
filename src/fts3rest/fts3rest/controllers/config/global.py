@@ -60,8 +60,6 @@ class GlobalConfigController(BaseController):
                     result['*'] = r
                 else:
                     result[r.vo_name] = dict(retry=r.retry)
-        opt = Session.query(OptimizerConfig).first()
-        setattr(result['*'], 'optimizer_mode', opt.mode if opt else None)
         return result
 
     @doc.response(400, 'Invalid values passed in the request')
@@ -78,16 +76,6 @@ class GlobalConfigController(BaseController):
         db_cfg = Session.query(ServerConfig).get(vo_name)
         if not db_cfg:
             db_cfg = ServerConfig(vo_name=vo_name)
-
-        if vo_name == '*' and 'optimizer_mode' in cfg:
-            try:
-                opt_mode = int(cfg.pop('optimizer_mode'))
-                if opt_mode > 0 and opt_mode < 4:
-                    Session.query(OptimizerConfig).delete()
-                    opt = OptimizerConfig(mode=opt_mode)
-                    Session.merge(opt)
-            except:
-                raise HTTPBadRequest('Invalid optimizer_mode value')
 
         for key, value in cfg.iteritems():
             value = validate_type(ServerConfig, key, value)

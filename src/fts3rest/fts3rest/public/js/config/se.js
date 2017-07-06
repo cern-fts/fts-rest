@@ -66,13 +66,15 @@ function getSubForm(form, klass)
 {
     var subform = form.find("." + klass);
     var subset = {};
-    
-    subset.vo = (subform.find("select[name='vo']").val());
-    subset.active = parseInt(subform.find("input[name='active']").val());
+    subset.metadata = subform.find("input[name='metadata']").val()
+    subset.inbound_max_active = parseInt(subform.find("input[name='inbound_max_active']").val());
+    subset.outbound_max_active = parseInt(subform.find("input[name='outbound_max_active']").val());
+    subset.inbound_max_active = parseFloat(subform.find("input[name='inbound_max_throughput']").val());
+    subset.outbound_max_active = parseFloat(subform.find("input[name='outbound_max_throughput']").val());
     subset.ipv6 = (subform.find("select[name='ipv6']").val() == "true");
-    subset.throughput = parseFloat(subform.find("input[name='throughput']").val());
     subset.udt = (subform.find("select[name='udt']").val() == "true");
-
+    subset.debug_level = parseInt(subform.find("input[name='debug_level']").val());
+    
     return subset;
 }
 
@@ -112,8 +114,7 @@ function handleSeSave(form)
     var setup = {};
     var se = form.find("input[name='se']").val();
 
-    setup.as_source = getSubForm(form, 'as-source');
-    setup.as_destination = getSubForm(form, 'as-destination');
+    setup.se-info = getSubForm(form, 'se-info');
     setup.operations = getOperations(form, 'ops-list');
 
 
@@ -263,8 +264,5 @@ function setupSe()
     // Autocomplete
     $("#se-add-field-se").autocomplete({
         source: "/autocomplete/storage"
-    });
-    $("#se-add-field-vo").autocomplete({
-        source: "/autocomplete/vo"
     });
 }

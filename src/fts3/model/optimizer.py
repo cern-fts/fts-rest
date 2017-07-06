@@ -26,7 +26,6 @@ class OptimizerEvolution(Base):
     datetime   = Column(DateTime, primary_key=True)
     source_se  = Column(String(150), primary_key=True)
     dest_se    = Column(String(150), primary_key=True)
-    throughput_limit = Column(Float)
     active     = Column(Integer)
     throughput = Column(Float)
     success    = Column(Float)
@@ -34,6 +33,9 @@ class OptimizerEvolution(Base):
     diff       = Column(Integer)
     actual_active = Column(Integer)
     queue_size    = Column(Integer)
+    ema         = Column(Double)
+    filesize_avg = Column(Double)
+    filesize_stddeve = Column(Double)
 
 
 class OptimizerActive(Base):
@@ -41,7 +43,7 @@ class OptimizerActive(Base):
 
     source_se = Column(String(150), primary_key=True)
     dest_se   = Column(String(150), primary_key=True)
-    active    = Column(Integer, default=2)
+    active    = Column(Integer, default=5)
     datetime  = Column(DateTime, default=None)
     ema       = Column(Float, default=0)
     fixed     = Column(Flag(negative='off', positive='on'), default='off')
@@ -73,5 +75,6 @@ class Optimize(Base):
     dest_se    = Column(String(150), nullable=True)
     active     = Column(Integer)
     throughput = Column(Float)
+    datetime   = Column(DateTime)
     udt        = Column(Flag(negative='off', positive='on'))
     ipv6       = Column(Flag(negative='off', positive='on'), default='off')

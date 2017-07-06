@@ -86,8 +86,6 @@ class TestConfigGlobal(TestController):
                 global_timeout=55,
                 sec_per_mb=1,
                 show_user_dn=True,
-                max_per_se=10,
-                max_per_link=15,
                 vo_name='atlas'
             ),
             status=200
@@ -112,33 +110,11 @@ class TestConfigGlobal(TestController):
                 global_timeout=55,
                 sec_per_mb=1,
                 show_user_dn=True,
-                max_per_se=10,
-                max_per_link=15,
                 vo_name='atlas'
             ),
             status=400
         )
 
-    def test_set_optimizer_mode(self):
-        """
-        Set the optimizer mode
-        """
-        self.app.post_json(url="/config/global",
-            params={'optimizer_mode': 2},
-            status=200
-        )
-
-        opt = Session.query(OptimizerConfig).first()
-        self.assertEqual(2, opt.mode)
-
-    def test_set_wrong_optimizer_mode(self):
-        """
-        Wrong value for optimizer_mode
-        """
-        self.app.post_json(url="/config/global",
-            params={'optimizer_mode': 'dfsdf'},
-            status=400
-        )
     def test_delete_vo_global_config(self):
         """
         Delete the global configuration for the given VO
@@ -149,3 +125,5 @@ class TestConfigGlobal(TestController):
         self.app.delete(url="/config/global?vo_name=dteam",  status=204)
         vo_name = Session.query(OptimizerConfig).get("dteam")
         self.assertIsNone(vo_name)
+        
+        

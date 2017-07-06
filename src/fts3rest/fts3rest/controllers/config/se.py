@@ -56,27 +56,15 @@ class SeConfigurationController(BaseController):
         try:
             for storage, cfg in input_dict.iteritems():
                 # As source
-                as_source_new = cfg.get('as_source', None)
-                if as_source_new:
-                    as_source = Session.query(Optimize).filter(Optimize.source_se == storage).first()
-                    if not as_source:
-                        as_source = Optimize(source_se=storage)
-                    for key, value in as_source_new.iteritems():
-                        value = validate_type(Optimize, key, value)
-                        setattr(as_source, key, value)
-                    audit_configuration('set-se-config', 'Set config as source %s: %s' % (storage, json.dumps(cfg)))
-                    Session.merge(as_source)
-                # As destination
-                as_dest_new = cfg.get('as_destination', None)
-                if as_dest_new:
-                    as_dest = Session.query(Optimize).filter(Optimize.dest_se == storage).first()
-                    if not as_dest:
-                        as_dest = Optimize(dest_se=storage)
-                    for key, value in as_dest_new.iteritems():
-                        value = validate_type(Optimize, key, value)
-                        setattr(as_dest, key, value)
-                    audit_configuration('set-se-config', 'Set config as destination %s: %s' % (storage, json.dumps(cfg)))
-                    Session.merge(as_dest)
+               se_info_new = cfg.get('se_info', None)
+               if se_info_new:
+                se_info = Session.query(Se).filter(Se.storage == storage).first()
+                for key, value in se_info_new.iteritems():
+                    value = validate_type(Se, key, value)
+                    setattr(se_info, key, value)
+                audit_configuration('set-se-config', 'Set config %s: %s' % (storage, json.dumps(cfg)))
+                Session.merge(se_info)
+                
                 # Operation limits
                 operations = cfg.get('operations', None)
                 if operations:
@@ -112,24 +100,24 @@ class SeConfigurationController(BaseController):
         Get the configurations status for a given SE
         """
         se = request.params.get('se', None)
-        from_optimize = Session.query(Optimize)
+        from_se = Session.query(Se)
         from_ops = Session.query(OperationConfig)
         if se:
-            from_optimize = from_optimize.filter((Optimize.source_se == se) | (Optimize.dest_se == se))
+            from_se = from_optimize.filter(Se.storage == se)
             from_ops = from_ops.filter(OperationConfig.host == se)
 
         # Merge both
         response = dict()
-        for opt in from_optimize:
-            se = opt.source_se if opt.source_se else opt.dest_se
+        for opt in from_se:
+            se = opt.storage
             config = response.get(se, dict())
             link_config = dict()
-            for attr in ['active', 'throughput', 'udt', 'ipv6']:
+            for attr in ['inbound_min_actives', 'inbound_max_actives', 'inbound_min_throughput','inbound_max_throughput', 'udt', 'ipv6']:
                 link_config[attr] = getattr(opt, attr)
-            if opt.source_se:
-                config['as_source'] = link_config
-            else:
                 config['as_destination'] = link_config
+            for attr in ['outbound_min_actives', 'outbound_max_actives', 'out_min_throughput','out_max_throughput', 'udt', 'ipv6']:
+                link_config[attr] = getattr(opt, attr)
+                config['as_source'] = link_config              
             response[se] = config
 
         for op in from_ops:
@@ -155,7 +143,7 @@ class SeConfigurationController(BaseController):
             raise HTTPBadRequest('Missing storage (se)')
 
         try:
-            Session.query(Optimize).filter((Optimize.source_se == se) | (Optimize.dest_se == se)).delete()
+            Session.query(Se).filter(Se.storage == se).delete()
             Session.query(OperationConfig).filter(OperationConfig.host == se).delete()
             Session.commit()
         except:

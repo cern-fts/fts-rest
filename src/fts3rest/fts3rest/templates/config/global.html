@@ -62,22 +62,6 @@
                     </span>
                 </p>
                 <p class="form-group">
-                    <label for="max_per_link">Max. transfers per link</label>
-                    <span class="input-group">
-                        <input type="number" id="max_per_link" name="max_per_link" class="form-control"
-                               value="${data['*']['max_per_link']}"/>
-                        <span class="input-group-addon"> transfers</span>
-                    </span>
-                </p>
-                <p class="form-group">
-                    <label for="max_per_se">Max. transfers per storage</label>
-                    <span class="input-group">
-                        <input type="number" id="max_per_se" name="max_per_se" class="form-control"
-                               value="${data['*']['max_per_se']}"/>
-                        <span class="input-group-addon"> transfers</span>
-                    </span>
-                </p>
-                <p class="form-group">
                     <label for="max_time_queue">Max. time in the queue</label>
                     <span class="input-group">
                         <input type="number" id="max_time_queue" name="max_time_queue" class="form-control"
@@ -87,23 +71,6 @@
                 </p>
             </div>
             <div class="col-md-6">
-                <p class="form-group">
-                    <label for="optimizer_mode">Optimizer mode</label>
-                    <span class="input-group">
-                        <select id="optimizer_mode" name="optimizer_mode" class="form-control">
-                            % if not data['*']['optimizer_mode']:
-                            <option>-- Default --</option>
-                            % endif
-                            % for value, label in enumerate([('Conservative', 'text-primary'), ('Normal', 'text-success'), ('Aggressive', 'text-danger')], 1):
-                            % if value == data['*']['optimizer_mode']:
-                                <option value="${value}" class="${label[1]}" selected="selected">${label[0]}</option>
-                            % else:
-                                <option value="${value}" class="${label[1]}">${label[0]}</option>
-                            % endif
-                            % endfor
-                        </select>
-                    </span>
-                </p>
                 <p class="form-group">
                     <label for="sec_per_mb">
                         Add seconds per MiB

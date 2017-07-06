@@ -1,304 +1,252 @@
-<%include file="header.html" args="page='/config/se', subtitle='Storage configuration'"/>
+<%include file="header.html" args="page='/config/se', subtitle='Storage
+configuration'"/>
 
 <div class="container">
 	<h1>Storage configuration</h1>
 
-    <p>
-        Here you can set some parameters that apply per storage only.
-    </p>
+	<p>Here you can set some parameters that apply per storage only.</p>
 
 	<div id="se-list">
-        <script id="se-template" type="text/x-handlebars-template">
-            {{#each this}}
-            <div class="panel panel-primary panel-collapse">
-                <div class="panel-heading" style="cursor: pointer;">
-                    <h2 class="panel-title">
-                        {{@key}}
-                    </h2>
-                </div>
-                <form class="panel-body">
-                    <input type="hidden" name="se" value="{{@key}}">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="panel panel-default as-source">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title">As source</h3>
-                                </div>
-                                <div class="panel-body">
-  									<div class="form-group">
-                                        <label>VO</label>
-                                        <input class="form-control" name="vo" type="number" value="{{as_source/vo}}"/>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Active limit</label>
-                                        <input class="form-control" name="active" type="number" value="{{as_source/active}}"/>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Throughput limit (MB/s)</label>
-                                        <input class="form-control" name="throughput" type="number" value="{{as_source/throughput}}"/>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>IPv6</label>
-                                        <select class="form-control" name="ipv6">
-                                            <option value="true" {{selected as_source/ipv6 true}}>Yes</option>
-                                            <option value="false" {{selected as_source/ipv6 false}}>No</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>UDT</label>
-                                        <select class="form-control" name="udt">
-                                            <option value="true" {{selected as_source/udt true}}>Yes</option>
-                                            <option value="false" {{selected as_source/udt false}}>No</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="panel panel-default as-destination">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title">As destination</h3>
-                                </div>
-                                <div class="panel-body">
-									<div class="form-group">
-                                        <label>VO</label>
-                                        <input class="form-control" name="vo" type="number" value="{{as_destination/vo}}"/>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Active limit</label>
-                                        <input class="form-control" name="active" type="number" value="{{as_destination/active}}"/>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Throughput limit (MB/s)</label>
-                                        <input class="form-control" name="throughput" type="number" value="{{as_destination/throughput}}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>IPv6</label>
-                                        <select class="form-control" name="ipv6">
-                                            <option value="true" {{selected as_destination/ipv6 true}}>Yes</option>
-                                            <option value="false" {{selected as_destination/ipv6 false}}>No</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>UDT</label>
-                                        <select class="form-control" name="udt">
-                                            <option value="true" {{selected as_destination/udt true}}>Yes</option>
-                                            <option value="false" {{selected as_destination/udt false}}>No</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel panel-default operations">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Operations</h3>
-                        </div>
-                        <div class="panel-body">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>VO</th>
-                                        <th>Operation</th>
-                                        <th>Limit</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="ops-list">
-                                {{#each operations as |ops vo_name|}}
-                                {{#each ops }}
-                                    <tr class="frm-set-operation">
-                                        <td>
-                                            <a class="btn btn-link btn-delete-operation">
-                                                <i class="glyphicon glyphicon-trash"></i>
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <input type="hidden" name="vo" value="{{vo_name}}">
-                                            {{@vo_name}}
-                                        </td>
-                                        <td>
-                                            <input type="hidden" name="operation" value="{{@key}}">
-                                            {{@key}}
-                                        </td>
-                                        <td>
-                                            <input type="number" name="limit" class="form-control" value="{{this}}">
-                                        </td>
-                                    </tr>
-                                {{/each}}
-                                {{/each}}
-                                </tbody>
-                                <tbody>
-                                    <tr class="frm-add-operation">
-                                        <td>
-                                            <a class="btn btn-link btn-add-operation">
-                                                <i class="glyphicon glyphicon-plus"></i>
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <input type="text" name="vo" class="form-control ui-autocomplete-input"
-                                                   autocomplete="off">
-                                        </td>
-                                        <td>
-                                            <select name="operation" class="form-control">
-                                                <option value="delete">Delete</option>
-                                                <option value="staging">Staging</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <input type="number" name="limit" class="form-control">
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="panel-footer">
-                        <button class="btn btn-primary btn-save">Save</button>
-                        <button class="btn btn-danger btn-delete"><i class="glyphicon glyphicon-trash"></i> Delete</button>
-                    </div>
-                </form>
-            </div>
-            {{/each}}
-        </script>
-	</div>
+		<script id="se-template" type="text/x-handlebars-template">
+			{{#each this}}
+			<div class="panel panel-primary panel-collapse">
+				<div class="panel-heading" style="cursor: pointer;">
+					<h2 class="panel-title">
+						{{@key}}
+					</h2>
+				</div>
+				<form class="panel-body">
+					<input type="hidden" name="se" value="{{@key}}">
+					<div class="row">
+						<div class="panel panel-default se-info">
+							<div class="panel-heading">
+								<h3 class="panel-title">Storage Settings</h3>
+							</div>
+							<div class="panel-body">
+								<div class="form-group">
+									<label>Metadata</label>
+									<input class="form-control" name="metadata" type="text" value="{{metadata}}"/>
+								</div>
+								<div class="form-group">
+									<label>Inbound Max Active</label>
+									<input class="form-control" name="inbound_max_active" type="number" value="{{inbound_max_active}}"/>
+								</div>
+								<div class="form-group">
+									<label>Outbound Max Active</label>
+									<input class="form-control" name="outbound_max_active" type="number" value="{{outbound_max_active}}"/>
+								</div>
+								<div class="form-group">
+									<label>Inbound Max Throughput (MB/s)</label>
+									<input class="form-control" name="inbound_max_throughput" type="number" value="{{inbound_max_throughput}}"/>
+								</div>
+								<div class="form-group">
+									<label>Outbound Max Throughput (MB/s)</label>
+									<input class="form-control" name="outbound_max_throughput" type="number" value="{{outbound_max_throughput}}"/>
+								</div>
+								<div class="form-group">
+									<label>IPv6</label>
+									<select class="form-control" name="ipv6">
+										<option value="true" {{selected ipv6 true}}>Yes</option>
+										<option value="false" {{selected ipv6 false}}>No</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label>UDT</label>
+									<select class="form-control" name="udt">
+										<option value="true" {{selected udt true}}>Yes</option>
+										<option value="false" {{selected udt false}}>No</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label>Debug Level</label>
+									<input class="form-control" name="debug_level" type="number" value="{{debug_level}}"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="panel panel-default operations">
+					<div class="panel-heading">
+						<h3 class="panel-title">Operations</h3>
+					</div>
+					<div class="panel-body">
+						<table class="table">
+							<thead>
+								<tr>
+									<th></th>
+									<th>VO</th>
+									<th>Operation</th>
+									<th>Limit</th>
+								</tr>
+							</thead>
+							<tbody class="ops-list">
+								{{#each operations as |ops vo_name|}}
+								{{#each ops }}
+								<tr class="frm-set-operation">
+									<td>
+										<a class="btn btn-link btn-delete-operation">
+											<i class="glyphicon glyphicon-trash"></i>
+										</a>
+									</td>
+									<td>
+										<input type="hidden" name="vo" value="{{vo_name}}">
+										{{@vo_name}}
+									</td>
+									<td>
+										<input type="hidden" name="operation" value="{{@key}}">
+										{{@key}}
+									</td>
+									<td>
+										<input type="number" name="limit" class="form-control" value="{{this}}">
+									</td>
+								</tr>
+								{{/each}}
+								{{/each}}
+							</tbody>
+							<tbody>
+								<tr class="frm-add-operation">
+									<td>
+										<a class="btn btn-link btn-add-operation">
+											<i class="glyphicon glyphicon-plus"></i>
+										</a>
+									</td>
+									<td>
+										<input type="text" name="vo" class="form-control ui-autocomplete-input"
+										autocomplete="off">
+									</td>
+									<td>
+										<select name="operation" class="form-control">
+											<option value="delete">Delete</option>
+											<option value="staging">Staging</option>
+										</select>
+									</td>
+									<td>
+										<input type="number" name="limit" class="form-control">
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="panel-footer">
+					<button class="btn btn-primary btn-save">Save</button>
+					<button class="btn btn-danger btn-delete"><i class="glyphicon glyphicon-trash"></i> Delete</button>
+				</div>
+			</form>
+		</div>
+		{{/each}}
+	</script>
+</div>
 
-	<div id="se-add">
-        <h2>Add new storage</h2>
-		<form class="panel panel-success" id="se-add-frm">
+<div id="se-add">
+	<h2>Add new storage</h2>
+	<form class="panel panel-success" id="se-add-frm">
+		<div class="panel-heading">
+			<h2 class="panel-title">
+				<input type="text" name="se" placeholder="Storage"
+				class="form-control" id="se-add-field-se" />&nbsp;
+		</div>
+		<div class="panel-body">
+			<div class="row">
+					<div class="panel panel-default se-info">
+						<div class="panel-heading">
+							<h3 class="panel-title">Storage Settings</h3>
+						</div>
+						<div class="panel-body">
+							<div class="form-group">
+								<label for="metadata">Metadata</label> <input
+								class="form-control" name="metadata" id="metadata"
+								type="text">
+							</div>
+							<div class="form-group">
+								<label for="inbound_max_active">Inbound Max Active</label> <input
+								class="form-control" name="inbound_max_active" id="inbound_max_active"
+								type="text">
+							</div>
+							<div class="form-group">
+								<label for="inbound_max_active">Inbound Max Active</label> <input
+								class="form-control" name="inbound_max_active" id="inbound_max_active"
+								type="number">
+							</div>
+							<div class="form-group">
+								<label for="outbound_max_active">Outbound Max Active</label> <input
+								class="form-control" name="outbound_max_active" id="outbound_max_active"
+								type="number">
+							</div>
+							<div class="form-group">
+								<label for="inbound_max_throughput">Inbound Max Throughput (MB/s)</label> <input
+								class="form-control" name="inbound_max_throughput" id="inbound_max_throughput"
+								type="number">
+							</div>
+							<div class="form-group">
+								<label for="outbound_max_throughput">Outbound Max Throughput (MB/s)</label> <input
+								class="form-control" name="outbound_max_throughput" id="outbound_max_throughput"
+								type="number">
+							</div>
+								<div class="form-group">
+									<label for="ipv6">IPv6</label> <select
+									class="form-control" name="ipv6" id="ipv6">
+									<option value="true">Yes</option>
+									<option value="false">No</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="udt"> UDT <i
+									class="glyphicon glyphicon-question-sign"
+									title="If set, FTS3 will enable UDT for this endpoint, but will fallback to non-UDT on error"></i>
+								</label> <select class="form-control" id="udt" name="udt">
+									<option value="true">Yes</option>
+									<option value="false">No</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="debug_level">Debug Level</label> <input
+								class="form-control" name="debug_level" id="debug_level"
+								type="number">
+							</div>
+						</div>
+					</div>
+		</div>
+		<div class="panel panel-default operations">
 			<div class="panel-heading">
-				<h2 class="panel-title">
-					<input type="text" name="se" placeholder="Storage" class="form-control"
-						id="se-add-field-se"/>&nbsp;
-				</h2>
+				<h3 class="panel-title">Operations</h3>
 			</div>
 			<div class="panel-body">
-                <div class="row">
-                    <div class="col-md-6">
-        				<div class="panel panel-default as-source">
-        					<div class="panel-heading">
-        						<h3 class="panel-title">As source</h3>
-        					</div>
-        					<div class="panel-body">
-        						<div class="form-group">
-        							<label for="as_source-vo">VO</label>
-        							<input class="form-control" name="vo" id="as_source-vo" type="text">
-        						</div>
-        						<div class="form-group">
-        							<label for="as_source-active">Active limit</label>
-        							<input class="form-control" name="active" id="as_source-active" type="number">
-        						</div>
-        						<div class="form-group">
-        							<label for="as_source-throughput">Throughput limit (MB/s)</label>
-        							<input class="form-control" name="throughput" id="as_source-throughput" type="number">
-        						</div>
-        						<div class="form-group">
-        							<label for="as_source-ipv6">IPv6</label>
-        							<select class="form-control" name="ipv6" id="as_source-ipv6">
-        								<option value="true">Yes</option>
-        								<option value="false">No</option>
-        							</select>
-        						</div>
-        						<div class="form-group">
-        							<label for="as_source-udt">
-                                        UDT
-                                        <i class="glyphicon glyphicon-question-sign"
-                                            title="If set, FTS3 will enable UDT for this endpoint, but will fallback to non-UDT on error"></i>
-                                    </label>
-        							<select class="form-control" id="as_source-udt" name="udt">
-        								<option value="true">Yes</option>
-        								<option value="false">No</option>
-        							</select>
-        						</div>
-        					</div>
-        				</div>
-                    </div>
-                    <div class="col-md-6">
-        				<div class="panel panel-default as-destination">
-        					<div class="panel-heading">
-        						<h3 class="panel-title">As destination</h3>
-        					</div>
-        					<div class="panel-body">
-        					    <div class="form-group">
-        							<label for="as_destination-vo">VO</label>
-        							<input class="form-control" name="vo" id="as_destination-vo" type="text">
-        						</div>
-        						<div class="form-group">
-        							<label>Active limit</label>
-        							<input class="form-control" name="active" type="number">
-        						</div>
-        						<div class="form-group">
-        							<label for="as_destination-throughput">Throughput limit (MB/s)</label>
-        							<input class="form-control" name="throughput" id="as_destination-throughput" type="number">
-        						</div>
-        						<div class="form-group">
-        							<label for="as_destination-ipv6">IPv6</label>
-        							<select class="form-control" name="ipv6" id="as_destination-ipv6">
-        								<option value="true">Yes</option>
-        								<option value="false">No</option>
-        							</select>
-        						</div>
-        						<div class="form-group">
-        							<label for="as_destination-udt">
-                                        UDT
-                                        <i class="glyphicon glyphicon-question-sign"
-                                            title="If set, FTS3 will enable UDT for this endpoint, but will fallback to non-UDT on error"></i>
-                                    </label>
-        							<select class="form-control" name="udt" id="as_destination-udt">
-        								<option value="true">Yes</option>
-        								<option value="false">No</option>
-        							</select>
-        						</div>
-        					</div>
-        				</div>
-                    </div>
-                </div>
-                <div class="panel panel-default operations">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Operations</h3>
-                    </div>
-                    <div class="panel-body">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>VO</th>
-                                    <th>Operation</th>
-                                    <th>Limit</th>
-                                </tr>
-                            </thead>
-                        <tbody id="se-add-ops-list" class="ops-list">
-                        </tbody>
-                        <tbody id="se-add-ops-add">
-                            <tr>
-                                <td>
-                                    <a class="btn btn-link" id="se-add-ops-add-btn">
-                                        <i class="glyphicon glyphicon-plus"></i>
-                                    </a>
-                                </td>
-                                <td>
-                                    <input type="text" id="se-add-field-vo" name="vo" class="form-control"/>
-                                </td>
-                                <td>
-                                    <select name="operation" class="form-control">
-                                        <option value="delete">Delete</option>
-                                        <option value="staging">Staging</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <input type="number" name="limit" class="form-control"/>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+				<table class="table">
+					<thead>
+						<tr>
+							<th></th>
+							<th>VO</th>
+							<th>Operation</th>
+							<th>Limit</th>
+						</tr>
+					</thead>
+					<tbody id="se-add-ops-list" class="ops-list">
+					</tbody>
+					<tbody id="se-add-ops-add">
+						<tr>
+							<td><a class="btn btn-link" id="se-add-ops-add-btn"> <i
+								class="glyphicon glyphicon-plus"></i>
+							</a></td>
+							<td><input type="text" id="se-add-field-vo" name="vo"
+								class="form-control" /></td>
+								<td><select name="operation" class="form-control">
+									<option value="delete">Delete</option>
+									<option value="staging">Staging</option>
+								</select></td>
+								<td><input type="number" name="limit" class="form-control" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div>
-            </div>
-            <div class="panel-footer">
-                <button type="submit" class="btn btn-primary">Add</button>
-            </div>
-		</form>
-	</div>
+		</div>
+		<div class="panel-footer">
+			<button type="submit" class="btn btn-primary">Add</button>
+		</div>
+	</form>
+</div>
 </div>
 
 <script src="/js/config/se.js" onload="setupSe()"></script>

@@ -43,20 +43,13 @@ class LinkConfig(Base):
 
     source            = Column(String(150), primary_key=True)
     destination       = Column(String(150), primary_key=True)
-    state             = Column(Flag(negative='off', positive='on'))
     symbolicname      = Column(String(255), unique=True)
-    nostreams         = Column(Integer)
+    min_active        = Column(Integer)
+    max_active        = Column(Integer)
+    optimizer_mode    = Column (Integer)
     tcp_buffer_size   = Column(Integer)
-    urlcopy_tx_to     = Column(Integer)
-    auto_tuning       = Column(Flag(negative='off', positive='on'))
-
-#    share_config =\
-#        relation('ShareConfig', backref='link_config',
-#                 primaryjoin='ShareConfig.source == LinkConfig.source and '
-#                             'ShareConfig.destination == LinkConfig.destination',
-#                 foreign_keys=(source, destination),
-#                 uselist=False,
-#                 lazy=False)
+    nostreams         = Column(Integer)
+    
 
     def __str__(self):
         return "%s => %s" % (self.source, self.destination)
@@ -65,42 +58,17 @@ class LinkConfig(Base):
 class Se(Base):
     __tablename__ = 't_se'
 
-    se_id_info = Column(Integer)
-    name       = Column(String(150), primary_key=True)
-    endpoint   = Column(String(1024))
-    se_type    = Column(String(30))
-    site       = Column(String(100))
-    state      = Column(String(30))
-    version    = Column(String(30))
-    host       = Column(String(100))
-    se_transfer_type     = Column(String(30))
-    se_transfer_protocol = Column(String(30))
-    se_control_protocol  = Column(String(30))
-    gocdb_id   = Column(String(100))
-
-    source_on =\
-        relation('LinkConfig', backref='source_se',
-                 primaryjoin=and_(LinkConfig.source == name,
-                                  LinkConfig.destination != '*'),
-                 foreign_keys=name, uselist=True, lazy=True)
-
-    destination_on =\
-        relation('LinkConfig', backref='destination_se',
-                 primaryjoin=and_(LinkConfig.destination == name,
-                                  LinkConfig.source != '*'),
-                 foreign_keys=name, uselist=True, lazy=True)
-
-    standalone_source =\
-        relation('LinkConfig', backref=None,
-                 primaryjoin=and_(LinkConfig.source == name,
-                                  LinkConfig.destination == '*'),
-                 foreign_keys=name, lazy=True)
-
-    standalone_destination =\
-        relation('LinkConfig', backref=None,
-                 primaryjoin=and_(LinkConfig.destination == name,
-                                  LinkConfig.source == '*'),
-                 foreign_keys=name, lazy=True)
+    storage                 = Column(String(150), primary_key=True)
+    site                    = Column(String(45))
+    metadata                = Column(String(255))
+    ipv6                    = Column(Flag(negative='off', positive='on'), default='off')
+    udt                     = Column(Flag(negative='off', positive='on'))
+    debug_level             = Column(Integer)
+    inbound_max_active      = Column(Integer)
+    inbound_max_throughput  = Column(Float)
+    outbound_max_active     = Column(Integer)
+    outbound_max_throughput = Column(Float)
+    
 
     def __str__(self):
         return self.name
@@ -120,22 +88,6 @@ class ShareConfig(Base):
 
     def __str__(self):
         return "%s: %s => %s" % (self.vo, self.source, self.destination)
-
-
-class FileShareConfig(Base):
-    __tablename__ = 't_file_share_config'
-
-    file_id     = Column(Integer, primary_key=True)
-    source      = Column(String(150), primary_key=True)
-    destination = Column(String(150), primary_key=True)
-    vo          = Column(String(100), nullable=False)
-
-    __table_args__ = (
-        ForeignKeyConstraint(['source', 'destination', 'vo'],
-                             [ShareConfig.source, ShareConfig.destination, ShareConfig.vo]),
-        ForeignKeyConstraint(['file_id'],
-                             [File.file_id])
-    )
 
 
 class Group(Base):
@@ -163,6 +115,7 @@ class DebugConfig(Base):
 
     source_se = Column(String(150), primary_key=True)
     dest_se   = Column(String(150), primary_key=True)
+    debug     = Column(String(3), default='off')
     debug_level = Column(Integer, default=1)
 
     def __str__(self):
@@ -187,12 +140,13 @@ class ServerConfig(Base):
     sec_per_mb     = Column(Integer, default=0)
     vo_name        = Column(String(100), primary_key=True)
     show_user_dn   = Column(Flag(negative='off', positive='on'), default='off')
-    max_per_se     = Column(Integer, default=0)
-    max_per_link   = Column(Integer, default=0)
 
 
 class OptimizerConfig(Base):
     __tablename__ = 't_optimize_mode'
+    
+    auto_number = Column(Integer)
+    source_se   = Column(String(150))
 
     mode = Column(Integer, default=1, primary_key=True, name='mode_opt')
 
