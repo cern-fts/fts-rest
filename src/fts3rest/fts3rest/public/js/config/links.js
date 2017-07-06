@@ -58,10 +58,11 @@ function refreshLinks()
               .append($("<td></td>").text(link.symbolicname))
               .append($("<td></td>").text(link.source))
               .append($("<td></td>").text(link.destination))
-              .append($("<td></td>").text(link.auto_tuning))
               .append($("<td></td>").text(link.nostreams))
+              .append($("<td></td>").text(link.min_active))
+              .append($("<td></td>").text(link.max_active))
+              .append($("<td></td>").text(link.optimizer))
               .append($("<td></td>").text(link.tcp_buffer_size))
-              .append($("<td></td>").text(link.urlcopy_tx_to));
 
             tbody.append(tr);
         });
@@ -177,10 +178,11 @@ function setupLinks()
             symbolicname: addFrm.find("[name=symbolicname]").val(),
             source: addFrm.find("[name=source]").val(),
             destination: addFrm.find("[name=destination]").val(),
-            state: addFrm.find("[name=state]").val(),
             nostreams: addFrm.find("[name=nostreams]").val(),
+            min_active: addFrm.find("[name=min_active]").val(),
+            max_active: addFrm.find("[name=max_active]").val(),
+            optimizer_mode: addFrm.find("[name=optimizer_mode]").val(),
             tcp_buffer_size: addFrm.find("[name=tcp_buffer_size]").val(),
-            urlcopy_tx_to: addFrm.find("[name=urlcopy_tx_to]").val(),
         };
         console.log(payload);
 

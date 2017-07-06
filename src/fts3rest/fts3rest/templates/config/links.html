@@ -47,20 +47,26 @@
                         id="link-add-field-destination"/>
                 </td>
                 <td>
-                    <input type="checkbox" checked="checked" name="state"/>
-                </td>
-                <td>
                     <input class="form-control" type="number" placeholder="Streams" name="nostreams"
                         min="0" max="100"/>
+                </td>
+                <td>
+                    <input class="form-control" type="number" placeholder="Min Actives" name="min_active"
+                        min="2" max="999999"/>
+                </td>
+                <td>
+                    <input class="form-control" type="number" placeholder="Max Actives" name="max_active"
+                        min="2" max="999999" />
+                </td>
+                <td>
+                    <input class="form-control" type="number" placeholder="Optimizer Mode" name="optimizer_mode"
+                        min="0" max="5"/>
                 </td>
                 <td>
                     <input class="form-control" type="number" placeholder="TCP buffer size" name="tcp_buffer_size"
                         min="0" max="999999"/>
                 </td>
-                <td>
-                    <input class="form-control" type="number" placeholder="Timeout" name="urlcopy_tx_to"
-                        min="0" max="999999"/>
-                </td>
+     
             </tr>
         </tbody>
     </table>

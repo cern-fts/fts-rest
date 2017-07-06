@@ -56,17 +56,19 @@ class LinkConfigController(BaseController):
         source = input_dict.get('source', '*')
         destination = input_dict.get('destination', '*')
         symbolicname = input_dict.get('symbolicname', None)
+        
         if not symbolicname:
             raise HTTPBadRequest('Missing symbolicname')
         if source == '*' and destination == '*':
             raise HTTPBadRequest('Can not use wildcard for both source and destination')
-
+        
+        
         link_cfg = Session.query(LinkConfig).filter(LinkConfig.symbolicname == symbolicname).first()
         if not link_cfg:
             link_cfg = LinkConfig(
                 source=source,
                 destination=destination,
-                symbolicname=symbolicname
+                symbolicname=symbolicname,
             )
 
         for key, value in input_dict.iteritems():

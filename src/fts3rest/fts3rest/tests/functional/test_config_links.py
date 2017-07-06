@@ -36,11 +36,12 @@ class TestConfigLinks(TestController):
             'symbolicname': 'test-link',
             'source': 'test.cern.ch',
             'destination': 'test2.cern.ch',
-            'state': True,
             'nostreams': 16,
             'tcp_buffer_size': 4096,
-            'urlcopy_tx_to': 10,
-            'auto_tuning': False
+            'min_active': 25,
+            'max_active': 150,
+            'optimizer_mode': 5
+            
         }, status=200).json
 
         audits = Session.query(ConfigAudit).all()
@@ -49,11 +50,11 @@ class TestConfigLinks(TestController):
         link = Session.query(LinkConfig).get(('test.cern.ch', 'test2.cern.ch'))
         self.assertEqual('test.cern.ch', link.source)
         self.assertEqual('test2.cern.ch', link.destination)
-        self.assertEqual(True, link.state)
         self.assertEqual(16, link.nostreams)
         self.assertEqual(4096, link.tcp_buffer_size)
-        self.assertEqual(10, link.urlcopy_tx_to)
-        self.assertEqual(False, link.auto_tuning)
+        self.assertEqual(25, link.min_active)
+        self.assertEqual(150, link.max_active)
+        self.assertEqual(5, link.optimizer_mode)
 
         self.assertEqual(link.symbolicname, resp['symbolicname'])
         self.assertEqual(link.source, resp['source'])
@@ -67,22 +68,23 @@ class TestConfigLinks(TestController):
             'symbolicname': None,
             'source': 'test.cern.ch',
             'destination': 'test2.cern.ch',
-            'state': True,
             'nostreams': 16,
             'tcp_buffer_size': 4096,
-            'urlcopy_tx_to': 10,
-            'auto_tuning': False
+            'min_active': 25,
+            'max_active': 150,
+            'optimizer_mode': 5
         }, status=400)
 
         self.app.post_json("/config/links", params={
             'symbolicname': 'test-link',
             'source': '*',
             'destination': '*',
-            'state': True,
             'nostreams': 16,
             'tcp_buffer_size': 4096,
-            'urlcopy_tx_to': 10,
-            'auto_tuning': False
+            'min_active': 25,
+            'max_active': 150,
+            'optimizer_mode': 5
+            
         }, status=400)
 
     def test_reconfig_link_se(self):
@@ -94,11 +96,12 @@ class TestConfigLinks(TestController):
             'symbolicname': 'test-link',
             'source': 'test.cern.ch',
             'destination': 'test2.cern.ch',
-            'state': True,
             'nostreams': 4,
             'tcp_buffer_size': 1024,
-            'urlcopy_tx_to': 5,
-            'auto_tuning': True
+            'min_active': 25,
+            'max_active': 150,
+            'optimizer_mode': 5
+            
         }, status=200).json
 
         audits = Session.query(ConfigAudit).all()
@@ -107,11 +110,11 @@ class TestConfigLinks(TestController):
         link = Session.query(LinkConfig).get(('test.cern.ch', 'test2.cern.ch'))
         self.assertEqual('test.cern.ch', link.source)
         self.assertEqual('test2.cern.ch', link.destination)
-        self.assertEqual(True, link.state)
         self.assertEqual(4, link.nostreams)
         self.assertEqual(1024, link.tcp_buffer_size)
-        self.assertEqual(5, link.urlcopy_tx_to)
-        self.assertEqual(True, link.auto_tuning)
+        self.assertEqual(25, link.min_active)
+        self.assertEqual(150, link.max_active)
+        self.assertEqual(5, link.optimizer_mode)
 
         self.assertEqual(link.symbolicname, resp['symbolicname'])
         self.assertEqual(link.source, resp['source'])
@@ -135,11 +138,11 @@ class TestConfigLinks(TestController):
         link = self.app.get_json("/config/links/test-link").json
         self.assertEqual('test.cern.ch', link['source'])
         self.assertEqual('test2.cern.ch', link['destination'])
-        self.assertEqual(True, link['state'])
         self.assertEqual(16, link['nostreams'])
         self.assertEqual(4096, link['tcp_buffer_size'])
-        self.assertEqual(10, link['urlcopy_tx_to'])
-        self.assertEqual(False, link['auto_tuning'])
+        self.assertEqual(25, link['min_active'])
+        self.assertEqual(150, link['max_active'])
+        self.assertEqual(5, link['optimizer_mode'])
 
     def test_delete_link(self):
         """

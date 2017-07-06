@@ -38,8 +38,6 @@ class TestConfigGlobal(TestController):
                 global_timeout=55,
                 sec_per_mb=1,
                 show_user_dn=True,
-                max_per_se=10,
-                max_per_link=15,
                 vo_name='dteam'
             ),
             status=200
@@ -47,8 +45,6 @@ class TestConfigGlobal(TestController):
 
         config = Session.query(ServerConfig).get('dteam')
         self.assertEqual(42, config.retry)
-        self.assertEqual(15, config.max_per_link)
-
         audit = Session.query(ConfigAudit).all()
         self.assertEqual(1, len(audit))
 
@@ -60,7 +56,6 @@ class TestConfigGlobal(TestController):
         self.app.post_json(url="/config/global",
             params = dict(
                 retry=55,
-                max_per_link=5,
                 vo_name='dteam'
             ),
             status=200
@@ -68,7 +63,6 @@ class TestConfigGlobal(TestController):
 
         config = Session.query(ServerConfig).get('dteam')
         self.assertEqual(55, config.retry)
-        self.assertEqual(5, config.max_per_link)
 
         audit = Session.query(ConfigAudit).all()
         self.assertEqual(2, len(audit))
