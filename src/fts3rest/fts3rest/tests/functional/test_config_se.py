@@ -15,7 +15,7 @@
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import ConfigAudit, Optimize, OperationConfig
+from fts3.model import ConfigAudit, Optimize, OperationConfig, Se
 
 
 class TestConfigSe(TestController):
