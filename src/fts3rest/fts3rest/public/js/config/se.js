@@ -114,7 +114,7 @@ function handleSeSave(form)
     var setup = {};
     var se = form.find("input[name='se']").val();
 
-    setup.se_info = getSubForm(form, 'se_info');
+    setup.se_info = getSubForm(form, 'se-info');
     setup.operations = getOperations(form, 'ops-list');
 
 
