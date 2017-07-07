@@ -66,7 +66,7 @@ function getSubForm(form, klass)
 {
     var subform = form.find("." + klass);
     var subset = {};
-    subset.metadata = subform.find("input[name='metadata']").val()
+    subset.se_metadata = subform.find("input[name='se_metadata']").val()
     subset.inbound_max_active = parseInt(subform.find("input[name='inbound_max_active']").val());
     subset.outbound_max_active = parseInt(subform.find("input[name='outbound_max_active']").val());
     subset.inbound_max_active = parseFloat(subform.find("input[name='inbound_max_throughput']").val());
@@ -114,7 +114,7 @@ function handleSeSave(form)
     var setup = {};
     var se = form.find("input[name='se']").val();
 
-    setup.se-info = getSubForm(form, 'se-info');
+    setup.se_info = getSubForm(form, 'se_info');
     setup.operations = getOperations(form, 'ops-list');
 
 

@@ -61,7 +61,7 @@ class SeGroupConfigController(BaseController):
 
         # Check the member is in t_se
         if not Session.query(Se).get(member):
-            se = Se(name=member)
+            se = Se(storage=member)
             Session.merge(se)
 
         new_member = Member(groupname=groupname, member=member)
