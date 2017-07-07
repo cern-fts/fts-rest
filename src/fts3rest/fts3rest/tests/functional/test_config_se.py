@@ -104,7 +104,7 @@ class TestConfigSe(TestController):
         )
 
         audits = Session.query(ConfigAudit).all()
-        self.assertEqual(6, len(audits))
+        self.assertEqual(4, len(audits))
 
         ops = Session.query(OperationConfig).filter(OperationConfig.host == 'test.cern.ch').all()
         self.assertEqual(4, len(ops))

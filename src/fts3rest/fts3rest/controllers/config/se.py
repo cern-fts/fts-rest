@@ -103,7 +103,7 @@ class SeConfigurationController(BaseController):
         from_se = Session.query(Se)
         from_ops = Session.query(OperationConfig)
         if se:
-            from_se = from_optimize.filter(Se.storage == se)
+            from_se = from_se.filter(Se.storage == se)
             from_ops = from_ops.filter(OperationConfig.host == se)
 
         # Merge both
