@@ -66,6 +66,7 @@ class SeConfigurationController(BaseController):
                     log.debug("key %s" % key)
                     log.debug("value %s" % value)
                     value = validate_type(Se, key, value)
+                    log.debug("value %s" % value)
                     setattr(se_info, key, value)
                     
                 audit_configuration('set-se-config', 'Set config %s: %s' % (storage, json.dumps(cfg)))
