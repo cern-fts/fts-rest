@@ -62,8 +62,7 @@ class SeConfigurationController(BaseController):
                if se_info_new:
                 se_info = Session.query(ServerConfig).get(storage)
                 if not se_info:
-                    se_info = ServerConfig(vo_name=vo_name)
-                se_info = Session.query(storage = storage)
+                    se_info = ServerConfig(storage=storage)
                 log.debug("Se info %s" % se_info)
                 for key, value in se_info_new.iteritems():
                     log.debug("key %s" % key)
