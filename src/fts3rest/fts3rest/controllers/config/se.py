@@ -58,14 +58,16 @@ class SeConfigurationController(BaseController):
                log.debug("Storage %s" % storage)
                log.debug("cfg %s" % cfg)
                se_info_new = cfg.get('se_info', None)
+               log.debug("se_info new %s" %se_info_new)
                if se_info_new:
                 se_info = Session.query(Se).filter(Se.storage == storage).first()
                 log.debug("Se info %s" % se_info)
                 for key, value in se_info_new.iteritems():
-                    value = validate_type(Se, key, value)
-                    setattr(se_info, key, value)
                     log.debug("key %s" % key)
                     log.debug("value %s" % value)
+                    value = validate_type(Se, key, value)
+                    setattr(se_info, key, value)
+                    
                 audit_configuration('set-se-config', 'Set config %s: %s' % (storage, json.dumps(cfg)))
                 Session.merge(se_info)
                 
