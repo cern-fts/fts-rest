@@ -55,20 +55,13 @@ class SeConfigurationController(BaseController):
 
         try:
             for storage, cfg in input_dict.iteritems():
-               log.debug("Storage %s" % storage)
-               log.debug("cfg %s" % cfg)
                se_info_new = cfg.get('se_info', None)
-               log.debug("se_info new %s" %se_info_new)
                if se_info_new:
                 se_info = Session.query(Se).get(storage)
                 if not se_info:
                     se_info = Se(storage=storage)
-                log.debug("Se info %s" % se_info)
                 for key, value in se_info_new.iteritems():
-                    log.debug("key %s" % key)
-                    log.debug("value %s" % value)
                     value = validate_type(Se, key, value)
-                    log.debug("value %s" % value)
                     setattr(se_info, key, value)
                     
                 audit_configuration('set-se-config', 'Set config %s: %s' % (storage, json.dumps(cfg)))
