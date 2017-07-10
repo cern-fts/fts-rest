@@ -48,7 +48,7 @@ class TestConfigSe(TestController):
                 'se_info': {
                     'ipv6': True,
                     'outbound_max_active': 55,
-                    'inbound_max_active': 1,
+                    'inbound_max_active': 11,
                     'inbound_max_throughput': 33
                 }
             }
@@ -69,7 +69,7 @@ class TestConfigSe(TestController):
         se = Session.query(Se).filter(Se.storage == 'test.cern.ch').first()
         self.assertEqual(True, se.ipv6)
         self.assertEqual(55, se.outbound_max_active)
-        self.assertEqual(1, se.inbound_max_active)
+        self.assertEqual(11, se.inbound_max_active)
         self.assertEqual(33, se.inbound_max_throughput)
 
     def test_reset_se_config(self):
