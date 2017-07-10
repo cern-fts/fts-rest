@@ -59,7 +59,7 @@ class SeConfigurationController(BaseController):
                log.debug("cfg %s" % cfg)
                se_info_new = cfg.get('se_info', None)
                if se_info_new:
-                se_info = Session.query(Se).filter(Se.storage == storage)
+                se_info = Session.query(Se).filter(Se.storage == storage).first()
                 log.debug("Se info %s" % se_info)
                 for key, value in se_info_new.iteritems():
                     value = validate_type(Se, key, value)
