@@ -138,7 +138,7 @@ class TestConfigSe(TestController):
 
         self.assertEqual(True, se_cfg['se_info']['ipv6'])
         self.assertEqual(55, se_cfg['se_info']['outbound_max_active'])
-        self.assertEqual(1, se_cfg['se_info']['inbound_max_active'])
+        self.assertEqual(11, se_cfg['se_info']['inbound_max_active'])
         self.assertEqual(33, se_cfg['se_info']['inbound_max_throughput'])
 
     def test_set_malformed(self):
