@@ -26,6 +26,7 @@ class TestConfigSe(TestController):
         Session.query(Optimize).delete()
         Session.query(ConfigAudit).delete()
         Session.query(OperationConfig).delete()
+        Session.query(Se).delete()
         Session.commit()
 
 
