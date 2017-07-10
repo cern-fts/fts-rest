@@ -55,13 +55,16 @@ class SeConfigurationController(BaseController):
 
         try:
             for storage, cfg in input_dict.iteritems():
-                # As source
+
                se_info_new = cfg.get('se_info', None)
                if se_info_new:
                 se_info = Session.query(Se).filter(Se.storage == storage).first()
+                log.debug("Se info %s" % se_info)
                 for key, value in se_info_new.iteritems():
                     value = validate_type(Se, key, value)
                     setattr(se_info, key, value)
+                    log.debug("key %s" % key)
+                    log.debug("value %s" % value)
                 audit_configuration('set-se-config', 'Set config %s: %s' % (storage, json.dumps(cfg)))
                 Session.merge(se_info)
                 
