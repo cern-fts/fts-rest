@@ -89,8 +89,8 @@ class LinkConfigController(BaseController):
             
 
         for key, value in input_dict.iteritems():
-            if key != 'destination' | key != 'source':
-                value = validate_type(LinkConfig, key, value)
+          
+            #value = validate_type(LinkConfig, key, value)
             setattr(link_cfg, key, value)
 
         audit_configuration('link', json.dumps(input_dict))
