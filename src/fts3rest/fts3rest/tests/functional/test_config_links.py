@@ -81,8 +81,8 @@ class TestConfigLinks(TestController):
             'destination': '*',
             'nostreams': 16,
             'tcp_buffer_size': 4096,
-            'min_active': 25,
-            'max_active': 150,
+            'min_active': 150,
+            'max_active': 25,
             'optimizer_mode': 5
             
         }, status=400)
