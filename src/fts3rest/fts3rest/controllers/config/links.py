@@ -53,8 +53,8 @@ class LinkConfigController(BaseController):
         """
         input_dict = get_input_as_dict(request)
 
-        source = input_dict.get('source', '*')
-        destination = input_dict.get('destination', '*')
+        source = input_dict.get('source_se', '*')
+        destination = input_dict.get('dest_se', '*')
         symbolicname = input_dict.get('symbolicname', None)
         
         if not symbolicname:
@@ -64,11 +64,30 @@ class LinkConfigController(BaseController):
         
         
         link_cfg = Session.query(LinkConfig).filter(LinkConfig.symbolicname == symbolicname).first()
+        
+        try:
+            min_active = int(input_dict.get('min_active', 2))
+            max_active = int(input_dict.get('max_active', 2))
+        except Exception, e:
+            raise HTTPBadRequest('Active must be an integer (%s)' % str(e))
+
+        if not source or not destination:
+            raise HTTPBadRequest('Missing source and/or destination')
+        if min_active is None:
+            raise HTTPBadRequest('Missing min_active')
+        if max_active is None:
+            raise HTTPBadRequest('Missing max_active')
+        if min_active > max_active:
+            raise HTTPBadRequest('max_active is lower than min_active')
+    
+        
         if not link_cfg:
             link_cfg = LinkConfig(
                 source=source,
                 destination=destination,
                 symbolicname=symbolicname,
+                min_active = min_active,
+                max_active = max_active,
             )
 
         for key, value in input_dict.iteritems():

@@ -41,8 +41,8 @@ class  ConfigAudit(Base):
 class LinkConfig(Base):
     __tablename__ = 't_link_config'
 
-    source            = Column(String(150), primary_key=True)
-    destination       = Column(String(150), primary_key=True)
+    source            = Column(String(150), primary_key=True, name='source_se')
+    destination       = Column(String(150), primary_key=True, name='dest_se')
     symbolicname      = Column(String(255), unique=True)
     min_active        = Column(Integer)
     max_active        = Column(Integer)
@@ -60,7 +60,7 @@ class Se(Base):
 
     storage                 = Column(String(150), primary_key=True)
     site                    = Column(String(45))
-    se_metadata             = Column(String(255))
+    se_metadata             = Column(String(255), name='metadata')
     ipv6                    = Column(Flag(negative='off', positive='on'), default='off')
     udt                     = Column(Flag(negative='off', positive='on'))
     debug_level             = Column(Integer)
@@ -90,47 +90,6 @@ class ShareConfig(Base):
         return "%s: %s => %s" % (self.vo, self.source, self.destination)
 
 
-class Group(Base):
-    __tablename__ = 't_group_members'
-
-    groupname = Column(String, primary_key=True)
-
-    def __str__(self):
-        return self.groupname
-
-
-class Member(Base):
-    __tablename__ = 't_group_members'
-    __table_args__ = ({'extend_existing': True})
-
-    groupname = Column(String(255), primary_key=True)
-    member    = Column(String(255), primary_key=True)
-
-    def __str__(self):
-        return "%s/%s" % (self.groupname, self.member)
-
-
-class DebugConfig(Base):
-    __tablename__ = 't_debug'
-
-    source_se = Column(String(150), primary_key=True)
-    dest_se   = Column(String(150), primary_key=True)
-    debug     = Column(String(3), default='off')
-    debug_level = Column(Integer, default=1)
-
-    def __str__(self):
-        return "%s:%s %d" % (self.source_se, self.dest_se, self.debug_level)
-
-    if StrictVersion(sqlalchemy_version) < StrictVersion('0.6'):
-        __mapper_args__ = {
-            'allow_null_pks': True
-        }
-    else:
-        __mapper_args__ = {
-            'allow_partial_pks': True
-        }
-
-
 class ServerConfig(Base):
     __tablename__ = 't_server_config'
 
@@ -140,15 +99,6 @@ class ServerConfig(Base):
     sec_per_mb     = Column(Integer, default=0)
     vo_name        = Column(String(100), primary_key=True)
     show_user_dn   = Column(Flag(negative='off', positive='on'), default='off')
-
-
-class OptimizerConfig(Base):
-    __tablename__ = 't_optimize_mode'
-    
-    auto_number = Column(Integer)
-    source_se   = Column(String(150))
-
-    mode = Column(Integer, default=1, primary_key=True, name='mode_opt')
 
 
 class OperationConfig(Base):

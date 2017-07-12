@@ -15,7 +15,7 @@
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model.config import ConfigAudit, ServerConfig, OptimizerConfig
+from fts3.model.config import ConfigAudit, ServerConfig
 
 
 class TestConfigGlobal(TestController):
@@ -117,7 +117,7 @@ class TestConfigGlobal(TestController):
 
         self.app.delete(url="/config/global",  status=400)
         self.app.delete(url="/config/global?vo_name=dteam",  status=204)
-        vo_name = Session.query(OptimizerConfig).get("dteam")
+        vo_name = Session.query(ServerConfig).get("dteam")
         self.assertIsNone(vo_name)
         
         
