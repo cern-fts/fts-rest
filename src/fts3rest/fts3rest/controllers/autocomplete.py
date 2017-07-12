@@ -60,7 +60,7 @@ class AutocompleteController(BaseController):
         """
         term = request.params.get('term', 'srm://')
         matches = Session.query(LinkConfig.destination)\
-            .filter(LinkConfig.destitnation.startswith(term)).distinct().all()
+            .filter(LinkConfig.destination.startswith(term)).distinct().all()
         return map(lambda r: r[0], matches)
 
     @doc.query_arg('term', 'Beginning of the destination storage')

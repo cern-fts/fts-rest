@@ -53,8 +53,8 @@ class LinkConfigController(BaseController):
         """
         input_dict = get_input_as_dict(request)
 
-        source = input_dict.get('source_se', '*')
-        destination = input_dict.get('dest_se', '*')
+        source = input_dict.get('source', '*')
+        destination = input_dict.get('destination', '*')
         symbolicname = input_dict.get('symbolicname', None)
         
         if not symbolicname:
