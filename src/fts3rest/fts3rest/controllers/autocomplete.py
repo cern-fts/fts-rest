@@ -15,7 +15,7 @@
 
 from pylons import request
 
-from fts3.model import Credential, OptimizerActive, Job, Group
+from fts3.model import Credential, LinkConfig, Job
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
@@ -47,8 +47,8 @@ class AutocompleteController(BaseController):
         Autocomplete source SE
         """
         term = request.params.get('term', 'srm://')
-        matches = Session.query(OptimizerActive.source_se)\
-            .filter(OptimizerActive.source_se.startswith(term)).distinct().all()
+        matches = Session.query(LinkConfig.source)\
+            .filter(LinkConfig.source.startswith(term)).distinct().all()
         return map(lambda r: r[0], matches)
 
     @doc.query_arg('term', 'Beginning of the destination storage')
@@ -59,8 +59,8 @@ class AutocompleteController(BaseController):
         Autocomplete destination SE
         """
         term = request.params.get('term', 'srm://')
-        matches = Session.query(OptimizerActive.dest_se)\
-            .filter(OptimizerActive.dest_se.startswith(term)).distinct().all()
+        matches = Session.query(LinkConfig.destitnation)\
+            .filter(LinkConfig.destitnation.startswith(term)).distinct().all()
         return map(lambda r: r[0], matches)
 
     @doc.query_arg('term', 'Beginning of the destination storage')
@@ -71,10 +71,10 @@ class AutocompleteController(BaseController):
         Autocomplete a storage, regardless of it being source or destination
         """
         term = request.params.get('term', 'srm://')
-        src_matches = Session.query(OptimizerActive.source_se)\
-            .filter(OptimizerActive.source_se.startswith(term)).distinct().all()
-        dest_matches = Session.query(OptimizerActive.dest_se)\
-            .filter(OptimizerActive.dest_se.startswith(term)).distinct().all()
+        src_matches = Session.query(LinkConfig.source)\
+            .filter(LinkConfig.source.startswith(term)).distinct().all()
+        dest_matches = Session.query(LinkConfig.destination)\
+            .filter(LinkConfig.destination.startswith(term)).distinct().all()
 
         srcs = map(lambda r: r[0], src_matches)
         dsts = map(lambda r: r[0], dest_matches)
@@ -91,16 +91,4 @@ class AutocompleteController(BaseController):
         term = request.params.get('term', 'srm://')
         matches = Session.query(Job.vo_name)\
             .filter(Job.vo_name.startswith(term)).distinct().all()
-        return map(lambda r: r[0], matches)
-
-    @doc.query_arg('term', 'Beginning of the group name')
-    @authorize(CONFIG)
-    @jsonify
-    def autocomplete_groupname(self):
-        """
-        Autocomplete group names
-        """
-        term = request.params.get('term', 'group')
-        matches = Session.query(Group.groupname)\
-            .filter(Group.groupname.startswith(term)).distinct().all()
         return map(lambda r: r[0], matches)

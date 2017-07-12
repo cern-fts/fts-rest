@@ -77,14 +77,3 @@ class TestAutocomplete(TestController):
             status=200
         ).json
         self.assertEqual(0, len(autocomp))
-
-    def test_autocomplete_groupname(self):
-        """
-        Tests autocomplete groupname
-        """
-        autocomp = self.app.get(
-            url='/autocomplete/groupname',
-            params={'groupname': 'group', 'message': 'term'},
-            status=200
-        ).json
-        self.assertEqual(0, len(autocomp))
