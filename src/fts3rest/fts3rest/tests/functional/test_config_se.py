@@ -50,7 +50,8 @@ class TestConfigSe(TestController):
                     'ipv6': True,
                     'outbound_max_active': 55,
                     'inbound_max_active': 11,
-                    'inbound_max_throughput': 33
+                    'inbound_max_throughput': 33,
+                    'metadata': 'metadata'
                 }
             }
         }

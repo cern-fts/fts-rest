@@ -112,13 +112,6 @@ def do_connect(config, map):
     map.connect('/config/audit', controller='config/audit', action='audit',
                 conditions=dict(method=['GET']))
 
-    # Debug level
-    map.connect('/config/debug', controller='config/debug', action='set_debug',
-                conditions=dict(method=['POST']))
-    map.connect('/config/debug', controller='config/debug', action='delete_debug',
-                conditions=dict(method=['DELETE']))
-    map.connect('/config/debug', controller='config/debug', action='list_debug',
-                conditions=dict(method=['GET']))
 
     # Global settings
     map.connect('/config/global', controller='config/global', action='set_global_config',
@@ -128,15 +121,7 @@ def do_connect(config, map):
     map.connect('/config/global', controller='config/global', action='delete_vo_global_config',
                 conditions=dict(method=['DELETE']))
 
-    # Groups and group members
-    map.connect('/config/groups', controller='config/segroups', action='add_to_group',
-                conditions=dict(method=['POST']))
-    map.connect('/config/groups', controller='config/segroups', action='get_all_groups',
-                conditions=dict(method=['GET']))
-    map.connect('/config/groups/{group_name}', controller='config/segroups', action='get_group',
-                conditions=dict(method=['GET']))
-    map.connect('/config/groups/{group_name}', controller='config/segroups', action='delete_from_group',
-                conditions=dict(method=['DELETE']))
+
 
     # Link config (SE or Group)
     map.connect('/config/links', controller='config/links', action='set_link_config',
@@ -156,11 +141,6 @@ def do_connect(config, map):
     map.connect('/config/shares', controller='config/shares', action='delete_share',
                 conditions=dict(method=['DELETE']))
 
-    # Fixed number of actives
-    map.connect('/config/fixed', controller='config/fix', action='fix_active',
-                conditions=dict(method=['POST']))
-    map.connect('/config/fixed', controller='config/fix', action='get_fixed_active',
-                conditions=dict(method=['GET']))
 
     # Per SE
     map.connect('/config/se', controller='config/se', action='set_se_config',
@@ -248,8 +228,7 @@ def do_connect(config, map):
                 conditions=dict(method=['GET']))
     map.connect('/autocomplete/vo', controller='autocomplete', action='autocomplete_vo',
                 conditions=dict(method=['GET']))
-    map.connect('/autocomplete/groupname', controller='autocomplete', action='autocomplete_groupname',
-                conditions=dict(method=['GET']))
+   
 
     # State check
     map.connect('/status/hosts', controller='serverstatus', action='hosts_activity',

@@ -23,8 +23,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import File, Job, OptimizerActive
-
+from fts3.model import File, Job
 
 class TestJobModify(TestController):
     """

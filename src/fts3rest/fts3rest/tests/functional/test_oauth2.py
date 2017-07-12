@@ -368,7 +368,7 @@ class TestOAuth2(TestController):
         del self.app.extra_environ['GRST_CRED_AURI_0']
 
         self.app.get(
-            url="/config/fixed",
+            url="/config/links",
             headers={'Authorization': str('Bearer %s' % access_token)},
             status=403
         )
@@ -383,7 +383,7 @@ class TestOAuth2(TestController):
         del self.app.extra_environ['GRST_CRED_AURI_0']
 
         self.app.get(
-            url="/config/fixed",
+            url="/config/links",
             headers={'Authorization': str('Bearer %s' % access_token)},
             status=200
         )
@@ -396,7 +396,7 @@ class TestOAuth2(TestController):
         del self.app.extra_environ['GRST_CRED_AURI_0']
 
         self.app.get(
-            url="/config/fixed",
+            url="/config/links",
             headers={'Authorization': str('Bearer %s' % access_token)},
             status=403
         )
@@ -425,7 +425,7 @@ class TestOAuth2(TestController):
         del self.app.extra_environ['GRST_CRED_AURI_0']
 
         self.app.get(
-            url="/config/fixed",
+            url="/config/links",
             headers={'Authorization': str('Bearer %s' % access_token)},
             status=403
         )

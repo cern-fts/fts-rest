@@ -84,11 +84,13 @@ class LinkConfigController(BaseController):
                 destination=destination,
                 symbolicname=symbolicname,
                 min_active = min_active,
-                max_active = max_active,
+                max_active = max_active
             )
+            
 
         for key, value in input_dict.iteritems():
-            value = validate_type(LinkConfig, key, value)
+            if key != 'destination' | key != 'source':
+                value = validate_type(LinkConfig, key, value)
             setattr(link_cfg, key, value)
 
         audit_configuration('link', json.dumps(input_dict))
