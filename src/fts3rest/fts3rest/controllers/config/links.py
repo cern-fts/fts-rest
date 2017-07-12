@@ -59,10 +59,7 @@ class LinkConfigController(BaseController):
         
         if not symbolicname:
             raise HTTPBadRequest('Missing symbolicname')
-        if source == '*' and destination == '*':
-            raise HTTPBadRequest('Can not use wildcard for both source and destination')
-        
-        
+          
         link_cfg = Session.query(LinkConfig).filter(LinkConfig.symbolicname == symbolicname).first()
         
         try:

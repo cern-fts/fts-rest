@@ -59,7 +59,7 @@ class AutocompleteController(BaseController):
         Autocomplete destination SE
         """
         term = request.params.get('term', 'srm://')
-        matches = Session.query(LinkConfig.destitnation)\
+        matches = Session.query(LinkConfig.destination)\
             .filter(LinkConfig.destitnation.startswith(term)).distinct().all()
         return map(lambda r: r[0], matches)
 
