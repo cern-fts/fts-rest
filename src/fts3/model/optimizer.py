@@ -38,34 +38,6 @@ class OptimizerEvolution(Base):
     filesize_stddeve = Column(Float)
 
 
-class OptimizerActive(Base):
-    __tablename__ = 't_optimize_active'
-
-    source_se = Column(String(150), primary_key=True)
-    dest_se   = Column(String(150), primary_key=True)
-    active    = Column(Integer, default=5)
-    datetime  = Column(DateTime, default=None)
-    ema       = Column(Float, default=0)
-    fixed     = Column(Flag(negative='off', positive='on'), default='off')
-    min_active = Column(Integer, default=None)
-    max_active = Column(Integer, default=None)
-
-
-class OptimizerStreams(Base):
-    __tablename__ = 't_optimize_streams'
-
-    source_se  = Column(String(150), primary_key=True)
-    dest_se    = Column(String(150), primary_key=True)
-    nostreams  = Column(Integer, primary_key=True)
-    datetime   = Column(DateTime)
-    throughput = Column(Float)
-    tested     = Column(Integer, default=0)
-
-    __table_args__ = (
-        ForeignKeyConstraint(['source_se', 'dest_se'],
-                             [OptimizerActive.source_se, OptimizerActive.dest_se]),
-    )
-
 
 class Optimize(Base):
     __tablename__ = 't_optimize'
