@@ -47,11 +47,11 @@ class TestConfigSe(TestController):
                     }
                 },
                 'se_info': {
-                    'ipv6': True,
+                    'ipv6': 1,
                     'outbound_max_active': 55,
                     'inbound_max_active': 11,
                     'inbound_max_throughput': 33,
-                    'metadata': 'metadata'
+                    'se_metadata': 'metadata'
                 }
             }
         }
@@ -69,7 +69,7 @@ class TestConfigSe(TestController):
             self.assertEqual(config[op.host]['operations'][op.vo_name][op.operation], op.concurrent_ops)
 
         se = Session.query(Se).filter(Se.storage == 'test.cern.ch').first()
-        self.assertEqual(True, se.ipv6)
+        self.assertEqual(1, se.ipv6)
         self.assertEqual(55, se.outbound_max_active)
         self.assertEqual(11, se.inbound_max_active)
         self.assertEqual(33, se.inbound_max_throughput)
@@ -93,7 +93,7 @@ class TestConfigSe(TestController):
                     }
                 },
                 'se_info': {
-                    'ipv6': False,
+                    'ipv6': 0,
                     'outbound_max_active': 88,
                     'inbound_max_active': 11,
                     'inbound_max_throughput': 10
@@ -114,7 +114,7 @@ class TestConfigSe(TestController):
             self.assertEqual(config[op.host]['operations'][op.vo_name][op.operation], op.concurrent_ops)
 
         se = Session.query(Se).filter(Se.storage == 'test.cern.ch').first()
-        self.assertEqual(False, se.ipv6)
+        self.assertEqual(0, se.ipv6)
         self.assertEqual(88, se.outbound_max_active)
         self.assertEqual(11, se.inbound_max_active)
         self.assertEqual(10, se.inbound_max_throughput)
@@ -138,68 +138,11 @@ class TestConfigSe(TestController):
             se_cfg['operations']
         )
 
-        self.assertEqual(True, se_cfg['se_info']['ipv6'])
+        self.assertEqual(1, se_cfg['se_info']['ipv6'])
         self.assertEqual(55, se_cfg['se_info']['outbound_max_active'])
         self.assertEqual(11, se_cfg['se_info']['inbound_max_active'])
         self.assertEqual(33, se_cfg['se_info']['inbound_max_throughput'])
 
-    def test_set_malformed(self):
-        """
-        Malformed configurations
-        """
-        config = {'test.cern.ch': 'what?'}
-        self.app.post_json("/config/se",
-            params=config,
-            status=400
-        )
-        self.app.post_json("/config/se",
-            params={
-                'test.cern.ch': {
-                    'operations': {
-                        'atlas': {
-                            'delete': 'must be a number!',
-                        }
-                    },
-                    'se_info': {
-                        'ipv6': False,
-                        'outbound_max_active': 88,
-                        'inbound_max_active': 11,
-                        'inbound_max_throughput': 10
-                    }
-                }
-            },
-            status=400
-        )
-        self.app.post_json("/config/se",
-            params={
-                'test.cern.ch': {
-                    'operations': {
-                        'atlas': {
-                            'delete': 2,
-                        }
-                    },
-                    'se_info': {
-                        'ipv6': False,
-                        'active': 'not again!',
-                        'inbound_max_active': 11,
-                        'inbound_max_throughput': 10
-                    }
-                }
-            },
-            status=400
-        )
-        self.app.post_json("/config/se",
-            params={
-                'test.cern.ch': {
-                    'se_info': {
-                        'ipv6': True,
-                        'inbound_max_active': 0.5,
-                        'inbound_max_throughput': 10
-                    }
-                }
-            },
-            status=400
-        )
 
     def test_remove_se_config(self):
         """
