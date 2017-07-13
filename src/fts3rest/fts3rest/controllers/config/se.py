@@ -61,7 +61,7 @@ class SeConfigurationController(BaseController):
                 if not se_info:
                     se_info = Se(storage=storage)
                 for key, value in se_info_new.iteritems():
-                    value = validate_type(Se, key, value)
+                    #value = validate_type(Se, key, value)
                     setattr(se_info, key, value)
                     
                 audit_configuration('set-se-config', 'Set config %s: %s' % (storage, json.dumps(cfg)))

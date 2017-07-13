@@ -52,31 +52,6 @@ and make sure you have `"config": "all"` in `"level'`. For instance
 }
 ```
 
-### fts-set-debug
-There is no fts-get-debug, but REST supports it
-```bash
-curl https://fts3-devel.cern.ch:8446/config/debug
-[
-  {
-    "debug_level": 2, 
-    "source_se": "gsiftp://sbgse1.in2p3.fr", 
-    "dest_se": ""
-  }, 
-  {
-    "debug_level": 2, 
-    "source_se": "", 
-    "dest_se": "davs+3rd://dpmhead-trunk.cern.ch"
-  }
-]
-```
-
-For changing the debug level of an endpoint
-```bash
-# fts-set-debug -s https://fts3-devel.cern.ch:8443 --source gsiftp://nowhere 5
-curl https://fts3-devel.cern.ch:8446/config/debug -H "Content-Type: application/json" -X POST -d '{"source_se": "gsiftp://nowhere", "debug_level": 5}'
-# fts-set-debug -s https://fts3-devel.cern.ch:8443 --destination gsiftp://nowhere 5
-curl https://fts3-devel.cern.ch:8446/config/debug -H "Content-Type: application/json" -X POST -d '{"dest_se": "gsiftp://nowhere", "debug_level": 5}'
-```
 
 If the level is 0, then the entry will be removed.
 
@@ -148,15 +123,12 @@ Where config is a json with the following parameters
 
 ```json
 {
-    "optimizer_mode": 5, // integer in [1, 3]
     "retry":          0, // default retry number, recommended to 0
     "max_time_queue": 24, // max time for a job to remain in the queue, in hours
     "global_timeout": 3600, // default transfer timeout, in seconds
     "sec_per_mb":     10, // correct timeouts based on the file size (this value * MB)
     "vo_name":     "dteam", // VO for this configuration
     "show_user_dn": false, // Boolean. If false, the user dn is hidden in the monitoring and logs (recommended)
-    "max_per_se":  100, // Default max number of transfers per storage element
-    "max_per_link": 100 // Default max number of transfers per link
 }
 ```
 
@@ -182,14 +154,15 @@ Where config is a json with the following parameters
                 "staging": 11
             }
         },
-        "as_source": {
-            "ipv6": True,
-            "active": 55
-        },
-        "as_destination": {
-            "ipv6": False,
-            "active": 1,
-            "throughput": 33
+        "se_info": {
+        	"se_metadata": "My metadata",
+            "ipv6": 1,
+            "udt": 1,
+            "debug_level": 3,
+            "inbound_max_active": 55,
+            "oubound_max_active": 100,
+            "inbound_max_throughput": 500,
+            "outbound_max_throughput": 500
         }
     }
 }
@@ -205,17 +178,16 @@ curl https://fts3-devel.cern.ch:8446/config/links -H "Content-Type: application/
 ```
 
 Where config is a json with the following parameters
+    
 
 ```json
 {
     "symbolicname": "An-unique-name",
     "source": "gsiftp://test.cern.ch",
     "destination": "gsiftp://test2.cern.ch",
-    "state": true, // If false, the link configuration is not active
     "nostreams": 16,
     "tcp_buffer_size": 4096,
-    "urlcopy_tx_to": 3600, // Transfer timeout, overrides server global, overriden by individual transfers
-    "auto_tuning": false // Use FTS auto-tuning. Recommended to leave it as true.
+    "optimizer_mode": 5 // integer in [1, 3]
 }
 ```
 
@@ -271,24 +243,6 @@ Where config is a json with the following parameters
     "share": [
         {"High": 80}, {"Medium": 15}, {"Low": 5}
     ]
-}
-```
-
-### Link ranges
-For setting the working range for a given pair on the Optimizer:
-
-```bash
-curl https://fts3-devel.cern.ch:8446/config/fixed -H "Content-Type: application/json" -X POST -d "config" 
-```
-
-Where config is a json with the content
-
-```json
-{
-    "source_se": "gsiftp://eosatlassftp.cern.ch",
-    "dest_se": "srm://dcache-se-atlas.desy.de",
-    "min_active": "100",
-    "max_active": "200"
 }
 ```
 
