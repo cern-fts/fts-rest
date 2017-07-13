@@ -111,13 +111,19 @@ format is as follows:
 :	The source space token or its description. 
 
 -K/--compare-checksum
-:	Compare checksums between source and destination. 
+:	Deprecated: compare checksums between source and destination. 
+
+-C/--checksum-mode
+: 	Compare checksums in source, target, both or none.
 
 --copy-pin-lifetime
 :	Pin lifetime of the copy in seconds. 
 
 --bring-online
-:	Bring online timeout in seconds. 
+:	Bring online timeout in seconds.
+
+--timeout
+: Transfer timeout in seconds. 
 
 --fail-nearline
 :	Fail the transfer is the file is nearline. 
@@ -145,6 +151,9 @@ format is as follows:
 
 --ipv6
 :	Force ipv6
+
+
+
 
 # EXAMPLE
 ```

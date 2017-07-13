@@ -40,13 +40,14 @@ Note that _all_ parameters are optional.
 
 ### Args:
 * **transfers**         Initial list of transfers
-* **verify_checksum**   Enable checksum verification
+* **verify_checksum**   Enable checksum verification or indicate source, target, both or none checksum mode.
 * **reuse**             Enable reuse (all transfers are handled by the same process)
 * **overwrite**         Overwrite the destinations if exist
 * **multihop**          Treat the transfer as a multihop transfer
 * **source_spacetoken** Source space token
 * **spacetoken**        Destination space token
 * **bring_online**      Bring online timeout
+* **timeout**           Transfer timeout in seconds
 * **copy_pin_lifetime** Pin lifetime
 * **retry**             Number of retries: <0 is no retries, 0 is server default, >0 is whatever value is passed
 * **metadata**          Metadata to bind to the job
