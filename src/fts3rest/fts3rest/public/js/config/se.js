@@ -144,7 +144,7 @@ function deleteSe(form)
 
     form.css("background", "#ff0000").css("transition", "background .50s ease-in-out");
     $.ajax({
-        url: "/config/se?se=" + encodeURIComponent(se),
+        url: "/config/se?storage=" + encodeURIComponent(se),
         type: "DELETE",
         dataType: "json",
         contentType: "application/json"
