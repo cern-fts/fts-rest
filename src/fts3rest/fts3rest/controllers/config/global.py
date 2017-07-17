@@ -59,7 +59,7 @@ class GlobalConfigController(BaseController):
                 if r.vo_name in (None, '*'):
                     result['*'] = r
                 else:
-                    result[r.vo_name] = dict(retry=r.retry)
+                    result[r.vo_name] = r
         return result
 
     @doc.response(400, 'Invalid values passed in the request')

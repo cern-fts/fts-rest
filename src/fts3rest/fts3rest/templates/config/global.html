@@ -12,11 +12,23 @@
     <table class="table">
         <thead>
             <tr>
-                <th style="width: 5em"></th>
+                <th></th>
                 <th>VO</th>
                 <th title="The retry of a transfer also depends on the error code">
                     Retries
                     <i class="glyphicon glyphicon-question-sign"></i>
+                </th>
+                <th>
+                    Global transfer timeout
+                </th>
+                <th>
+                    Queue timeout
+                </th>
+                <th>
+                    Add seconds/MB
+                </th>
+                <th>
+                    Show user DN
                 </th>
             </tr>
         </thead>
@@ -34,81 +46,26 @@
                         id="vo-config-add-field-vo"/>
                 </td>
                 <td>
-                    <input type="number" name="retry" value="1" min="1" max="10" class="form-control"/>
+                    <input type="number" name="retry" value="0" min="1" max="10" class="form-control"/>
+                </td>
+                <td>
+                    <input type="number" name="global_timeout" class="form-control"/>
+                </td>
+                <td>
+                    <input type="number" name="max_time_queue" class="form-control"/>
+                </td>
+                <td>
+                    <input type="number" name="sec_per_mb" class="form-control"/>
+                </td>
+                <td>
+                    <select name="show_user_dn" id="show_user_dn" class="form-control">
+                        <option value="true" selected>Yes</option>
+                        <option value="false">No</option>
+                    </select>
                 </td>
             </tr>
         </tbody>
     </table>
-    </form>
-
-    <h3>Global configuration</h3>
-    <p>
-        These settings apply to all transfers equally.
-    </p>
-
-    <form method="POST" id="global-config-frm">
-        <div class="row">
-            <div class="col-md-6">
-                <p class="form-group">
-                    <label for="global_timeout">
-                        Timeout
-                        <i class="glyphicon glyphicon-question-sign"
-                           title="Default timeout. Can be overriden per job"></i>
-                    </label>
-                    <span class="input-group">
-                        <input type="number" id="global_timeout" name="global_timeout" class="form-control"
-                               value="${data['*']['global_timeout']}"/>
-                        <span class="input-group-addon"> seconds</span>
-                    </span>
-                </p>
-                <p class="form-group">
-                    <label for="max_time_queue">Max. time in the queue</label>
-                    <span class="input-group">
-                        <input type="number" id="max_time_queue" name="max_time_queue" class="form-control"
-                               value="${data['*']['max_time_queue']}"/>
-                        <span class="input-group-addon"> seconds</span>
-                    </span>
-                </p>
-            </div>
-            <div class="col-md-6">
-                <p class="form-group">
-                    <label for="sec_per_mb">
-                        Add seconds per MiB
-                        <i class="glyphicon glyphicon-question-sign"
-                           title="FTS3 will correct the timeout depending on the file size and this parameter"></i>
-                    </label>
-                    <span class="input-group">
-                        <input type="number" id="sec_per_mb" name="sec_per_mb" class="form-control"
-                               value="${data['*']['sec_per_mb']}"/>
-                        <span class="input-group-addon"> seconds</span>
-                    </span>
-                </p>
-                <div class="form-group">
-                    <label for="show_user_dn">
-                        Show the user's DN
-                        <i class="glyphicon glyphicon-question-sign"
-                           title="It is recommended to keep this to false, since distributing the users' dn publicly may be forbidden by certain regulations"></i>
-                    </label>
-                    <select name="show_user_dn" id="show_user_dn" class="form-control">
-                        % if data['*']['show_user_dn']:
-                        <option value="true" selected>Yes</option>
-                        <option value="false">No</option>
-                        % else:
-                        <option value="true">Yes</option>
-                        <option value="false" selected>No</option>
-                        % endif
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12 text-right">
-                <button class="btn btn-primary" type="submit">
-                    <i class="glyphicon glyphicon-ok"></i>
-                    Save
-                </button>
-            </div>
-        </div>
     </form>
 </div>
 

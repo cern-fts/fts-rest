@@ -14,6 +14,39 @@
  *  limitations under the License.
 **/
 
+var globalConfigRowHtml = '\
+<tr> \
+    <td> \
+        <button class="btn btn-link bt-delete" type="button" title="Delete"> \
+            <i class="glyphicon glyphicon-trash"></i> \
+        </button> \
+        <button class="btn btn-link bt-save" type="button" title="Save"> \
+            \<i class="glyphicon glyphicon-floppy-disk"></i> \
+        </button> \
+    </td> \
+    <td class="vo_name"> \
+        VO NAME \
+    </td> \
+    <td> \
+        <input type="number" name="retry" value="0" min="1" max="10" class="form-control"/> \
+    </td> \
+    <td> \
+        <input type="number" name="global_timeout" class="form-control"/> \
+    </td> \
+    <td> \
+        <input type="number" name="max_time_queue" class="form-control"/> \
+    </td> \
+    <td> \
+        <input type="number" name="sec_per_mb" class="form-control"/> \
+    </td> \
+    <td> \
+        <select name="show_user_dn" id="show_user_dn" class="form-control"> \
+            <option value="true">Yes</option> \
+            <option value="false">No</option> \
+        </select> \
+    </td> \
+</tr>';
+
 
 /**
  * Updates the list of configured globals per VO
@@ -32,54 +65,63 @@ function refreshVoConfigList()
 		tbody.empty();
 
 		$.each(data, function(vo_name, vo) {
-			if (vo_name && vo_name != "*") {
-				var tr = $("<tr></tr>");
+            var tr = $(globalConfigRowHtml);
 
-				var deleteBtn = $("<button class='btn btn-link' type='button'></button>")
-	                .append("<i class='glyphicon glyphicon-trash'></i>");
+            tr.find(".vo_name").text(vo_name);
+            $.each(vo, function(op_name, op_value) {
+                if (op_name != "show_user_dn") {
+                    tr.find("input[name='" + op_name + "']").val(op_value);
+                }
+                else {
+                    tr.find("select[name='" + op_name + "']").val(op_value.toString());
+                }
+            });
 
-	            deleteBtn.click(function() {
-	                tr.css("background", "#d9534f");
-	                $.ajax({
-	                    url: "/config/global?vo_name=" + encodeURIComponent(vo_name),
-	                    type: "DELETE",
-	                    contentType: "application/json"
-	                })
-	                .done(function(data, textStatus, jqXHR) {
-	                    tr.fadeOut(300, function() {tr.remove();})
-	                })
-	                .fail(function(jqXHR) {
-	                    errorMessage(jqXHR);
-	                    tr.css("background", "#ffffff");
-	                });
-	            });
+            tr.find(".bt-delete").click(function() {
+                tr.css("background", "#d9534f");
+                $.ajax({
+                    url: "/config/global?vo_name=" + encodeURIComponent(vo_name),
+                    type: "DELETE",
+                    contentType: "application/json"
+                })
+                .done(function(data, textStatus, jqXHR) {
+                    tr.fadeOut(300, function() {tr.remove();})
+                })
+                .fail(function(jqXHR) {
+                    errorMessage(jqXHR);
+                    tr.css("background", "#ffffff");
+                });
+            });
 
-	            var retryForm = $("<input type='number' min='0' max='10' class='form-control'></input>")
-	            	.attr("value", vo.retry).
-	            	change(function() {
-	            		var retryInput = $(this);
-	            		retryInput.prop("disabled", true);
-	            		$.ajax({
-	            			url: "/config/global?",
-	            			type: "POST",
-	            			dataType: "json",
-	            			contentType: "application/json",
-	            			data: JSON.stringify({vo_name: vo_name, retry: retryInput.val()})
-	            		})
-	            		.done(function() {
-	            			retryInput.prop("disabled", false);
-	            		})
-	            		.fail(function(jqXHR) {
-							errorMessage(jqXHR);
-						});
-	            	});
+            tr.find(".bt-save").click(function() {
+                tr.find("input").prop("disabled", true);
+                tr.find("select").prop("disabled", true);
 
-				tbody.append(
-					tr.append($("<td></td>").append(deleteBtn))
-					  .append($("<td></td>").append($("<span></span>").text(vo_name)))
-					  .append($("<td></td>").append(retryForm))
-				);
-			}
+                $.ajax({
+                    url: "/config/global?",
+                    type: "POST",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        vo_name: vo_name,
+                        retry: tr.find("input[name='retry']").val(),
+                        max_time_queue: tr.find("input[name='max_time_queue']").val(),
+                        global_timeout: tr.find("input[name='global_timeout']").val(),
+                        sec_per_mb: tr.find("input[name='sec_per_mb']").val(),
+                        sec_per_mb: tr.find("input[name='sec_per_mb']").val(),
+                        show_user_dn: tr.find("select[name='show_user_dn']").val()
+                    })
+                })
+                .done(function() {
+                    tr.find("input").prop("disabled", false);
+                    tr.find("select").prop("disabled", false);
+                })
+                .fail(function(jqXHR) {
+                    errorMessage(jqXHR);
+                });
+            });
+
+            tbody.append(tr);
 		});
 	})
 	.fail(function(jqXHR) {
