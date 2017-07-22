@@ -35,18 +35,16 @@ class OptimizerEvolution(Base):
     queue_size    = Column(Integer)
     ema         = Column(Float)
     filesize_avg = Column(Float)
-    filesize_stddeve = Column(Float)
+    filesize_stddev = Column(Float)
 
 
 
 class Optimize(Base):
-    __tablename__ = 't_optimize'
+    __tablename__ = 't_optimizer'
 
-    auto_number = Column(Integer, autoincrement=True, primary_key=True)
     source_se  = Column(String(150), nullable=True)
     dest_se    = Column(String(150), nullable=True)
     active     = Column(Integer)
-    throughput = Column(Float)
     datetime   = Column(DateTime)
-    udt        = Column(Flag(negative='off', positive='on'))
-    ipv6       = Column(Flag(negative='off', positive='on'), default='off')
+    nostreams  = Column(Integer)
+    
