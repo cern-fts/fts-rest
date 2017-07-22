@@ -15,7 +15,7 @@
 
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
-from fts3.model import ConfigAudit, Optimize, OperationConfig, Se
+from fts3.model import ConfigAudit, Optimizer, OperationConfig, Se
 
 
 class TestConfigSe(TestController):
@@ -23,7 +23,7 @@ class TestConfigSe(TestController):
     def setUp(self):
         super(TestConfigSe, self).setUp()
         self.setup_gridsite_environment()
-        Session.query(Optimize).delete()
+        Session.query(Optimizer).delete()
         Session.query(ConfigAudit).delete()
         Session.query(OperationConfig).delete()
         Session.query(Se).delete()
