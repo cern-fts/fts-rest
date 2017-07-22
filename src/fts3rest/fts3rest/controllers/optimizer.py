@@ -18,7 +18,7 @@
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
-from fts3.model import OptimizerEvolution
+from fts3.model import OptimizerEvolution, Optimizer
 from pylons import config, request
 
 
@@ -50,3 +50,20 @@ class OptimizerController(BaseController):
         evolution = evolution.order_by(OptimizerEvolution.datetime.desc())
 
         return evolution[:50]
+    
+    @doc.return_type(array_of=Optimizer)
+    @jsonify
+    def get_current_value(self):
+        """
+        Returns the current number of actives and streams
+        """
+        optimizer = Session.query(Optimizer)
+        if 'source_se' in request.params and request.params['source_se']:
+            optimizer = optimizer.filter(Optimizer.source_se == request.params['source_se'])
+        if 'dest_se' in request.params and request.params['dest_se']:
+            optimizer = optimizer.filter(Optimizer.dest_se == request.params['dest_se'])
+
+        optimizer = optimizer.order_by(Optimizer.datetime.desc())
+
+        return optimizer[:0]
+    

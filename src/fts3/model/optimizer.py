@@ -39,7 +39,7 @@ class OptimizerEvolution(Base):
 
 
 
-class Optimize(Base):
+class Optimizer(Base):
     __tablename__ = 't_optimizer'
 
     source_se  = Column(String(150), nullable=True)
