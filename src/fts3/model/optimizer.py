@@ -42,8 +42,8 @@ class OptimizerEvolution(Base):
 class Optimizer(Base):
     __tablename__ = 't_optimizer'
 
-    source_se  = Column(String(150), nullable=True)
-    dest_se    = Column(String(150), nullable=True)
+    source_se  = Column(String(150), nullable=True, primary_key=True)
+    dest_se    = Column(String(150), nullable=True, primary_key=True)
     active     = Column(Integer)
     datetime   = Column(DateTime)
     nostreams  = Column(Integer)
