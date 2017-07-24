@@ -188,6 +188,11 @@ def do_connect(config, map):
     map.connect('/optimizer/evolution', controller='optimizer',
                 action='evolution',
                 conditions=dict(method=['GET']))
+    map.connect('/optimizer/current', controller='optimizer',
+                action='get_optimizer_values',
+                conditions=dict(method=['GET']))
+    map.connect('/optimizer/current', controller='optimizer', action='set_optimizer_values',
+                conditions=dict(method=['POST']))
 
     # GFAL2 bindings
     map.connect('/dm/list', controller='datamanagement', action='list',

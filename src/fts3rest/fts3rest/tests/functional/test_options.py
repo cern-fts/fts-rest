@@ -107,6 +107,9 @@ class TestOptions(TestController):
 
         response = self.app.options('/optimizer/evolution', status=200)
         self.assertItemsEqual(['GET', 'OPTIONS'], response.allow)
+        
+        response = self.app.options('/optimizer/current', status=200)
+        self.assertItemsEqual(['GET','POST', 'OPTIONS'], response.allow)
 
     def test_options_404(self):
         """

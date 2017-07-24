@@ -52,7 +52,6 @@ class SeConfigurationController(BaseController):
         Set the configuration parameters for a given SE
         """
         input_dict = get_input_as_dict(request)
-
         try:
             for storage, cfg in input_dict.iteritems():
                se_info_new = cfg.get('se_info', None)
@@ -63,7 +62,7 @@ class SeConfigurationController(BaseController):
                 for key, value in se_info_new.iteritems():
                     #value = validate_type(Se, key, value)
                     setattr(se_info, key, value)
-                    
+                 
                 audit_configuration('set-se-config', 'Set config %s: %s' % (storage, json.dumps(cfg)))
                 Session.merge(se_info)
                 
@@ -91,7 +90,7 @@ class SeConfigurationController(BaseController):
         except:
             Session.rollback()
             raise
-        return None
+        return (se_info, operations)
 
     @doc.query_arg('se', 'Storage element', required=False)
     @doc.response(403, 'The user is not allowed to query the configuration')

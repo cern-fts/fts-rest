@@ -310,3 +310,22 @@ Unbanning:
 `curl --capath /etc/grid-security/certificates -E ~/proxy.pem --cacert ~/proxy.pem "https://fts3-pilot.cern.ch:8446/ban/dn?user_dn=/DC=.../CN=..." -X DELETE`
 
 Mind that unbanning returns nothing.
+
+Get Current Optimizer values
+------------------------
+Return the current optimizer values for a given pair (source, destination).
+
+`curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}" --capath "/etc/grid-security/certificates" "https://fts3-pilot.cern.ch:8446/optimizer/current?source_se="source-test"&dest_se="dest-test"" -H "Content-Type: application/json"`
+
+Set Current Optimizer values
+------------------------
+Set the current optimizer values for given pair (source, destination).
+
+` curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}" --capath "/etc/grid-security/certificates" https://fts3-pilot.cern.ch:8446/optimizer/current -H "Content-Type: application/json" -X POST -d '{"source_se": "source-test", "dest_se": "dest-test", "active": 4, "nostreams": 1, "ema": 3.4}'`
+
+Get Current Optimizer Evolution
+------------------------
+Returns the evolution information for a given pair (source, destination).
+`curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}" --capath "/etc/grid-security/certificates" "https://fts3-pilot.cern.ch:8446/optimizer/evolution?source_se="source-test"&dest_se="dest-test"" -H "Content-Type: application/json"`
+
+

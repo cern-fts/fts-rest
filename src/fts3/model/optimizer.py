@@ -44,7 +44,10 @@ class Optimizer(Base):
 
     source_se  = Column(String(150), nullable=True, primary_key=True)
     dest_se    = Column(String(150), nullable=True, primary_key=True)
+    ema        = Column(Float)
     active     = Column(Integer)
     datetime   = Column(DateTime)
     nostreams  = Column(Integer)
+    def __str__(self):
+        return "%s => %s" % (self.source_se, self.dest_se)
     
