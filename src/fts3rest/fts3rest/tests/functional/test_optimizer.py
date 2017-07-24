@@ -79,8 +79,8 @@ class TestOptimizer(TestController):
         """
         self.test_set_optimizer_values()
         resp = self.app.post_json("/optimizer/current", params={
-            'source': 'test.cern.ch',
-            'destination': 'test2.cern.ch',
+            'source_se': 'test.cern.ch',
+            'dest_se': 'test2.cern.ch',
             'nostreams': 4,
             'active': 1024,
             'ema': 5
