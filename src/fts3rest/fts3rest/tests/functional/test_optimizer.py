@@ -95,8 +95,8 @@ class TestOptimizer(TestController):
         self.assertEqual(1024, optimizer.active)
         self.assertEqual(5, optimizer.ema)
 
-        self.assertEqual(optimizer.source_se, resp['source'])
-        self.assertEqual(optimizer.dest_se, resp['destination'])
+        self.assertEqual(optimizer.source_se, resp['source_se'])
+        self.assertEqual(optimizer.dest_se, resp['dest_se'])
 
 
 
