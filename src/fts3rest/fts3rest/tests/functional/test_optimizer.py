@@ -19,7 +19,7 @@ from fts3rest.lib.base import Session
 from fts3.model import Optimizer
 
 
-class TestConfigLinks(TestController):
+class TestOptimizer(TestController):
 
     def setUp(self):
         super(TestOptimizer, self).setUp()
@@ -75,9 +75,9 @@ class TestConfigLinks(TestController):
 
     def test_reset_optimizer_values(self):
         """
-        Reset a SE link configuration
+        Reset a optmizer values 
         """
-        self.test_config_link_se()
+        self.test_set_optimizer_values()
         resp = self.app.post_json("/optimizer/current", params={
             'source': 'test.cern.ch',
             'destination': 'test2.cern.ch',
