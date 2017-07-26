@@ -321,9 +321,26 @@ Set Current Optimizer values
 ------------------------
 Set the current optimizer values for given pair (source, destination).
 
-` curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}" --capath "/etc/grid-security/certificates" https://fts3-pilot.cern.ch:8446/optimizer/current -H "Content-Type: application/json" -X POST -d '{"source_se": "source-test", "dest_se": "dest-test", "active": 4, "nostreams": 1, "ema": 3.4}'`
+` curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}" --capath "/etc/grid-security/certificates" https://fts3-pilot.cern.ch:8446/optimizer/current -H "Content-Type: application/json" -X POST -d '{"source_se": "source-test", "dest_se": "dest-test", "active": 4, "nostreams": 1, "ema": 3.4, "rationale": "my_reason"}'`
 
-Get Current Optimizer Evolution
+The optimizer values will be stored also in the optimizer evolution as a logs. Values that can be stored are:
+```javascript
+	source_se 		//String: source file (mandatory)
+	dest_se   		//String: destination file (mandatory)
+    ema 	  		//Float: window time
+    active    		//Integer: number of actives (decision)
+    nostreams   	//Integer: number of streams (decision)
+    rationale   	//String: decision reason
+    throughput		//Float: throughput at that moment
+    success     	//Float: ratio of success transfers
+    actual_active 	//Integer: Current actives running
+    diff			//Integer: difference between actual actives and actives decision
+    queue_size      //Integer: Current queue size
+    filesize_avg	//Float: File size average
+    filesize_stddev //Float: File size standard deviation
+ ```
+
+Get Optimizer Evolution
 ------------------------
 Returns the evolution information for a given pair (source, destination).
 `curl -E "${X509_USER_PROXY}" --cacert "${X509_USER_PROXY}" --capath "/etc/grid-security/certificates" "https://fts3-pilot.cern.ch:8446/optimizer/evolution?source_se="source-test"&dest_se="dest-test"" -H "Content-Type: application/json"`

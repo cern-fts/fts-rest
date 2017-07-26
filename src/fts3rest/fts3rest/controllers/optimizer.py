@@ -85,6 +85,7 @@ class OptimizerController(BaseController):
         input_dict = get_input_as_dict(request)
         source_se = input_dict.get('source_se', None)
         dest_se = input_dict.get('dest_se', None)
+        rationale = input_dict.get('rationale', None)
         
         current_time = datetime.utcnow()
         if not source_se or not dest_se:
@@ -105,13 +106,54 @@ class OptimizerController(BaseController):
             raise HTTPBadRequest('Nostreams must be positive (%s)' % str(nostreams))
         
         try:
+            diff = int(input_dict.get('diff', 1))
+        except Exception, e:
+            raise HTTPBadRequest('Diff must be an integer (%s)' % str(e))
+        if diff < 0:
+            raise HTTPBadRequest('Diff must be positive (%s)' % str(diff))
+        try:
+            actual_active = int(input_dict.get('actual_active', 1))
+        except Exception, e:
+            raise HTTPBadRequest('Actual_active must be an integer (%s)' % str(e))
+        if actual_active < 0:
+            raise HTTPBadRequest('Actual_active must be positive (%s)' % str(actual_active))
+        try:
+            queue_size = int(input_dict.get('queue_size', 1))
+        except Exception, e:
+            raise HTTPBadRequest('Queue_size must be an integer (%s)' % str(e))
+        if queue_size < 0:
+            raise HTTPBadRequest('Queue_size must be positive (%s)' % str(queue_size))
+        try:
             ema = float(input_dict.get('ema', 0))
         except Exception, e:
             raise HTTPBadRequest('Ema must be a float (%s)' % str(e))
         if ema < 0:
             raise HTTPBadRequest('Ema must be positive (%s)' % str(ema))
-
-      
+        try:
+            throughput = float(input_dict.get('throughput', 0))
+        except Exception, e:
+            raise HTTPBadRequest('Throughput must be a float (%s)' % str(e))
+        if throughput < 0:
+            raise HTTPBadRequest('Throughput must be positive (%s)' % str(throughput))
+        try:
+            success = float(input_dict.get('success', 0))
+        except Exception, e:
+            raise HTTPBadRequest('Success must be a float (%s)' % str(e))
+        if success < 0:
+            raise HTTPBadRequest('Success must be positive (%s)' % str(success))
+        try:
+            filesize_avg = float(input_dict.get('filesize_avg', 0))
+        except Exception, e:
+            raise HTTPBadRequest('Filesize_avg must be a float (%s)' % str(e))
+        if filesize_avg < 0:
+            raise HTTPBadRequest('Filesize_avg must be positive (%s)' % str(filesize_avg))
+        try:
+            filesize_stddev = float(input_dict.get('filesize_stddev', 0))
+        except Exception, e:
+            raise HTTPBadRequest('Filesize_stddev must be a float (%s)' % str(e))
+        if filesize_stddev < 0:
+            raise HTTPBadRequest('Filesize_stddev must be positive (%s)' % str(filesize_stddev))
+    
         optimizer = Optimizer(
             source_se=source_se,
             dest_se=dest_se,
@@ -120,11 +162,30 @@ class OptimizerController(BaseController):
             active=active,
             nostreams=nostreams
         )
+        evolution = OptimizerEvolution(
+            source_se=source_se,
+            dest_se=dest_se,
+            datetime = current_time,
+            ema = ema,
+            active=active,
+            throughput=throughput,
+            success=success,
+            rationale=rationale,
+            diff=diff,
+            actual_active=actual_active,
+            queue_size=queue_size,
+            filesize_avg=filesize_avg,
+            filesize_stddev=filesize_stddev
+        )
+                                    
+        
 
         for key, value in input_dict.iteritems():
+            setattr(evolution, key, value)
+        for key, value in input_dict.iteritems():
             setattr(optimizer, key, value)
-                    
-                
+
+        Session.merge(evolution)
         Session.merge(optimizer)
         try:
             Session.commit()
@@ -132,5 +193,5 @@ class OptimizerController(BaseController):
             Session.rollback()
             raise
 
-        return optimizer
+        return (evolution, optimizer)
     
