@@ -47,8 +47,6 @@ class TestOptimizer(TestController):
         self.assertEqual(4096, optimizer.active)
         self.assertEqual(5, optimizer.ema)
 
-        self.assertEqual(optimizer.source_se, resp['source_se'])
-        self.assertEqual(optimizer.dest_se, resp['dest_se'])
 
     def test_wrong_optimizer_values(self):
         """
@@ -95,8 +93,6 @@ class TestOptimizer(TestController):
         self.assertEqual(1024, optimizer.active)
         self.assertEqual(5, optimizer.ema)
 
-        self.assertEqual(optimizer.source_se, resp['source_se'])
-        self.assertEqual(optimizer.dest_se, resp['dest_se'])
 
 
 
