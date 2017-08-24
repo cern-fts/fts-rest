@@ -16,6 +16,7 @@
 import os
 import pylons
 import socket
+import tempfile
 import time
 from dirq.QueueSimple import QueueSimple
 
@@ -29,7 +30,7 @@ def submit_state_change(job, transfer):
     Writes a state change message to the dirq
     """
     msg_dir = pylons.config.get('fts3.MessagingDirectory', '/var/lib/fts3')
-    msg_dir = os.path.join(msg_dir, 'monitoring')
+    mon_dir = os.path.join(msg_dir, 'monitoring')
 
     msg = dict(
         endpnt = pylons.config['fts3.Alias'],
@@ -50,6 +51,10 @@ def submit_state_change(job, transfer):
         file_metadata=transfer['file_metadata'],
     )
 
-    raw = "SS " + json.dumps(msg)
-    q = QueueSimple(path=msg_dir)
-    q.add(raw)
+    tmpfile = tempfile.NamedTemporaryFile(dir=msg_dir, delete=False)
+    tmpfile.write("SS ")
+    json.dump(msg, tmpfile)
+    tmpfile.close()
+
+    q = QueueSimple(path=mon_dir)
+    q.add_path(tmpfile.name)
