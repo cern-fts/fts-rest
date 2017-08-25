@@ -17,7 +17,7 @@
 
 from base import Base
 from fts3.rest.client import Delegator as Deleg
-
+from datetime import timedelta
 
 class Delegator(Base):
 
@@ -34,10 +34,14 @@ class Delegator(Base):
                                    default=False, action='store_true',
                                    help='force the delegation')
 
+        self.opt_parser.add_option('-H', '--hours', dest='duration',
+                                   default=12, type='int',
+                                   help='Duration of the delegation in hours (Default: 12)')
+
     def run(self):
         context = self._create_context()
         delegator = Deleg(context)
-        delegation_id = delegator.delegate(force=self.options.force)
+        delegation_id = delegator.delegate(lifetime=timedelta(hours=self.options.duration),force=self.options.force)
         self.logger.info("Delegation id: %s" % delegation_id)
         self.logger.debug("Termination time: %s" % delegator.get_info()['termination_time'])
         return delegation_id
