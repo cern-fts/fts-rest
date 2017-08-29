@@ -162,7 +162,7 @@ a "File not found" will *not* be retried.
 If you keep submitting jobs with high priorities, jobs with lower priority will not go
 through.
 * **overwrite** If true, the destination file will be overwritten if it exists.
-* **verify_checksum** If true, there will be a checksum verification after the transfer.
+* **verify_checksum** One of 'source','target', 'both' (or true), and 'none' (or false)
 * **job_metadata** User data. Can be JSON formatted.
 * **credential** Deprecated. For newer versions of FTS3, the service will figure out
 itself which cloud credentials must be used.
