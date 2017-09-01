@@ -13,9 +13,9 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
+import logging
 import os
 import pylons
-import socket
 import tempfile
 import time
 from dirq.QueueSimple import QueueSimple
@@ -24,6 +24,8 @@ try:
     import simplejson as json
 except:
     import json
+
+log = logging.getLogger(__name__)
 
 def submit_state_change(job, transfer):
     """
@@ -58,3 +60,4 @@ def submit_state_change(job, transfer):
 
     q = QueueSimple(path=mon_dir)
     q.add_path(tmpfile.name)
+    log.debug("Sent SUBMITTED state for %s %d" % (job['job_id'], transfer['file_id']))

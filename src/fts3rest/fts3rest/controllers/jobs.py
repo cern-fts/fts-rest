@@ -581,6 +581,7 @@ class JobsController(BaseController):
             )
 
         return {'job_id': populated.job_id}
+
     @doc.response(403, 'The user doesn\'t have enough privileges')
     @doc.response(404, 'The job doesn\'t exist')
     @doc.response(409, 'The request could not be completed due to a conflict with the current state of the resource')
