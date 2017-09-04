@@ -13,7 +13,6 @@
         <thead>
             <tr>
                 <th></th>
-                <th>VO</th>
                 <th>Symbolic name</th>
                 <th>Source</th>
                 <th>Destination</th>
@@ -34,9 +33,6 @@
                     </button>
                 </td>
                 <td>
-                    <input class="form-control" type="text" placeholder="VO" name="vo"/>
-                </td>
-                <td>
                     <input class="form-control" type="text" placeholder="Symbolic name" name="symbolicname"/>
                 </td>
                 <td>
@@ -49,23 +45,23 @@
                 </td>
                 <td>
                     <input class="form-control" type="number" placeholder="Streams" name="nostreams"
-                        min="0" max="100"/>
+                        min="0" max="100" value="1"/>
                 </td>
                 <td>
                     <input class="form-control" type="number" placeholder="Min Actives" name="min_active"
-                        min="2" max="999999"/>
+                        min="2" max="999999" value="2"/>
                 </td>
                 <td>
                     <input class="form-control" type="number" placeholder="Max Actives" name="max_active"
-                        min="2" max="999999" />
+                        min="2" max="999999" value="60" />
                 </td>
                 <td>
                     <input class="form-control" type="number" placeholder="Optimizer Mode" name="optimizer_mode"
-                        min="0" max="5"/>
+                        min="0" max="5" value="0"/>
                 </td>
                 <td>
                     <input class="form-control" type="number" placeholder="TCP buffer size" name="tcp_buffer_size"
-                        min="0" max="999999"/>
+                        min="0" max="999999" value="0"/>
                 </td>
      
             </tr>

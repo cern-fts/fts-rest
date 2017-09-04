@@ -54,14 +54,13 @@ function refreshLinks()
             });
 
             tr.append($("<td></td>").append(deleteBtn))
-              .append($("<td></td>").text(link.vo))
               .append($("<td></td>").text(link.symbolicname))
               .append($("<td></td>").text(link.source))
               .append($("<td></td>").text(link.destination))
               .append($("<td></td>").text(link.nostreams))
               .append($("<td></td>").text(link.min_active))
               .append($("<td></td>").text(link.max_active))
-              .append($("<td></td>").text(link.optimizer))
+              .append($("<td></td>").text(link.optimizer_mode))
               .append($("<td></td>").text(link.tcp_buffer_size))
 
             tbody.append(tr);
@@ -174,7 +173,6 @@ function setupLinks()
     $("#link-config-add-frm").submit(function(event) {
         var addFrm = $("#link-config-add-frm");
         var payload = {
-            vo: addFrm.find("[name=vo]").val(),
             symbolicname: addFrm.find("[name=symbolicname]").val(),
             source: addFrm.find("[name=source]").val(),
             destination: addFrm.find("[name=destination]").val(),
