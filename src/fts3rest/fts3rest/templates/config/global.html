@@ -46,16 +46,16 @@
                         id="vo-config-add-field-vo"/>
                 </td>
                 <td>
-                    <input type="number" name="retry" value="0" min="1" max="10" class="form-control"/>
+                    <input type="number" name="retry" value="0" min="0" max="10" class="form-control"/>
                 </td>
                 <td>
-                    <input type="number" name="global_timeout" class="form-control"/>
+                    <input type="number" name="global_timeout" class="form-control" min="0" />
                 </td>
                 <td>
-                    <input type="number" name="max_time_queue" class="form-control"/>
+                    <input type="number" name="max_time_queue" class="form-control" min="0"/>
                 </td>
                 <td>
-                    <input type="number" name="sec_per_mb" class="form-control"/>
+                    <input type="number" name="sec_per_mb" class="form-control" min="0"/>
                 </td>
                 <td>
                     <select name="show_user_dn" id="show_user_dn" class="form-control">

@@ -28,7 +28,7 @@ var globalConfigRowHtml = '\
         VO NAME \
     </td> \
     <td> \
-        <input type="number" name="retry" value="0" min="1" max="10" class="form-control"/> \
+        <input type="number" name="retry" value="0" min="0" max="10" class="form-control"/> \
     </td> \
     <td> \
         <input type="number" name="global_timeout" class="form-control"/> \
