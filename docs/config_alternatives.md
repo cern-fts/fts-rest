@@ -116,10 +116,10 @@ curl https://fts3-devel.cern.ch:8446/config/drain -H "Content-Type: application/
 This is a replacement for the flags `--retry`, `--optimizer-mode`, `--queue-timeout`, `--global-timeout`, `--max-per-link`, `--max-per-se`, `--sec-per-mb` and `--show-user-dn`
 
 ```bash
-curl https://fts3-devel.cern.ch:8446/config/global -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/global -H "Content-Type: application/json" -X POST -d "@config.json"
 ```
 
-Where config is a json with the following parameters
+Where `config.json` is a json file with the following parameters
 
 ```json
 {
@@ -136,10 +136,10 @@ Where config is a json with the following parameters
 This is a replacement for the flags `--bring-online`, `--delete`, `--protocol`, `--max-bandwidth`, `--max-se-source-active` and `--max-se-dest-active`
 
 ```bash
-curl https://fts3-devel.cern.ch:8446/config/se -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/se -H "Content-Type: application/json" -X POST -d "@config.json"
 ```
 
-Where config is a json with the following parameters
+Where `config.json` is a json with the following parameters
 
 ```json
 {
@@ -174,10 +174,10 @@ Note that you don't need to configure everything necessarily. `operations`, `as_
 There are no flags for this in the CLI.
 
 ```bash
-curl https://fts3-devel.cern.ch:8446/config/links -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/links -H "Content-Type: application/json" -X POST -d "@config.json"
 ```
 
-Where config is a json with the following parameters
+Where `config.json` is a json with the following parameters
     
 
 ```json
@@ -201,10 +201,10 @@ curl https://fts3-devel.cern.ch:8446/config/shares -H "Accept: application/json"
 For adding a new share, remember to configure first a link as shown in the previous section. Then do
 
 ```bash
-curl https://fts3-devel.cern.ch:8446/config/shares -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/shares -H "Content-Type: application/json" -X POST -d "@config.json"
 ```
 
-Where config is a json with the following parameters
+Where `config.json` is a json with the following parameters
 
 ```json
 {
@@ -231,10 +231,10 @@ curl "https://fts3-devel.cern.ch:8446/config/shares?source=mock%3A%2F%2Fsource&d
 There are no flags for this in the CLI.
 
 ```bash
-curl https://fts3-devel.cern.ch:8446/config/activity_shares -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/activity_shares -H "Content-Type: application/json" -X POST -d "@config.json"
 ```
 
-Where config is a json with the following parameters
+Where `config.json` is a json with the following parameters
 
 ```json
 {
@@ -258,9 +258,9 @@ curl https://fts3-devel.cern.ch:8446/config/cloud_storage -H "Content-Type: appl
 Provide S3 credentials:
 
 ```bash
-curl https://fts3-devel.cern.ch:8446/config/cloud_storage/S3:CS3.CERN.CH -H "Content-Type: application/json" -X POST -d "config"
+curl https://fts3-devel.cern.ch:8446/config/cloud_storage/S3:CS3.CERN.CH -H "Content-Type: application/json" -X POST -d "@config.json"
 ```
-Where config is a json with the following parameters
+Where `config.json` is a json with the following parameters
 ```json
 {
     "vo_name": "dteam",
