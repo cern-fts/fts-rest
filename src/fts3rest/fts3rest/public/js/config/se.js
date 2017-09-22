@@ -144,7 +144,7 @@ function deleteSe(form)
 
     form.css("background", "#ff0000").css("transition", "background .50s ease-in-out");
     $.ajax({
-        url: "/config/se?storage=" + encodeURIComponent(se),
+        url: "/config/se?se=" + encodeURIComponent(se),
         type: "DELETE",
         dataType: "json",
         contentType: "application/json"
@@ -178,7 +178,7 @@ function refreshSeConfig()
         var divs = $(template_storage(data));
         // Attach actions
         $.each(divs, function(index) {
-            var div = $(this)
+            var div = $(this);
 
             var header = div.find(".panel-heading");
             header.click(function(event) {
