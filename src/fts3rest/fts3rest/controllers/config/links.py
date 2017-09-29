@@ -70,7 +70,8 @@ class LinkConfigController(BaseController):
 
         if not source or not destination:
             raise HTTPBadRequest('Missing source and/or destination')
-        if min_active is None:
+
+	if min_active is None:
             raise HTTPBadRequest('Missing min_active')
         if max_active is None:
             raise HTTPBadRequest('Missing max_active')
@@ -117,10 +118,11 @@ class LinkConfigController(BaseController):
     @doc.response(404, 'The group or the member does not exist')
     @authorize(CONFIG)
     @jsonify
-    def get_link_config(self, sym_name):
+    def get_link_config(self,sym_name):
         """
         Get the existing configuration for a given link
         """
+        #sym_name = decodeURIComponent(sym_name)	
         link = Session.query(LinkConfig).filter(LinkConfig.symbolicname == sym_name).first()
         if not link:
             raise HTTPNotFound('Link %s does not exist' % sym_name)
@@ -131,11 +133,12 @@ class LinkConfigController(BaseController):
     @doc.response(404, 'The group or the member does not exist')
     @authorize(CONFIG)
     @jsonify
-    def delete_link_config(self, sym_name, start_response):
+    def delete_link_config(self,sym_name, start_response):
         """
         Deletes an existing link configuration
         """
         try:
+	 #   sym_name = decodeURIComponent(sym_name)       
             Session.query(LinkConfig).filter(LinkConfig.symbolicname == sym_name).delete()
             audit_configuration('link-delete', 'Link %s has been deleted' % sym_name)
             Session.commit()

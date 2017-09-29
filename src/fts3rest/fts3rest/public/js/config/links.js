@@ -88,11 +88,22 @@ function refreshShares()
 
         $.each(data, function(i, share) {
             var tr = $("<tr></tr>");
+	    var deleteBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></a>");
 
-            var deleteBtn = $("<button class='btn btn-link'></button>")
-                .append("<i class='glyphicon glyphicon-trash'></i>");
 
-            deleteBtn.click(function() {
+            tr.append($("<td></td>").append(deleteBtn))
+               .append($("<td></td>").text(share.source)
+               .append($("<input type='hidden' name='source'/>").val(share.source)))
+               .append($("<td></td>").text(share.destination)
+               .append($("<input type='hidden' name='destination'/>").val(share.destination)))
+               .append($("<td></td>").text(share.vo)
+               .append($("<input type='hidden' name='vo'/>").val(share.vo)))
+               .append($("<td></td>")
+               .append($("<input type='number' name='share' class='form-control'/>").val(share.share))
+        	);
+	    tbody.append(tr);
+
+            deleteBtn.click(function(event) {
                 tr.css("background", "#d9534f");
                 $.ajax({
                     url: "/config/shares?source=" + encodeURIComponent(share.source)
@@ -110,13 +121,6 @@ function refreshShares()
                 });
             });
 
-            tr.append($("<td></td>").append(deleteBtn))
-              .append($("<td></td>").text(share.source))
-              .append($("<td></td>").text(share.destination))
-              .append($("<td></td>").text(share.vo))
-              .append($("<td></td>").text(share.share));
-
-            tbody.append(tr);
         });
     })
     .fail(function(jqXHR) {
