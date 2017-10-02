@@ -71,7 +71,7 @@ class LinkConfigController(BaseController):
         if not source or not destination:
             raise HTTPBadRequest('Missing source and/or destination')
 
-	if min_active is None:
+        if min_active is None:
             raise HTTPBadRequest('Missing min_active')
         if max_active is None:
             raise HTTPBadRequest('Missing max_active')
