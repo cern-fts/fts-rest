@@ -16,6 +16,7 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
+import urllib
 
 try:
     import simplejson as json
@@ -122,7 +123,7 @@ class LinkConfigController(BaseController):
         """
         Get the existing configuration for a given link
         """
-        #sym_name = decodeURIComponent(sym_name)	
+        sym_name = urllib.unquote(sym_name)
         link = Session.query(LinkConfig).filter(LinkConfig.symbolicname == sym_name).first()
         if not link:
             raise HTTPNotFound('Link %s does not exist' % sym_name)
@@ -138,7 +139,7 @@ class LinkConfigController(BaseController):
         Deletes an existing link configuration
         """
         try:
-	 #   sym_name = decodeURIComponent(sym_name)       
+            sym_name = urllib.unquote(sym_name)
             Session.query(LinkConfig).filter(LinkConfig.symbolicname == sym_name).delete()
             audit_configuration('link-delete', 'Link %s has been deleted' % sym_name)
             Session.commit()
