@@ -31,11 +31,15 @@ def submit_state_change(job, transfer):
     """
     Writes a state change message to the dirq
     """
+    msg_enabled = pylons.config.get('fts3.MonitoringMessaging', False)
+    if not msg_enabled or msg_enabled.lower() == 'false':
+        return
+
     msg_dir = pylons.config.get('fts3.MessagingDirectory', '/var/lib/fts3')
     mon_dir = os.path.join(msg_dir, 'monitoring')
 
     msg = dict(
-        endpnt = pylons.config['fts3.Alias'],
+        endpnt=pylons.config['fts3.Alias'],
         user_dn=job['user_dn'],
         src_url=transfer['source_surl'],
         dst_url=transfer['dest_surl'],
