@@ -28,7 +28,7 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib import api
 
-API_VERSION = dict(major=3, minor=7, patch=1)
+API_VERSION = dict(major=3, minor=8, patch=0)
 
 
 def _get_fts_core_version():
