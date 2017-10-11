@@ -185,7 +185,7 @@ function refreshSeConfig()
                 div.toggleClass("panel-collapse");
             });
 
-            div.find(".btn-save").click(function(event) {
+            div.find("#se-modify-form").submit(function(event) {
                 event.preventDefault();
                 handleSeSave(div)
                 .fail(function(jqXHR) {
