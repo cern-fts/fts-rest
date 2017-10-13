@@ -14,7 +14,7 @@
 						{{@key}}
 					</h2>
 				</div>
-				<form class="panel-body se-modify-frm">
+				<form class="panel-body se-modify-frm" id="se-save-frm">
 					<input type="hidden" name="se" value="{{@key}}">
 					<div class="row">
 						<div class="panel panel-default se-info">
@@ -24,35 +24,35 @@
 							<div class="panel-body">
 								<div class="form-group">
 									<label>SE Metadata</label>
-									<input class="form-control" name="se_metadata" type="text" value="{{se_info.se_metadata}}"/>
+									<input id="se_metadata_hidden" class="form-control" name="se_metadata" type="text" value="{{se_info.se_metadata}}"/>
 								</div>
 								<div class="form-group">
 									<label>Inbound Max Active</label>
-									<input class="form-control" name="inbound_max_active" type="number" min="0" value="{{se_info.inbound_max_active}}"/>
+									<input id="inbound_max_active_hidden" class="form-control" name="inbound_max_active" type="number" min="0" value="{{se_info.inbound_max_active}}"/>
 								</div>
 								<div class="form-group">
 									<label>Outbound Max Active</label>
-									<input class="form-control" name="outbound_max_active" type="number" min="0" value="{{se_info.outbound_max_active}}"/>
+									<input id="outbound_max_active_hidden" class="form-control" name="outbound_max_active" type="number" min="0" value="{{se_info.outbound_max_active}}"/>
 								</div>
 								<div class="form-group">
 									<label>Inbound Max Throughput (MB/s)</label>
-									<input class="form-control" name="inbound_max_throughput" type="number" min="0" value="{{se_info.inbound_max_throughput}}"/>
+									<input id="inbound_max_throughput_hidden" class="form-control" name="inbound_max_throughput" type="number" min="0" value="{{se_info.inbound_max_throughput}}"/>
 								</div>
 								<div class="form-group">
 									<label>Outbound Max Throughput (MB/s)</label>
-									<input class="form-control" name="outbound_max_throughput" type="number" min="0" value="{{se_info.outbound_max_throughput}}"/>
+									<input id="outbound_max_throughput_hidden" class="form-control" name="outbound_max_throughput" type="number" min="0" value="{{se_info.outbound_max_throughput}}"/>
 								</div>
 								 <div class="form-group">
                                       <label>IPv6</label>
-                                      <input class="form-control" type="number" name="ipv6" value="{{se_info.ipv6}}" min="0", max="1"/>
+                                      <input id="ipv6_hidden" class="form-control" type="number" name="ipv6" value="{{se_info.ipv6}}" min="0", max="1"/>
                                  </div>
 								<div class="form-group">
 									<label>UDT</label>
-									<input class="form-control" type="number" name="udt" value="{{se_info.udt}}" min="0", max="1"/>
+									<input id="udt_hidden" class="form-control" type="number" name="udt" value="{{se_info.udt}}" min="0", max="1"/>
 								</div>
 								<div class="form-group">
 									<label>Debug Level</label>
-									<input class="form-control" name="debug_level" type="number" value="{{se_info.debug_level}}"/>
+									<input id="debug_level_hidden" class="form-control" name="debug_level" type="number" min="0" max="3" value="{{se_info.debug_level}}"/>
 								</div>
 							</div>
 						</div>
@@ -82,15 +82,15 @@
 										</a>
 									</td>
 									<td>
-										<input type="hidden" name="vo" value="{{vo_name}}">
+										<input id="vo_hidden" type="hidden" name="vo" class="form-control" value="{{vo_name}}">
 										{{@vo_name}}
 									</td>
 									<td>
-										<input type="hidden" name="operation" value="{{@key}}">
+										<input id="operation_hidden" type="hidden" name="operation" class="form-control" value="{{@key}}">
 										{{@key}}
 									</td>
 									<td>
-										<input type="number" name="limit" class="form-control" value="{{this}}">
+										<input id="limit_hidden" type="number" name="limit" class="form-control" min="0" value="{{this}}">
 									</td>
 								</tr>
 								{{/each}}
@@ -114,7 +114,7 @@
 										</select>
 									</td>
 									<td>
-										<input type="number" name="limit" class="form-control">
+										<input type="number" name="limit" min="0" class="form-control">
 									</td>
 								</tr>
 							</tbody>
@@ -137,7 +137,8 @@
 		<div class="panel-heading">
 			<h2 class="panel-title">
 				<input type="text" name="se" placeholder="Storage"
-				class="form-control" id="se-add-field-se" />&nbsp;
+				class="form-control" id="se-add-field-se" pattern="(\*|.*://?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))" required 
+title="i.e. http://mysite.ch or *" />&nbsp;
 		</div>
 		<div class="panel-body">
 			<div class="row">
@@ -154,22 +155,22 @@
 							<div class="form-group">
 								<label for="inbound_max_active">Inbound Max Active</label> <input
 								class="form-control" name="inbound_max_active" id="inbound_max_active"
-								type="number"/>
+								type="number" min="0"/>
 							</div>
 							<div class="form-group">
 								<label for="outbound_max_active">Outbound Max Active</label> <input
 								class="form-control" name="outbound_max_active" id="outbound_max_active"
-								type="number"/>
+								type="number" min="0"/>
 							</div>
 							<div class="form-group">
 								<label for="inbound_max_throughput">Inbound Max Throughput (MB/s)</label> <input
 								class="form-control" name="inbound_max_throughput" id="inbound_max_throughput"
-								type="number"/>
+								type="number" min="0"/>
 							</div>
 							<div class="form-group">
 								<label for="outbound_max_throughput">Outbound Max Throughput (MB/s)</label> <input
 								class="form-control" name="outbound_max_throughput" id="outbound_max_throughput"
-								type="number"/>
+								type="number" min="0"/>
 							</div>
 								<div class="form-group">
 									<label for="ipv6">IPv6</label>
@@ -185,7 +186,7 @@
 							<div class="form-group">
 								<label for="debug_level">Debug Level</label> <input
 								class="form-control" name="debug_level" id="debug_level"
-								type="number"/>
+								type="number" min="0" max="3"/>
 							</div>
 						</div>
 					</div>
@@ -213,11 +214,11 @@
 							</a></td>
 							<td><input type="text" id="se-add-field-vo" name="vo"
 								class="form-control" /></td>
-								<td><select name="operation" class="form-control">
+								<td><select id="operation" name="operation" class="form-control">
 									<option value="delete">Delete</option>
 									<option value="staging">Staging</option>
 								</select></td>
-								<td><input type="number" name="limit" class="form-control" />
+								<td><input id="limit" type="number" name="limit" class="form-control" min="0"/>
 								</td>
 							</tr>
 						</tbody>

@@ -41,7 +41,7 @@ function addOperation(form, tbody)
             .append($("<input type='hidden' name='operation'/>").val(op))
         )
         .append($("<td></td>")
-            .append($("<input type='number' name='limit' class='form-control'/>").val(limit))
+            .append($("<input type='number' name='limit'/>").val(limit))
         );
 
     tbody.append(tr);
@@ -129,6 +129,9 @@ function handleSeSave(form)
         contentType: "application/json",
         data: JSON.stringify(msg)
     })
+    .done(function() {
+	$("tbody#se-add-ops-list.ops-list tr").remove();
+    })
     .always(function() {
         form.css("background", "#ffffff").css("transition", "background .50s ease-in-out");
     });
@@ -185,9 +188,14 @@ function refreshSeConfig()
                 div.toggleClass("panel-collapse");
             });
 
-            div.find("#se-modify-frm").submit(function(event) {
+            div.find(".se-modify-frm").submit(function(event) {
                 event.preventDefault();
                 handleSeSave(div)
+	        .done(function(data, textStatus, jqXHR) {
+                $("#se-save-frm").trigger("reset");
+                refreshSeConfig();
+                })
+
                 .fail(function(jqXHR) {
                     errorMessage(jqXHR);
                 });
@@ -245,7 +253,7 @@ function setupSe()
 
     // Bind to form
     $("#se-add-frm").submit(function(event) {
-        event.preventDefault();
+	event.preventDefault();
         handleSeSave($("#se-add-frm"))
         .done(function(data, textStatus, jqXHR) {
             $("#se-add-frm").trigger("reset");
