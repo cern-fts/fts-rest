@@ -35,13 +35,13 @@ function addOperation(form, tbody)
 
     tr.append($("<td></td>").append(deleteBtn))
         .append($("<td></td>").text(vo)
-            .append($("<input type='hidden' name='vo'/>").val(vo))
+            .append($("<input type='hidden' name='vo' class='form-control'/>").val(vo))
         )
         .append($("<td></td>").text(op)
-            .append($("<input type='hidden' name='operation'/>").val(op))
+            .append($("<input type='hidden' name='operation' class='form-control'/>").val(op))
         )
         .append($("<td></td>")
-            .append($("<input type='number' name='limit'/>").val(limit))
+            .append($("<input type='number' name='limit' class='form-control' min='0'/>").val(limit))
         );
 
     tbody.append(tr);

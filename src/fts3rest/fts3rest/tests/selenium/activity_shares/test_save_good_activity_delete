@@ -1,0 +1,141 @@
+#!/usr/bin/python
+import unittest, time
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from pyvirtualdisplay import Display
+
+class FTS3develSeTab(unittest.TestCase):
+
+    def setUp(self):
+	self.display = Display(visible=0, size=(800, 600))
+	self.display.start()
+        profile = webdriver.FirefoxProfile('/home/anna/.mozilla/firefox/sces5jz7.selenium_anna')
+        self.driver = webdriver.Firefox(profile)
+
+    def test_save_good_activity_delete(self):
+        """
+        Test delete entry from saved activity shares
+        """
+        driver = self.driver
+        driver.get("https://fts3-devel.cern.ch:8446/config/activity_shares")
+
+	#SET UP
+        setup_list = [
+		      ("savedel", [("activity0", "0.3"),("activity0_1", "0.3")]),
+		      ("savedel1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
+		      ("savedel2", [("activity2", "0"), ("activity2_1", "0.3")])
+                     ]
+
+	compare_list =[]	
+        for element in setup_list:
+	    count = 0
+            vo_field = driver.find_element_by_id('activity-share-add-field-vo')
+            vo_field.clear()
+            vo_field.send_keys(element[0])
+
+	    for elem in element[1]:
+		compare_list.append(element[0])
+		compare_list.append(elem[0])
+                activity_field = driver.find_element_by_id('activity-share-add-field-share-name')
+                activity_field.clear()
+                activity_field.send_keys(elem[0])
+
+                weight_field = driver.find_element_by_id('activity-share-add-field-share-value')
+                weight_field.send_keys(Keys.CONTROL + 'a')
+                weight_field.send_keys(Keys.BACKSPACE)
+                weight_field.send_keys(elem[1])
+
+		plus = driver.find_element_by_id('activity-share-add-entry-btn')
+		plus.click()
+
+            button_add = driver.find_element_by_id('button-add')
+	    button_add.click()
+	    count = count+1
+	    time.sleep(1)
+
+	driver.refresh()
+
+	#CHECK IF EVERYTHING WAS SAVED
+	check0_list = []
+	check1_list = []
+
+        count = 0
+	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+
+        for elem in page_list:
+            check0_list.append(elem.text)
+        count = count + 1
+
+        count = 0
+        for element in setup_list:
+	    check1_list.append(element[0])
+        count = count + 1
+
+	if not set(check1_list) < set(check0_list):
+	    return self.assertFalse("TEST: The activity share wasn't saved", set(check1_list) - set(check0_list))
+
+	inputs_list = []
+        for element in check1_list:
+	    for elem in driver.find_elements_by_xpath('//h2[@class="panel-title"]'):
+		if elem.text == element:
+		    input_name = '//form[@name="' +element + '"]//input'
+		    inputs = driver.find_elements_by_xpath(input_name)
+		    for inp in inputs:
+		        if inp.get_attribute("value")!="":
+			    inputs_list.append(inp.get_attribute('value'))
+
+	if set(inputs_list) < set(compare_list):
+	    return self.assertFalse("TEST: The activity share parameter wasn't saved", set(inputs_list) - set(compare_list))
+
+
+
+	# TEST test_save_good_activity
+        delete_list = [
+		      ("savedel", [("activity0", "0.3")]),
+		      ("savedel1", [("activity1", "0.56"), ("activity1_1", "0.9")]),
+		      ("savedel2", [("activity2", "0")])
+                     ]
+
+	#SAVE
+	compare_list = []
+        for element in delete_list:
+	    count = 0
+	    panel = '//div[@name="panel_' +element[0] + '"][@class="panel panel-info"]' 
+	    panel_f = driver.find_element_by_xpath(panel)
+
+	    if panel_f.get_attribute("name") == 'panel_'+element[0]:
+		for elem in element[1]:
+		    compare_list.append(element[1][count][0])    
+		    act = '//input[@value="' +element[1][count][0] + '"]'
+		    if driver.find_element_by_xpath(act).get_attribute("value") == element[1][count][0]:
+		        delete = driver.find_element_by_xpath('//div[@name="panel_' +element[0] + '"]//a[@name="del_'+element[1][count][0]+'"]')
+		        delete.click()
+		    count = count + 1
+
+		btn = '//button[@name="save_' +element[0] + '"][@class="btn btn-primary"]'
+		button_save = driver.find_element_by_xpath(btn)
+		button_save.click()
+	     	
+
+	#CHECK IF EVERYTHING WAS DELETED
+	inputs_list = []
+        for element in check1_list:
+	    for elem in driver.find_elements_by_xpath('//h2[@class="panel-title"]'):
+		if elem.text == element:
+		    input_name = '//form[@name="' +element + '"]//input'
+		    inputs = driver.find_elements_by_xpath(input_name)
+		    for inp in inputs:
+			if inp.get_attribute("value")!="":
+			    inputs_list.append(inp.get_attribute('value'))
+
+	if set(compare_list)&set(inputs_list):
+	    return self.assertFalse("TEST: The share was NOT deleted", set(compare_list)&set(inputs_list))
+
+
+    def tearDown(self):
+        self.driver.close()
+	self.display.stop()
+
+if __name__ == "__main__":
+        unittest.main()
+

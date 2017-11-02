@@ -28,20 +28,20 @@
         <tbody id="link-config-add">
             <tr>
                 <td>
-                    <button class="btn btn-link" type="submit">
+                    <button class="btn btn-link" type="submit" id="button_add_link">
                         <i class="glyphicon glyphicon-plus"></i>
                     </button>
                 </td>
                 <td>
-                    <input class="form-control" type="text" placeholder="Symbolic name" name="symbolicname"/>
+                    <input class="form-control" type="text" placeholder="Symbolic name" name="symbolicname" pattern="^[^\s]+$" required title="Space is not allowed"/>
                 </td>
                 <td>
                     <input class="form-control" type="text" placeholder="Source" name="source"
-                        id="link-add-field-source"/>
+                        id="link-add-field-source" pattern="(\*|.*://?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))" required title="i.e. http://mysite.ch or *" />
                 </td>
                 <td>
                     <input class="form-control" type="text" placeholder="Destination" name="destination"
-                        id="link-add-field-destination"/>
+                        id="link-add-field-destination" pattern="(\*|.*://?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))" required title="i.e. http://mysite.ch or *" />
                 </td>
                 <td>
                     <input class="form-control" type="number" placeholder="Streams" name="nostreams"
@@ -94,7 +94,7 @@
         <tbody id="share-add">
             <tr>
                 <td>
-                    <button class="btn btn-link" type="submit">
+                    <button class="btn btn-link" type="submit" id="button_share_link">
                         <i class="glyphicon glyphicon-plus"></i>
                     </button>
                 </td>
@@ -107,10 +107,10 @@
                         id="share-add-field-destination"/>
                 </td>
                 <td>
-                    <input type="text" name="vo" placeholder="VO" class="form-control"/>
+                    <input type="text" name="vo" placeholder="VO" class="form-control" id="share-add-field-vo" pattern="^[^\s]+$" required title="Space is not allowed"/>
                 </td>
                 <td>
-                    <input type="number" name="share" placeholder="Share" class="form-control" min="0" max="100"/>
+                    <input type="number" name="share" placeholder="Share" class="form-control" id="share-add-field-share" min="0"/>
                 </td>
             </tr>
         </tbody>

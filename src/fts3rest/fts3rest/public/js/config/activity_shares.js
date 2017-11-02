@@ -62,14 +62,14 @@ function addShare(form, tbody)
 
     var tr = $("<tr></tr>");
 
-    var deleteBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></a>");
+    var deleteBtn = $("<a class='btn btn-link' id='activity-share-delete-entry-btn'><i class='glyphicon glyphicon-trash'></i></a>");
 
     tr.append($("<td></td>").append(deleteBtn))
         .append($("<td></td>")
-            .append($("<input type='text' name='share' class='form-control'/>").val(share))
+            .append($("<input type='text' name='share' class='form-control' pattern='^[^\s]+$' title='Space is not allowed'/>").val(share))
         )
         .append($("<td></td>")
-            .append($("<input type='number' step='any' name='weight' class='form-control'/>").val(weight))
+            .append($("<input type='number' step='0.01' name='weight' class='form-control' min='0' max='1'/>").val(weight))
         );
 
     tbody.append(tr);
@@ -90,6 +90,7 @@ function addShare(form, tbody)
 function refreshActivityShares()
 {
     var parent = $("#activity-shares-list");
+    var tr = $("<tr></tr>");
 
     $.ajax({
         headers: {
@@ -101,9 +102,9 @@ function refreshActivityShares()
         parent.empty();
 
         $.each(data, function(voName, shareConfig) {
-            var div = $("<div class='panel panel-info'></div>");
+            var div = $("<div class='panel panel-info' name='panel_"+voName+"'></div>");
 
-            var deleteBtn = $("<button class='btn btn-danger'></button>")
+            var deleteBtn = $("<button class='btn btn-danger' name='delete_" + voName +"'></button>")
                 .append("<i class='glyphicon glyphicon-trash'></i> Delete");
 
             deleteBtn.click(function(event) {
@@ -125,25 +126,27 @@ function refreshActivityShares()
                 event.preventDefault();
             });
 
-            var submitBtn = $("<button class='btn btn-primary'>Save</button>");
+            var submitBtn = $("<button class='btn btn-primary' name='save_" +voName +"'>Save</button>");
 
             var shareTable = $("<table class='table'></table>");
             var shareTbody = $("<tbody class='share-list'></tbody>");
 
             $.each(shareConfig.share, function(share, weight) {
                 var tr = $("<tr></tr>");
-                var shareDeleteBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></a>");
+                var shareDeleteBtn = $("<a class='btn btn-link' id='delete-entry-for-saved' name='del_"+share+"'><i class='glyphicon glyphicon-trash'></i></a>");
                 shareDeleteBtn.click(function(event) {
                     event.preventDefault();
                     tr.remove()
                 });
 
-                tr.append(
+	      shareval = "<input type='text' name='share' class='form-control' value='"+ share + "' pattern='^[^\s]+$' title='Space is not allowed'/>";
+	      weightval = "<input type='number' step='0.01' name='weight' class='form-control' min ='0' max='1'  value='" + weight + "'/>";
+              tr.append(
                     $("<td></td>").append(shareDeleteBtn)
                 ).append(
-                    $("<td></td>").append($("<input type='text' name='share' class='form-control'/>").val(share))
+                    $("<td></td>").append($(shareval).val(share))
                 ).append(
-                    $("<td></td>").append($("<input type='number' step='any' name='weight' class='form-control'/>").val(weight))
+                    $("<td></td>").append($(weightval).val(weight))
                 );
 
                 shareTbody.append(tr);
@@ -152,15 +155,15 @@ function refreshActivityShares()
             shareTable.append($("<thead><tr><th></th><th>Activity name</th><th>Weight</th></tr></thead>"));
             shareTable.append(shareTbody);
 
-            var addOpBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-plus'></i></a>");
+            var addOpBtn = $("<a class='btn btn-link' id='add-entry-for-saved'><i class='glyphicon glyphicon-plus'></i></a>");
 
             var addForm = $("<tbody></tbody>")
                 .append($("<tr></tr>")
                     .append($("<td></td>").append(addOpBtn))
                     .append($("<td></td>")
-                        .append($("<input type='text' name='share' class='form-control'/></td>"))
+                        .append($("<input type='text' name='share' class='form-control' id='share-add-for-saved' pattern='^[^\s]+$' title='Space is not allowed'/></td>"))
                     )
-                    .append("<td><input type='number' step='any' name='weight' class='form-control'/></td>")
+                    .append("<td><input type='number' step='0.01' name='weight' class='form-control' id='weight-add-for-saved' min='0' max='1'/></td>")
                 );
 
             addOpBtn.click(function(event) {
@@ -174,7 +177,7 @@ function refreshActivityShares()
 
             shareTable.append(addForm);
 
-            var form = $("<form class='panel-body'></form>")
+            var form = $("<form class='panel-body' name='" + voName + "'></form>")
                 .append($("<input type='hidden' name='vo'/>").val(voName))
                 .append(shareTable)
                 .append($("<div class='panel-footer'></div>").append(submitBtn).append(deleteBtn));
@@ -222,12 +225,15 @@ function setupActivityShares()
         event.preventDefault();
         handleActivityShareSave($("#activity-share-add-frm"))
         .done(function(data, textStatus, jqXHR) {
-            $("#activity-share-add-frm").trigger("reset");
-            refreshActivityShares();
+	   $(".share-list td").trigger("reset"); 
+           refreshActivityShares();
         })
         .fail(function(jqXHR) {
             errorMessage(jqXHR);
-        });
+        })
+	.always(function(){
+	$("#activity-share-add .share-list tr").remove();
+});
     });
 
     $("#activity-share-add-entry-btn").click(function(event) {

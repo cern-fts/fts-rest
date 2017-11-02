@@ -1,0 +1,130 @@
+#!/usr/bin/python
+import unittest, time
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from pyvirtualdisplay import Display
+
+class FTS3develSeTab(unittest.TestCase):
+
+    def setUp(self):
+	self.display = Display(visible=0, size=(800, 600))
+	self.display.start()
+        profile = webdriver.FirefoxProfile('/home/anna/.mozilla/firefox/sces5jz7.selenium_anna')
+        self.driver = webdriver.Firefox(profile)
+
+    def test_add_bad_global(self):
+        """
+        Test add retries with wrong data
+        """
+        driver = self.driver
+        driver.get("https://fts3-devel.cern.ch:8446/config/global")
+
+        input_list = [
+                      ("", "0", "0", "0", "0", "yes"),
+                      ("badvo", "", "0", "0", "0", "yes"),
+                      ("badvo1", "5", "", "20", "25", "no"),
+                      ("badvo2", "10", "20", "", "40", "no"),
+                      ("badvo3", "10", "20", "30", "", "yes"),
+                      (" ", "10", "20", "30", "40", "yes"),
+                      ("badvo4", " ", "0", "0", "0", "yes"),
+                      ("badvo5", "5", " ", "20", "25", "no"),
+                      ("badvo6", "10", "20", " ", "40", "no"),
+                      ("badvo7", "10", "20", "30", " ", "yes"),
+                      ("badvo8", "", "0", "0", "0", "yes"),
+                      ("badvo9", "5", "", "20", "25", "no"),
+                      ("badvo10", "10", "20", "", "40", "no"),
+                      ("badvo11", "10", "20", "30", "", "yes"),
+                      ("badvo12", "3.14", "0", "0", "0", "yes"),
+                      ("badvo13", "5", "3.14", "20", "25", "no"),
+                      ("badvo14", "10", "20", "3.14", "40", "no"),
+                      ("badvo15", "10", "20", "30", "3.14", "yes"),
+                      ("badvo12", "abc", "0", "0", "0", "yes"),
+                      ("badvo13", "5", "abc", "20", "25", "no"),
+                      ("badvo14", "10", "20", "abc", "40", "no"),
+                      ("badvo15", "10", "20", "30", "abc", "yes"),
+                      ("badvo16", "$@%", "0", "0", "0", "yes"),
+                      ("badvo17", "5", "$@%", "20", "25", "no"),
+                      ("badvo18", "10", "20", "$@%", "40", "no"),
+                      ("badvo19", "10", "20", "30", "$@%", "yes"),
+                      ("badvo20", "-1", "20", "30", "0", "yes"),
+                      ("badvo21", "8", "-1", "0", "0", "yes"),
+                      ("badvo22", "5", "5", "-1", "25", "no"),
+                      ("badvo23", "10", "20", "98", "-1", "no"),
+                      ("badvo24", "11", "20", "30", "456", "yes"),
+                      ("badvo 25", "10", "20", "98", "0", "no")
+                     ]
+     
+        for element in input_list:
+
+            voname_field = driver.find_element_by_id('vo-config-add-field-vo')
+	    voname_field.click()
+            voname_field.clear()
+            voname_field.send_keys(element[0])
+
+            retries_field = driver.find_element_by_id('retry')
+            retries_field.send_keys(Keys.CONTROL + 'a')
+            retries_field.send_keys(Keys.BACKSPACE)
+            retries_field.send_keys(element[1])
+
+            globaltimeout_field = driver.find_element_by_id('global_timeout')
+            globaltimeout_field.send_keys(Keys.CONTROL + 'a')
+            globaltimeout_field.send_keys(Keys.BACKSPACE)
+            globaltimeout_field.send_keys(element[2])
+
+            queue_field = driver.find_element_by_id('max_time_queue')
+            queue_field.send_keys(Keys.CONTROL + 'a')
+            queue_field.send_keys(Keys.BACKSPACE)
+            queue_field.send_keys(element[3])
+
+            addsec_field = driver.find_element_by_id('sec_per_mb')
+            addsec_field.send_keys(Keys.CONTROL + 'a')
+            addsec_field.send_keys(Keys.BACKSPACE)
+            addsec_field.send_keys(element[4])
+
+
+            showdn_field = driver.find_element_by_xpath('//tbody[@id="vo-config-add"][tr/td/select[@id="show_user_dn"]]')
+	    if element[5] == 'no':
+		showdn_field.click()
+		options = showdn_field.find_elements_by_tag_name("option")
+		for option in options:
+		    if option.get_attribute("value") == 'false':
+			option.click()
+	    elif element[5] == 'yes':
+		showdn_field.click()
+		options = showdn_field.find_elements_by_tag_name("option")
+		for option in options:
+		        if option.get_attribute("value") == 'true':
+			    option.click()
+
+
+	    button_add = driver.find_element_by_id('button_add_global')
+	    button_add.click()
+	    time.sleep(1)
+
+	#CHECK IF EVERYTHING WAS SAVED
+	check0_list = []
+	check1_list = []
+
+        count = 0
+	page_list = driver.find_elements_by_xpath('//td[@class="vo_name"]')
+
+        for elem in page_list:
+            check0_list.append(elem.text)
+        count = count + 1
+
+        count = 0
+        for element in input_list:
+	    check1_list.append(element[0])
+        count = count + 1
+
+	if set(check0_list)&set(check1_list):
+	    return self.assertFalse("TEST: The retry should NOT be saved", set(check0_list)&set(check1_list))
+
+
+    def tearDown(self):
+        self.driver.close()
+	self.display.stop()
+
+if __name__ == "__main__":
+        unittest.main()
+

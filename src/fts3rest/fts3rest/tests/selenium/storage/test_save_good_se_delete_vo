@@ -1,0 +1,185 @@
+#!/usr/bin/python
+import unittest, time
+from selenium import webdriver
+from pyvirtualdisplay import Display
+
+class FTS3develSeTab(unittest.TestCase):
+ 
+    def setUp(self):
+	self.display = Display(visible=0, size=(800, 600))
+	self.display.start()
+	profile = webdriver.FirefoxProfile('/home/anna/.mozilla/firefox/sces5jz7.selenium_anna')
+	self.driver = webdriver.Firefox(profile)
+
+    def test_save_good_se_delete_vo(self):
+	"""
+	Test delete vo and click save
+	"""
+        driver = self.driver
+        driver.get("https://fts3-devel.cern.ch:8446/config/se")
+
+	#SET UP
+	setup_list = [
+                      ("s3://deletevo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0",[("delete_0","staging","500")] ),
+                      ("s3://deletevo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", [("stay_1", "delete", "300"), ("delete_1_1", "staging", "160"), ("stay_1_2", "delete", "800"),("delete_1_3", "delete", "800")]),
+                      ("s3://deletevo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", [("delete_2", "staging", "10")])
+	             ]
+	compare_list =[]
+
+	for element in setup_list:
+
+            storage_field = driver.find_element_by_id('se-add-field-se')
+	    storage_field.clear()
+            storage_field.send_keys(element[0])
+
+            se_meta_field = driver.find_element_by_id('se_metadata')
+	    se_meta_field.clear()
+            se_meta_field.send_keys(element[1])
+
+            inbound_field = driver.find_element_by_id('inbound_max_active')
+	    inbound_field.clear()
+	    inbound_field.send_keys(element[2])
+
+            outbound_field = driver.find_element_by_id('outbound_max_active')
+	    outbound_field.clear()
+            outbound_field.send_keys(element[3])
+
+	    i_throughput_field = driver.find_element_by_id('inbound_max_throughput')
+            i_throughput_field.clear()
+            i_throughput_field.send_keys(element[4])
+
+            o_throughput_field = driver.find_element_by_id('outbound_max_throughput')
+            o_throughput_field.clear()
+            o_throughput_field.send_keys(element[5])
+
+            ipv6_field = driver.find_element_by_id('ipv6')
+            ipv6_field.clear()
+            ipv6_field.send_keys(element[6])
+
+            udt_field = driver.find_element_by_id('udt')
+            udt_field.clear()
+            udt_field.send_keys(element[7])
+
+            debug_field = driver.find_element_by_id('debug_level')
+            debug_field.clear()
+            debug_field.send_keys(element[8])
+
+	    count = 0
+    	    for elem in element[9]:
+		compare_list.append(elem[0])
+
+           	vo_field = driver.find_element_by_id('se-add-field-vo')
+          	vo_field.clear()
+           	vo_field.send_keys(elem[0])
+
+	        if elem[1] == 'staging':
+            	    operation_field = driver.find_element_by_id('operation')
+            	    operation_field.click()
+
+            	    options = operation_field.find_elements_by_tag_name("option")
+            	    for option in options:
+                        if option.get_attribute("value") == 'staging':
+                    	    option.click()
+
+                limit_field = driver.find_element_by_id('limit')
+                limit_field.clear()
+                limit_field.send_keys(elem[2])
+
+                plus_vo = driver.find_element_by_id('se-add-ops-add-btn')
+                plus_vo.click()
+
+	    driver.find_element_by_css_selector("button[type='submit']").click()
+	    count = count+1
+	    time.sleep(1)
+
+
+	#CHECK IF EVERYTHING WAS SAVED
+	check0_list = []
+	check1_list = []
+
+        count = 0
+	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+
+        for elem in page_list:
+            check0_list.append(elem.text)
+        count = count + 1
+
+        count = 0
+        for element in setup_list:
+	    check1_list.append(element[0])
+        count = count + 1
+
+	if not set(check1_list) < set(check0_list):
+	    return self.assertFalse("SETUP: The se wasn't saved", set(check1_list) - set(check0_list))
+
+	inputs_list = []
+        for element in check1_list:
+	    for elem in driver.find_elements_by_xpath('//h2[@class="panel-title"]'):
+		if elem.text == element:
+		    input_name = '//form[@name="' +element + '"]//input'
+		    inputs = driver.find_elements_by_xpath(input_name)
+		    for inp in inputs:
+		        inputs_list.append(inp.get_attribute('value'))
+	
+	if set(inputs_list) < set(compare_list):
+	    return self.assertFalse("SETUP: The SE parameter wasn't saved", set(compare_list) - set(inputs_list))
+
+	#TEST test_save_se_with_god_vo
+        input_list = [
+                      ("s3://deletevo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0",[("delete_0","staging","500")] ),
+                      ("s3://deletevo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", [("delete_1_1", "staging", "160"), ("delete_1_3", "delete", "800")]),
+                      ("s3://deletevo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", [("delete_2", "staging", "10")])
+                     ]
+        del_list = ["delete_0", "delete_1_1", "delete_1_3","delete_2"]
+
+        for element in input_list:
+	    count = 0
+	    panel = '//div[@name="panelc_' +element[0] + '"][@class="panel panel-primary panel-collapse"]' 
+	    panel_f = driver.find_element_by_xpath(panel)
+
+	    if panel_f.get_attribute("name") == 'panelc_'+element[0]:
+		panel_f.click()
+		for op in element[9]:
+		    vo_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="vo_value"]'
+		    vo_field = driver.find_elements_by_xpath(vo_name)
+	            operation_name = '//div[@name="panelc_' +element[0] + '"]//td//select[@id="operation_value"]'
+		    operation_field = driver.find_elements_by_xpath(operation_name)
+	            limit_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="limit_value"]'
+		    limit_field = driver.find_elements_by_xpath(limit_name)
+		    for el in vo_field:
+			if el.get_attribute("value")==element[9][count][0]:
+	                    delete_name = '//div[@name="panelc_' +element[0] + '"]//a[@name="' +element[9][count][0] +'"]'
+		            delete_vo = driver.find_element_by_xpath(delete_name)
+                            delete_vo.click()
+		    count = count +1
+
+		btn = '//button[@name="save_' +element[0] + '"][@class="btn btn-primary btn-save"]'
+                button_save = driver.find_element_by_xpath(btn)
+		button_save.click()	
+
+	driver.refresh()
+	time.sleep(2)
+
+	#CHECK IF EVERYTHING WAS deleted
+	saved_list = []
+        for element in setup_list:
+	    count = 0
+	    panel = '//div[@name="panelc_' +element[0] + '"][@class="panel panel-primary panel-collapse"]' 
+	    panel_f = driver.find_element_by_xpath(panel)
+	    if panel_f.get_attribute("name") == 'panelc_'+element[0]:
+		vo_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="vo_value"]'
+		vo_field = driver.find_elements_by_xpath(vo_name)   
+		for op in element[9]:
+              	    saved_list.append(vo_field[count].get_attribute("value"))
+		    count = count + 1
+
+	if set(del_list).issubset(saved_list):
+	    return self.assertFalse("TEST: The SE vo parameter wasn't deleted", set(del_list)&set(saved_list))
+
+
+    def tearDown(self):
+        self.driver.close()
+	self.display.stop()
+
+if __name__ == "__main__":
+	unittest.main()

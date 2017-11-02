@@ -30,7 +30,8 @@
                     </button>
                 </td>
                 <td>
-                    <input type="text" placeholder="User dn" size="60" name="dn" id="authz-add-field-dn" class="form-control"/>
+                    <input type="text" placeholder="User dn" size="60" name="dn" id="authz-add-field-dn" class="form-control" pattern="/.*[\w:]+" required
+					title="some examples: /C=RU/O=RDIG/OU=users/OU=ihep.su/CN=Name Surname ---or---  /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=cernlogin/CN=XXXXXX/CN=Name Surname"/>
                 </td>
                 <td>
                     <select name="operation" class="form-control">

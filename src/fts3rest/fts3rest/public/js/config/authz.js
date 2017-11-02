@@ -33,7 +33,7 @@ function refreshAuthzList()
         $.each(data, function(i, user) {
             var tr = $("<tr></tr>");
 
-            var deleteBtn = $("<button class='btn btn-link' type='button'></button>")
+            var deleteBtn = $("<button class='btn btn-link' type='button' id='button-delete-authz'></button>")
                 .append("<i class='glyphicon glyphicon-trash'></i>");
 
             deleteBtn.click(function() {

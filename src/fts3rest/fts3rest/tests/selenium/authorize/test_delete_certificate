@@ -1,0 +1,123 @@
+#!/usr/bin/python
+import unittest, time
+from selenium import webdriver
+from pyvirtualdisplay import Display
+
+class FTS3develSeTab(unittest.TestCase):
+
+    def setUp(self):
+	self.display = Display(visible=0, size=(800, 600))
+	self.display.start()
+        profile = webdriver.FirefoxProfile('/home/anna/.mozilla/firefox/sces5jz7.selenium_anna')
+        self.driver = webdriver.Firefox(profile)
+
+    def test_delete_certificate(self):
+        """
+        Test delete button for link configuration
+        """
+        driver = self.driver
+        driver.get("https://fts3-devel.cern.ch:8446/config/authorize")
+
+	#SET UP
+        setup_list = ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=asidorov/CN=000000/CN=Alex Sidorov", 
+                      "/C=RU/O=RDIG/OU=users/OU=ihep.su/CN=Victor Dobrov"
+                     ]
+	
+        for element in setup_list:
+	    count = 0
+            userdn_field = driver.find_element_by_id('authz-add-field-dn')
+            userdn_field.clear()
+            userdn_field.send_keys(element)
+
+	    button_add = driver.find_element_by_id('auth-add-frm-submit')
+	    button_add.click()
+	    time.sleep(1)
+	
+	driver.refresh()
+
+	#CHECK IF EVERYTHING WAS SAVED
+	check0_list = []
+	check1_list = []
+
+        count = 0
+	page_list = driver.find_elements_by_xpath('//span[@class="monospace"]')
+
+        for elem in page_list:
+            check0_list.append(elem.text)
+        count = count + 1
+
+        count = 0
+        for element in setup_list:
+	    check1_list.append(element)
+        count = count + 1
+
+	if not set(check1_list) < set(check0_list):
+	    return self.assertFalse("SETUP: The static authorization wasn't saved", set(check1_list) - set(check0_list))
+
+
+
+	# TEST test_delete_link
+        input_list = ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=asidorov/CN=000000/CN=Alex Sidorov", 
+                      "/C=RU/O=RDIG/OU=users/OU=ihep.su/CN=Victor Dobrov",
+                      "/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=vpupkin/CN=000000/CN=Vasya Pupkin", 
+                      "/C=RU/O=RDIG/OU=users/OU=ihep.su/CN=Misha Mishin", 
+                      "/C=RU/O=RDIG/OU=users/OU=itep.ru/CN=Alexander Plushkin", 
+                      "/C=RU/O=RDIG/OU=users/OU=jinr.ru/CN=Katya Maria Lomova"
+                     ]
+
+	#FIND ELEMENTS FROM THE INPUT_LIST THAT ARE ON THE PAGE
+	check2_list = []
+	check3_list = []
+
+        count = 0
+	page_list = driver.find_elements_by_xpath('//span[@class="monospace"]')
+        for elem in page_list:
+            check2_list.append(elem.text)
+        count = count + 1
+
+        count = 0
+        for element in input_list:
+	    check3_list.append(element)
+        count = count + 1
+
+	output_list = set(check2_list)&set(check3_list)
+
+
+	#DELETE 
+	for element in output_list:
+            count = 0
+            delete_list = driver.find_elements_by_id('button-delete-authz')
+            time.sleep(1)
+            for elem in driver.find_elements_by_xpath('//span[@class="monospace"]'):
+                if elem.text == element:
+                    delete_list[count].click()
+                    time.sleep(1)
+                count = count + 1
+
+	#CHECK IF IT WAS DELETED
+	check4_list = []
+	check5_list = []
+
+        count = 0
+	page_list = driver.find_elements_by_xpath('//span[@class="monospace"]')
+        for elem in page_list:
+            check4_list.append(elem.text)
+        count = count + 1
+
+        count = 0
+        for element in input_list:
+	    check5_list.append(element)
+        count = count + 1
+
+	not_deleted = set(check4_list)&set(check5_list)
+	if not_deleted:
+            return self.assertFalse("TEST: The link configuration wasn't deleted", not_deleted)
+
+
+    def tearDown(self):
+        self.driver.close()
+	self.display.stop()
+
+if __name__ == "__main__":
+        unittest.main()
+

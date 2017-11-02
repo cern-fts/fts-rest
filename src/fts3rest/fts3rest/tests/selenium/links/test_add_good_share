@@ -1,0 +1,144 @@
+#!/usr/bin/python
+import unittest, time
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from pyvirtualdisplay import Display
+
+class FTS3develSeTab(unittest.TestCase):
+
+    def setUp(self):
+	self.display = Display(visible=0, size=(800, 600))
+	self.display.start()
+        profile = webdriver.FirefoxProfile('/home/anna/.mozilla/firefox/sces5jz7.selenium_anna')
+        self.driver = webdriver.Firefox(profile)
+
+    def test_add_good_share(self):
+        """
+        Test add share configuration with proper data
+        """
+        driver = self.driver
+        driver.get("https://fts3-devel.cern.ch:8446/config/links")
+
+	#SET UP data for the test
+	
+        setup_list = [
+                      ("test0", "test0://test.test", "test://test1.test", "0", "2","2", "0", "0"),
+                      ("test1", "test1://test.test", "test://test2.test", "10", "15", "25", "5", "30"),
+                      ("test2", "test2://test.test", "test://test3.test", "12", "40", "190", "3", "23"),
+                      ("test3", "test3://test.test", "test://test4.test", "30", "48", "300", "3", "230"),
+                      ("test4", "test4://test.test", "test://test5.test", "67", "6", "33", "0", "90")
+                     ]
+        for element in setup_list:
+            count = 0
+            symbname_field = driver.find_element_by_xpath('//input[@name="symbolicname"]')
+            symbname_field.clear()
+            symbname_field.send_keys(element[0])
+
+            source_field = driver.find_element_by_id('link-add-field-source')
+            source_field.clear()
+            source_field.send_keys(element[1])
+
+            destination_field = driver.find_element_by_id('link-add-field-destination')
+            destination_field.clear()
+            destination_field.send_keys(element[2])
+
+            streams_field = driver.find_element_by_xpath('//input[@name="nostreams"]')
+            streams_field.clear()
+            streams_field.send_keys(element[3])
+
+            minact_field = driver.find_element_by_xpath('//input[@name="min_active"]')
+            minact_field.clear()
+            minact_field.send_keys(element[4])
+
+            maxact_field = driver.find_element_by_xpath('//input[@name="max_active"]')
+            maxact_field.clear()
+            maxact_field.send_keys(element[5])
+
+            optimizer_field = driver.find_element_by_xpath('//input[@name="optimizer_mode"]')
+            optimizer_field.clear()
+            optimizer_field.send_keys(element[6])
+
+            tcp_field = driver.find_element_by_xpath('//input[@name="tcp_buffer_size"]')
+            tcp_field.clear()
+            tcp_field.send_keys(element[7])
+
+            button_add = driver.find_element_by_id('button_add_link')
+            button_add.click()
+            time.sleep(1)
+
+        #CHECK IF EVERYTHING WAS SAVED
+	check0_list = []
+	check1_list = []
+
+        count = 0
+	page_list = driver.find_elements_by_id('symname')
+        for elem in page_list:
+            check0_list.append(elem.text)
+        count = count + 1
+
+        count = 0
+        for element in setup_list:
+	    check1_list.append(element[0])
+        count = count + 1
+
+	if not set(check1_list) < set(check0_list):
+	    return self.assertFalse("SETUP: Problem with adding link configuration", set(check1_list) - set(check0_list))
+
+	#TEST test_add_good_share
+        input_list = [
+                      ("test0://test.test", "test://test1.test", "vo_0", "2"),
+                      ("test1://test.test", "test://test2.test", "vo_1", "58"),
+                      ("test2://test.test", "test://test3.test", "vo_2", "100"),
+		      ("test3://test.test", "test://test4.test", "vo_3", "70"),
+		      ("test4://test.test", "test://test5.test", "vo_4", "30")
+                     ]
+
+        for element in input_list:
+	    count = 0
+            source_field = driver.find_element_by_id('share-add-field-source')
+            source_field.clear()
+            source_field.click()
+            source_field.send_keys(element[0])
+
+            destination_field = driver.find_element_by_id('share-add-field-destination')
+            destination_field.clear()
+            destination_field.send_keys(element[1])
+
+            vo_field = driver.find_element_by_id('share-add-field-vo')
+            vo_field.clear()
+            vo_field.send_keys(element[2])
+
+            share_field = driver.find_element_by_xpath('//input[@placeholder="Share"]')
+            share_field.send_keys(Keys.CONTROL + 'a')
+            share_field.send_keys(Keys.BACKSPACE)
+            share_field.send_keys(element[3])
+
+	    button_add = driver.find_element_by_id('button_share_link')
+	    button_add.click()
+	    time.sleep(1)
+
+	#CHECK IF IT WAS SAVED
+	check0_list = []
+	check1_list = []
+
+        count = 0
+	page_list = driver.find_elements_by_id('share_name')
+        for elem in page_list:
+            check0_list.append(elem.text)
+        count = count + 1
+
+        count = 0
+        for element in input_list:
+	    check1_list.append(element[0])
+        count = count + 1
+
+	if not set(check1_list) < set(check0_list):
+	    return self.assertFalse("TEST: The share configuration wasn't saved", set(check1_list) - set(check0_list))
+
+    def tearDown(self):
+        self.driver.close()
+	self.display.stop()
+
+if __name__ == "__main__":
+        unittest.main()
+

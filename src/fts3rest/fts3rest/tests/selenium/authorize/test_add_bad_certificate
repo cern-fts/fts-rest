@@ -1,0 +1,63 @@
+#!/usr/bin/python
+import unittest, time
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from pyvirtualdisplay import Display
+
+class FTS3develSeTab(unittest.TestCase):
+
+    def setUp(self):
+	self.display = Display(visible=0, size=(800, 600))
+	self.display.start()
+        profile = webdriver.FirefoxProfile('/home/anna/.mozilla/firefox/sces5jz7.selenium_anna')
+        self.driver = webdriver.Firefox(profile)
+
+    def test_add_bad_certificate(self):
+        """
+        Test add certificate in a wrong format
+        """
+        driver = self.driver
+        driver.get("https://fts3-devel.cern.ch:8446/config/authorize")
+
+        input_list = ["DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=vpupkin/CN=000000/CN=Vasya Pupkin", 
+                      "Misha Mishin", 
+                      "=", 
+                      "123"
+                     ]
+	
+        for element in input_list:
+	    count = 0
+            userdn_field = driver.find_element_by_id('authz-add-field-dn')
+            userdn_field.clear()
+            userdn_field.send_keys(element)
+
+	    button_add = driver.find_element_by_id('auth-add-frm-submit')
+	    button_add.click()
+	    time.sleep(1)
+
+	#CHECK IF BUGS WERE SAVED
+	check0_list = []
+	check1_list = []
+
+        count = 0
+	page_list = driver.find_elements_by_xpath('//span[@class="monospace"]')
+        for elem in page_list:
+            check0_list.append(elem.text)
+        count = count + 1
+
+        count = 0
+        for element in input_list:
+	    check1_list.append(element)
+        count = count + 1
+
+	if set(check0_list)&set(check1_list):
+	    return self.assertFalse("TEST: The link configuration should NOT be saved", set(check0_list)&set(check1_list))
+
+
+    def tearDown(self):
+        self.driver.close()
+	self.display.stop()
+
+if __name__ == "__main__":
+        unittest.main()
+

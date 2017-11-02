@@ -1,0 +1,192 @@
+#!/usr/bin/python
+import unittest, time
+from selenium import webdriver
+from pyvirtualdisplay import Display
+
+class FTS3develSeTab(unittest.TestCase):
+ 
+    def setUp(self):
+	self.display = Display(visible=0, size=(800, 600))
+	self.display.start()
+	profile = webdriver.FirefoxProfile('/home/anna/.mozilla/firefox/sces5jz7.selenium_anna')
+	self.driver = webdriver.Firefox(profile)
+
+    def test_save_good_se_without_vo(self):
+	"""
+	Test changing the inputs with correct data and clicking save (no check for operations)
+	"""
+        driver = self.driver
+        driver.get("https://fts3-devel.cern.ch:8446/config/se")
+
+	#SET UP
+	setup_list = [
+		      ("s3://save.cern.ch", "", "", "", "", "", "", "", ""),
+		      ("s3://save1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
+		      ("s3://save2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
+		      ("s3://save3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0")
+	             ]
+	for element in setup_list:
+
+            storage_field = driver.find_element_by_id('se-add-field-se')
+	    storage_field.clear()
+            storage_field.send_keys(element[0])
+
+            se_meta_field = driver.find_element_by_id('se_metadata')
+	    se_meta_field.clear()
+            se_meta_field.send_keys(element[1])
+
+            inbound_field = driver.find_element_by_id('inbound_max_active')
+            inbound_field.clear()
+	    inbound_field.send_keys(element[2])
+
+            outbound_field = driver.find_element_by_id('outbound_max_active')
+            outbound_field.clear()
+            outbound_field.send_keys(element[3])
+
+            i_throughput_field = driver.find_element_by_id('inbound_max_throughput')
+            i_throughput_field.clear()
+            i_throughput_field.send_keys(element[4])
+
+            o_throughput_field = driver.find_element_by_id('outbound_max_throughput')
+            o_throughput_field.clear()
+            o_throughput_field.send_keys(element[5])
+
+            ipv6_field = driver.find_element_by_id('ipv6')
+            ipv6_field.clear()
+            ipv6_field.send_keys(element[6])
+
+            udt_field = driver.find_element_by_id('udt')
+            udt_field.clear()
+            udt_field.send_keys(element[7])
+
+            debug_field = driver.find_element_by_id('debug_level')
+            debug_field.clear()
+            debug_field.send_keys(element[8])
+
+
+	    driver.find_element_by_css_selector("button[type='submit']").click()
+	    time.sleep(1)
+
+	#CHECK IF EVERYTHING WAS SAVED
+	check0_list = []
+	check1_list = []
+
+        count = 0
+	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+
+        for elem in page_list:
+            check0_list.append(elem.text)
+        count = count + 1
+
+        count = 0
+        for element in setup_list:
+	    check1_list.append(element[0])
+        count = count + 1
+
+	if not set(check1_list) < set(check0_list):
+	    return self.assertFalse("TEST: The storage wasn't saved", set(check1_list) - set(check0_list))
+
+
+
+	#TEST
+        input_list = [
+		      ("s3://save.cern.ch", "metadata_save", "", "", "", "", "", "", ""),
+		      ("s3://save1.cern.ch", "metadata_save1", "1", "1", "1", "1", "0", "0", "0"),
+		      ("s3://save2.cern.ch", "metadata_save2", "", "", "", "", "1", "1", "0"),
+		      ("s3://save3.cern.ch", "", "", "", "", "0", "0", "0", "0")
+                     ]
+
+        for element in input_list:
+            se_list = driver.find_elements_by_css_selector("h2[class='panel-title']")
+            se_meta_field = driver.find_elements_by_xpath('//*[@id="se_metadata_hidden"]')
+            inbound_field = driver.find_elements_by_xpath('//*[@id="inbound_max_active_hidden"]')
+            outbound_field = driver.find_elements_by_xpath('//*[@id="outbound_max_active_hidden"]')
+            i_throughput_field = driver.find_elements_by_xpath('//*[@id="inbound_max_throughput_hidden"]')
+            o_throughput_field = driver.find_elements_by_xpath('//*[@id="outbound_max_throughput_hidden"]')
+            ipv6_field = driver.find_elements_by_xpath('//*[@id="ipv6_hidden"]')
+            udt_field = driver.find_elements_by_xpath('//*[@id="udt_hidden"]')
+	    debug_field = driver.find_elements_by_xpath('//*[@id="debug_level_hidden"]')
+	    button_save = driver.find_elements_by_xpath('//*[@id="button_save"]')
+
+	    list_check = []
+            for elem in se_list:
+		list_check.append(elem.text)
+
+	    time.sleep(1)
+	    count = 0
+	    for elem in list_check:
+                if elem == element[0]:
+                    se_list[count].click()
+		    se_meta_field[count].clear()
+		    se_meta_field[count].send_keys(element[1])
+
+                    inbound_field[count].clear()
+                    inbound_field[count].send_keys(element[2])
+
+                    outbound_field[count].clear()
+                    outbound_field[count].send_keys(element[3])
+
+                    i_throughput_field[count].clear()
+                    i_throughput_field[count].send_keys(element[4])
+
+                    o_throughput_field[count].clear()
+                    o_throughput_field[count].send_keys(element[5])
+
+                    ipv6_field[count].clear()
+                    ipv6_field[count].send_keys(element[6])
+
+                    udt_field[count].clear()
+                    udt_field[count].send_keys(element[7])
+
+		    debug_field[count].clear()
+		    debug_field[count].send_keys(element[8])
+ 
+		    button_save[count].click()
+                    time.sleep(1)
+	        count = count + 1
+
+	time.sleep(1)
+
+	#CHECK IF THAT WAS SAVED FOR SURE
+        counter = 0
+	for element in input_list:
+            count = 0
+            se_list = driver.find_elements_by_css_selector("h2[class='panel-title']")
+            se_meta_field = driver.find_elements_by_xpath('//*[@id="se_metadata_hidden"]')
+            inbound_field = driver.find_elements_by_xpath('//*[@id="inbound_max_active_hidden"]')
+            outbound_field = driver.find_elements_by_xpath('//*[@id="outbound_max_active_hidden"]')
+            i_throughput_field = driver.find_elements_by_xpath('//*[@id="inbound_max_throughput_hidden"]')
+            o_throughput_field = driver.find_elements_by_xpath('//*[@id="outbound_max_throughput_hidden"]')
+            ipv6_field = driver.find_elements_by_xpath('//*[@id="ipv6_hidden"]')
+            udt_field = driver.find_elements_by_xpath('//*[@id="udt_hidden"]')
+            debug_field = driver.find_elements_by_xpath('//*[@id="debug_level_hidden"]')	
+            button_save = driver.find_elements_by_xpath('//*[@id="button_save"]')
+
+            list_check = []
+            for elem in se_list:
+                list_check.append(elem.text)
+
+	    #TRY WITH FILTER()
+            for elem in list_check:
+		if elem == element[0]:	
+		    a = se_meta_field[count].get_attribute('value')==input_list[counter][1]
+		    b = inbound_field[count].get_attribute('value')==input_list[counter][2]
+		    c = outbound_field[count].get_attribute('value')==input_list[counter][3]
+		    d = i_throughput_field[count].get_attribute('value')==input_list[counter][4]
+		    e = o_throughput_field[count].get_attribute('value')==input_list[counter][5]
+		    f = ipv6_field[count].get_attribute('value')==input_list[counter][6]
+		    g = udt_field[count].get_attribute('value')==input_list[counter][7]
+		    h = debug_field[count].get_attribute('value')==input_list[counter][8]
+		    new_list = [a,b,c,d,e,f,g,h]
+		    if not all(new_list):
+			return self.assertFalse("There is a problem with saving the changes!", input_list[counter])
+		    counter +=1
+	    	count = count + 1
+
+
+    def tearDown(self):
+        self.driver.close()
+	self.display.stop()
+
+if __name__ == "__main__":
+	unittest.main()

@@ -17,10 +17,10 @@
 var globalConfigRowHtml = '\
 <tr> \
     <td> \
-        <button class="btn btn-link bt-delete" type="button" title="Delete"> \
+        <button class="btn btn-link bt-delete" type="button" title="Delete" id="button_delete_global"> \
             <i class="glyphicon glyphicon-trash"></i> \
         </button> \
-        <button class="btn btn-link bt-save" type="button" title="Save"> \
+        <button class="btn btn-link bt-save" type="button" title="Save" id="button_save_global"> \
             \<i class="glyphicon glyphicon-floppy-disk"></i> \
         </button> \
     </td> \
@@ -28,16 +28,16 @@ var globalConfigRowHtml = '\
         VO NAME \
     </td> \
     <td> \
-        <input type="number" name="retry" value="0" min="0" max="10" class="form-control"/> \
+        <input type="number" name="retry" min="0" max="10" class="form-control"/> \
     </td> \
     <td> \
-        <input type="number" name="global_timeout" class="form-control"/> \
+        <input type="number" name="global_timeout" class="form-control" min="0"/> \
     </td> \
     <td> \
-        <input type="number" name="max_time_queue" class="form-control"/> \
+        <input type="number" name="max_time_queue" class="form-control" min="0"/> \
     </td> \
     <td> \
-        <input type="number" name="sec_per_mb" class="form-control"/> \
+        <input type="number" name="sec_per_mb" class="form-control" min="0"/> \
     </td> \
     <td> \
         <select name="show_user_dn" id="show_user_dn" class="form-control"> \
@@ -69,13 +69,18 @@ function refreshVoConfigList()
 
             tr.find(".vo_name").text(vo_name);
             $.each(vo, function(op_name, op_value) {
-                if (op_name != "show_user_dn") {
-                    tr.find("input[name='" + op_name + "']").val(op_value);
-                }
-                else {
-                    tr.find("select[name='" + op_name + "']").val(op_value.toString());
-                }
+		tr.attr('name',vo.vo_name);
+		tr.find("button[id='button_delete_global']").attr('name', vo.vo_name);
+		tr.find("input[name='" + op_name + "']").each(function(){
+		 $(this).attr('value',op_value);
+                });
+		tr.find("select[name='" + op_name + "']").each(function(){
+                 $(this).attr('value',op_value.toString());
+		 tr.find("select[name='" + op_name + "']").val(op_value.toString());
+                });
+		
             });
+
 
             tr.find(".bt-delete").click(function() {
                 tr.css("background", "#d9534f");
@@ -94,9 +99,25 @@ function refreshVoConfigList()
             });
 
             tr.find(".bt-save").click(function() {
+                var ret_wrong = tr.find("input[name='retry']");
+                var max_wrong = tr.find("input[name='max_time_queue']");
+                var glo_wrong = tr.find("input[name='global_timeout']");
+                var sec_wrong = tr.find("input[name='sec_per_mb']");
                 tr.find("input").prop("disabled", true);
                 tr.find("select").prop("disabled", true);
+                tr.css("background", "#3c763d");
 
+		if ((tr.find("input[name='retry']").val() > 10)||(tr.find("input[name='retry']").val() < 0) ||(tr.find("input[name='max_time_queue']").val() < 0)||(tr.find("input[name='global_timeout']").val() < 0)||(tr.find("input[name='sec_per_mb']").val() < 0)){ 
+		    errorMessage(jqXHR);
+                    tr.find("input").prop("disabled", false);
+                    tr.find("select").prop("disabled", false);
+                    tr.css("background", "#ffffff");
+                    ret_wrong.val(encodeURIComponent(vo.retry));
+                    max_wrong.val(encodeURIComponent(vo.max_time_queue));
+                    glo_wrong.val(encodeURIComponent(vo.global_timeout));
+                    sec_wrong.val(encodeURIComponent(vo.sec_per_mb));
+		}
+		else{
                 $.ajax({
                     url: "/config/global?",
                     type: "POST",
@@ -108,17 +129,24 @@ function refreshVoConfigList()
                         max_time_queue: tr.find("input[name='max_time_queue']").val(),
                         global_timeout: tr.find("input[name='global_timeout']").val(),
                         sec_per_mb: tr.find("input[name='sec_per_mb']").val(),
-                        sec_per_mb: tr.find("input[name='sec_per_mb']").val(),
                         show_user_dn: tr.find("select[name='show_user_dn']").val()
                     })
                 })
                 .done(function() {
+                    tr.css("background", "none");
                     tr.find("input").prop("disabled", false);
                     tr.find("select").prop("disabled", false);
                 })
                 .fail(function(jqXHR) {
                     errorMessage(jqXHR);
-                });
+                    tr.find("input").prop("disabled", false);
+                    tr.find("select").prop("disabled", false);
+                    tr.css("background", "#ffffff");
+                    ret_wrong.val(encodeURIComponent(vo.retry));
+                    max_wrong.val(encodeURIComponent(vo.max_time_queue));
+                    glo_wrong.val(encodeURIComponent(vo.global_timeout));
+                    sec_wrong.val(encodeURIComponent(vo.sec_per_mb));
+                })};
             });
 
             tbody.append(tr);
@@ -145,8 +173,8 @@ function setupGlobalConfig()
     	var obj={};
     	for(var key in data)
     	{
-        	console.log(data[key]);
-        	obj[data[key].split("=")[0]] = data[key].split("=")[1];
+        	console.log(decodeURIComponent(data[key]));
+        	obj[decodeURIComponent(data[key].split("=")[0])] = decodeURIComponent(data[key].split("=")[1]);
     	}
         $.ajax({
             url: "/config/global?",
