@@ -8,7 +8,7 @@ class FTS3develSeTab(unittest.TestCase):
     def setUp(self):
 	self.display = Display(visible=0, size=(800, 600))
 	self.display.start()
-        profile = webdriver.FirefoxProfile('/home/anna/.mozilla/firefox/sces5jz7.selenium_anna')
+        profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
         self.driver = webdriver.Firefox(profile)
 
     def test_add_good_link(self):
