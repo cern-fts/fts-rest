@@ -100,7 +100,7 @@ class FTS3develSeTab(unittest.TestCase):
 		      ("savegoodvo1", [("activity1", "0.56")]),
 		      ("savevo", [("activity0", "0.3")]),
 		      ("savevo1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
-		      ("savevo2", [("activity2", "0")]),
+		      ("savevo2", [("activity2", "0"), ("activity2_1", "1"), ("activity2_2", "0.63")]),
 		      ("savedel", [("activity0", "0.3"),("activity0_1", "0.3")]),
 		      ("savedel1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
 		      ("savedel2", [("activity2", "0"), ("activity2_1", "0.3")])
