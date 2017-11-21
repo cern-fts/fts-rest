@@ -47,7 +47,8 @@ function addOperation(form, tbody)
     tbody.append(tr);
 
     deleteBtn.click(function(event) {
-        tr.remove()
+	tr.remove()
+	tbody.remove(tr)
     });
 
     form.find("input[name='vo']").val("");
