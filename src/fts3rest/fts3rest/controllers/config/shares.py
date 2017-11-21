@@ -57,6 +57,8 @@ class VoShareConfigController(BaseController):
         vo = input_dict.get('vo')
         try:
             share = int(input_dict.get('share'))
+            if share < 0:
+                raise HTTPBadRequest('Shares values cannot be negative')
         except:
             raise HTTPBadRequest('Bad share value')
 
