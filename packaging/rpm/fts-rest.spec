@@ -48,7 +48,12 @@ BuildRequires:  pandoc
 BuildRequires:  python-dirq
 
 Requires:       gridsite%{?_isa} >= 1.7
+%if %{?rhel}%{!?rhel:0} == 6
+Requires:       httpd%{?_isa} >= 2.2.15-60
+%endif
+%if %{?rhel}%{!?rhel:0} >= 7
 Requires:       httpd%{?_isa}
+%endif
 Requires:       mod_wsgi
 Requires:       python-dirq
 Requires:       python-fts = %{version}-%{release}
