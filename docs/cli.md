@@ -60,7 +60,7 @@ Starting with fts-rest 3.2.28 we provide a setup.py script that allows easy inst
 virtualenv fts-rest
 cd fts-rest/
 . ./bin/activate
-pip install "git+https://github.com/cern-it-sdc-id/fts3-rest.git"
+pip install "git+https://gitlab.cern.ch/fts/fts-rest.git"
 fts-rest-whoami -s "https://fts3-devel.cern.ch:8446"
 User DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=aalvarez/CN=678984/CN=Alejandro Alvarez Ayllon
 VO: dteam
