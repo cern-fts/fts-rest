@@ -35,9 +35,10 @@ class PycurlRequest(object):
 
     def _set_ssl(self):
         self.curl_handle.setopt(pycurl.SSL_VERIFYPEER, self.verify)
-        self.curl_handle.setopt(pycurl.SSL_VERIFYHOST, self.verify)
         if self.verify:
             self.curl_handle.setopt(pycurl.SSL_VERIFYHOST, 2)
+        else:
+            self.curl_handle.setopt(pycurl.SSL_VERIFYHOST, 0)
         if self.ucert:
             self.curl_handle.setopt(pycurl.SSLCERT, self.ucert)
         if self.ukey:
