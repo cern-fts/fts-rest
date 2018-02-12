@@ -48,8 +48,10 @@ setenforce 0
 sed "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config -i
 
 # Need a self-signed certificate, which can be replaced later on
-openssl req -x509 -newkey rsa:2048 -keyout "/etc/grid-security/hostkey.pem" -out "/etc/grid-security/hostcert.pem" -days 365 -nodes -subj '/CN=self-signed-rest'
-chmod 0400 "/etc/grid-security/hostkey.pem"
+if [[ ! -f "/etc/grid-security/hostcert.pem" ]]; then
+    openssl req -x509 -newkey rsa:2048 -keyout "/etc/grid-security/hostkey.pem" -out "/etc/grid-security/hostcert.pem" -days 365 -nodes -subj '/CN=self-signed-rest'
+    chmod 0400 "/etc/grid-security/hostkey.pem"
+fi
 
 # Start apache
 systemctl enable httpd
