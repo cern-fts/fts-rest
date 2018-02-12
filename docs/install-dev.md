@@ -6,7 +6,7 @@ If you are performing the installation on the same machine where FTS3 is running
 2. Install also MySQL-python
 3. create the following directory and provide the following permissions: 
 ```
-mkdir /vaar/log/fts3rest
+mkdir /var/log/fts3rest
 chown -R fts3:fts3 /var/log/fts3rest
 ```
 
@@ -17,16 +17,16 @@ cp fts3rest.wsgi /usr/libexec/fts3/ to be read by apache
 cp fts3rest.conf /etc/httpd/conf.d/
 ```
 
-5. In fts3rest.wsgi comment the sys.path.
+5. In fts3rest.wsgi comment out the sys.path.
 
 6. In fts3rest.conf, indicate the python-path parameter where your source is located.
 ```
-WSGIDaemonProcess fts3rest python-path=/root/fts-rest/src and keep the rest of parameters
+WSGIDaemonProcess fts3rest python-path=/your-path/fts-rest/src and keep the rest of parameters
 ```
 Then give the corresponding permissions in order to be accesible by apache
 
 ```
-chmod 0755 /root
+chmod 0755 /your-path
 ```
 
 7. Disable SELinux in /etc/sysconfig/selinux and reboot and check the status 
