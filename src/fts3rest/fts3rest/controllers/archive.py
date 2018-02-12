@@ -48,7 +48,7 @@ class ArchiveController(BaseController):
             '_links': {
                 'curies': [{
                     'name': 'fts',
-                    'href': 'https://svnweb.cern.ch/trac/fts3'
+                    'href': 'https://gitlab.cern.ch/fts/fts3'
                 }],
                 'fts:archivedJob': {
                     'href': '/archive/{id}',
