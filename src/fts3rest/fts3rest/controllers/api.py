@@ -73,7 +73,7 @@ class ApiController(BaseController):
             'core': self.fts_core_version,
             'schema': schema_v,
             '_links': {
-                'curies': [{'name': 'fts', 'href': 'https://svnweb.cern.ch/trac/fts3'}],
+                'curies': [{'name': 'fts', 'href': 'https://gitlab.cern.ch/fts/fts3'}],
 
                 'fts:whoami': {'href': '/whoami', 'title': 'Check user certificate'},
 
