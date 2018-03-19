@@ -501,7 +501,7 @@ class JobBuilder(object):
         
         max_reuse_files = pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000)
         
-        if job_type == 'Y' and len(self.files) >= MAX_REUSE_FILES:
+        if job_type == 'Y' and len(self.files) >= max_reuse_files:
             job_type == 'N'
         
         if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']):
@@ -517,7 +517,7 @@ class JobBuilder(object):
             min_small_files = len(self.files) - 2
             for file in self.files:
                 log.debug(str(file['user_filesize']))
-                if file['user_filesize'] < MAX_SIZE_SMALL_FILE and file['user_filesize'] > 0:
+                if file['user_filesize'] <  max_size_small_file and file['user_filesize'] > 0:
                     small_files +=1
             if small_files > min_small_files:
                 self.job['job_type'] = 'Y'
