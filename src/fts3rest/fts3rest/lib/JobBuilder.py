@@ -37,9 +37,6 @@ log = logging.getLogger(__name__)
 
 BASE_ID = uuid.UUID('urn:uuid:01874efb-4735-4595-bc9c-591aef8240c9')
 
-MAX_REUSE_FILES = 1000
-MAX_SIZE_SMALL_FILE = 104857600 #100MB
-
 DEFAULT_PARAMS = {
     'bring_online': -1,
     'verify_checksum': False,
@@ -502,6 +499,8 @@ class JobBuilder(object):
         if job_type == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
         
+        max_reuse_files = pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000)
+        
         if job_type == 'Y' and len(self.files) >= MAX_REUSE_FILES:
             job_type == 'N'
         
@@ -512,7 +511,7 @@ class JobBuilder(object):
             self.job['job_type'] = 'N'
         
         auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false');
-        
+        max_size_small_file = pylons.config.get('fts3.AutoSessionReuseMaxFileSize', 104857600) #100MB
         if (auto_session_reuse == 'true' and self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
             small_files = 0
             min_small_files = len(self.files) - 2
