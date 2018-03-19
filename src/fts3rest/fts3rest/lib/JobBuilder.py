@@ -499,11 +499,6 @@ class JobBuilder(object):
         if job_type == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
         
-        max_reuse_files = pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000)
-        
-        if job_type == 'Y' and len(self.files) > max_reuse_files:
-            job_type == 'N'
-        
         if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']):
             self.job['job_type'] == 'Y'
         
@@ -511,22 +506,33 @@ class JobBuilder(object):
             self.job['job_type'] = 'N'
         
         auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false')
-        log.debug("AutoSessionReuse "+auto_session_reuse+" and job_type "+str(job_type))
-        max_size_small_file = pylons.config.get('fts3.AutoSessionReuseMaxFileSize', 104857600) #100MB
-        if (auto_session_reuse == 'true' and self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
-            small_files = 0
-            min_small_files = len(self.files) - 2
-            for file in self.files:
-                log.debug(str(file['user_filesize']))
-                if file['user_filesize'] <  max_size_small_file and file['user_filesize'] > 0:
-                    small_files +=1
-            if small_files > min_small_files:
-                self.job['job_type'] = 'Y'
-                log.debug("Reuse jobs with "+str(small_files)+" small files up to "+str(len(self.files))+" total files")
-                # Need to reset their hashed_id so they land on the same machine
-                shared_hashed_id = _generate_hashed_id()
+        log.debug("AutoSessionReuse is "+auto_session_reuse+ " job_type is" + str(self.job['job_type']))
+        max_reuse_files = pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000)
+        max_size_small_file = pylons.config.get('fts3.AutoSessionReuseMaxSmallFileSize', 104857600) #100MB
+        max_size_big_file = pylons.config.get('fts3.AutoSessionReuseMaxBigFileSize', 1073741824) #1GB
+        max_big_files = pylons.config.get('fts3.AutoSessionReuseMaxBigFiles', 2)
+        if (auto_session_reuse == 'true' and self.job['source_se'] and self.job['dest_se'] and (self.job['job_type'] is None) and (len(self.files) > 1)) :
+            if len(self.files) > max_reuse_files:
+                self.job['job_type'] == 'N'
+                log.debug("The number of files "+str(len(self.files))+"is bigger than the auto maximum reuse files "+str(max_reuse_files))
+            else:
+                small_files = 0
+                big_files = 0
+                min_small_files = len(self.files) - max_big_files
                 for file in self.files:
-                    file['hashed_id'] = shared_hashed_id
+                    log.debug(str(file['user_filesize']))
+                    if file['user_filesize'] <= max_size_small_file and file['user_filesize'] > 0:
+                        small_files +=1
+                    else:
+                        if file['user_filesize'] > max_size_small_file and file['user_filesize'] <= max_size_big_file:
+                            big_files +=1
+                if small_files > min_small_files and big_files <= max_big_files:
+                    self.job['job_type'] = 'Y'
+                    log.debug("Reuse jobs with "+str(small_files)+" small files up to "+str(len(self.files))+" total files")
+                    # Need to reset their hashed_id so they land on the same machine
+                    shared_hashed_id = _generate_hashed_id()
+                    for file in self.files:
+                        file['hashed_id'] = shared_hashed_id
         
         if self.job['job_type'] is None:
             self.job['job_type'] = 'N'
