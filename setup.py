@@ -1,6 +1,7 @@
 import os
 import platform
 import tempfile
+import sys
 from distutils.core import setup
 from glob import glob
 from pip.commands.install import InstallCommand
@@ -31,7 +32,11 @@ def apply_pycurl_workaround():
     tmp_dir = tempfile.mkdtemp()
     is_pycurl_installed = (os.system('pip list | grep pycurl &> /dev/null') == 0)
     if not is_pycurl_installed:
-        os.system('pip install --build %s pycurl%s --no-clean --no-install' % (tmp_dir, pycurl_ver))
+        pythonVersion = sys.version_info[1]
+        if pythonVersion == 6:
+            os.system('pip install --build %s pycurl%s --no-clean --no-install' % (tmp_dir, pycurl_ver))
+        elif pythonVersion == 7:
+            os.system('pip download --no-clean --build %s  pycurl%s'%(tmp_dir, pycurl_ver))
         os.system('sed -i s/--static-libs/--libs/g %s/pycurl/setup.py' % tmp_dir)
         os.system('pip install --build %s %s/pycurl' % (tmp_dir, tmp_dir))
 
