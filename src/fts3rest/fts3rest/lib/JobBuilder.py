@@ -405,7 +405,7 @@ class JobBuilder(object):
                 job_type = 'Y'
             else:
                 job_type = 'N'
-        log.debug("job type is " + job_type)
+        log.debug("job type is " + str(job_type))
         self.is_bringonline = self.params['copy_pin_lifetime'] > 0 or self.params['bring_online'] > 0
 
         job_initial_state = 'STAGING' if self.is_bringonline else 'SUBMITTED'
