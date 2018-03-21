@@ -99,7 +99,7 @@ def add_alternative_source(transfer, alt_source):
     return transfer
 
 
-def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=False, overwrite=False, multihop=False,
+def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, overwrite=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
             bring_online=None, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
