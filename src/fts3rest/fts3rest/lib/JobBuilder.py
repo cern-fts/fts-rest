@@ -398,7 +398,7 @@ class JobBuilder(object):
         """
         
         job_type = None
-        log.debug("job type is " + str(job_type)+ " reuse"+ self.params['reuse'])
+        log.debug("job type is " + str(job_type)+ " reuse"+ str(self.params['reuse']))
         
         if self.params['multihop']:
             job_type = 'H'
