@@ -19,6 +19,7 @@ gpgkey=file:///etc/pki/rpm-gpg/GPG-KEY-EUGridPMA-RPM-3
 EOF
 
 yum install -y vim
+yum install -y nano
 yum groupinstall -y 'Development Tools'
 yum install -y epel-release yum-builddep git
 yum-builddep -y "/vagrant/packaging/rpm/fts-rest.spec"
