@@ -4,7 +4,6 @@ import tempfile
 import sys
 from distutils.core import setup
 from glob import glob
-from pip.commands.install import InstallCommand
 
 
 # On Scientific Linux, installing M2Crypto may give this error
