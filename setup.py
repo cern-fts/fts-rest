@@ -5,7 +5,7 @@ import sys
 from distutils.core import setup
 from glob import glob
 
-
+del os.link
 # On Scientific Linux, installing M2Crypto may give this error
 # "This openssl-devel package does not work your architecture?"
 # To work around that, set the environment variable
