@@ -59,6 +59,7 @@ setup(
     name='fts3-rest',
     version='3.7.1',
     description='FTS3 Python Libraries',
+    long_description='FTS3 Python Libraries',
     author='FTS3 Developers',
     author_email='fts-devel@cern.ch',
     url='http://fts.web.cern.ch/',
