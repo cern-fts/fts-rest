@@ -1,0 +1,20 @@
+Instructions for uploading in pypi
+
+[marsuaga@s3-centos7 fts-rest]$ cat ~/.pypirc 
+[distutils]
+index-servers =
+  pypi
+  pypitest
+
+[pypi]
+repository=https://pypi.python.org/pypi
+username=fts-devel
+password=<passwd>
+
+[pypitest]
+repository=https://testpypi.python.org/pypi
+username=fts-devel
+password= <passwd>
+
+[marsuaga@s3-centos7 fts-rest]$ python setup.py sdist
+[marsuaga@s3-centos7 fts-rest]$ twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
