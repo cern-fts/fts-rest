@@ -68,6 +68,16 @@ setup(
     packages=['fts3', 'fts3.cli', 'fts3.model', 'fts3.rest', 'fts3.rest.client', 'fts3.rest.client.easy'],
     package_dir={'fts3': os.path.join(base_dir, 'src', 'fts3')},
     scripts=glob(os.path.join(base_dir, 'src', 'cli', 'fts-*')),
+    keywords='fts3, grid, rest api, data management clients',
+    platforms=['GNU/Linux'],
+    classifiers=[
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "License :: OSI Approved :: Apache Software License",
+        "Development Status :: 5 - Production/Stable",
+        "Operating System :: Unix",
+        "Programming Language :: Python"
+    ],
 
     install_requires=['M2Crypto>=0.16', 'pycurl%s' % pycurl_ver, 'requests']
 )
