@@ -56,12 +56,12 @@ if dist[0] in ('redhat', 'centos'):
 base_dir = os.path.dirname(__file__)
 
 setup(
-    name='fts3',
+    name='fts3-rest',
     version='3.7.1',
     description='FTS3 Python Libraries',
     author='FTS3 Developers',
     author_email='fts-devel@cern.ch',
-    url='http://fts3-service.web.cern.ch/',
+    url='http://fts.web.cern.ch/',
     download_url='https://gitlab.cern.ch/fts/fts-rest',
     license='Apache 2',
     packages=['fts3', 'fts3.cli', 'fts3.model', 'fts3.rest', 'fts3.rest.client', 'fts3.rest.client.easy'],
