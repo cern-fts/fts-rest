@@ -38,11 +38,11 @@ class Authenticator(object):
             if hasattr(_authnmod, 'do_authentication'):
                 self._auth_modules.append(_authnmod)
 
-    def __call__(self, credentials, env):
+    def __call__(self, credentials, env, config):
         """
         Iterate through pluggable authentication modules
         """
         for authnmod in self._auth_modules:
-            if authnmod.do_authentication(credentials, env):
+            if authnmod.do_authentication(credentials, env, config):
                 return True
         return False

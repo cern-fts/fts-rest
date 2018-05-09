@@ -21,6 +21,8 @@ from fts3rest.lib.middleware.fts3auth.constants import VALID_OPERATIONS
 from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceProvider, ResourceAuthorization
 from fts3.model.credentials import CredentialCache
 from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
+from fts3.rest.client.request import Request
+import json
 
 
 class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
@@ -153,8 +155,9 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
     OAuth2 resource provider
     """
 
-    def __init__(self, environ):
+    def __init__(self, environ, config):
         self.environ = environ
+        self.config = config
 
     @property
     def authorization_class(self):
@@ -166,20 +169,24 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
     def validate_access_token(self, access_token, authorization):
         authorization.is_valid = False
 
-        token = Session.query(OAuth2Token).filter(OAuth2Token.access_token == access_token).first()
-        if not token:
+        #token = Session.query(OAuth2Token).filter(OAuth2Token.access_token == access_token).first()
+        requestor = Request(None, None) #VERIFY:TRUE
+        body = {'token': access_token}
+        token = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProvider'], body=body, user=self.config['fts3.ClientId'], passw=self.config['fts3.ClientSecret']))
+        if not token or not token['active']:
             return
 
         authorization.is_oauth = True
-        authorization.client_id = token.client_id
-        authorization.expires_in = token.expires - datetime.utcnow()
-        authorization.token = token.access_token
-        authorization.dlg_id = token.dlg_id
-        authorization.scope = token.scope
+        authorization.client_id = token['client_id']
+        authorization.expires_in = datetime.fromtimestamp(token['exp']) - datetime.utcnow()
+        authorization.token = access_token
+        authorization.dlg_id = "test"#what is this token.dlg_id
+        authorization.scope = token['scope']
         if authorization.expires_in > timedelta(seconds=0):
-            authorization.credentials = self._get_credentials(token.dlg_id)
-            if authorization.credentials:
-                authorization.is_valid=True
+            authorization.is_valid = True
+            #authorization.credentials = self._get_credentials(token.dlg_id)
+            #if authorization.credentials:
+            #    authorization.is_valid=True
 
     def _get_credentials(self, dlg_id):
         """

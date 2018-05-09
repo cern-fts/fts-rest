@@ -82,17 +82,23 @@ class Request(object):
         elif code >= 500:
             raise ServerError(str(code))
 
-    def method(self, method, url, body=None, headers=None):   
+    def method(self, method, url, body=None, headers=None, user=None, passw=None):
         _headers = {'Accept': 'application/json'}
         if headers:
             _headers.update(headers)
         if self.access_token:
             _headers['Authorization'] = 'Bearer ' + self.access_token
-        
-        response = self.session.request(method=method, url=str(url), 
+
+        auth = None
+        if user and passw:
+            from requests.auth import HTTPBasicAuth
+            auth = HTTPBasicAuth(user, passw)
+
+        response = self.session.request(method=method, url=str(url),
                              data=body, headers=_headers, verify = self.verify, 
                              timeout=(self.connectTimeout, self.timeout), 
-                             cert=(self.ucert, self.ukey))
+                             cert=(self.ucert, self.ukey),
+                             auth=auth)
         
        
         #log.debug(response.text)
