@@ -1,7 +1,7 @@
-DbType=mysql
-DbUserName=fts3
-DbPassword=123
-DbConnectString=194.12.154.32:3306/fts3
+DbType=
+DbUserName=
+DbPassword=
+DbConnectString=
 Alias=Testing
 Infosys=lcg-bdii.cern.ch:2170
 AuthorizedVO=dteam;*
