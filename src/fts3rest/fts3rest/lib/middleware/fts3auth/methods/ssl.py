@@ -53,7 +53,7 @@ def _mod_ssl_authn(credentials, env):
         return True
     return False
 
-def do_authentication(credentials, env):
+def do_authentication(credentials, env, config=None):
     """
     Try with a proxy or certificate, via mod_gridsite or mod_ssl
     """

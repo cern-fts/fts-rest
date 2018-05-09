@@ -57,7 +57,7 @@ class FTS3AuthMiddleware(object):
 
     def _get_credentials(self, environ):
         try:
-            credentials = UserCredentials(environ, self.config['fts3.Roles'])
+            credentials = UserCredentials(environ, self.config['fts3.Roles'], self.config)
         except InvalidCredentials, e:
             raise HTTPForbidden('Invalid credentials (%s)' % str(e))
 

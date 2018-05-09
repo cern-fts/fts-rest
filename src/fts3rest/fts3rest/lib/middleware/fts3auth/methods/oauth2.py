@@ -26,11 +26,11 @@ def _oauth2_get_granted_level_for(self, operation):
     return self.get_granted_level_for_overriden(operation)
 
 
-def do_authentication(credentials, env):
+def do_authentication(credentials, env, config):
     """
     The user will be the one who gave the bearer token
     """
-    res_provider = FTS3OAuth2ResourceProvider(env)
+    res_provider = FTS3OAuth2ResourceProvider(env, config)
     authn = res_provider.get_authorization()
     if authn is None:
         return False
@@ -39,15 +39,18 @@ def do_authentication(credentials, env):
             raise InvalidCredentials('Invalid OAuth2 credentials')
         return False
 
-    credentials.dn.append(authn.credentials.dn)
-    credentials.user_dn = authn.credentials.dn
-    credentials.delegation_id = authn.credentials.dlg_id
-    if authn.credentials.voms_attrs:
-        for fqan in authn.credentials.voms_attrs.split('\n'):
-            credentials.voms_cred.append(fqan)
-            credentials.vos.append(vo_from_fqan(fqan))
-    else:
-        credentials.vos.append(build_vo_from_dn(credentials.user_dn))
+    credentials.dn.append('test')
+    credentials.user_dn = 'test'
+    credentials.delegation_id = 'test'
+    #credentials.dn.append(authn.credentials.dn)
+    #credentials.user_dn = authn.credentials.dn
+    #credentials.delegation_id = authn.credentials.dlg_id
+    #if authn.credentials.voms_attrs:
+    #    for fqan in authn.credentials.voms_attrs.split('\n'):
+    #        credentials.voms_cred.append(fqan)
+    #        credentials.vos.append(vo_from_fqan(fqan))
+    #else:
+    #    credentials.vos.append(build_vo_from_dn(credentials.user_dn))
     credentials.method = 'oauth2'
 
     # Override get_granted_level_for so we can filter by the scope

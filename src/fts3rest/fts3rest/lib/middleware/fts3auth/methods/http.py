@@ -36,7 +36,7 @@ def set_capath(new_capath):
     CAPATH = new_capath
 
 
-def do_authentication(credentials, env):
+def do_authentication(credentials, env, config=None):
     """
     Retrieve credentials from HTTP headers set by WebFTS
     Authorization: Signed-Cert hash="sha256-or-whatever", ts="ISO-timestamp", cert="base64-certificate", sign="base64-signature"
