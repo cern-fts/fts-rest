@@ -128,7 +128,7 @@ class Delegator(object):
         self.context = context
 
     def _get_delegation_id(self):
-        r = json.loads(self.context.get('whoami'))
+        r = json.loads(self.context.get('/whoami'))
         return r['delegation_id']
 
     def _get_remaining_life(self, delegation_id):

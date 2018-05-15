@@ -17,13 +17,17 @@
 
 import types
 from fts3rest.lib.oauth2provider import FTS3OAuth2ResourceProvider
-from fts3rest.lib.middleware.fts3auth.credentials import vo_from_fqan, build_vo_from_dn, InvalidCredentials
+from fts3rest.lib.middleware.fts3auth.credentials import vo_from_fqan, build_vo_from_dn, InvalidCredentials, generate_delegation_id
 
 
 def _oauth2_get_granted_level_for(self, operation):
-    if operation not in self.oauth2_scope:
-        return None
-    return self.get_granted_level_for_overriden(operation)
+    # All users authenticated through IAM will be considered root users
+    return "all"
+
+    # No scope set for now
+    #if operation not in self.oauth2_scope:
+    #    return None
+    #return self.get_granted_level_for_overriden(operation)
 
 
 def do_authentication(credentials, env, config):
@@ -39,16 +43,14 @@ def do_authentication(credentials, env, config):
             raise InvalidCredentials('Invalid OAuth2 credentials')
         return False
 
-    credentials.dn.append('test')
-    credentials.user_dn = 'test'
-    credentials.delegation_id = 'test'
-    #credentials.dn.append(authn.credentials.dn)
-    #credentials.user_dn = authn.credentials.dn
-    #credentials.delegation_id = authn.credentials.dlg_id
-    #if authn.credentials.voms_attrs:
-    #    for fqan in authn.credentials.voms_attrs.split('\n'):
-    #        credentials.voms_cred.append(fqan)
-    #        credentials.vos.append(vo_from_fqan(fqan))
+    credentials.dn.append(authn.credentials.dn)
+    credentials.user_dn = authn.credentials.dn
+    credentials.delegation_id = authn.credentials.dlg_id
+    if authn.credentials.voms_attrs:
+        for fqan in authn.credentials.voms_attrs.split():
+            credentials.voms_cred.append(fqan)
+            credentials.vos.append(fqan)
+            #credentials.vos.append(vo_from_fqan(fqan))
     #else:
     #    credentials.vos.append(build_vo_from_dn(credentials.user_dn))
     credentials.method = 'oauth2'
