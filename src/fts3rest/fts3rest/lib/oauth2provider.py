@@ -18,8 +18,9 @@ import pylons
 from datetime import datetime, timedelta
 from fts3rest.lib.base import Session
 from fts3rest.lib.middleware.fts3auth.constants import VALID_OPERATIONS
+from fts3rest.lib.middleware.fts3auth.credentials import generate_delegation_id
 from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceProvider, ResourceAuthorization
-from fts3.model.credentials import CredentialCache
+from fts3.model.credentials import CredentialCache, Credential
 from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
 from fts3.rest.client.request import Request
 import json
@@ -169,27 +170,42 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
     def validate_access_token(self, access_token, authorization):
         authorization.is_valid = False
 
-        #token = Session.query(OAuth2Token).filter(OAuth2Token.access_token == access_token).first()
-        requestor = Request(None, None) #VERIFY:TRUE
-        body = {'token': access_token}
-        token = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProvider'], body=body, user=self.config['fts3.ClientId'], passw=self.config['fts3.ClientSecret']))
-        if not token or not token['active']:
-            return
+        credential = Session.query(Credential).filter(Credential.proxy == access_token).first()
+        if not credential or credential.expired():
+            # Delete the db entry in case of credential expired before validating the new one
+            if credential:
+                Session.delete(credential)
+
+            requestor = Request(None, None)  # VERIFY:TRUE
+            body = {'token': access_token}
+            credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProvider'], body=body,
+                                                   user=self.config['fts3.ClientId'],
+                                                   passw=self.config['fts3.ClientSecret']))
+            if not credential or not credential['active']:
+                return
+
+            credential = Credential(
+                dlg_id=generate_delegation_id(credential['sub'], ""),
+                dn=credential['sub'],
+                proxy=access_token,
+                voms_attrs=credential['email'] + " " + credential['user_id'],
+                termination_time=datetime.utcfromtimestamp(credential['exp'])
+            )
+            Session.add(credential)
+            Session.commit()
 
         authorization.is_oauth = True
-        authorization.client_id = token['client_id']
-        authorization.expires_in = datetime.fromtimestamp(token['exp']) - datetime.utcnow()
-        authorization.token = access_token
-        authorization.dlg_id = "test"#what is this token.dlg_id
-        authorization.scope = token['scope']
+        authorization.expires_in = credential.termination_time - datetime.utcnow()
+        authorization.token = credential.proxy
+        authorization.dlg_id = credential.dlg_id
+        #authorization.scope = token.scope
         if authorization.expires_in > timedelta(seconds=0):
-            authorization.is_valid = True
-            #authorization.credentials = self._get_credentials(token.dlg_id)
-            #if authorization.credentials:
-            #    authorization.is_valid=True
+            authorization.credentials = self._get_credentials(credential.dlg_id)
+            if authorization.credentials:
+                authorization.is_valid = True
 
     def _get_credentials(self, dlg_id):
         """
         Get the user credentials bound to the authorization token
         """
-        return Session.query(CredentialCache).filter(CredentialCache.dlg_id == dlg_id).first()
+        return Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
