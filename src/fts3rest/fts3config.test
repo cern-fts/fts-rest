@@ -1,4 +1,4 @@
-DbType=
+DbType=sqlite
 DbUserName=
 DbPassword=
 DbConnectString=
