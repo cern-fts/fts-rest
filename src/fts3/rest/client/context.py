@@ -137,7 +137,7 @@ class Context(object):
 
     def _validate_endpoint(self):
         try:
-            endpoint_info = json.loads(self.get(''))
+            endpoint_info = json.loads(self.get('/'))
             endpoint_info['url'] = self.endpoint
         except FTS3ClientException:
             raise
