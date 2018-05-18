@@ -11,11 +11,11 @@ from paste.script.util.logging_config import fileConfig
 fileConfig('/etc/fts3/fts3rest.ini')
 application = loadapp('config:/etc/fts3/fts3rest.ini')
 
-from gevent import pywsgi
-server = pywsgi.WSGIServer(('', 8446), application, keyfile='/etc/grid-security/hostkey.pem', certfile='/etc/grid-security/hostcert.pem')
+#####from gevent import pywsgi
+#####server = pywsgi.WSGIServer(('', 8446), application, keyfile='/etc/grid-security/hostkey.pem', certfile='/etc/grid-security/hostcert.pem')
 # to start the server asynchronously, call server.start()
 # we use blocking serve_forever() here because we have no other jobs
-server.serve_forever()
+####server.serve_forever()
 
 #from wsgiref import simple_server
 #httpd = simple_server.WSGIServer(('',8446), simple_server.WSGIRequestHandler)
