@@ -56,10 +56,10 @@ service httpd restart
 
 11. If you are installing in a different host, the steps are the same, but you will need to copy the FTS3 configuration file to the new host (since it is used by the rest front-end) and make sure you have installed the proper certificates under /etc/grid-security/certificates.
 
-If you are installing in a separate machine, remember to install the CA Certificates (`lcg-CA`) and `fetch-crl` first!
+If you are installing in a separate machine, remember to install the CA Certificates (`ca-policy-egi-core`) and `fetch-crl` first!
 
 ```
-yum install lcg-CA fetch-crl
+yum install ca-policy-egi-core fetch-crl
 fetch-crl -v
 ```
 
