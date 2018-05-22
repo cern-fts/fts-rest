@@ -238,8 +238,8 @@ class Delegator(object):
                 log.debug("No previous delegation found")
             elif remaining_life <= timedelta(0):
                 log.debug("The delegated credentials expired")
-            elif remaining_life >= delegate_when_lifetime_lt:
-                if not force:
+            elif self.context.access_method == 'oauth2' or remaining_life >= delegate_when_lifetime_lt:
+                if self.context.access_method == 'oauth2' or not force:
                     log.debug("Not bothering doing the delegation")
                     return delegation_id
                 else:
