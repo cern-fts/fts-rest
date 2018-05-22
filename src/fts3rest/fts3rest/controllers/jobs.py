@@ -538,7 +538,7 @@ class JobsController(BaseController):
             raise HTTPAuthenticationTimeout(
                 'The delegated credentials expired %d seconds ago (%s)' % (seconds, user.delegation_id)
             )
-        if credential.remaining() < timedelta(hours=1):
+        if user.method != 'oauth2' and credential.remaining() < timedelta(hours=1):
             raise HTTPAuthenticationTimeout(
                 'The delegated credentials has less than one hour left (%s)' % user.delegation_id
             )
