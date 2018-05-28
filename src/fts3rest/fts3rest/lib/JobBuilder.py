@@ -619,7 +619,7 @@ class JobBuilder(object):
             dm['vo_name'] = self.user.vos[0]
 
     def _add_auth_method_on_job_metadata(self):
-        if self.params['job_metadata'] != 'None':
+        if self.params['job_metadata'] is not None and self.params['job_metadata'] != 'None':
             self.params['job_metadata'].update({"auth_method": self.user.method})
         else:
             self.params['job_metadata'] = {"auth_method": self.user.method}
