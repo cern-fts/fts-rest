@@ -184,8 +184,13 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             if not credential or not credential['active']:
                 return
 
+            dlg_id = generate_delegation_id(credential['sub'], "")
+            c = Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
+            if c:
+                Session.delete(c)
+
             credential = Credential(
-                dlg_id=generate_delegation_id(credential['sub'], ""),
+                dlg_id=dlg_id,
                 dn=credential['sub'],
                 proxy=access_token,
                 voms_attrs=credential['email'] + " " + credential['user_id'],
