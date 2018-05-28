@@ -14,6 +14,7 @@
 #   limitations under the License.
 
 import pylons
+import logging
 
 from datetime import datetime, timedelta
 from fts3rest.lib.base import Session
@@ -25,6 +26,7 @@ from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
 from fts3.rest.client.request import Request
 import json
 
+log = logging.getLogger(__name__)
 
 class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
     """
@@ -171,6 +173,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         authorization.is_valid = False
 
         credential = Session.query(Credential).filter(Credential.proxy == access_token).first()
+        log.debug("About to check if there is any credential stored in the db")
         if not credential or credential.expired():
             # Delete the db entry in case of credential expired before validating the new one
             if credential:
@@ -178,6 +181,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
             requestor = Request(None, None)  # VERIFY:TRUE
             body = {'token': access_token}
+            log.debug("About to contact IAM server")
             credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProvider'], body=body,
                                                    user=self.config['fts3.ClientId'],
                                                    passw=self.config['fts3.ClientSecret']))
