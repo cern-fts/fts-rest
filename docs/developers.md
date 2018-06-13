@@ -114,6 +114,7 @@ FAQ
 cd src/fts3rest/
 nosetests -x
 ```
+Note: In case the tests are run on Centos7, ./setup_pylons_plugin.py install --user needs to run first
 
 That's it. For the tests, a SQLite database (/tmp/fts3.db) is used, so it is safe to run them as many times as you want.
 The option `-x` lets nosetests know that it should stop running as soon as it encounters an error, so you can omit it.
