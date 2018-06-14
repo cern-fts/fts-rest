@@ -40,6 +40,14 @@ def apply_pycurl_workaround():
         os.system('pip install --build %s %s/pycurl' % (tmp_dir, tmp_dir))
 
 
+# Due to FTS-1230, PYCURL is now an optional dependency, so look for it in the arguments
+# python setup.py install -e .[pycurl] should be called
+install_pycurl = False
+for arg in sys.argv:
+    if 'pycurl' in arg:
+        install_pycurl = True
+        break
+
 # Ugly hack to pick a version that compiles in SLC6
 pycurl_ver = '>=7.19'
 dist = platform.dist()
@@ -49,7 +57,8 @@ if dist[0] in ('redhat', 'centos'):
     os_major = dist[1].split('.')[0]
     if os_major == '6':
         pycurl_ver = '==7.19.0'
-        apply_pycurl_workaround()
+        if install_pycurl:
+            apply_pycurl_workaround()
     elif os_major == '5':
         pycurl_ver = '==7.15.5'
 
@@ -79,7 +88,8 @@ setup(
         "Programming Language :: Python"
     ],
 
-    install_requires=['M2Crypto>=0.16', 'pycurl%s' % pycurl_ver, 'requests']
+    install_requires=['M2Crypto>=0.16', 'requests'],
+    extras_require={'pycurl':  ['pycurl%s' % pycurl_ver]}
 )
 
 # Need to install these first so the dependencies can be built!
