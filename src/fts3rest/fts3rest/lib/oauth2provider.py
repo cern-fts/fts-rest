@@ -192,6 +192,8 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             if c:
                 Session.delete(c)
 
+            log.debug("Credential is as follows: " + str(credential))
+
             credential = Credential(
                 dlg_id=dlg_id,
                 dn=credential['sub'],
