@@ -196,7 +196,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 dlg_id=dlg_id,
                 dn=credential['sub'],
                 proxy=access_token,
-                voms_attrs=credential['email'] + " " + credential['user_id'],
+                voms_attrs=self._generate_voms_attrs(credential),
                 termination_time=datetime.utcfromtimestamp(credential['exp'])
             )
             Session.add(credential)
@@ -217,3 +217,10 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         Get the user credentials bound to the authorization token
         """
         return Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
+
+    def _generate_voms_attrs(self, credential):
+        if 'email' in credential:
+            return credential['email'] + " " + credential['user_id']
+        else:
+            return credential['user_id'] + " "
+
