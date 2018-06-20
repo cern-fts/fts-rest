@@ -145,7 +145,7 @@ class Context(object):
             raise BadEndpoint("%s (%s)" % (self.endpoint, str(e))), None, sys.exc_info()[2]
         return endpoint_info
 
-    def __init__(self, endpoint, ucert=None, ukey=None, verify=True, access_token=None, no_creds=False, capath='/etc/grid-security/certificates',
+    def __init__(self, endpoint, ucert=None, ukey=None, verify=True, access_token=None, no_creds=False, capath=None,
                  request_class=Request, connectTimeout=30, timeout=30):
         self.passwd = None
 
