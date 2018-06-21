@@ -242,7 +242,8 @@ class DatamanagementController(BaseController):
         finally:
             os.unlink(proxy.name)
 
-    @doc.query_arg('surl', 'Remote SURL', required=True)
+    @doc.query_arg('old', 'Old SURL name', required=True)
+    @doc.query_arg('new', 'New SURL name', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
     @doc.response(403, 'Permission denied')
     @doc.response(404, 'The SURL does not exist')
@@ -284,6 +285,7 @@ class DatamanagementController(BaseController):
         finally:
             os.unlink(proxy.name)
 
+    @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
     @doc.response(403, 'Permission denied')
     @doc.response(404, 'The SURL does not exist')
@@ -325,6 +327,7 @@ class DatamanagementController(BaseController):
         finally:
             os.unlink(proxy.name)
 
+    @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
     @doc.response(403, 'Permission denied')
     @doc.response(404, 'The SURL does not exist')
