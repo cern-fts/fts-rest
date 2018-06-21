@@ -1,3 +1,36 @@
+/usr/bin/python2.7 /opt/pycharm-community-2018.1/helpers/pydev/pydevd.py --multiproc --qt-support=auto --client 127.0.0.1 --port 33255 --file /home/aris/projects/fts-rest/docs/generate-api-md.py
+pydev debugger: process 24104 is connecting
+
+Connected to pydev debugger (build 181.4203.547)
+Using SQLAlchemy 1.2.7
+Found controller banning
+Recurse for controllers into /home/aris/projects/fts-rest/src/fts3rest/fts3rest/controllers/config
+Found controller config/audit
+Found controller config/authz
+Found controller config/se
+Found controller config/cloud
+Found controller config/links
+Found controller config/activities
+Found controller config/global
+Found controller config/drain
+Found controller config/shares
+Found controller cloudStorage
+Found controller files
+Found controller error
+Found controller api
+No module named CSdropbox
+Found controller datamanagement
+Could not get controller CSInterface
+Could not get controller CSdropbox
+Found controller autocomplete
+Found controller archive
+Found controller delegation
+Found controller optimizer
+Found controller jobs
+Found controller oauth2
+Found controller serverstatus
+config not found in controllers
+content not found in controllers
 API
 ===
 This document has been generated automatically
@@ -72,14 +105,14 @@ Just give the operations that can be performed
 Just give the operations that can be performed
 
 ### Autocomplete API
-#### GET /autocomplete/source
-Autocomplete source SE
+#### GET /autocomplete/dn
+Autocomplete for users' dn
 
 ##### Query arguments
 
-|Name|Type  |Required|Description                    |
-|----|------|--------|-------------------------------|
-|term|string|False   |Beginning of the source storage|
+|Name|Type  |Required|Description        |
+|----|------|--------|-------------------|
+|term|string|False   |Beginning of the DN|
 
 #### GET /autocomplete/vo
 Autocomplete VO
@@ -99,6 +132,15 @@ Autocomplete a storage, regardless of it being source or destination
 |----|------|--------|------------------------------------|
 |term|string|False   |Beginning of the destination storage|
 
+#### GET /autocomplete/source
+Autocomplete source SE
+
+##### Query arguments
+
+|Name|Type  |Required|Description                    |
+|----|------|--------|-------------------------------|
+|term|string|False   |Beginning of the source storage|
+
 #### GET /autocomplete/destination
 Autocomplete destination SE
 
@@ -107,24 +149,6 @@ Autocomplete destination SE
 |Name|Type  |Required|Description                         |
 |----|------|--------|------------------------------------|
 |term|string|False   |Beginning of the destination storage|
-
-#### GET /autocomplete/dn
-Autocomplete for users' dn
-
-##### Query arguments
-
-|Name|Type  |Required|Description        |
-|----|------|--------|-------------------|
-|term|string|False   |Beginning of the DN|
-
-#### GET /autocomplete/groupname
-Autocomplete group names
-
-##### Query arguments
-
-|Name|Type  |Required|Description                |
-|----|------|--------|---------------------------|
-|term|string|False   |Beginning of the group name|
 
 ### Banning API
 #### POST /ban/se
@@ -530,34 +554,6 @@ Add a user or a VO credentials to the storage
 |----|---------------------------------------------------|
 |403 |The user is not allowed to modify the configuration|
 
-### Operations on the config audit
-#### POST /config/debug
-Sets the debug level status for a storage
-
-##### Responses
-
-|Code|Description                                        |
-|----|---------------------------------------------------|
-|403 |The user is not allowed to change the configuration|
-
-#### DELETE /config/debug
-Removes a debug entry
-
-##### Responses
-
-|Code|Description                                        |
-|----|---------------------------------------------------|
-|403 |The user is not allowed to change the configuration|
-
-#### GET /config/debug
-Return the debug settings
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-
 ### Drain operations
 #### POST /config/drain
 Set the drain status of a server
@@ -568,25 +564,6 @@ Set the drain status of a server
 |----|---------------------------------------------------|
 |403 |The user is not allowed to change the configuration|
 |400 |Bad request. Invalid host or invalid drain value   |
-
-### Configure fixed limits
-#### POST /config/fixed
-Fixes the number of actives for a pair
-
-##### Responses
-
-|Code|Description                                        |
-|----|---------------------------------------------------|
-|403 |The user is not allowed to modify the configuration|
-
-#### GET /config/fixed
-Gets the fixed pairs
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
 
 ### Server-wide configuration
 #### POST /config/global
@@ -713,65 +690,6 @@ Delete the configuration for a given SE
 |----|---------------------------------------------------|
 |403 |The user is not allowed to modify the configuration|
 
-### Storage group configuration
-#### GET /config/groups/{group_name}
-Get the members of a group
-
-##### Path arguments
-
-|Name      |Type  |
-|----------|------|
-|group_name|string|
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|404 |The group does not exist                          |
-|403 |The user is not allowed to query the configuration|
-
-#### DELETE /config/groups/{group_name}
-Delete a member from a group. If the group is left empty, the group will be removed
-
-##### Path arguments
-
-|Name      |Type  |
-|----------|------|
-|group_name|string|
-
-##### Query arguments
-
-|Name  |Type  |Required|Description                                         |
-|------|------|--------|----------------------------------------------------|
-|member|string|False   |Storage to remove. All group if left empty or absent|
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|404 |The group or the member does not exist            |
-|403 |The user is not allowed to query the configuration|
-|204 |Member removed                                    |
-
-#### POST /config/groups
-Add a SE to a group
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-|400 |Invalid values passed in the request              |
-
-#### GET /config/groups
-Get a list with all group names
-
-##### Responses
-
-|Code|Description                                       |
-|----|--------------------------------------------------|
-|403 |The user is not allowed to query the configuration|
-
 ### VO Share configuration
 #### POST /config/shares
 Add or modify a share
@@ -804,20 +722,6 @@ Delete a share
 #### POST /dm/unlink
 Remove a remote file
 
-##### Responses
-
-|Code|Description                                          |
-|----|-----------------------------------------------------|
-|500 |Internal error                                       |
-|503 |Try again later                                      |
-|419 |The credentials need to be re-delegated              |
-|404 |The SURL does not exist                              |
-|403 |Permission denied                                    |
-|400 |Protocol not supported OR the SURL is not a directory|
-
-#### POST /dm/rename
-Stat a remote file
-
 ##### Query arguments
 
 |Name|Type  |Required|Description|
@@ -835,8 +739,35 @@ Stat a remote file
 |403 |Permission denied                                    |
 |400 |Protocol not supported OR the SURL is not a directory|
 
+#### POST /dm/rename
+Stat a remote file
+
+##### Query arguments
+
+|Name|Type  |Required|Description  |
+|----|------|--------|-------------|
+|new |string|True    |New SURL name|
+|old |string|True    |Old SURL name|
+
+##### Responses
+
+|Code|Description                                          |
+|----|-----------------------------------------------------|
+|500 |Internal error                                       |
+|503 |Try again later                                      |
+|419 |The credentials need to be re-delegated              |
+|404 |The SURL does not exist                              |
+|403 |Permission denied                                    |
+|400 |Protocol not supported OR the SURL is not a directory|
+
 #### POST /dm/rmdir
 Remove a remote folder
+
+##### Query arguments
+
+|Name|Type  |Required|Description|
+|----|------|--------|-----------|
+|surl|string|True    |Remote SURL|
 
 ##### Responses
 
@@ -1364,7 +1295,7 @@ Array of [File](#file)
 Cancel all files by the given vo_name
 
 ##### Returns
-File final states (array if multiple files were given)
+Affected transfers, dm and jobs count
 
 ##### Path arguments
 
@@ -1544,6 +1475,21 @@ Current user revokes all tokens for a given application
 |client_id|string|
 
 ### Optimizer logging tables
+#### GET /optimizer/current
+Returns the current number of actives and streams
+
+##### Returns
+Array of [Optimizer](#optimizer)
+
+#### POST /optimizer/current
+Set the number of actives and streams
+
+##### Responses
+
+|Code|Description                         |
+|----|------------------------------------|
+|400 |Invalid values passed in the request|
+
 #### GET /optimizer/evolution
 Returns the optimizer evolution
 
@@ -1560,73 +1506,36 @@ boolean
 #### GET /status/hosts
 What are the hosts doing
 
-### Snapshot API
-#### GET /snapshot
-Get the current status of the server
-
-##### Query arguments
-
-|Name     |Type  |Required|Description             |
-|---------|------|--------|------------------------|
-|dest_se  |string|False   |Filter by destination SE|
-|source_se|string|False   |Filter by source SE     |
-|vo_name  |string|False   |Filter by VO name       |
-
 Models
 ------
-### ArchivedFile
+### Optimizer
 
-|Field               |Type    |
-|--------------------|--------|
-|symbolicname        |string  |
-|tx_duration         |float   |
-|pid                 |integer |
-|num_failures        |integer |
-|checksum            |string  |
-|retry               |integer |
-|job_id              |string  |
-|job_finished        |dateTime|
-|staging_start       |dateTime|
-|filesize            |float   |
-|source_se           |string  |
-|file_state          |string  |
-|start_time          |dateTime|
-|internal_file_params|string  |
-|reason              |string  |
-|file_id             |integer |
-|error_phase         |string  |
-|source_surl         |string  |
-|bringonline_token   |string  |
-|selection_strategy  |string  |
-|dest_surl           |string  |
-|file_index          |integer |
-|finish_time         |dateTime|
-|dest_se             |string  |
-|staging_finished    |dateTime|
-|user_filesize       |float   |
-|file_metadata       |string  |
-|error_scope         |string  |
-|transferhost        |string  |
-|throughput          |float   |
-|current_failures    |integer |
-|agent_dn            |string  |
-|reason_class        |string  |
+|Field    |Type    |
+|---------|--------|
+|dest_se  |string  |
+|datetime |dateTime|
+|nostreams|integer |
+|active   |integer |
+|ema      |float   |
+|source_se|string  |
 
 ### OptimizerEvolution
 
-|Field           |Type    |
-|----------------|--------|
-|dest_se         |string  |
-|success         |float   |
-|actual_active   |integer |
-|throughput_limit|float   |
-|datetime        |dateTime|
-|queue_size      |integer |
-|throughput      |float   |
-|rationale       |string  |
-|active          |integer |
-|diff            |integer |
-|source_se       |string  |
+|Field          |Type    |
+|---------------|--------|
+|ema            |float   |
+|success        |float   |
+|actual_active  |integer |
+|diff           |integer |
+|datetime       |dateTime|
+|queue_size     |integer |
+|throughput     |float   |
+|rationale      |string  |
+|filesize_stddev|float   |
+|active         |integer |
+|dest_se        |string  |
+|source_se      |string  |
+|filesize_avg   |float   |
 
 ### FileRetryLog
 
@@ -1681,121 +1590,102 @@ Models
 
 ### ArchivedJob
 
-|Field                   |Type    |
-|------------------------|--------|
-|cred_id                 |string  |
-|user_dn                 |string  |
-|voms_cred               |string  |
-|retry                   |integer |
-|job_id                  |string  |
-|cancel_job              |boolean |
-|job_state               |string  |
-|submit_host             |string  |
-|priority                |integer |
-|source_space_token      |string  |
-|reuse_job               |boolean |
-|job_metadata            |string  |
-|source_se               |string  |
-|user_cred               |string  |
-|max_time_in_queue       |integer |
-|files                   |array   |
-|source_token_description|string  |
-|job_params              |string  |
-|bring_online            |integer |
-|reason                  |string  |
-|space_token             |string  |
-|submit_time             |dateTime|
-|dest_se                 |string  |
-|internal_job_params     |string  |
-|finish_time             |dateTime|
-|verify_checksum         |boolean |
-|overwrite_flag          |boolean |
-|copy_pin_lifetime       |integer |
-|agent_dn                |string  |
-|job_finished            |dateTime|
-|vo_name                 |string  |
+|Field              |Type    |
+|-------------------|--------|
+|cred_id            |string  |
+|user_dn            |string  |
+|retry              |integer |
+|job_id             |string  |
+|cancel_job         |boolean |
+|job_state          |string  |
+|submit_host        |string  |
+|priority           |integer |
+|source_space_token |string  |
+|reuse_job          |boolean |
+|job_metadata       |string  |
+|source_se          |string  |
+|max_time_in_queue  |integer |
+|files              |array   |
+|job_params         |string  |
+|bring_online       |integer |
+|reason             |string  |
+|space_token        |string  |
+|submit_time        |dateTime|
+|dest_se            |string  |
+|internal_job_params|string  |
+|vo_name            |string  |
+|copy_pin_lifetime  |integer |
+|verify_checksum    |string  |
+|job_finished       |dateTime|
+|overwrite_flag     |boolean |
 
 ### Job
 
-|Field                   |Type    |
-|------------------------|--------|
-|cred_id                 |string  |
-|user_dn                 |string  |
-|voms_cred               |string  |
-|retry                   |integer |
-|job_id                  |string  |
-|cancel_job              |boolean |
-|job_state               |string  |
-|submit_host             |string  |
-|priority                |integer |
-|source_space_token      |string  |
-|reuse_job               |string  |
-|job_metadata            |string  |
-|source_se               |string  |
-|user_cred               |string  |
-|max_time_in_queue       |integer |
-|files                   |array   |
-|dm                      |array   |
-|source_token_description|string  |
-|job_params              |string  |
-|bring_online            |integer |
-|reason                  |string  |
-|space_token             |string  |
-|submit_time             |dateTime|
-|retry_delay             |integer |
-|dest_se                 |string  |
-|internal_job_params     |string  |
-|finish_time             |dateTime|
-|verify_checksum         |string  |
-|overwrite_flag          |boolean |
-|copy_pin_lifetime       |integer |
-|agent_dn                |string  |
-|job_finished            |dateTime|
-|vo_name                 |string  |
+|Field              |Type    |
+|-------------------|--------|
+|cred_id            |string  |
+|user_dn            |string  |
+|job_type           |string  |
+|retry              |integer |
+|job_id             |string  |
+|cancel_job         |boolean |
+|job_state          |string  |
+|submit_host        |string  |
+|priority           |integer |
+|source_space_token |string  |
+|max_time_in_queue  |integer |
+|job_metadata       |string  |
+|source_se          |string  |
+|files              |array   |
+|dm                 |array   |
+|bring_online       |integer |
+|reason             |string  |
+|space_token        |string  |
+|submit_time        |dateTime|
+|retry_delay        |integer |
+|dest_se            |string  |
+|internal_job_params|string  |
+|vo_name            |string  |
+|copy_pin_lifetime  |integer |
+|verify_checksum    |string  |
+|job_finished       |dateTime|
+|overwrite_flag     |boolean |
 
 ### File
 
 |Field               |Type    |
 |--------------------|--------|
-|symbolicname        |string  |
+|transfer_host       |string  |
 |tx_duration         |float   |
 |pid                 |integer |
 |hashed_id           |integer |
-|checksum            |string  |
-|num_failures        |integer |
 |log_debug           |integer |
 |retry               |integer |
 |job_id              |string  |
-|job_finished        |dateTime|
-|wait_timestamp      |dateTime|
 |staging_start       |dateTime|
-|filesize            |float   |
+|filesize            |integer |
 |source_se           |string  |
 |file_state          |string  |
 |start_time          |dateTime|
-|file_index          |integer |
+|internal_file_params|string  |
 |reason              |string  |
-|wait_timeout        |integer |
-|file_id             |integer |
-|error_phase         |string  |
+|file_id             |string  |
+|staging_host        |string  |
+|dest_surl           |string  |
 |source_surl         |string  |
 |bringonline_token   |string  |
 |selection_strategy  |string  |
 |retries             |array   |
-|dest_surl           |string  |
-|internal_file_params|string  |
-|finish_time         |dateTime|
 |dest_se             |string  |
+|file_index          |integer |
+|finish_time         |dateTime|
+|checksum            |string  |
 |staging_finished    |dateTime|
-|user_filesize       |float   |
+|user_filesize       |integer |
 |file_metadata       |string  |
-|error_scope         |string  |
-|transferhost        |string  |
 |throughput          |float   |
 |activity            |string  |
 |log_file            |string  |
-|agent_dn            |string  |
-|reason_class        |string  |
 |vo_name             |string  |
 |recoverable         |string  |
 
@@ -1808,3 +1698,38 @@ Models
 |config  |string  |
 |datetime|dateTime|
 
+### ArchivedFile
+
+|Field               |Type    |
+|--------------------|--------|
+|tx_duration         |float   |
+|pid                 |integer |
+|dest_surl           |string  |
+|retry               |integer |
+|job_id              |string  |
+|job_finished        |dateTime|
+|staging_start       |dateTime|
+|filesize            |integer |
+|source_se           |string  |
+|file_state          |string  |
+|start_time          |dateTime|
+|file_index          |integer |
+|reason              |string  |
+|file_id             |string  |
+|staging_host        |string  |
+|user_filesize       |integer |
+|source_surl         |string  |
+|bringonline_token   |string  |
+|selection_strategy  |string  |
+|dest_se             |string  |
+|internal_file_params|string  |
+|finish_time         |dateTime|
+|checksum            |string  |
+|staging_finished    |dateTime|
+|file_metadata       |string  |
+|transferhost        |string  |
+|throughput          |float   |
+|current_failures    |integer |
+
+
+Process finished with exit code 0
