@@ -27,7 +27,7 @@ except:
 
 log = logging.getLogger(__name__)
 
-def submit_state_change(job, transfer):
+def submit_state_change(job, transfer, transfer_state):
     """
     Writes a state change message to the dirq
     """
@@ -49,7 +49,7 @@ def submit_state_change(job, transfer):
         job_id=job['job_id'],
         file_id=transfer['file_id'],
         job_state=job['job_state'],
-        file_state=transfer['file_state'],
+        file_state=transfer_state,
         retry_counter=0,
         retry_max=0,
         timestamp=time.time()*1000,
