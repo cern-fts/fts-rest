@@ -61,20 +61,25 @@ def _get_valid_surl():
     return str(surl)
 
 
-def _get_proxy():
+def _get_credentials():
     user = request.environ['fts3.User.Credentials']
     cred = Session.query(Credential).get((user.delegation_id, user.user_dn))
     if not cred:
         raise HTTPAuthenticationTimeout('No delegated proxy available')
 
-    if cred.termination_time <= datetime.utcnow():
-        raise HTTPAuthenticationTimeout('Delegated proxy expired (%s)' % user.delegation_id)
+    if "oauth2" != user.method:
+        if cred.termination_time <= datetime.utcnow():
+            raise HTTPAuthenticationTimeout('Delegated proxy expired (%s)' % user.delegation_id)
 
-    tmp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.pem', prefix='rest-proxy-', delete=False)
-    tmp_file.write(cred.proxy)
-    tmp_file.flush()
-    os.fsync(tmp_file.fileno())
-    return tmp_file
+        tmp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.pem', prefix='rest-proxy-', delete=False)
+        tmp_file.write(cred.proxy)
+        tmp_file.flush()
+        os.fsync(tmp_file.fileno())
+        return tmp_file
+    else:
+        if cred.termination_time <= datetime.utcnow():
+            raise HTTPAuthenticationTimeout('Token with delegationId (%s), has expired' % user.delegation_id)
+        return cred.proxy
 
 
 def _http_status_from_errno(err_code):
@@ -208,15 +213,17 @@ class DatamanagementController(BaseController):
         List the content of a remote directory
         """
         surl = _get_valid_surl()
-        proxy = _get_proxy()
+        cred = _get_credentials()
 
-        m = Gfal2Wrapper(proxy, _list_impl)
+        m = Gfal2Wrapper(cred, _list_impl)
         try:
             return m(surl)
         except Gfal2Error, e:
             _http_error_from_gfal2_error(e)
         finally:
-            os.unlink(proxy.name)
+            # Delete the temp file if we are using a certificate based auth method
+            if not isinstance(cred, basestring):
+                os.unlink(cred.name)
 
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
@@ -232,15 +239,17 @@ class DatamanagementController(BaseController):
         Stat a remote file
         """
         surl = _get_valid_surl()
-        proxy = _get_proxy()
+        cred = _get_credentials()
 
-        m = Gfal2Wrapper(proxy, _stat_impl)
+        m = Gfal2Wrapper(cred, _stat_impl)
         try:
             return m(surl)
         except Gfal2Error, e:
             _http_error_from_gfal2_error(e)
         finally:
-            os.unlink(proxy.name)
+            # Delete the temp file if we are using a certificate based auth method
+            if not isinstance(cred, basestring):
+                os.unlink(cred.name)
 
     @doc.query_arg('old', 'Old SURL name', required=True)
     @doc.query_arg('new', 'New SURL name', required=True)
@@ -256,7 +265,7 @@ class DatamanagementController(BaseController):
         """
         Stat a remote file
         """
-        proxy = _get_proxy()
+        cred = _get_credentials()
 
         try:
 
@@ -270,7 +279,7 @@ class DatamanagementController(BaseController):
 
             rename_dict = json.loads(unencoded_body)
 
-            m = Gfal2Wrapper(proxy, _rename_impl)
+            m = Gfal2Wrapper(cred, _rename_impl)
             try:
                 return m(rename_dict)
             except Gfal2Error, e:
@@ -283,7 +292,9 @@ class DatamanagementController(BaseController):
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
         finally:
-            os.unlink(proxy.name)
+            # Delete the temp file if we are using a certificate based auth method
+            if not isinstance(cred, basestring):
+                os.unlink(cred.name)
 
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
@@ -298,7 +309,7 @@ class DatamanagementController(BaseController):
         """
         Remove a remote file
         """
-        proxy = _get_proxy()
+        cred = _get_credentials()
 
         try:
 
@@ -312,7 +323,7 @@ class DatamanagementController(BaseController):
 
             unlink_dict = json.loads(unencoded_body)
 
-            m = Gfal2Wrapper(proxy, _unlink_impl)
+            m = Gfal2Wrapper(cred, _unlink_impl)
             try:
                 return m(unlink_dict)
             except Gfal2Error, e:
@@ -325,7 +336,9 @@ class DatamanagementController(BaseController):
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
         finally:
-            os.unlink(proxy.name)
+            # Delete the temp file if we are using a certificate based auth method
+            if not isinstance(cred, basestring):
+                os.unlink(cred.name)
 
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
@@ -340,7 +353,7 @@ class DatamanagementController(BaseController):
         """
         Remove a remote folder
         """
-        proxy = _get_proxy()
+        cred = _get_credentials()
 
         try:
             if request.method == 'POST':
@@ -353,7 +366,7 @@ class DatamanagementController(BaseController):
 
             rmdir_dict = json.loads(unencoded_body)
 
-            m = Gfal2Wrapper(proxy, _rmdir_impl)
+            m = Gfal2Wrapper(cred, _rmdir_impl)
             try:
                 return m(rmdir_dict)
             except Gfal2Error, e:
@@ -366,7 +379,9 @@ class DatamanagementController(BaseController):
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
         finally:
-            os.unlink(proxy.name)
+            # Delete the temp file if we are using a certificate based auth method
+            if not isinstance(cred, basestring):
+                os.unlink(cred.name)
 
     @doc.query_arg('surl', 'Remote SURL', required=True)
     @doc.response(400, 'Protocol not supported OR the SURL is not a directory')
@@ -381,7 +396,7 @@ class DatamanagementController(BaseController):
         """
         Create a remote file
         """
-        proxy = _get_proxy()
+        cred = _get_credentials()
 
         try:
             if request.method == 'POST':
@@ -393,7 +408,7 @@ class DatamanagementController(BaseController):
                 raise HTTPBadRequest('Unsupported method %s' % request.method)
 
             mkdir_dict = json.loads(unencoded_body)
-            m = Gfal2Wrapper(proxy, _mkdir_impl)
+            m = Gfal2Wrapper(cred, _mkdir_impl)
             try:
                 return m(mkdir_dict)
             except Gfal2Error, e:
@@ -405,4 +420,6 @@ class DatamanagementController(BaseController):
         except KeyError, e:
             raise HTTPBadRequest('Missing parameter: %s' % str(e))
         finally:
-            os.unlink(proxy.name)
+            #Delete the temp file if we are using a certificate based auth method
+            if not isinstance(cred, basestring):
+                os.unlink(cred.name)
