@@ -508,7 +508,7 @@ class JobBuilder(object):
             self.job['job_type'] = 'N'
         
         auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false')
-        log.debug("AutoSessionReuse is "+auto_session_reuse+ " job_type is" + str(job_type))
+        log.debug("AutoSessionReuse is "+ str(auto_session_reuse) + " job_type is" + str(job_type))
         max_reuse_files = pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000)
         max_size_small_file = pylons.config.get('fts3.AutoSessionReuseMaxSmallFileSize', 104857600) #100MB
         max_size_big_file = pylons.config.get('fts3.AutoSessionReuseMaxBigFileSize', 1073741824) #1GB
