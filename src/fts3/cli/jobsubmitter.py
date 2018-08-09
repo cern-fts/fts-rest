@@ -139,6 +139,8 @@ class JobSubmitter(Base):
                                    help='force ipv4')
         self.opt_parser.add_option('--ipv6', dest='ipv6', default=False, action='store_true',
                                    help='force ipv6')
+        self.opt_parser.add_option('--target-qos', dest='target_qos', type='string', default=None,
+                                   help='define the target QoS for this transfer for CDMI endpoints')
 
     def validate(self):
         self.checksum = None
@@ -225,7 +227,8 @@ class JobSubmitter(Base):
             credential=self.options.cloud_cred,
             nostreams=self.options.nostreams,
             ipv4=self.options.ipv4,
-            ipv6=self.options.ipv6
+            ipv6=self.options.ipv6,
+            target_qos=self.options.target_qos
         )
 
         if self.options.json:
@@ -236,7 +239,7 @@ class JobSubmitter(Base):
         if job_id and self.options.blocking:
             inquirer = Inquirer(context)
             job = inquirer.get_job_status(job_id)
-            while job['job_state'] in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE']:
+            while job['job_state'] in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE', 'QOS_TRANSITION']:
                 self.logger.info("Job in state %s" % job['job_state'])
                 time.sleep(self.options.poll_interval)
                 job = inquirer.get_job_status(job_id)
