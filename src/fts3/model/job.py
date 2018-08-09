@@ -22,7 +22,7 @@ from sqlalchemy.orm import relation, backref
 from base import Base, Flag, TernaryFlag, Json
 
 
-JobActiveStates = ['STAGING', 'SUBMITTED', 'READY', 'ACTIVE', 'DELETE']
+JobActiveStates = ['STAGING', 'SUBMITTED', 'READY', 'ACTIVE', 'DELETE', 'QOS_TRANSITION']
 JobTerminalStates = ['FINISHED', 'FAILED', 'FINISHEDDIRTY', 'CANCELED']
 
 
@@ -52,6 +52,7 @@ class Job(Base):
     verify_checksum          = Column(String(1),
                                       name='checksum_method')
     bring_online             = Column(Integer)
+    target_qos               = Column(String(255))
     job_metadata             = Column(Json(255))
     retry                    = Column(Integer)
     retry_delay              = Column(Integer, default=0)
@@ -96,6 +97,7 @@ class ArchivedJob(Base):
     verify_checksum          = Column(String(1),
                                       name='checksum_method')
     bring_online             = Column(Integer)
+    target_qos               = Column(String(255))
     job_metadata             = Column(Json(255))
     retry                    = Column(Integer)
 

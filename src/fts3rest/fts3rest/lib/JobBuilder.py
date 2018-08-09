@@ -352,6 +352,8 @@ class JobBuilder(object):
         # Create one File entry per matching pair
         if self.is_bringonline:
             initial_file_state = 'STAGING'
+        elif self.is_qos_cdmi_transfer:
+            initial_file_state = 'QOS_TRANSITION'
         else:
             initial_file_state = 'SUBMITTED'
 
@@ -409,8 +411,14 @@ class JobBuilder(object):
                 job_type = 'N'
         log.debug("job type is " + str(job_type))
         self.is_bringonline = self.params['copy_pin_lifetime'] > 0 or self.params['bring_online'] > 0
+        self.is_qos_cdmi_transfer = self.params['target_qos'] is not None
 
-        job_initial_state = 'STAGING' if self.is_bringonline else 'SUBMITTED'
+        if self.is_bringonline:
+            job_initial_state = 'STAGING'
+        elif self.is_qos_cdmi_transfer:
+            job_initial_state = 'QOS_TRANSITION'
+        else:
+            job_initial_state = 'SUBMITTED'
 
         max_time_in_queue = _seconds_from_value(self.params.get('max_time_in_queue', None))
         expiration_time = None
@@ -439,7 +447,8 @@ class JobBuilder(object):
             bring_online=self.params['bring_online'],
             job_metadata=self.params['job_metadata'],
             internal_job_params=self._build_internal_job_params(),
-            max_time_in_queue=expiration_time
+            max_time_in_queue=expiration_time,
+            target_qos=self.params['target_qos']
         )
 
         if 'credential' in self.params:
