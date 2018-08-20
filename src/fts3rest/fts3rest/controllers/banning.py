@@ -353,25 +353,16 @@ class BanningController(BaseController):
         storage = request.params.get('storage', None)
         if not storage:
             raise HTTPBadRequest('Missing storage parameter')
-        vo_name = request.params.get('vo_name', '*')
-        if vo_name is None:
-            raise HTTPBadRequest('vo_name can not be null')
-
-        banned = Session.query(BannedSE).get((storage, vo_name))
         job_ids = []
-        if banned:
-            try:
-                Session.delete(banned)
-                job_ids= _reenter_queue(storage, vo_name)
-                Session.commit()
-            except Exception:
-                Session.rollback()
-                raise
-            log.warn("Storage %s unbanned" % storage)
-        else:
-            log.warn("Unban of storage %s without effect" % storage)
-
-        audit_configuration('unban-se', "Storage %s for %s unbanned" % (storage, vo_name))
+        try:
+            Session.query(BannedSE).filter(BannedSE.se==storage).delete()
+            job_ids= _reenter_queue(storage, '*')
+            Session.commit()
+        except Exception:
+            Session.rollback()
+            raise HTTPBadRequest('Storage not found')
+        log.warn("Storage %s unbanned" % storage)
+        audit_configuration('unban-se', "Storage %s unbanned" % storage)
         start_response('204 No Content', [])
         return job_ids
 
