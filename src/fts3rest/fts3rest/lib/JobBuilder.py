@@ -411,7 +411,11 @@ class JobBuilder(object):
                 job_type = 'N'
         log.debug("job type is " + str(job_type))
         self.is_bringonline = self.params['copy_pin_lifetime'] > 0 or self.params['bring_online'] > 0
+
+        print "Type of target_qos: " + str(type(self.params['target_qos']))
+        print self.params['target_qos']
         self.is_qos_cdmi_transfer = self.params['target_qos'] is not None
+        print "Assigned target_qos"
 
         if self.is_bringonline:
             job_initial_state = 'STAGING'
@@ -450,6 +454,7 @@ class JobBuilder(object):
             max_time_in_queue=expiration_time,
             target_qos=self.params['target_qos']
         )
+        print "Job params assigned successfully"
 
         if 'credential' in self.params:
             self.job['user_cred'] = self.params['credential']
