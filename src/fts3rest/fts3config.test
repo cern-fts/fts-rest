@@ -14,6 +14,9 @@ ClientSecret=Rd1-h8I8cQ_DK6tfaQboC1xKEiwCg2euBb-w4lmvLaiWsgZv9-x7g7yGleYvbp5jtLu
 
 MessagingDirectory=/tmp/rest-msgs
 HeartBeatInterval=0
+TokenRefreshDaemonIntervalInSeconds=1800
+# Timedelta that the TokenRefresh daemon will use to check if another fts-rest is instance is running on the same machine
+IAMTokenRefreshTimedeltaInSeconds=800
 
 [roles]
 Public=vo:transfer;all:datamanagement
