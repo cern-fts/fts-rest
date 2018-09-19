@@ -180,7 +180,7 @@ class Context(object):
             query = '&'.join(map(lambda (k, v): "%s=%s" % (k, urllib.quote(v)), args.iteritems()))
             path += '?' + query
         return self._requester.method('GET',
-                                      "%s%s" % (self.endpoint, path))
+                                      "%s/%s" % (self.endpoint, path))
 
     def put(self, path, body):
         return self._requester.method('PUT',
@@ -195,6 +195,6 @@ class Context(object):
         if not isinstance(body, str) and not isinstance(body, unicode):
             body = json.dumps(body)
         return self._requester.method('POST',
-                                      "%s%s" % (self.endpoint, path),
+                                      "%s/%s" % (self.endpoint, path),
                                       body,
                                       headers={'Content-Type': 'application/json'})
