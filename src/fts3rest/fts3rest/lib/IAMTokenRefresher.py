@@ -70,17 +70,16 @@ class IAMTokenRefresher(Thread):
 
         # verify that no other fts-rest is running on this machine so as to make sure that no two token-refreshers run simultaneously
         host = Session.query(Host).filter(Host.hostname == socket.getfqdn()).first()
-
-        if (datetime.utcnow() - host.beat) > timedelta(seconds=int(self.config.get('fts3.IAMTokenRefreshTimedeltaInSeconds',800))):
+        #write on the hostfile instead of checking the host
+        if not host or (datetime.utcnow() - host.beat) > timedelta(seconds=int(self.config.get('fts3.IAMTokenRefreshTimedeltaInSeconds',800))):
             while self.interval:
                 credentials = Session.query(Credential).filter(Credential.proxy.notilike("%CERTIFICATE%")).all()
 
                 for c in credentials:
-                    if c.expired():
-                        try:
-                            c = self._refresh_token(c)
-                            Session.merge(c)
-                            Session.commit()
-                        except Exception, e:
-                            log.warning("Failed to refresh token for dn: %s because: %s" % (str(c.dn), str(e)))
+                    try:
+                        c = self._refresh_token(c)
+                        Session.merge(c)
+                        Session.commit()
+                    except Exception, e:
+                        log.warning("Failed to refresh token for dn: %s because: %s" % (str(c.dn), str(e)))
                 time.sleep(self.interval)
