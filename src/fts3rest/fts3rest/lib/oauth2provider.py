@@ -172,7 +172,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
     def validate_access_token(self, access_token, authorization):
         authorization.is_valid = False
 
-        credential = Session.query(Credential).filter(Credential.proxy.split(':')[0] == access_token).first()
+        credential = Session.query(Credential).filter(Credential.proxy == access_token).first()
         if not credential or credential.expired():
             # Delete the db entry in case of credential expired before validating the new one
             if credential:
