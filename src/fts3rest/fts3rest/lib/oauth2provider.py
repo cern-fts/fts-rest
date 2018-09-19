@@ -172,7 +172,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
     def validate_access_token(self, access_token, authorization):
         authorization.is_valid = False
 
-        credential = Session.query(Credential).filter(Credential.proxy == access_token).first()
+        credential = Session.query(Credential).filter(Credential.proxy.split(':')[0] == access_token).first()
         if not credential or credential.expired():
             # Delete the db entry in case of credential expired before validating the new one
             if credential:
@@ -180,7 +180,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
             requestor = Request(None, None)  # VERIFY:TRUE
             body = {'token': access_token}
-            log.debug("About to contact IAM server")
+            log.debug("About to contact IAM server in order to verify the token")
             credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProvider'], body=body,
                                                    user=self.config['fts3.ClientId'],
                                                    passw=self.config['fts3.ClientSecret']))
@@ -194,10 +194,23 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
             log.debug("Credential is as follows: " + str(credential))
 
+            # Request a refresh token based on this access token through the token-exchange grant-type
+            body = {'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange',
+                    'subject_token_type': 'urn:ietf:params:oauth:token-type:access_token',
+                    'subject_token': access_token,
+                    'scope': 'offline_access openid profile email',
+                    'audience': self.config['fts3.ClientId']}
+
+            refresh_credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'], body=body,
+                                                            user=self.config['fts3.ClientId'],
+                                                            passw=self.config['fts3.ClientSecret']))
+
+            log.debug("Refresh credential is as follows: " + str(refresh_credential))
+
             credential = Credential(
                 dlg_id=dlg_id,
                 dn=credential['sub'],
-                proxy=access_token,
+                proxy=access_token + ':' + refresh_credential['refresh_token'],
                 voms_attrs=self._generate_voms_attrs(credential),
                 termination_time=datetime.utcfromtimestamp(credential['exp'])
             )
@@ -206,7 +219,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
         authorization.is_oauth = True
         authorization.expires_in = credential.termination_time - datetime.utcnow()
-        authorization.token = credential.proxy
+        authorization.token = credential.proxy.split(':')[0]
         authorization.dlg_id = credential.dlg_id
         #authorization.scope = token.scope
         if authorization.expires_in > timedelta(seconds=0):
