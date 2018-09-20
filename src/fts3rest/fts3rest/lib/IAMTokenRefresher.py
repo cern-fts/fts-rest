@@ -34,11 +34,12 @@ class IAMTokenRefresher(Thread):
     Keeps running on the background updating the db marking the process as alive
     """
 
-    def __init__(self, interval, config):
+    def __init__(self, tag, interval, config):
         """
         Constructor
         """
         Thread.__init__(self)
+        self.tag = tag
         self.interval = interval
         self.daemon = True
         self.config = config
@@ -68,11 +69,26 @@ class IAMTokenRefresher(Thread):
         Thread logic
         """
 
-        # verify that no other fts-rest is running on this machine so as to make sure that no two token-refreshers run simultaneously
-        host = Session.query(Host).filter(Host.hostname == socket.getfqdn()).first()
-        #write on the hostfile instead of checking the host
-        if not host or (datetime.utcnow() - host.beat) > timedelta(seconds=int(self.config.get('fts3.IAMTokenRefreshTimedeltaInSeconds',800))):
+        # verify that no other fts-token-refresh-daemon is running on this machine so as to make sure that no two fts-token-refresh-daemons run simultaneously
+        service_name = Session.query(Host).filter(Host.service_name == self.tag).first()
+
+        if not service_name or (service_name and (datetime.utcnow() - service_name.beat) > timedelta(seconds=int(self.interval))):
+
+            host = Host(
+                hostname=socket.getfqdn(),
+                service_name=self.tag,
+            )
+
             while self.interval:
+
+                host.beat = datetime.utcnow()
+                try:
+                    Session.merge(host)
+                    Session.commit()
+                    log.debug('fts-token-refresh-daemon heartbeat')
+                except Exception, e:
+                    log.warning("Failed to update the fts-token-refresh-daemon heartbeat: %s" % str(e))
+
                 credentials = Session.query(Credential).filter(Credential.proxy.notilike("%CERTIFICATE%")).all()
 
                 for c in credentials:
