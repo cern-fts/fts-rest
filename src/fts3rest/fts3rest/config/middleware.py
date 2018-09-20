@@ -95,6 +95,6 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
 
     # Heartbeat thread
     Heartbeat('fts_rest', int(config.get('fts3.HeartBeatInterval', 60))).start()
-    IAMTokenRefresher(int(config.get('fts3.TokenRefreshDaemonIntervalInSeconds', 5)), config).start()
+    IAMTokenRefresher('fts_token_refresh_daemon', int(config.get('fts3.TokenRefreshDaemonIntervalInSeconds', 600)), config).start()
 
     return app
