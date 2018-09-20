@@ -40,7 +40,7 @@ class IAMTokenRefresher(Thread):
         """
         Thread.__init__(self)
         self.tag = tag
-        self.interval = interval
+        self.interval = 5#interval
         self.daemon = True
         self.config = config
 
@@ -64,15 +64,31 @@ class IAMTokenRefresher(Thread):
 
         return credential
 
+    def _check_if_token_should_be_refreshed(self, credential):
+        last_submitted_querry = "SELECT j.submit_time " \
+                                "FROM fts3.t_job j " \
+                                "LEFT JOIN fts3.t_credential c on j.user_dn = c.dn " \
+                                "WHERE c.dn =\'{}\' " \
+                                "ORDER BY submit_time DESC " \
+                                "LIMIT 1"
+        latest = Session.execute(last_submitted_querry.format(credential.dn)).fetchone()
+
+        if len(latest) == 0 or (datetime.utcnow() - latest[0]) < timedelta(seconds=int(
+                self.config.get('fts3.TokenRefreshTimeSinceLastTransferInSeconds', 2629743))):
+            return True
+        return False
+
     def run(self):
         """
         Thread logic
         """
 
-        # verify that no other fts-token-refresh-daemon is running on this machine so as to make sure that no two fts-token-refresh-daemons run simultaneously
+        # verify that no other fts-token-refresh-daemon is running on this machine so as
+        # to make sure that no two fts-token-refresh-daemons run simultaneously
         service_name = Session.query(Host).filter(Host.service_name == self.tag).first()
 
-        if not service_name or (service_name and (datetime.utcnow() - service_name.beat) > timedelta(seconds=int(self.interval))):
+        if not service_name or (service_name and (datetime.utcnow() - service_name.beat) > timedelta(
+                seconds=int(self.interval))):
 
             host = Host(
                 hostname=socket.getfqdn(),
@@ -93,9 +109,10 @@ class IAMTokenRefresher(Thread):
 
                 for c in credentials:
                     try:
-                        c = self._refresh_token(c)
-                        Session.merge(c)
-                        Session.commit()
+                        if self._check_if_token_should_be_refreshed(c):
+                            c = self._refresh_token(c)
+                            Session.merge(c)
+                            Session.commit()
                     except Exception, e:
                         log.warning("Failed to refresh token for dn: %s because: %s" % (str(c.dn), str(e)))
                 time.sleep(self.interval)
