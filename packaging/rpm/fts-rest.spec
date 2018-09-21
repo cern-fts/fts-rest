@@ -238,6 +238,7 @@ EOF
 %{python_sitelib}/fts3rest/lib/base.py*
 %{python_sitelib}/fts3rest/lib/gfal2_wrapper.py*
 %{python_sitelib}/fts3rest/lib/heartbeat.py*
+%{python_sitelib}/fts3rest/lib/IAMTokenRefresher.py*
 %{python_sitelib}/fts3rest/lib/helpers/
 %{python_sitelib}/fts3rest/lib/http_exceptions.py*
 %{python_sitelib}/fts3rest/lib/__init__.py*
