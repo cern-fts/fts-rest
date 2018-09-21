@@ -66,8 +66,8 @@ class IAMTokenRefresher(Thread):
 
     def _check_if_token_should_be_refreshed(self, credential):
         last_submitted_querry = "SELECT j.submit_time " \
-                                "FROM fts3.t_job j " \
-                                "LEFT JOIN fts3.t_credential c on j.user_dn = c.dn " \
+                                "FROM t_job j " \
+                                "LEFT JOIN t_credential c on j.user_dn = c.dn " \
                                 "WHERE c.dn =\'{}\' " \
                                 "ORDER BY submit_time DESC " \
                                 "LIMIT 1"
