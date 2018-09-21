@@ -198,7 +198,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             body = {'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange',
                     'subject_token_type': 'urn:ietf:params:oauth:token-type:access_token',
                     'subject_token': access_token,
-                    'scope': 'offline_access openid profile email',
+                    'scope': 'offline_access openid profile',
                     'audience': self.config['fts3.ClientId']}
 
             refresh_credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'], body=body,
