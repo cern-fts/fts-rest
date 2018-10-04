@@ -47,7 +47,7 @@ logging.getLogger('fts3.rest.client').setLevel(logging.DEBUG)
 transfer = fts3.new_transfer(source, destination,
                              checksum=checksum, filesize=None,
                              metadata='Test submission')
-job = fts3.new_job([transfer], verify_checksum=True, metadata='Test job', retry=1)
+job = fts3.new_job([transfer], verify_checksum=True, metadata='Test job', retry=1, priority =3)
 
 # Submit or just print
 if options.dry_run:
