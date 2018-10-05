@@ -43,7 +43,7 @@ def apply_pycurl_workaround():
 # On EL7, you will probably have trouble installing pycurl due to this:
 # https://github.com/pycurl/pycurl/issues/526 which has not yet released
 # so we need to install a previos version of pycurl with 
-# pip install build/pycurl
+# pip install pycurl==7.43.0.1 --global-option="--with-nss
 def apply_pycurl_workaround_on_el7():
     print "Applying workaround for pycurl in EL7"
     is_pycurl_installed = (os.system('pip list | grep pycurl &> /dev/null') == 0)
