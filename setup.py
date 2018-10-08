@@ -44,21 +44,19 @@ def apply_pycurl_workaround():
 # https://github.com/pycurl/pycurl/issues/526 which has not yet released
 # so we need to install a previos version of pycurl with 
 # pip install pycurl==7.43.0.1 --global-option="--with-nss
-def apply_pycurl_workaround_on_el7():
-    print "Applying workaround for pycurl in EL7"
-    is_pycurl_installed = (os.system('pip list | grep pycurl &> /dev/null') == 0)
-    if not is_pycurl_installed:
-         os.system('pip install pycurl%s --global-option="--with-nss"' % pycurl_ver)
+#def apply_pycurl_workaround_on_el7():
+#    print "Applying workaround for pycurl in EL7"
+#    is_pycurl_installed = (os.system('pip list | grep pycurl &> /dev/null') == 0)
+#    if not is_pycurl_installed:
+#         os.system('pip install pycurl%s --global-option="--with-nss"' % pycurl_ver)
 
 
 # Ugly hack to pick a version that compiles in SLC6
+pycurl_ver = '==7.19.0'
 dist = platform.dist()
 if dist[0] in ('redhat', 'centos'):
     apply_m2crypto_workaround()
     os_major = dist[1].split('.')[0]
-    if os_major == '7':
-        pycurl_ver = '==7.43.0.1'
-        apply_pycurl_workaround_on_el7()
     if os_major == '6':
         pycurl_ver = '==7.19.0'
         apply_pycurl_workaround()
