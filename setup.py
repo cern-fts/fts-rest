@@ -52,7 +52,7 @@ def apply_pycurl_workaround():
 
 
 # Ugly hack to pick a version that compiles in SLC6
-pycurl_ver = '==7.19.0'
+pycurl_ver = '>=7.19.0, <= 7.21.5'
 dist = platform.dist()
 if dist[0] in ('redhat', 'centos'):
     apply_m2crypto_workaround()
