@@ -4,19 +4,19 @@
 %{!?nosetest_path: %global nosetest_path "/tmp"}
 
 Name:           fts-rest
-Version:        3.8.0
+Version:        3.8.1
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
 License:        ASL 2.0
 URL:            http://fts3-service.web.cern.ch/
-# git clone https://gitlab.cern.ch/fts/fts-rest.git --depth 1 -b master fts-rest-3.8.0
-# cd fts-rest-3.8.0
-# git checkout v3.8.0
+# git clone https://gitlab.cern.ch/fts/fts-rest.git --depth 1 -b master fts-rest-3.8.1
+# cd fts-rest-3.8.1
+# git checkout v3.8.1
 # git submodule init && git submodule update
 # cd ..
-# tar vczf fts-rest-3.8.0.tar.gz --exclude-vcs fts-rest-3.8.0
+# tar vczf fts-rest-3.8.1.tar.gz --exclude-vcs fts-rest-3.8.1
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  gfal2-python
