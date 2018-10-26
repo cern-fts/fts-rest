@@ -40,7 +40,7 @@ class IAMTokenRefresher(Thread):
         """
         Thread.__init__(self)
         self.tag = tag
-        self.interval = 5#interval
+        self.interval = interval
         self.daemon = True
         self.config = config
 
