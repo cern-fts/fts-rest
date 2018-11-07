@@ -97,7 +97,7 @@ class Context(object):
             self.x509 = self.x509_list[0]
             not_after = self.x509.get_not_after()
             try:
-                not_after = not_after.get_time()
+                not_after = not_after.get_datetime()
             except:
                 # Ugly hack for Python 2.4
                 import time
