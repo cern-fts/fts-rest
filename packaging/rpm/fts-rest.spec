@@ -5,7 +5,7 @@
 
 Name:           fts-rest
 Version:        3.8.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
