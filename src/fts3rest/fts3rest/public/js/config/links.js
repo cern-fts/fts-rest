@@ -14,14 +14,12 @@
  *  limitations under the License.
 **/
 
-
 /**
  * Updates the list of link configurations
  */
 function refreshLinks()
 {
     var tbody = $("#link-config-list");
-
     $.ajax({
         url: "/config/links?",
         headers: {
@@ -34,7 +32,7 @@ function refreshLinks()
         $.each(data, function(i, link) {
             var tr = $("<tr></tr>");
 
-            var deleteBtn = $("<button class='btn btn-link' type='button' id='button_delete_link' name='lndel_"+link.symbolicname+"'></button>")
+            var deleteBtn = $("<button class='btn btn-link' type='button'></button>")
                 .append("<i class='glyphicon glyphicon-trash'></i>");
 
             deleteBtn.click(function() {
@@ -52,23 +50,67 @@ function refreshLinks()
                     tr.css("background", "#ffffff");
                 });
             });
+ 
+            var updateBtn = $("<button class='btn btn-link' type='button'></button>")
+                .append("<i class='glyphicon glyphicon-floppy-disk'></i>");  
 
             tr.append($("<td></td>").append(deleteBtn))
-              .append($("<td id='symname'></td>").text(link.symbolicname))
-              .append($("<td id='srcname'></td>").text(link.source))
-              .append($("<td></td>").text(link.destination))
-              .append($("<td></td>").text(link.nostreams))
-              .append($("<td></td>").text(link.min_active))
-              .append($("<td></td>").text(link.max_active))
-              .append($("<td></td>").text(link.optimizer_mode))
-              .append($("<td></td>").text(link.tcp_buffer_size))
+              .append($("<td></td>").append(updateBtn))
+              .append($("<td></td>")
+              .append($("<input type='text' name='symbolicname' class='form-control'/>").val(link.symbolicname)))
+              .append($("<td></td>")
+              .append($("<input type='text' name='source' class='form-control'/>").val(link.source)))
+              .append($("<td></td>")
+              .append($("<input type='text' name='destination' class='form-control'/>").val(link.destination)))
+              .append($("<td></td>")
+              .append($("<input type='number' name='nostreams' min='0' max='16' class='form-control'/>").val(link.nostreams)))
+              .append($("<td></td>")
+              .append($("<input type='number' name='min_active' class='form-control'/>").val(link.min_active)))
+              .append($("<td></td>")
+              .append($("<input type='number' name='max_active' class='form-control'/>").val(link.max_active)))
+              .append($("<td></td>")
+              .append($("<input type='number' name='optimizer_mode' min='0' max='3' class='form-control'/>").val(link.optimizer_mode)))
+              .append($("<td></td>")
+              .append($("<input type='number' name='tcp_buffer_size' class='form-control'/>").val(link.tcp_buffer_size)));
+           tbody.append(tr);
 
-            tbody.append(tr);
+                updateBtn.click(function() {
+                  //  tr.css("background", "#3CB371");
+                    var saveload = {
+                        symbolicname: tr.find("input[name='symbolicname']").val(),
+                        source: tr.find("input[name='source']").val(),
+                        destination: tr.find("input[name='destination']").val(),
+                        nostreams: tr.find("input[name='nostreams']").val(),
+                        min_active: tr.find("input[name='min_active']").val(),
+                        max_active: tr.find("input[name='max_active']").val(),
+                        optimizer_mode: tr.find("input[name='optimizer_mode']").val(),
+                        tcp_buffer_size: tr.find("input[name='tcp_buffer_size']").val()
+                    };
+                    console.log(saveload);
+                    $.ajax({
+                        url: "/config/links",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: JSON.stringify(saveload)
+                    })
+                    .done(function() {
+                        tr.find("input").prop("disabled", false)
+		   	tr.css("background", "#3CB371");
+			refreshLinks();
+
+                    })
+                    .fail(function(jqXHR) {
+                        errorMessage(jqXHR);
+                        tr.css("background", "#ffffff");
+                    });
+              });
         });
     })
     .fail(function(jqXHR) {
         errorMessage(jqXHR);
     });
+
 }
 
 
@@ -88,18 +130,18 @@ function refreshShares()
 
         $.each(data, function(i, share) {
             var tr = $("<tr></tr>");
-	    var deleteBtn = $("<a class='btn btn-link' id='button_delete_share' name='shdel_"+share.source+"_"+share.vo+"'><i class='glyphicon glyphicon-trash'></i></a>");
-	    var saveBtn = $("<a class='btn btn-link' id='button_save_share'><i class='glyphicon glyphicon-floppy-disk'></i></a>");
-	
-            tr.append($("<td></td>").append(deleteBtn, saveBtn))
-               .append($("<td id='share_name'></td>").text(share.source)
-               .append($("<input type='hidden' name='source-saved'/>").val(share.source)))
-               .append($("<td id='dn_name'></td>").text(share.destination)
-               .append($("<input type='hidden' name='destination-saved'/>").val(share.destination)))
-               .append($("<td id='vo_name'></td>").text(share.vo)
-               .append($("<input type='hidden' name='vo-saved'/>").val(share.vo)))
-               .append($("<td id='sh_name'></td>")
-               .append($("<input type='number' name='share-saved' class='form-control' min='1'/>").val(share.share))
+	    var deleteBtn = $("<a class='btn btn-link'><i class='glyphicon glyphicon-trash'></i></a>");
+
+
+            tr.append($("<td></td>").append(deleteBtn))
+               .append($("<td></td>").text(share.source)
+               .append($("<input type='hidden' name='source'/>").val(share.source)))
+               .append($("<td></td>").text(share.destination)
+               .append($("<input type='hidden' name='destination'/>").val(share.destination)))
+               .append($("<td></td>").text(share.vo)
+               .append($("<input type='hidden' name='vo'/>").val(share.vo)))
+               .append($("<td></td>")
+               .append($("<input type='number' name='share' class='form-control'/>").val(share.share))
         	);
 	    tbody.append(tr);
 
@@ -121,49 +163,6 @@ function refreshShares()
                 });
             });
 
-            saveBtn.click(function(event) {
-		var share_wrong = tr.find("input[name='share-saved']")
-		//console.log(encodeURIComponent(share.share))
-	        tr.css("background", "#3c763d");
-                tr.find("input").prop("disabled", true);
-                tr.find("select").prop("disabled", true);
-                if (tr.find("input[name='share-saved']").val() < 0){
-                    errorMessage(jqXHR);
-                    tr.find("input").prop("disabled", false);
-                    tr.find("select").prop("disabled", false);
-                    tr.css("background", "#ffffff");
-                    share_wrong.val(encodeURIComponent(share.share));
-                }
-                else{
-
-                $.ajax({
-                    url: "/config/shares?",
-                    type: "POST",
-                    dataType: "json",
-                    contentType: "application/json",
-                    data: JSON.stringify({
-                        source: share.source,
-			destination: share.destination,
-			vo: share.vo,			
-                        share: tr.find("input[name='share-saved']").val()
-                    })
-                })
-
-                .done(function(data, textStatus, jqXHR) {
-		    tr.css("background", "none");
-                    tr.find("input").prop("disabled", false);
-                    tr.find("select").prop("disabled", false);
-
-                })
-                .fail(function(jqXHR) {
-                    errorMessage(jqXHR);
-		    tr.find("input").prop("disabled", false);
-                    tr.find("select").prop("disabled", false);
-		    tr.css("background", "#ffffff");
-		    share_wrong.val(encodeURIComponent(share.share))
-			    
-                })};
-            });
         });
     })
     .fail(function(jqXHR) {
@@ -223,8 +222,7 @@ function setupLinks()
             symbolicname: addFrm.find("[name=symbolicname]").val(),
             source: addFrm.find("[name=source]").val(),
             destination: addFrm.find("[name=destination]").val(),
-            nostreams: addFrm.find("[name=nostreams]").val(),
-            min_active: addFrm.find("[name=min_active]").val(),
+
             max_active: addFrm.find("[name=max_active]").val(),
             optimizer_mode: addFrm.find("[name=optimizer_mode]").val(),
             tcp_buffer_size: addFrm.find("[name=tcp_buffer_size]").val(),
@@ -244,7 +242,7 @@ function setupLinks()
             $("#link-config-add-frm").trigger("reset");
         })
         .fail(function(jqXHR) {
-	    errorMessage(jqXHR);
+            alert(jqXHR.responseJSON.message);
         })
         .always(function() {
             $("#link-config-add-frm input").prop("disabled", false);
@@ -271,3 +269,5 @@ function setupLinks()
         source: "/autocomplete/destination"
     });
 }
+
+
