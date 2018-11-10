@@ -72,7 +72,10 @@ format is as follows:
 :	Do not validate the server certificate
 
 --access-token
-:	Oauth2 access token (supported only by some endpoints, takes precedence)
+:	IAM-XDC access token (supported only by some endpoints, takes precedence)
+
+--target-qos
+:   the target QoS that the destination has to have when the operation is finished
 
 -b/--blocking
 :	Blocking mode. Wait until the operation completes. 
