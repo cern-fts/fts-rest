@@ -48,3 +48,18 @@ def get_job_status(context, job_id, list_files=False):
     """
     inquirer = Inquirer(context)
     return inquirer.get_job_status(job_id, list_files)
+
+def get_jobs_statuses(context, job_ids, list_files=False):
+    """
+    Get status for a list of jobs
+
+    Args:
+        context:    fts3.rest.client.context.Context instance
+        job_ids:    The job list
+        list_files: If True, the status of each individual file will be queried
+
+    Returns:
+        Decoded JSON message returned by the server (job status plus, optionally, list of files)
+    """
+    inquirer = Inquirer(context)
+    return inquirer.get_jobs_statuses(job_ids, list_files)
