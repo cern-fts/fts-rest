@@ -55,7 +55,7 @@ def cancel_all(context, vo_name=None):
     return submitter.cancel_all(vo_name)
 
 
-def new_transfer(source, destination, checksum='ADLER32', filesize=None, metadata=None, activity=None,selection_strategy='auto':
+def new_transfer(source, destination, checksum='ADLER32', filesize=None, metadata=None, activity=None,selection_strategy='auto'):
     """
     Creates a new transfer pair
 
