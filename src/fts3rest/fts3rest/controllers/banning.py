@@ -282,9 +282,8 @@ class BanningController(BaseController):
         if not storage:
             raise HTTPBadRequest('Missing storage parameter')
 
-        vo_name = input_dict.get('vo_name', '*')
-        if vo_name is None or vo_name == '':
-            raise HTTPBadRequest('vo_name can not be null')
+        user = request.environ['fts3.User.Credentials']
+	vo_name = user.vos[0]
         allow_submit = bool(input_dict.get('allow_submit', False))
         status = input_dict.get('status', 'cancel').upper()
 
@@ -355,8 +354,10 @@ class BanningController(BaseController):
             raise HTTPBadRequest('Missing storage parameter')
         job_ids = []
         try:
-            Session.query(BannedSE).filter(BannedSE.se==storage).delete()
-            job_ids= _reenter_queue(storage, '*')
+            user = request.environ['fts3.User.Credentials']
+            vo_name = user.vos[0]
+            Session.query(BannedSE).filter(BannedSE.se==storage,BannedSE.vo==vo_name).delete()
+            job_ids= _reenter_queue(storage, vo_name)
             Session.commit()
         except Exception:
             Session.rollback()
