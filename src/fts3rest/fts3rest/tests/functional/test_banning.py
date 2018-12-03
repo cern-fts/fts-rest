@@ -100,13 +100,13 @@ class TestBanning(TestController):
         """
         jobs = list()
         jobs.append(
-            insert_job('dteam', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED', user_dn='/DC=cern/CN=someone')
+            insert_job('testvo', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED', user_dn='/DC=cern/CN=someone')
         )
         jobs.append(
-            insert_job('dteam', 'gsiftp://source', 'gsiftp://destination2', 'ACTIVE', user_dn='/DC=cern/CN=someone')
+            insert_job('testvo', 'gsiftp://source', 'gsiftp://destination2', 'ACTIVE', user_dn='/DC=cern/CN=someone')
         )
         jobs.append(
-            insert_job('dteam', 'gsiftp://source', 'gsiftp://destination2', 'FAILED', duration=10, queued=20,
+            insert_job('testvo', 'gsiftp://source', 'gsiftp://destination2', 'FAILED', duration=10, queued=20,
                        user_dn='/DC=cern/CN=someone')
         )
 
@@ -148,16 +148,15 @@ class TestBanning(TestController):
             status=200
         ).json
         self.assertEqual(0, len(canceled))
-
-        banned = Session.query(BannedSE).get(('gsiftp://nowhere', '*'))
+        banned = Session.query(BannedSE).filter(BannedSE.se=='gsiftp://nowhere').first()
+        print banned
         self.assertNotEqual(None, banned)
         self.assertEqual(self.get_user_credentials().user_dn, banned.admin_dn)
         self.assertEqual('CANCEL', banned.status)
-        self.assertEqual('*', banned.vo)
         self.assertEqual('TEST BAN 42', banned.message)
-
+        print banned.vo
         self.app.delete(url="/ban/se?storage=%s" % urllib.quote('gsiftp://nowhere'), status=204)
-        banned = Session.query(BannedSE).get(('gsiftp://nowhere', '*'))
+        banned = Session.query(BannedSE).filter(BannedSE.se=='gsiftp://nowhere').first()
         self.assertEqual(None, banned)
 
     def test_list_banned_ses(self):
@@ -185,19 +184,19 @@ class TestBanning(TestController):
         """
         canceled = self.app.post(
             url="/ban/se",
-            params={'storage': 'gsiftp://nowhere', 'vo_name': 'dteam'},
+            params={'storage': 'gsiftp://nowhere', 'vo_name': 'testvo'},
             status=200
         ).json
         self.assertEqual(0, len(canceled))
 
-        banned = Session.query(BannedSE).get(('gsiftp://nowhere', 'dteam'))
+        banned = Session.query(BannedSE).get(('gsiftp://nowhere', 'testvo'))
         self.assertNotEqual(None, banned)
         self.assertEqual(self.get_user_credentials().user_dn, banned.admin_dn)
         self.assertEqual('CANCEL', banned.status)
-        self.assertEqual('dteam', banned.vo)
+        self.assertEqual('testvo', banned.vo)
 
-        self.app.delete(url="/ban/se?storage=%s&vo_name=dteam" % urllib.quote('gsiftp://nowhere'), status=204)
-        banned = Session.query(BannedSE).get(('gsiftp://nowhere', 'dteam'))
+        self.app.delete(url="/ban/se?storage=%s&vo_name=testvo" % urllib.quote('gsiftp://nowhere'), status=204)
+        banned = Session.query(BannedSE).get(('gsiftp://nowhere', 'someone'))
         self.assertEqual(None, banned)
 
     def test_ban_se_cancel(self):
@@ -205,9 +204,9 @@ class TestBanning(TestController):
         Ban a SE that has files queued, make sure they are canceled
         """
         jobs = list()
-        jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
-        jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination2', 'ACTIVE'))
-        jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination2', 'FAILED', duration=10, queued=20))
+        jobs.append(insert_job('testvo', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
+        jobs.append(insert_job('testvo', 'gsiftp://source', 'gsiftp://destination2', 'ACTIVE'))
+        jobs.append(insert_job('testvo', 'gsiftp://source', 'gsiftp://destination2', 'FAILED', duration=10, queued=20))
 
         canceled_ids = self.app.post(
             url="/ban/se",
@@ -241,7 +240,7 @@ class TestBanning(TestController):
         Ban a SE that has files queued. If a job has other pairs, the job must remain!
         """
         job_id = insert_job(
-            'dteam',
+            'testvo',
             multiple=[('gsiftp://source', 'gsiftp://destination'), ('gsiftp://other', 'gsiftp://destination')]
         )
         canceled_ids = self.app.post(
@@ -270,13 +269,13 @@ class TestBanning(TestController):
         Cancel a SE that has files queued, make sure they are canceled (with VO)
         """
         jobs = list()
-        jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
+        jobs.append(insert_job('testvo', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
         jobs.append(insert_job('atlas', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
         jobs.append(insert_job('atlas', 'gsiftp://source', 'gsiftp://destination2', 'SUBMITTED'))
 
         canceled_ids = self.app.post(
             url="/ban/se",
-            params={'storage': 'gsiftp://source', 'status': 'cancel', 'vo_name': 'dteam'},
+            params={'storage': 'gsiftp://source', 'status': 'cancel', 'vo_name': 'testvo'},
             status=200
         ).json
 
@@ -302,9 +301,9 @@ class TestBanning(TestController):
         Ban a SE, but instead of canceling, give jobs some time to finish
         """
         jobs = list()
-        jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
-        jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination2', 'ACTIVE'))
-        jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination2', 'FAILED', duration=10, queued=20))
+        jobs.append(insert_job('testvo', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
+        jobs.append(insert_job('testvo', 'gsiftp://source', 'gsiftp://destination2', 'ACTIVE'))
+        jobs.append(insert_job('testvo', 'gsiftp://source', 'gsiftp://destination2', 'FAILED', duration=10, queued=20))
 
         waiting_ids = self.app.post(
             url="/ban/se",
@@ -332,7 +331,7 @@ class TestBanning(TestController):
         for f in files:
             self.assertEqual('FAILED', f.file_state)
 
-        banned = Session.query(BannedSE).get(('gsiftp://source', '*'))
+        banned = Session.query(BannedSE).get(('gsiftp://source', 'testvo'))
         self.assertEqual('WAIT', banned.status)
 
     def test_ban_se_wait_vo(self):
@@ -340,13 +339,13 @@ class TestBanning(TestController):
         Ban a SE, but instead of canceling, give jobs some time to finish (with VO)
         """
         jobs = list()
-        jobs.append(insert_job('dteam', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
+        jobs.append(insert_job('testvo', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
         jobs.append(insert_job('atlas', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED'))
         jobs.append(insert_job('atlas', 'gsiftp://source', 'gsiftp://destination2', 'SUBMITTED'))
 
         waiting_ids = self.app.post(
             url="/ban/se",
-            params={'storage': 'gsiftp://source', 'status': 'wait', 'vo_name': 'dteam', 'timeout': 33},
+            params={'storage': 'gsiftp://source', 'status': 'wait', 'vo_name': 'testvo', 'timeout': 33},
             status=200
         ).json
 
@@ -440,7 +439,7 @@ class TestBanning(TestController):
         Regression for FTS-297
         When unbanning a storage, if any file was left on wait, they must re-enter the queue
         """
-        job_id = insert_job('dteam', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED', user_dn='/DC=cern/CN=someone')
+        job_id = insert_job('testvo', 'gsiftp://source', 'gsiftp://destination', 'SUBMITTED', user_dn='/DC=cern/CN=someone')
         self.app.post(
             url="/ban/se", params={'storage': 'gsiftp://source', 'status': 'wait', 'allow_submit': True},
             status=200
@@ -506,7 +505,7 @@ class TestBanning(TestController):
         """
         self.push_delegation()
 
-        pre_job_id = insert_job('dteam', 'srm://source', 'srm://destination', 'STAGING', user_dn='/DC=cern/CN=someone')
+        pre_job_id = insert_job('testvo', 'srm://source', 'srm://destination', 'STAGING', user_dn='/DC=cern/CN=someone')
         self.app.post(
             url="/ban/se", params={'storage': 'srm://source', 'status': 'wait', 'allow_submit': True},
             status=200
