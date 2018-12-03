@@ -149,12 +149,10 @@ class TestBanning(TestController):
         ).json
         self.assertEqual(0, len(canceled))
         banned = Session.query(BannedSE).filter(BannedSE.se=='gsiftp://nowhere').first()
-        print banned
         self.assertNotEqual(None, banned)
         self.assertEqual(self.get_user_credentials().user_dn, banned.admin_dn)
         self.assertEqual('CANCEL', banned.status)
         self.assertEqual('TEST BAN 42', banned.message)
-        print banned.vo
         self.app.delete(url="/ban/se?storage=%s" % urllib.quote('gsiftp://nowhere'), status=204)
         banned = Session.query(BannedSE).filter(BannedSE.se=='gsiftp://nowhere').first()
         self.assertEqual(None, banned)
