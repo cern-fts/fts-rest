@@ -25,22 +25,40 @@ from fts3rest.lib.middleware import fts3auth
 from fts3rest.model import Session
 
 
-class MockCredentials:
+class MockIAMCredentials:
+    def __init__(self):
+        self.delegation_id = '12345'
+        self.user_dn = 'test'
+        self.proxy = 'access_token'
+        self.voms_cred = []
+        self.vos = ['aangelog']
+        self.method = 'oauth2'
+
+    def get_granted_level_for(self, operation):
+        return fts3auth.constants.ALL
+
+class MockCertCredentials:
     def __init__(self):
         self.delegation_id = '12345'
         self.user_dn = '/DN=1234'
         self.voms_cred = []
         self.vos = ['dteam']
+        self.method = 'oauth2'
 
     def get_granted_level_for(self, operation):
         return fts3auth.constants.ALL
 
-
 class MockRequest(object):
-    def __init__(self):
-        self.environ = {
-            'fts3.User.Credentials': MockCredentials()
-        }
+    def __init__(self, auth_method='certificate'):
+        if (auth_method == 'certificate'):
+            self.environ = {
+                'fts3.User.Credentials': MockCertCredentials()
+            }
+        else:
+            self.environ = {
+                'fts3.User.Credentials': MockIAMCredentials()
+            }
+        self.content_type = 'application/json'
 
 
 class MockResponse(object):
@@ -53,12 +71,12 @@ class MockedJobController(JobsController):
     Inherit from JobsController and mock some required objects
     """
 
-    def __init__(self):
+    def __init__(self, auth_method='certificate'):
         super(MockedJobController, self).__init__()
         # Register into paste the fake request and response objects
         registry = Registry()
         registry.prepare()
-        registry.register(request, MockRequest())
+        registry.register(request, MockRequest(auth_method))
         registry.register(response, MockResponse())
 
         # This is expected to be set by Pylons, so we set it here
