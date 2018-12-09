@@ -40,7 +40,7 @@ class IAMTokenRefresher(Thread):
         """
         Thread.__init__(self)
         self.tag = tag
-        self.interval = 5#interval
+        self.interval = interval
         self.daemon = True
         self.config = config
 
@@ -73,8 +73,8 @@ class IAMTokenRefresher(Thread):
                                 "LIMIT 1"
         latest = Session.execute(last_submitted_querry.format(credential.dn)).fetchone()
 
-        if len(latest) > 0 or (datetime.utcnow() - latest[0]) < timedelta(seconds=int(
-                self.config.get('fts3.TokenRefreshTimeSinceLastTransferInSeconds', 2629743))):
+        if (len(latest) > 0) and ((datetime.utcnow() - latest[0]) < timedelta(seconds=int(
+                self.config.get('fts3.TokenRefreshTimeSinceLastTransferInSeconds', 2629743)))):
             return True
         return False
 

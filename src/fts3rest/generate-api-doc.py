@@ -43,7 +43,7 @@ def write_resources(options, resources):
 
 def write_apis(options, resources, apis, models):
     for resource in resources:
-        resource_path = resource['path']
+        resource_path = resource['id']
         swagger_api = {
            'swaggerVersion': '1.2',
            'produces': ['application/json'],
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     resources, apis, models = api.introspect()
 
-    resources.sort(key=lambda r:r['path'])
+    resources.sort(key=lambda r:r['id'])
     for api in apis.values():
         api.sort(key=lambda a:a['path'])
     

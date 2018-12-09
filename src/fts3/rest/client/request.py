@@ -65,7 +65,10 @@ class Request(object):
             else:
                 raise ClientError('Bad request')
         elif 401 <= code <= 403:
-            raise Unauthorized()
+            if message: 
+                raise Unauthorized(message)
+            else:
+                raise Unauthorized()
         elif code == 404:
             raise NotFound(url, message)
         elif code == 419:

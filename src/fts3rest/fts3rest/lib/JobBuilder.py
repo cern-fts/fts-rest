@@ -357,8 +357,8 @@ class JobBuilder(object):
         else:
             initial_file_state = 'SUBMITTED'
 
-        # Multiple replica job?
-        if len(file_dict['sources']) > 1:
+        # Multiple replica job or multihop? Then, the initial state is NOT_USED
+        if len(file_dict['sources']) > 1 or self.params['multihop']:
             if self.is_bringonline:
                 raise HTTPBadRequest('Staging with multiple replicas is not allowed')
             # On multiple replica job, we mark all files initially with NOT_USED
@@ -503,6 +503,9 @@ class JobBuilder(object):
             self.job['job_type'] = 'R'
             # Apply selection strategy
             self._apply_selection_strategy()
+        # For multihop, mark the first as SUBMITTED
+        elif self.params['multihop']:
+            self.files[0]['file_state'] = 'SUBMITTED'
 
         self._set_job_source_and_destination(self.files)
         

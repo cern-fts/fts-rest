@@ -23,7 +23,7 @@ yum install -y nano
 yum groupinstall -y 'Development Tools'
 yum install -y epel-release yum-builddep git
 yum-builddep -y "/vagrant/packaging/rpm/fts-rest.spec"
-yum install -y gfal2-all httpd mod_ssl mod_gridsite voms-config-vo-dteam lcg-CA MySQL-python
+yum install -y gfal2-all httpd mod_ssl mod_gridsite voms-config-vo-dteam ca-policy-egi-core MySQL-python
 yum install -y `grep  '^Requires' /vagrant/packaging/rpm/fts-rest.spec  | awk '{print $2}' | grep -oE "^[[:alnum:]\._-]+" | grep -v fts`
 
 # Configure Apache

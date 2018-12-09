@@ -567,9 +567,9 @@ class JobsController(BaseController):
         # Send messages
         # Need to re-query so we get the file ids
         job = Session.query(Job).get(populated.job_id)
-        for transfer in job.files:
+        for i in range(len(job.files)):
             try:
-                submit_state_change(job, transfer)
+                submit_state_change(job, job.files[i], populated.files[0]['file_state'])
             except Exception, e:
                 log.warning("Failed to write state message to disk: %s" % e.message)
 

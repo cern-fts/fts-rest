@@ -21,10 +21,10 @@ If you have enabled SELinux, for convenience you can install fts-rest-selinux, w
 yum install fts-rest-selinux
 ```
 
-If you are installing in a separate machine, remember to install the CA Certificates (`lcg-CA`) and `fetch-crl` first!
+If you are installing in a separate machine, remember to install the CA Certificates (`ca-policy-egi-core`) and `fetch-crl` first!
 
 ```
-yum install lcg-CA fetch-crl
+yum install ca-policy-egi-core fetch-crl
 fetch-crl -v
 ```
 

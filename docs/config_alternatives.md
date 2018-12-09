@@ -187,7 +187,9 @@ Where `config.json` is a json with the following parameters
     "destination": "gsiftp://test2.cern.ch",
     "nostreams": 16,
     "tcp_buffer_size": 4096,
-    "optimizer_mode": 5 // integer in [1, 3]
+    "optimizer_mode": 3, // integer in [1, 3]
+    "min_active": 20,
+    "max_active": 100
 }
 ```
 

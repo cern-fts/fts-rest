@@ -182,11 +182,13 @@ class Delegator(object):
             )
             proxy.add_ext(identifier_ext)
 
-        # Make sure the proxy is not longer than any other inside the chain, and look for RFC 3820
         any_rfc_proxies = False
+        # FTS-1217 Ignore the user input and select the min proxy lifetime available on the list
+        min_cert_lifetime = self.context.x509_list[0].get_not_after()
         for cert in self.context.x509_list:
-            if cert.get_not_after().get_datetime() < not_after.get_datetime():
+            if cert.get_not_after().get_datetime() < min_cert_lifetime.get_datetime():
                 not_after = cert.get_not_after()
+                min_cert_lifetime = cert.get_not_after()
             try:
                 cert.get_ext('proxyCertInfo')
                 any_rfc_proxies = True
