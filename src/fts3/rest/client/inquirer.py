@@ -31,7 +31,7 @@ class Inquirer(object):
 
     def get_job_status(self, job_id, list_files=False):
 
-        if not isinstance(job_id, str):
+        if not isinstance(job_id, basestring):
             raise Exception('The job_id provided is not a string!')
 
         try:
