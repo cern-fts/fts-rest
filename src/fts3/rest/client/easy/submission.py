@@ -55,16 +55,17 @@ def cancel_all(context, vo_name=None):
     return submitter.cancel_all(vo_name)
 
 
-def new_transfer(source, destination, checksum='ADLER32', filesize=None, metadata=None, activity=None):
+def new_transfer(source, destination, checksum='ADLER32', filesize=None, metadata=None, activity=None,selection_strategy='auto'):
     """
     Creates a new transfer pair
 
     Args:
-        source:      Source SURL
-        destination: Destination SURL
-        checksum:    Checksum
-        filesize:    File size
-        metadata:    Metadata to bind to the transfer
+        source:             Source SURL
+        destination:        Destination SURL
+        checksum:           Checksum
+        filesize:           File size
+        metadata:           Metadata to bind to the transfer
+        selection_strategy: selection Strategy to implement for multiple replica Jobs
 
     Returns:
         An initialized transfer
@@ -81,6 +82,9 @@ def new_transfer(source, destination, checksum='ADLER32', filesize=None, metadat
         transfer['metadata'] = metadata
     if activity:
         transfer['activity'] = activity
+    if selection_strategy:
+        transfer['selection_strategy'] = selection_strategy
+
     return transfer
 
 
@@ -104,7 +108,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
             bring_online=None, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
             max_time_in_queue=None, timeout=None,
-            id_generator=JobIdGenerator.standard, sid=None):
+            id_generator=JobIdGenerator.standard, sid=None, s3alternate=False):
     """
     Creates a new dictionary representing a job
 
@@ -125,6 +129,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         max_time_in_queue: Maximum number
         id_generator:      Job id generator algorithm
         sid:               Specific id given by the client
+        s3alternate:       Use S3 alternate url schema
 
     Returns:
         An initialized dictionary representing a job
@@ -154,7 +159,8 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         max_time_in_queue=max_time_in_queue,
         timeout=timeout,
         id_generator=id_generator,
-        sid=sid
+        sid=sid,
+        s3alternate=s3alternate
     )
     job = dict(
         files=transfers,
