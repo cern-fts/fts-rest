@@ -13,6 +13,12 @@ To connect to a MySQL database, you will need to install MySQL-python
 yum install MySQL-python
 ```
 
+To authenticate via OpenID Connect you will need to install fts-rest-oauth2
+
+```
+yum install fts-rest-oauth2
+```
+
 If you are installing in a different host, the steps are the same, but you will need to copy the FTS3 configuration file to the new host (since it is used by the rest front-end) and make sure you have installed the proper certificates under /etc/grid-security/certificates.
 
 If you have enabled SELinux, for convenience you can install fts-rest-selinux, which contains the rules needed to have REST working (i.e. allow Apache to connect to the database, allow Apache to bind to 8446)

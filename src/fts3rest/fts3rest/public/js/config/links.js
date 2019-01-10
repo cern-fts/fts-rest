@@ -53,22 +53,65 @@ function refreshLinks()
                 });
             });
 
-            tr.append($("<td></td>").append(deleteBtn))
-              .append($("<td id='symname'></td>").text(link.symbolicname))
-              .append($("<td id='srcname'></td>").text(link.source))
-              .append($("<td></td>").text(link.destination))
-              .append($("<td></td>").text(link.nostreams))
-              .append($("<td></td>").text(link.min_active))
-              .append($("<td></td>").text(link.max_active))
-              .append($("<td></td>").text(link.optimizer_mode))
-              .append($("<td></td>").text(link.tcp_buffer_size))
+           var updateBtn = $("<button class='btn btn-link' type='button'></button>")
+                .append("<i class='glyphicon glyphicon-floppy-disk'></i>");
 
-            tbody.append(tr);
+            tr.append($("<td></td>").append(deleteBtn).append(updateBtn))
+              .append($("<td></td>")
+              .append($("<input type='text' name='symbolicname_"+link.symbolicname+"' class='form-control'/>").val(link.symbolicname)))
+              .append($("<td></td>")
+              .append($("<input type='text' name='source_"+link.symbolicname+"' class='form-control'/>").val(link.source)))
+              .append($("<td></td>")
+              .append($("<input type='text' name='destination_"+link.symbolicname+"' class='form-control'/>").val(link.destination)))
+              .append($("<td></td>")
+              .append($("<input type='number' name='nostreams_"+link.symbolicname+"' min='0' max='16' class='form-control'/>").val(link.nostreams)))
+              .append($("<td></td>")
+              .append($("<input type='number' name='min_active_"+link.symbolicname+"' class='form-control'/>").val(link.min_active)))
+              .append($("<td></td>")
+              .append($("<input type='number' name='max_active_"+link.symbolicname+"' class='form-control'/>").val(link.max_active)))
+              .append($("<td></td>")
+              .append($("<input type='number' name='optimizer_mode_"+link.symbolicname+"' min='0' max='3' class='form-control'/>").val(link.optimizer_mode)))
+              .append($("<td></td>")
+              .append($("<input type='number' name='tcp_buffer_size_"+link.symbolicname+"' class='form-control'/>").val(link.tcp_buffer_size)));
+           tbody.append(tr);
+
+                updateBtn.click(function() {
+                  //  tr.css("background", "#3CB371");
+                    var saveload = {
+                        symbolicname: tr.find("input[name='symbolicname_"+link.symbolicname+"']").val(),
+                        source: tr.find("input[name='source_"+link.symbolicname+"']").val(),
+                        destination: tr.find("input[name='destination_"+link.symbolicname+"']").val(),
+                        nostreams: tr.find("input[name='nostreams_"+link.symbolicname+"']").val(),
+                        min_active: tr.find("input[name='min_active_"+link.symbolicname+"']").val(),
+                        max_active: tr.find("input[name='max_active_"+link.symbolicname+"']").val(),
+                        optimizer_mode: tr.find("input[name='optimizer_mode_"+link.symbolicname+"']").val(),
+                        tcp_buffer_size: tr.find("input[name='tcp_buffer_size_"+link.symbolicname+"']").val()
+                    };
+                    console.log(saveload);
+                    $.ajax({
+                        url: "/config/links",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: JSON.stringify(saveload)
+                    })
+                    .done(function() {
+                        tr.find("input").prop("disabled", false)
+                        tr.css("background", "#3CB371");
+                        refreshLinks();
+
+                    })
+                    .fail(function(jqXHR) {
+                        errorMessage(jqXHR);
+                        tr.css("background", "#ffffff");
+                    });
+              });
         });
     })
     .fail(function(jqXHR) {
         errorMessage(jqXHR);
     });
+
 }
 
 
