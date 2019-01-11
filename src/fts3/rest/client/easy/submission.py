@@ -108,7 +108,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
             bring_online=None, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
             max_time_in_queue=None, timeout=None,
-            id_generator=JobIdGenerator.standard, sid=None, s3alternate=False):
+            id_generator=JobIdGenerator.standard, sid=None, s3alternate=False, nostreams=1):
     """
     Creates a new dictionary representing a job
 
@@ -130,6 +130,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         id_generator:      Job id generator algorithm
         sid:               Specific id given by the client
         s3alternate:       Use S3 alternate url schema
+        nostreams:         Number of streams
 
     Returns:
         An initialized dictionary representing a job
@@ -160,7 +161,8 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         timeout=timeout,
         id_generator=id_generator,
         sid=sid,
-        s3alternate=s3alternate
+        s3alternate=s3alternate,
+        nostreams=nostreams
     )
     job = dict(
         files=transfers,
