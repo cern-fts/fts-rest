@@ -9,6 +9,7 @@ CleanRecordsHost=false
 
 AuthorizationProvider=https://iam.extreme-datacloud.eu/introspect
 AuthorizationProviderTokenEndpoint=https://iam.extreme-datacloud.eu/token
+AuthorizationProviderJwkEndpoint=https://iam.extreme-datacloud.eu/jwk/
 ClientId=737119cb-6093-4152-a0b5-28879b31f3c1
 ClientSecret=Rd1-h8I8cQ_DK6tfaQboC1xKEiwCg2euBb-w4lmvLaiWsgZv9-x7g7yGleYvbp5jtLumEGMYqNjx5w2yoaqOIQ
 

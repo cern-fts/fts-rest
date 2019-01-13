@@ -22,8 +22,9 @@ from fts3rest.lib.middleware.fts3auth.constants import VALID_OPERATIONS
 from fts3rest.lib.middleware.fts3auth.credentials import generate_delegation_id
 from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceProvider, ResourceAuthorization
 from fts3.model.credentials import CredentialCache, Credential
-from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
+from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token, OAuth2Providers
 from fts3.rest.client.request import Request
+from ast import literal_eval
 import json
 
 log = logging.getLogger(__name__)
@@ -178,6 +179,9 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             if credential:
                 Session.delete(credential)
 
+            # Try to first validate the supplied access_token offline
+            self._validate_token_offline(access_token)
+
             requestor = Request(None, None)  # VERIFY:TRUE
             body = {'token': access_token}
             log.debug("About to contact IAM server in order to verify the token")
@@ -239,3 +243,20 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         else:
             return credential['user_id'] + " "
 
+    def _validate_token_offline(self, access_token):
+        jwkProvider = Session.query(OAuth2Providers).filter(OAuth2Providers.provider_url.like(self.config['fts3.AuthorizationProviderJwkEndpoint'] + "%")).first()
+        if not jwkProvider:
+            requestor = Request(None, None)
+            jwkIAM = json.loads(requestor.method('GET', self.config['fts3.AuthorizationProviderJwkEndpoint']))
+            oauth2provider = OAuth2Providers(
+                provider_url=self.config['fts3.AuthorizationProviderJwkEndpoint'],
+                provider_jwk=str(jwkIAM))
+            Session.add(oauth2provider)
+            Session.commit()
+        else:
+            jwkIAM = literal_eval(jwkProvider.provider_jwk)
+        print jwkIAM
+
+        ##validate token here offline, if ok, return true and build credential, else False
+
+        return False, credential
