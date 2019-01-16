@@ -134,7 +134,14 @@ Requires:       python-sqlalchemy0.8
 %description -n python-fts
 This package provides an object model of the FTS3
 database, using sqlalchemy ORM.
+%if %{?rhel}%{!?rhel:0} >= 7
+%files firewalld
+%{_prefix}/lib/firewalld/services
+%config(noreplace) %{_sysconfdir}/fts3/fts3rest.xml
 
+%post
+%firewalld_reload
+%endif
 %post
 /sbin/service httpd condrestart >/dev/null 2>&1 || :
 if [ "$1" -eq "2" ]; then # Upgrade
@@ -213,7 +220,7 @@ Author-email: fts-devel@cern.ch
 License: Apache2
 EOF
 
-%files
+%files 
 
 %dir %{python_sitelib}/fts3rest/
 
@@ -308,13 +315,7 @@ EOF
 %{python_sitelib}/fts3.egg-info
 %doc LICENSE
 
-%if %{?rhel}%{!?rhel:0} >= 7
-%{_prefix}/lib/firewalld/services
-%config(noreplace) %{_sysconfdir}/fts3/fts3rest.xml
 
-%post
-%firewalld_reload
-%endif
 
 %changelog
 * Tue Apr 19 2016 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.4.0-1
