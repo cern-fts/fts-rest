@@ -193,9 +193,7 @@ if [ "$fts_api_ver" != "$fts_spec_ver" ]; then
 fi
 
 %cmake . -DCMAKE_INSTALL_PREFIX=/ -DPYTHON_SITE_PACKAGES=%{python_sitelib}
-%if %{?rhel}%{!?rhel:0} == 6
-rm -rf %{_prefix}/lib/firewalld/services/fts3rest.xml
-%endif
+
 make %{?_smp_mflags}
 
 %check
@@ -213,7 +211,9 @@ popd
 %install
 mkdir -p %{buildroot}
 make install DESTDIR=%{buildroot}
-
+%if %{?rhel}%{!?rhel:0} == 6
+rm -rf %{_prefix}/lib/firewalld/services/fts3rest.xml
+%endif
 mkdir -p %{buildroot}/%{_var}/cache/fts3rest/
 mkdir -p %{buildroot}/%{_var}/log/fts3rest/
 
