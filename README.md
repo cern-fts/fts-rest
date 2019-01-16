@@ -3,7 +3,8 @@ FTS3-REST
 This is the FTS3 RESTful API.
 For more detailed information about installation, usage, etc... please, check the [docs](docs/README.md) subdirectory.
 
-##Firewalld: How to set up a firewall using firewalld on centos7
+##Firewalld
+#How to set up a firewall using firewalld on centos7
 Firewalld is installed by default on some Linux distributions, including many images of CentOS 7. However, it may be necessary for you to install firewalld yourself:
 
     sudo yum install firewalld
