@@ -206,7 +206,9 @@ mkdir -p %{buildroot}/%{_var}/cache/fts3rest/
 mkdir -p %{buildroot}/%{_var}/log/fts3rest/
 
 cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
-
+%if %{?rhel}%{!?rhel:0} >= 7
+cp %{_prefix}/lib/firewalld/services src/fts3/fts3rest.xml
+%endif
 cat > %{buildroot}/%{python_sitelib}/fts3.egg-info <<EOF
 Metadata-Version: 1.0
 Name: fts3
@@ -280,10 +282,8 @@ EOF
 %doc docs/api.md
 
 %if %{?rhel}%{!?rhel:0} >= 7
-%{_prefix}/lib/firewalld/services
-%config(noreplace) %{_sysconfdir}/fts3/fts3rest.xml
+%{_prefix}/lib/firewalld/services/fts3rest.xml
 %endif
-
 %files cloud-storage
 %{python_sitelib}/fts3rest/config/routing/cstorage.py*
 %{python_sitelib}/fts3rest/controllers/cloudStorage.py*
