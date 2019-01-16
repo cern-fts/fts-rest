@@ -29,6 +29,9 @@ BuildRequires:  python-nose1.1
 %if %{?rhel}%{!?rhel:0} >= 7
 BuildRequires:  python-nose
 %endif
+%if %{?rhel}%{!?rhel:0} >= 7
+BuildRequires:  firewalld-filesystem
+%endif
 BuildRequires:  python-dateutil
 BuildRequires:  python-pylons
 BuildRequires:  scipy
@@ -48,6 +51,9 @@ BuildRequires:  pandoc
 BuildRequires:  python-dirq
 BuildRequires:  MySQL-python
 
+%if %{?rhel}%{!?rhel:0} >= 7
+Requires(post): firewalld-filesystem
+%endif
 Requires:       gridsite%{?_isa} >= 1.7
 %if %{?rhel}%{!?rhel:0} == 6
 Requires:       httpd%{?_isa} >= 2.2.15-60
@@ -208,6 +214,7 @@ License: Apache2
 EOF
 
 %files
+
 %dir %{python_sitelib}/fts3rest/
 
 %{python_sitelib}/fts3rest.egg-info/*
@@ -300,6 +307,14 @@ EOF
 %{python_sitelib}/fts3
 %{python_sitelib}/fts3.egg-info
 %doc LICENSE
+
+%if %{?rhel}%{!?rhel:0} >= 7
+%{_prefix}/lib/firewalld/services
+%config(noreplace) %{_sysconfdir}/fts3/fts3rest.xml
+
+%post
+%firewalld_reload
+%endif
 
 %changelog
 * Tue Apr 19 2016 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.4.0-1
