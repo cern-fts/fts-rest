@@ -134,14 +134,13 @@ Requires:       python-sqlalchemy0.8
 %description -n python-fts
 This package provides an object model of the FTS3
 database, using sqlalchemy ORM.
+
 %if %{?rhel}%{!?rhel:0} >= 7
 %files 
 %{_prefix}/lib/firewalld/services
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.xml
-
-%post
-%firewalld_reload
 %endif
+
 %post
 /sbin/service httpd condrestart >/dev/null 2>&1 || :
 if [ "$1" -eq "2" ]; then # Upgrade
@@ -149,6 +148,10 @@ if [ "$1" -eq "2" ]; then # Upgrade
     chown fts3.fts3 /var/log/fts3rest
     chown fts3.fts3 /var/log/fts3rest/fts3rest.log || true
 fi
+%if %{?rhel}%{!?rhel:0} >= 7
+%firewalld_reload
+%endif
+
 
 %postun
 if [ "$1" -eq "0" ] ; then
