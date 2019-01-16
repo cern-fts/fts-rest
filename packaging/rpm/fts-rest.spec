@@ -135,11 +135,6 @@ Requires:       python-sqlalchemy0.8
 This package provides an object model of the FTS3
 database, using sqlalchemy ORM.
 
-%if %{?rhel}%{!?rhel:0} >= 7
-%files 
-%{_prefix}/lib/firewalld/services
-%config(noreplace) %{_sysconfdir}/fts3/fts3rest.xml
-%endif
 
 %post
 /sbin/service httpd condrestart >/dev/null 2>&1 || :
@@ -283,6 +278,11 @@ EOF
 %doc docs/README.md
 %doc docs/install.md
 %doc docs/api.md
+
+%if %{?rhel}%{!?rhel:0} >= 7
+%{_prefix}/lib/firewalld/services
+%config(noreplace) %{_sysconfdir}/fts3/fts3rest.xml
+%endif
 
 %files cloud-storage
 %{python_sitelib}/fts3rest/config/routing/cstorage.py*
