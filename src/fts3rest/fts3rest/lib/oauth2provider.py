@@ -197,9 +197,12 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                                                    datetime.utcfromtimestamp(offline_credential['exp']))
 
                 validated_offline = True
+        else:
+            log.debug("Access token provided is not valid - offline validation")
+            return
 
         credential = Session.query(Credential).filter(Credential.proxy.like(access_token + "%")).first()
-        if (valid and not validated_offline) and (not credential or credential.expired()):
+        if (not validated_offline) and (not credential or credential.expired()):
             # Delete the db entry in case of credential expired before validating the new one
             if credential:
                 Session.delete(credential)
