@@ -27,7 +27,7 @@ This indicates that our firewall is up and running with the default configuratio
 
 When running fts-rest, we can allow this traffic for interfaces in our "public" zone for this session by copying first fts3rest.xml in /usr/lib/firewalld/services and then typing:
 
-    sudo firewall-cmd --zone=public --add-service=fts-rest
+    sudo firewall-cmd --zone=public --add-service=fts3rest
 
 You can leave out the --zone= if you wish to modify the default zone. We can verify the operation was successful by using the --list-all or --list-services operations:
 
