@@ -493,6 +493,10 @@ class JobsController(BaseController):
         try:
             for job in modifiable_jobs:
                 if priority:
+		    for file in job.files:
+			file.priority = priority
+			file = Session.merge(file)
+			log.info("File from Job %s priority changed to %d" % (job.job_id, priority))
                     job.priority = priority
                     job = Session.merge(job)
                     log.info("Job %s priority changed to %d" % (job.job_id, priority))
