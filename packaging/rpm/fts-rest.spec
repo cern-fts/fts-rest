@@ -69,15 +69,17 @@ Requires:       gfal2-python%{?_isa}
 Requires: 	python-requests
 %description
 This package provides the FTS3 REST interface
+
+%if %{?rhel}%{!?rhel:0} >= 7
 %package firewalld
 Summary: FTS3 Rest Firewalld
 Group: Applications/Internet
 
-%if %{?rhel}%{!?rhel:0} >= 7
 Requires:  firewalld-filesystem
-%endif
+
 %description firewalld
 FTS3 Rest firewalld.
+%endif
 
 %package cloud-storage
 Summary:        FTS3 Rest Cloud Storage extensions
@@ -213,6 +215,10 @@ make install DESTDIR=%{buildroot}
 
 mkdir -p %{buildroot}/%{_var}/cache/fts3rest/
 mkdir -p %{buildroot}/%{_var}/log/fts3rest/
+
+%if %{?rhel}%{!?rhel:0} == 6
+rm -rf %{_prefix}/lib/firewalld/services/fts3rest.xml
+%endif
 
 cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 cat > %{buildroot}/%{python_sitelib}/fts3.egg-info <<EOF
