@@ -29,9 +29,7 @@ BuildRequires:  python-nose1.1
 %if %{?rhel}%{!?rhel:0} >= 7
 BuildRequires:  python-nose
 %endif
-%if %{?rhel}%{!?rhel:0} >= 7
-BuildRequires:  firewalld-filesystem
-%endif
+
 BuildRequires:  python-dateutil
 BuildRequires:  python-pylons
 BuildRequires:  scipy
@@ -71,6 +69,15 @@ Requires:       gfal2-python%{?_isa}
 Requires: 	python-requests
 %description
 This package provides the FTS3 REST interface
+%package firewalld
+Summary: FTS3 Rest Firewalld
+Group: Applications/Internet
+
+%if %{?rhel}%{!?rhel:0} >= 7
+Requires:  firewalld-filesystem
+%endif
+%description firewalld
+FTS3 Rest firewalld.
 
 %package cloud-storage
 Summary:        FTS3 Rest Cloud Storage extensions
@@ -143,6 +150,8 @@ if [ "$1" -eq "2" ]; then # Upgrade
     chown fts3.fts3 /var/log/fts3rest
     chown fts3.fts3 /var/log/fts3rest/fts3rest.log || true
 fi
+
+%post firewalld
 %if %{?rhel}%{!?rhel:0} >= 7
 %firewalld_reload
 %endif
@@ -278,9 +287,11 @@ EOF
 %doc docs/install.md
 %doc docs/api.md
 
+%files firewalld
 %if %{?rhel}%{!?rhel:0} >= 7
-%{_prefix}/lib/firewalld/services/fts3rest.xml
+%config(noreplace) %{_prefix}/lib/firewalld/services/fts3rest.xml
 %endif
+
 %files cloud-storage
 %{python_sitelib}/fts3rest/config/routing/cstorage.py*
 %{python_sitelib}/fts3rest/controllers/cloudStorage.py*
