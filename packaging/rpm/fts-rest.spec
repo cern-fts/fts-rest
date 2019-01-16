@@ -47,6 +47,8 @@ BuildRequires:  python-slimit
 BuildRequires:  pandoc
 BuildRequires:  python-dirq
 BuildRequires:  python-pycurl
+BuildRequires:  python-jwcrypto
+BuildRequires:  python-jwt
 
 Requires:       gridsite%{?_isa} >= 1.7
 %if %{?rhel}%{!?rhel:0} == 6

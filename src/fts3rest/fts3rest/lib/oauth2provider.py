@@ -25,6 +25,8 @@ from fts3.model.credentials import CredentialCache, Credential
 from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token, OAuth2Providers
 from fts3.rest.client.request import Request
 from ast import literal_eval
+from jwcrypto import jwk
+import jwt
 import json
 
 log = logging.getLogger(__name__)
@@ -173,14 +175,34 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
     def validate_access_token(self, access_token, authorization):
         authorization.is_valid = False
 
+        # Try to first validate the supplied access_token offline in order to avoid the expensive REST query to IAM
+        validated_offline = False
+        valid, offline_credential = self._validate_token_offline(access_token)
+        if valid:
+            # If token is valid, check if this user has been seen before and if yes update the db with the new access and refresh tokens.
+            # If not, validate online in order to get the extra info i.e. email etc
+            credential = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
+            if credential:
+                log.debug("Credential is as follows: " + str(offline_credential))
+                refresh_credential = self._generate_refresh_token(access_token)
+                log.debug("Refresh credential is as follows: " + str(refresh_credential))
+                c = Session.query(Credential).filter(Credential.dlg_id == credential.dlg_id).first()
+                if c:
+                    Session.delete(c)
+
+                credential = self._save_credential(generate_delegation_id(credential.dn, ""),
+                                                   credential.dn,
+                                                   access_token + ':' + refresh_credential['refresh_token'],
+                                                   credential.voms_attrs,
+                                                   datetime.utcfromtimestamp(offline_credential['exp']))
+
+                validated_offline = True
+
         credential = Session.query(Credential).filter(Credential.proxy.like(access_token + "%")).first()
-        if not credential or credential.expired():
+        if (valid and not validated_offline) and (not credential or credential.expired()):
             # Delete the db entry in case of credential expired before validating the new one
             if credential:
                 Session.delete(credential)
-
-            # Try to first validate the supplied access_token offline
-            self._validate_token_offline(access_token)
 
             requestor = Request(None, None)  # VERIFY:TRUE
             body = {'token': access_token}
@@ -198,28 +220,13 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
             log.debug("Credential is as follows: " + str(credential))
 
-            # Request a refresh token based on this access token through the token-exchange grant-type
-            body = {'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange',
-                    'subject_token_type': 'urn:ietf:params:oauth:token-type:access_token',
-                    'subject_token': access_token,
-                    'scope': 'offline_access openid profile',
-                    'audience': self.config['fts3.ClientId']}
-
-            refresh_credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'], body=body,
-                                                            user=self.config['fts3.ClientId'],
-                                                            passw=self.config['fts3.ClientSecret']))
-
+            refresh_credential = self._generate_refresh_token(access_token)
             log.debug("Refresh credential is as follows: " + str(refresh_credential))
 
-            credential = Credential(
-                dlg_id=dlg_id,
-                dn=credential['sub'],
-                proxy=access_token + ':' + refresh_credential['refresh_token'],
-                voms_attrs=self._generate_voms_attrs(credential),
-                termination_time=datetime.utcfromtimestamp(credential['exp'])
-            )
-            Session.add(credential)
-            Session.commit()
+            credential = self._save_credential(dlg_id, credential['sub'],
+                                               access_token + ':' + refresh_credential['refresh_token'],
+                                               self._generate_voms_attrs(credential),
+                                               datetime.utcfromtimestamp(credential['exp']))
 
         authorization.is_oauth = True
         authorization.expires_in = credential.termination_time - datetime.utcnow()
@@ -244,19 +251,55 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             return credential['user_id'] + " "
 
     def _validate_token_offline(self, access_token):
-        jwkProvider = Session.query(OAuth2Providers).filter(OAuth2Providers.provider_url.like(self.config['fts3.AuthorizationProviderJwkEndpoint'] + "%")).first()
-        if not jwkProvider:
-            requestor = Request(None, None)
-            jwkIAM = json.loads(requestor.method('GET', self.config['fts3.AuthorizationProviderJwkEndpoint']))
-            oauth2provider = OAuth2Providers(
-                provider_url=self.config['fts3.AuthorizationProviderJwkEndpoint'],
-                provider_jwk=str(jwkIAM))
-            Session.add(oauth2provider)
-            Session.commit()
-        else:
-            jwkIAM = literal_eval(jwkProvider.provider_jwk)
-        print jwkIAM
+        try:
+            jwkProvider = Session.query(OAuth2Providers).filter(OAuth2Providers.provider_url.like(self.config['fts3.AuthorizationProviderJwkEndpoint'] + "%")).first()
+            if not jwkProvider:
+                requestor = Request(None, None)
+                jwksIAM = json.loads(requestor.method('GET', self.config['fts3.AuthorizationProviderJwkEndpoint']))
+                oauth2provider = OAuth2Providers(
+                    provider_url=self.config['fts3.AuthorizationProviderJwkEndpoint'],
+                    provider_jwk=str(jwksIAM))
+                Session.add(oauth2provider)
+                Session.commit()
+            else:
+                jwksIAM = literal_eval(jwkProvider.provider_jwk)
+            # jwksIAM contains keys as json/dict
+            # Import json key
+            jwks = jwk.JWKSet.from_json(jwksIAM)
+            # Extract public key
+            pub_key = jwks.get_key("rsa1")
 
-        ##validate token here offline, if ok, return true and build credential, else False
+            # Validate
+            credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithm='RS256')
+        except Exception as e:
+            log.debug("Offline token validation failed: " + str(e))
+            return False, None
+        return True, credential
 
-        return False, credential
+    def _generate_refresh_token(self, access_token):
+        requestor = Request(None, None)  # VERIFY:TRUE
+        # Request a refresh token based on this access token through the token-exchange grant-type
+        body = {'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange',
+                'subject_token_type': 'urn:ietf:params:oauth:token-type:access_token',
+                'subject_token': access_token,
+                'scope': 'offline_access openid profile',
+                'audience': self.config['fts3.ClientId']}
+
+        refresh_credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'],
+                                        body=body,
+                                        user=self.config['fts3.ClientId'],
+                                        passw=self.config['fts3.ClientSecret']))
+        return refresh_credential
+
+    def _save_credential(self, dlg_id, dn, proxy, voms_attrs, termination_time):
+        credential = Credential(
+            dlg_id=dlg_id,
+            dn=dn,
+            proxy=proxy,
+            voms_attrs=voms_attrs,
+            termination_time=termination_time
+        )
+        Session.add(credential)
+        Session.commit()
+
+        return credential
