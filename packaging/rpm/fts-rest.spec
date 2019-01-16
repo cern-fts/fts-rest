@@ -49,9 +49,6 @@ BuildRequires:  pandoc
 BuildRequires:  python-dirq
 BuildRequires:  MySQL-python
 
-%if %{?rhel}%{!?rhel:0} >= 7
-Requires(post): firewalld-filesystem
-%endif
 Requires:       gridsite%{?_isa} >= 1.7
 %if %{?rhel}%{!?rhel:0} == 6
 Requires:       httpd%{?_isa} >= 2.2.15-60
@@ -76,6 +73,7 @@ Summary: FTS3 Rest Firewalld
 Group: Applications/Internet
 
 Requires:  firewalld-filesystem
+Requires(post): firewalld-filesystem
 
 %description firewalld
 FTS3 Rest firewalld.
@@ -153,8 +151,8 @@ if [ "$1" -eq "2" ]; then # Upgrade
     chown fts3.fts3 /var/log/fts3rest/fts3rest.log || true
 fi
 
-%post firewalld
 %if %{?rhel}%{!?rhel:0} >= 7
+%post firewalld
 %firewalld_reload
 %endif
 
@@ -293,8 +291,8 @@ EOF
 %doc docs/install.md
 %doc docs/api.md
 
-%files firewalld
 %if %{?rhel}%{!?rhel:0} >= 7
+%files firewalld
 %config(noreplace) %{_prefix}/lib/firewalld/services/fts3rest.xml
 %endif
 
