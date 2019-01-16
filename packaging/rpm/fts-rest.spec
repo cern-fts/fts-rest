@@ -206,9 +206,6 @@ mkdir -p %{buildroot}/%{_var}/cache/fts3rest/
 mkdir -p %{buildroot}/%{_var}/log/fts3rest/
 
 cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
-%if %{?rhel}%{!?rhel:0} >= 7
-cp src/fts3/fts3rest.xml %{_prefix}/lib/firewalld/services/
-%endif
 cat > %{buildroot}/%{python_sitelib}/fts3.egg-info <<EOF
 Metadata-Version: 1.0
 Name: fts3
