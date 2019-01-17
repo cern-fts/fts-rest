@@ -212,7 +212,7 @@ popd
 mkdir -p %{buildroot}
 make install DESTDIR=%{buildroot}
 %if %{?rhel}%{!?rhel:0} == 6
-rm -rf %{_prefix}/lib/firewalld/services/fts3rest.xml
+rm -rf %{buildroot}/%{_prefix}/lib/firewalld/services/fts3rest.xml
 %endif
 mkdir -p %{buildroot}/%{_var}/cache/fts3rest/
 mkdir -p %{buildroot}/%{_var}/log/fts3rest/
