@@ -49,9 +49,6 @@ BuildRequires:  pandoc
 BuildRequires:  python-dirq
 BuildRequires:  MySQL-python
 
-%if %{?rhel}%{!?rhel:0} >= 7
-Requires(post): firewalld-filesystem
-%endif
 Requires:       gridsite%{?_isa} >= 1.7
 %if %{?rhel}%{!?rhel:0} == 6
 Requires:       httpd%{?_isa} >= 2.2.15-60
@@ -69,15 +66,18 @@ Requires:       gfal2-python%{?_isa}
 Requires: 	python-requests
 %description
 This package provides the FTS3 REST interface
+
+%if %{?rhel}%{!?rhel:0} >= 7
 %package firewalld
 Summary: FTS3 Rest Firewalld
 Group: Applications/Internet
 
-%if %{?rhel}%{!?rhel:0} >= 7
 Requires:  firewalld-filesystem
-%endif
+Requires(post): firewalld-filesystem
+
 %description firewalld
 FTS3 Rest firewalld.
+%endif
 
 %package cloud-storage
 Summary:        FTS3 Rest Cloud Storage extensions
@@ -151,8 +151,8 @@ if [ "$1" -eq "2" ]; then # Upgrade
     chown fts3.fts3 /var/log/fts3rest/fts3rest.log || true
 fi
 
-%post firewalld
 %if %{?rhel}%{!?rhel:0} >= 7
+%post firewalld
 %firewalld_reload
 %endif
 
@@ -193,6 +193,7 @@ if [ "$fts_api_ver" != "$fts_spec_ver" ]; then
 fi
 
 %cmake . -DCMAKE_INSTALL_PREFIX=/ -DPYTHON_SITE_PACKAGES=%{python_sitelib}
+
 make %{?_smp_mflags}
 
 %check
@@ -210,9 +211,12 @@ popd
 %install
 mkdir -p %{buildroot}
 make install DESTDIR=%{buildroot}
-
+%if %{?rhel}%{!?rhel:0} == 6
+rm -rf %{buildroot}/%{_prefix}/lib/firewalld/services/fts3rest.xml
+%endif
 mkdir -p %{buildroot}/%{_var}/cache/fts3rest/
 mkdir -p %{buildroot}/%{_var}/log/fts3rest/
+
 
 cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 cat > %{buildroot}/%{python_sitelib}/fts3.egg-info <<EOF
@@ -287,8 +291,8 @@ EOF
 %doc docs/install.md
 %doc docs/api.md
 
-%files firewalld
 %if %{?rhel}%{!?rhel:0} >= 7
+%files firewalld
 %config(noreplace) %{_prefix}/lib/firewalld/services/fts3rest.xml
 %endif
 
