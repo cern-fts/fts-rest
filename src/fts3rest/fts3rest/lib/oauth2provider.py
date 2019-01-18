@@ -261,11 +261,12 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 jwksIAM = json.loads(requestor.method('GET', self.config['fts3.AuthorizationProviderJwkEndpoint']))
                 oauth2provider = OAuth2Providers(
                     provider_url=self.config['fts3.AuthorizationProviderJwkEndpoint'],
-                    provider_jwk=str(jwksIAM))
+                    provider_jwk=str(jwksIAM).replace("\'","\"").replace("u\"","\""))
                 Session.add(oauth2provider)
                 Session.commit()
+                jwksIAM = oauth2provider.provider_jwk
             else:
-                jwksIAM = literal_eval(jwkProvider.provider_jwk)
+                jwksIAM = jwkProvider.provider_jwk
             # jwksIAM contains keys as json/dict
             # Import json key
             jwks = jwk.JWKSet.from_json(jwksIAM)
@@ -305,4 +306,3 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         Session.add(credential)
         Session.commit()
 
-        return credential
