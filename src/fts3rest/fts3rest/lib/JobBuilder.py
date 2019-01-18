@@ -375,7 +375,7 @@ class JobBuilder(object):
                 source_se=get_storage_element(source),
                 dest_se=get_storage_element(destination),
                 vo_name=None,
-		priority=self.job['priority']
+		priority=self.job['priority'],
                 user_filesize=_safe_filesize(file_dict.get('filesize', 0)),
                 selection_strategy=file_dict.get('selection_strategy', 'auto'),
                 checksum=file_dict.get('checksum', None),
