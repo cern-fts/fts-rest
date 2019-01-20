@@ -28,7 +28,7 @@ class BadEndpoint(FTS3ClientException):
 
 
 class Unauthorized(FTS3ClientException):
-    def __init__(self, reason):
+    def __init__(self, reason=None):
         self.reason = reason
 
     def __str__(self):
