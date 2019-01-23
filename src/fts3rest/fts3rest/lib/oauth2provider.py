@@ -25,8 +25,6 @@ from fts3.model.credentials import CredentialCache, Credential
 from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token, OAuth2Providers
 from fts3.rest.client.request import Request
 from ast import literal_eval
-from jwcrypto import jwk
-import jwt
 import json
 
 log = logging.getLogger(__name__)
@@ -177,29 +175,30 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
         # Try to first validate the supplied access_token offline in order to avoid the expensive REST query to IAM
         validated_offline = False
-        valid, offline_credential = self._validate_token_offline(access_token)
-        if valid:
-            # If token is valid, check if this user has been seen before and if yes update the db with the new access and refresh tokens.
-            # If not, validate online in order to get the extra info i.e. email etc
-            credential = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
-            if credential:
-                log.debug("Credential is as follows: " + str(offline_credential))
-                refresh_credential = self._generate_refresh_token(access_token)
-                log.debug("Refresh credential is as follows: " + str(refresh_credential))
-                c = Session.query(Credential).filter(Credential.dlg_id == credential.dlg_id).first()
-                if c:
-                    Session.delete(c)
+        if self._should_validate_offline():
+            valid, offline_credential = self._validate_token_offline(access_token)
+            if valid:
+                # If token is valid, check if this user has been seen before and if yes update the db with the new access and refresh tokens.
+                # If not, validate online in order to get the extra info i.e. email etc
+                credential = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
+                if credential:
+                    log.debug("Credential is as follows: " + str(offline_credential))
+                    refresh_credential = self._generate_refresh_token(access_token)
+                    log.debug("Refresh credential is as follows: " + str(refresh_credential))
+                    c = Session.query(Credential).filter(Credential.dlg_id == credential.dlg_id).first()
+                    if c:
+                        Session.delete(c)
 
-                credential = self._save_credential(generate_delegation_id(credential.dn, ""),
-                                                   credential.dn,
-                                                   access_token + ':' + refresh_credential['refresh_token'],
-                                                   credential.voms_attrs,
-                                                   datetime.utcfromtimestamp(offline_credential['exp']))
+                    credential = self._save_credential(generate_delegation_id(credential.dn, ""),
+                                                       credential.dn,
+                                                       access_token + ':' + refresh_credential['refresh_token'],
+                                                       credential.voms_attrs,
+                                                       datetime.utcfromtimestamp(offline_credential['exp']))
 
-                validated_offline = True
-        else:
-            log.debug("Access token provided is not valid - offline validation")
-            return
+                    validated_offline = True
+            else:
+                log.debug("Access token provided is not valid - offline validation")
+                return
 
         credential = Session.query(Credential).filter(Credential.proxy.like(access_token + "%")).first()
         if (not validated_offline) and (not credential or credential.expired()):
@@ -255,6 +254,9 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
     def _validate_token_offline(self, access_token):
         try:
+            from jwcrypto import jwk
+            import jwt
+
             jwkProvider = Session.query(OAuth2Providers).filter(OAuth2Providers.provider_url.like(self.config['fts3.AuthorizationProviderJwkEndpoint'] + "%")).first()
             if not jwkProvider:
                 requestor = Request(None, None)
@@ -306,3 +308,5 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         Session.add(credential)
         Session.commit()
 
+    def _should_validate_offline(self):
+        return 'fts3.AuthorizationProviderJwkEndpoint' in self.config.keys()
