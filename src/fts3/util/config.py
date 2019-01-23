@@ -64,7 +64,7 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
             fts3cfg['fts3.DbConnectString'] = fts3cfg['fts3.DbConnectString'][1:-1]
 
     if fts3cfg['fts3.DbType'] == 'mysql':
-        fts3cfg['sqlalchemy.url'] = "mysql://%s:%s@%s?charset=utf8mb4" % (fts3cfg['fts3.DbUserName'],
+        fts3cfg['sqlalchemy.url'] = "mysql://%s:%s@%s" % (fts3cfg['fts3.DbUserName'],
                                                           quote_plus(fts3cfg['fts3.DbPassword']),
                                                           fts3cfg['fts3.DbConnectString'])
     elif fts3cfg['fts3.DbType'] == 'sqlite':
