@@ -333,6 +333,44 @@ EOF
 
 
 %changelog
+* Thu Jan 10 2019 Andrea Manzi <amanzi@cern.ch> - 3.8.2-1
+- New bugfix release
+
+* Tue Oct 16 2018 Andrea Manzi <amanzi@cern.ch> - 3.8.1-1
+- New bugfix release
+
+* Mon Sep 24 2018 Andrea Manzi <amanzi@cern.ch> - 3.8.0-1
+- New Minor release
+- Initial support for Macaroons/Scitokens
+- Multihop Scheduler merged into Standard Scheduling system
+- AutoSessionReuse support
+
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 3.7.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
+* Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org>
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
+
+* Sun Dec 17 2017 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl>
+- Python 2 binary package renamed to python2-fts
+  See https://fedoraproject.org/wiki/FinalizingFedoraSwitchtoPython3
+
+* Sat Aug 19 2017 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 3.6.3-3
+- Python 2 binary package renamed to python2-fts-rest
+  See https://fedoraproject.org/wiki/FinalizingFedoraSwitchtoPython3
+
+* Wed Jul 26 2017 Fedora Release Engineering <releng@fedoraproject.org> - 3.6.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
+* Tue Apr 18 2017 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.6.3-1
+- Update for new upstream release
+
+* Fri Feb 10 2017 Fedora Release Engineering <releng@fedoraproject.org> - 3.5.4-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Tue Nov 15 2016 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.5.4-1
+- Update for new upstream release
+
 * Tue Apr 19 2016 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.4.0-1
 - Update for new upstream release
 
