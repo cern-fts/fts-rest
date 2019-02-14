@@ -515,8 +515,9 @@ class JobBuilder(object):
         max_reuse_files = int(pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000))
         max_size_small_file = int(pylons.config.get('fts3.AutoSessionReuseMaxSmallFileSize', 104857600)) #100MB
         max_size_big_file = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFileSize', 1073741824)) #1GB
-        max_big_files = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFiles', 2))
-        if (auto_session_reuse == 'true' and self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
+        max_big_files = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFiles', 2)
+        
+        if ((not self.is_multiple) and (auto_session_reuse == 'true') and (self.job['source_se']) and (self.job['dest_se']) and (job_type is None) and (len(self.files) > 1)) :
             if len(self.files) > max_reuse_files:
                 self.job['job_type'] == 'N'
                 log.debug("The number of files "+str(len(self.files))+"is bigger than the auto maximum reuse files "+str(max_reuse_files))
