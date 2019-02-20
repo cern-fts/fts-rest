@@ -150,12 +150,6 @@ if [ "$1" -eq "2" ]; then # Upgrade
     chown fts3.fts3 /var/log/fts3rest/fts3rest.log || true
 fi
 
-%if %{?rhel}%{!?rhel:0} >= 7
-%post firewalld
-%firewalld_reload
-%endif
-
-
 %postun
 if [ "$1" -eq "0" ] ; then
     /sbin/service httpd condrestart >/dev/null 2>&1 || :
