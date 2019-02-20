@@ -73,7 +73,6 @@ Summary: FTS3 Rest Firewalld
 Group: Applications/Internet
 
 Requires:  firewalld-filesystem
-Requires(post): firewalld-filesystem
 
 %description firewalld
 FTS3 Rest firewalld.
