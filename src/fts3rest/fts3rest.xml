@@ -3,5 +3,4 @@
   <short>fts-rest</short>
   <description>The File Transfer Service (FTS) coordinates transfers between SEs.</description>
   <port protocol="tcp" port="8446"/>
-  <port protocol="tcp" port="8449"/>
 </service>
