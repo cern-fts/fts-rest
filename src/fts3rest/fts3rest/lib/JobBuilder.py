@@ -516,28 +516,30 @@ class JobBuilder(object):
         max_size_small_file = int(pylons.config.get('fts3.AutoSessionReuseMaxSmallFileSize', 104857600)) #100MB
         max_size_big_file = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFileSize', 1073741824)) #1GB
         max_big_files = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFiles', 2))
-        if (auto_session_reuse == 'true' and self.job['source_se'] and self.job['dest_se'] and (job_type is None) and (len(self.files) > 1)) :
-            if len(self.files) > max_reuse_files:
-                self.job['job_type'] == 'N'
-                log.debug("The number of files "+str(len(self.files))+"is bigger than the auto maximum reuse files "+str(max_reuse_files))
-            else:
-                small_files = 0
-                big_files = 0
-                min_small_files = len(self.files) - max_big_files
-                for file in self.files:
-                    log.debug(str(file['user_filesize']))
-                    if file['user_filesize'] <= max_size_small_file and file['user_filesize'] > 0:
-                        small_files +=1
-                    else:
-                        if file['user_filesize'] > max_size_small_file and file['user_filesize'] <= max_size_big_file:
-                            big_files +=1
-                if small_files > min_small_files and big_files <= max_big_files:
-                    self.job['job_type'] = 'Y'
-                    log.debug("Reuse jobs with "+str(small_files)+" small files up to "+str(len(self.files))+" total files")
-                    # Need to reset their hashed_id so they land on the same machine
-                    shared_hashed_id = _generate_hashed_id()
+
+        if auto_session_reuse == 'true' and not self.is_multiple:
+            if ((self.job['source_se']) and (self.job['dest_se']) and (job_type is None) and (len(self.files) > 1)):
+                if len(self.files) > max_reuse_files:
+                    self.job['job_type'] == 'N'
+                    log.debug("The number of files "+str(len(self.files))+"is bigger than the auto maximum reuse files "+str(max_reuse_files))
+                else:
+                    small_files = 0
+                    big_files = 0
+                    min_small_files = len(self.files) - max_big_files
                     for file in self.files:
-                        file['hashed_id'] = shared_hashed_id
+                        log.debug(str(file['user_filesize']))
+                        if file['user_filesize'] <= max_size_small_file and file['user_filesize'] > 0:
+                            small_files +=1
+                        else:
+                            if file['user_filesize'] > max_size_small_file and file['user_filesize'] <= max_size_big_file:
+                                big_files +=1
+                    if small_files > min_small_files and big_files <= max_big_files:
+                        self.job['job_type'] = 'Y'
+                        log.debug("Reuse jobs with "+str(small_files)+" small files up to "+str(len(self.files))+" total files")
+                        # Need to reset their hashed_id so they land on the same machine
+                        shared_hashed_id = _generate_hashed_id()
+                        for file in self.files:
+                            file['hashed_id'] = shared_hashed_id
         
         if self.job['job_type'] is None:
             self.job['job_type'] = 'N'
