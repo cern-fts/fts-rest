@@ -5,6 +5,7 @@ For more detailed information about installation, usage, etc... please, check th
 
 ## Firewalld: How to set up a firewall using firewalld on centos7
 
+In order to setup the firewalld support for FTS REST you need to install the fts-rest-firewalld package.
 
 When running fts-rest, we can allow this traffic for interfaces in our "public" zone for this session by typing:
 
