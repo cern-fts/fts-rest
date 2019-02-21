@@ -326,6 +326,9 @@ EOF
 
 
 %changelog
+* Thu Feb 21 2019 Andrea Manzi <amanzi@cern.ch> - 3.8.3-1
+- New bugfix release
+
 * Thu Jan 10 2019 Andrea Manzi <amanzi@cern.ch> - 3.8.2-1
 - New bugfix release
 
