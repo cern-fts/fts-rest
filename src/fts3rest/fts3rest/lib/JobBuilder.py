@@ -501,10 +501,11 @@ class JobBuilder(object):
         
         # If reuse is enabled, source and destination SE must be the same for all entries
         # Ignore for multiple replica jobs!
+        min_reuse_files = int(pylons.config.get('fts3.SessionReuseMinFiles', 5))
         if job_type == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
         
-        if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']):
+        if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']) and len(self.files) > min_reuse_files:
             self.job['job_type'] == 'Y'
         
         if job_type == 'N' and not self.is_multiple:
@@ -513,7 +514,6 @@ class JobBuilder(object):
         auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false')
         log.debug("AutoSessionReuse is "+str(auto_session_reuse)+ " job_type is" + str(job_type))
         max_reuse_files = int(pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000))
-	min_reuse_files = int(pylons.config.get('fts3.AutoSessionReuseMinFiles', 5))
         max_size_small_file = int(pylons.config.get('fts3.AutoSessionReuseMaxSmallFileSize', 104857600)) #100MB
         max_size_big_file = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFileSize', 1073741824)) #1GB
         max_big_files = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFiles', 2))
