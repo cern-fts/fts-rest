@@ -67,7 +67,7 @@ base_dir = os.path.dirname(__file__)
 
 setup(
     name='fts3-rest',
-    version='3.8.3',
+    version='3.8.4',
     description='FTS3 Python Libraries',
     long_description='FTS3 Python Libraries',
     author='FTS3 Developers',
