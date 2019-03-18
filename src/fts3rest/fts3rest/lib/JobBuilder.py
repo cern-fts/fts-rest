@@ -501,10 +501,11 @@ class JobBuilder(object):
         
         # If reuse is enabled, source and destination SE must be the same for all entries
         # Ignore for multiple replica jobs!
+        min_reuse_files = int(pylons.config.get('fts3.SessionReuseMinFiles', 5))
         if job_type == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
         
-        if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']):
+        if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']) and len(self.files) > min_reuse_files:
             self.job['job_type'] == 'Y'
         
         if job_type == 'N' and not self.is_multiple:
@@ -517,7 +518,7 @@ class JobBuilder(object):
         max_size_big_file = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFileSize', 1073741824)) #1GB
         max_big_files = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFiles', 2))
 
-        if auto_session_reuse == 'true' and not self.is_multiple:
+        if auto_session_reuse == 'true' and not self.is_multiple and len(self.files) > min_reuse_files:
             if ((self.job['source_se']) and (self.job['dest_se']) and (job_type is None) and (len(self.files) > 1)):
                 if len(self.files) > max_reuse_files:
                     self.job['job_type'] == 'N'
