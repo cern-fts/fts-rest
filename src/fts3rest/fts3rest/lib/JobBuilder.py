@@ -202,7 +202,9 @@ def _select_best_replica(files, vo_name, entry_state, strategy):
         if transfer['source_se'] == best_se:
             best_index = index
             break
+    
     files[best_index]['file_state'] = entry_state
+    files[best_index]['dest_surl_uuid'] = str(uuid.uuid5(BASE_ID, files[best_index]['dest_surl'].encode('utf-8'))) 
 
 
 def _apply_banning(files):
@@ -364,11 +366,17 @@ class JobBuilder(object):
             # Multiple replicas, all must share the hashed-id
             if shared_hashed_id is None:
                 shared_hashed_id = _generate_hashed_id()
-
+	 
         for source, destination in pairs:
+	    if len(file_dict['sources']) > 1:
+		dest_uuid = None
+	    else:
+		dest_uuid = str(uuid.uuid5(BASE_ID, destination.geturl().encode('utf-8')))
+
             f = dict(
                 job_id=self.job_id,
                 file_index=f_index,
+		dest_surl_uuid=dest_uuid,
                 file_state=initial_file_state,
                 source_surl=source.geturl(),
                 dest_surl=destination.geturl(),
