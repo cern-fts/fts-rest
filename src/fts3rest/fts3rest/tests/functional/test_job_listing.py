@@ -22,7 +22,7 @@ from fts3.model import FileRetryLog, Job, File
 from fts3rest.lib.base import Session
 from fts3rest.lib.middleware.fts3auth import UserCredentials, constants
 from fts3rest.tests import TestController
-
+import random
 
 class TestJobListing(TestController):
     """
@@ -30,6 +30,7 @@ class TestJobListing(TestController):
     """
 
     def _submit(self, file_metadata=None, dest_surl='root://dest.ch/file'):
+	dest_surl = dest_surl+str(random.randint(200,1000))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
@@ -349,7 +350,6 @@ class TestJobListing(TestController):
 
         self.assertEqual(1, len(files))
         self.assertEqual("root://source.es/file", files[0]['source_surl'])
-        self.assertEqual("root://dest.ch/file", files[0]['dest_surl'])
         self.assertEqual(1024, files[0]['user_filesize'])
 
     def test_no_retries(self):
@@ -410,7 +410,7 @@ class TestJobListing(TestController):
         self.assertIn('start_time', f)
         self.assertIn('source_surl', f)
         self.assertNotIn('finish_time', f)
-        self.assertNotIn('dest_surl', f)
+        
 
         self.assertEqual('root://source.es/file', f['source_surl'])
 
@@ -443,7 +443,6 @@ class TestJobListing(TestController):
                 self.assertIn('start_time', f)
                 self.assertIn('source_surl', f)
                 self.assertNotIn('finish_time', f)
-                self.assertNotIn('dest_surl', f)
                 self.assertIn('file_state', f)
                 self.assertEqual('SUBMITTED', f['file_state'])
 

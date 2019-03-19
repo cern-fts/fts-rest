@@ -16,7 +16,7 @@
 #   limitations under the License.
 from sqlalchemy import BigInteger
 from sqlalchemy import Boolean, Column, DateTime, Float
-from sqlalchemy import ForeignKey, Integer, String, Enum
+from sqlalchemy import ForeignKey, Integer, String, Enum, UniqueConstraint
 from sqlalchemy.dialects import sqlite
 from sqlalchemy.orm import relation, backref
 
@@ -39,6 +39,7 @@ class File(Base):
     hashed_id            = Column(Integer)
     file_index           = Column(Integer)
     job_id               = Column(String(36), ForeignKey('t_job.job_id'))
+    dest_surl_uuid       = Column(String(255), unique=True)
     vo_name              = Column(String(50))
     source_se            = Column(String(255))
     dest_se              = Column(String(255))
@@ -86,6 +87,7 @@ class ArchivedFile(Base):
     file_index           = Column(Integer)
     job_id               = Column(String(36),
                                   ForeignKey('t_job_backup.job_id'))
+    dest_surl_uuid       = Column(String(255), unique=True)
     source_se            = Column(String(255))
     dest_se              = Column(String(255))
     priority             = Column(Integer)

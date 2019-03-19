@@ -25,7 +25,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import File, Job
-
+import random
 
 class TestJobSubmission(TestController):
     """
@@ -55,7 +55,6 @@ class TestJobSubmission(TestController):
         self.assertEqual(len(files), 1)
         self.assertEqual(files[0].file_state, 'SUBMITTED')
         self.assertEqual(files[0].source_surl, 'root://source.es/file')
-        self.assertEqual(files[0].dest_surl, 'root://dest.ch/file')
         self.assertEqual(files[0].source_se, 'root://source.es')
         self.assertEqual(files[0].dest_se, 'root://dest.ch')
         self.assertEqual(files[0].file_index, 0)
@@ -79,11 +78,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+        dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -112,11 +111,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+        dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -145,11 +144,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+ 	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -179,11 +178,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -213,11 +212,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -246,11 +245,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+        dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -280,11 +279,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'srm://dest.ch:8447/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['srm://source.es:8446/file'],
-                'destinations': ['srm://dest.ch:8447/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -320,11 +319,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+        dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['srm://source.es/?SFN=/path/'],
-                'destinations': ['http://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -362,11 +361,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': None,
                 'filesize': 1024,
@@ -397,11 +396,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': '1234F',
                 'filesize': 1024,
@@ -433,11 +432,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': '1234F',
                 'filesize': 1024,
@@ -468,11 +467,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+ 	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': '1234F',
                 'filesize': 1024,
@@ -503,11 +502,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': '1234F',
                 'filesize': 1024,
@@ -539,11 +538,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'filesize': 1024,
                 'metadata': {'mykey': 'myvalue'},
@@ -574,11 +573,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'filesize': None,
                 'metadata': {'mykey': 'myvalue'},
@@ -608,11 +607,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment(no_vo=True)
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -641,11 +640,11 @@ class TestJobSubmission(TestController):
         proxy_dn = self.TEST_USER_DN + '/CN=proxy'
         self.setup_gridsite_environment(no_vo=True, dn=proxy_dn)
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -672,11 +671,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -706,11 +705,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {'files': [
             {
                 'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
+                'destinations': [dest_surl],
                 'activity': 'my-activity'
             },
             {
@@ -740,11 +739,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['root://source.es/file\n \r '],
-                'destinations': ['\r\n root://dest.ch/file\n\n \n'],
+                'destinations': ['\r\n'+dest_surl+'\n\n \n'],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024.0,
@@ -773,11 +772,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch:8447/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['http://source.es:8446/file'],
-                'destinations': ['root://dest.ch:8447/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -796,7 +795,7 @@ class TestJobSubmission(TestController):
         job = Session.query(Job).get(job_id)
         self.assertEqual(1, len(job.files))
         self.assertEqual('http://source.es:8446/file', job.files[0].source_surl)
-        self.assertEqual('root://dest.ch:8447/file', job.files[0].dest_surl)
+        self.assertEqual(dest_surl, job.files[0].dest_surl)
 
     def test_submit_with_cloud_cred(self):
         """
@@ -804,11 +803,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+        dest_surl = 'root://dest.ch:8447/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['dropbox://dropbox.com/file'],
-                'destinations': ['root://dest.ch:8447/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -827,7 +826,7 @@ class TestJobSubmission(TestController):
         job = Session.query(Job).get(job_id)
         self.assertEqual(1, len(job.files))
         self.assertEqual('dropbox://dropbox.com/file', job.files[0].source_surl)
-        self.assertEqual('root://dest.ch:8447/file', job.files[0].dest_surl)
+        self.assertEqual(dest_surl, job.files[0].dest_surl)
 
     def test_submit_protocol_params(self):
         """
@@ -835,11 +834,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+        dest_surl = 'root://dest.ch:8447/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['http://source.es:8446/file'],
-                'destinations': ['root://dest.ch:8447/file'],
+                'destinations': [dest_surl],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
@@ -875,11 +874,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch:8447/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['http://source.es:8446/file'],
-                'destinations': ['root://dest.ch:8447/file'],
+                'destinations': [dest_surl],
             }],
             'params': {
                 'priority': 5,
@@ -902,11 +901,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+        dest_surl = 'root://dest.ch:8447/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['http://source.es:8446/file'],
-                'destinations': ['root://dest.ch:8447/file'],
+                'destinations': [dest_surl],
             }],
             'params': {
                 'max_time_in_queue': 8
@@ -933,11 +932,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest.ch:8447/file' + str(random.randint(0, 100))
         job = {
             'files': [{
                 'sources': ['http://source.es:8446/file'],
-                'destinations': ['root://dest.ch:8447/file'],
+                'destinations': [dest_surl],
             }],
             'params': {
                 'max_time_in_queue': '4s'
@@ -961,11 +960,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+	dest_surl = 'root://dest' + str(random.randint(0, 100))+'.ch:8447/file'
         job = {
             'files': [{
                 'sources': ['http://source.es:8446/file'],
-                'destinations': ['root://dest.ch:8447/file'],
+                'destinations': [dest_surl],
             }],
             'params': {
                 'max_time_in_queue': '2m'
@@ -988,11 +987,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+        
         job = {
             'files': [{
                 'sources': ['http://source.es:8446/file'],
-                'destinations': ['root://dest.ch:8447/file'],
+                'destinations': ['root://destipv4.ch:8447/file'],
             }],
             'params': {
                 'ipv4': True
@@ -1008,9 +1007,18 @@ class TestJobSubmission(TestController):
         jobdb = Session.query(Job).get(job_id)
         self.assertIn('ipv4', jobdb.internal_job_params)
         self.assertNotIn('ipv6', jobdb.internal_job_params)
+	        
+	job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': ['root://destipv4tofalse.ch:8447/file'],
+            }],
+            'params': {
+                'ipv4': False
+            }
+        }
 
-        job['params']['ipv4'] = False
-        job_id = self.app.post(
+	job_id = self.app.post(
             url="/jobs",
             content_type='application/json',
             params=json.dumps(job),
@@ -1027,11 +1035,11 @@ class TestJobSubmission(TestController):
         """
         self.setup_gridsite_environment()
         self.push_delegation()
-
+        
         job = {
             'files': [{
                 'sources': ['http://source.es:8446/file'],
-                'destinations': ['root://dest.ch:8447/file'],
+                'destinations': ['root://destipv6.ch:8447/file'],
             }],
             'params': {
                 'ipv6': True
@@ -1048,7 +1056,16 @@ class TestJobSubmission(TestController):
         self.assertIn('ipv6', jobdb.internal_job_params)
         self.assertNotIn('ipv4', jobdb.internal_job_params)
 
-        job['params']['ipv6'] = False
+        job = {
+            'files': [{
+                'sources': ['http://source.es:8446/file'],
+                'destinations': [root://destipv6tofalse.ch:8447/file],
+            }],
+            'params': {
+                'ipv6': False
+            }
+        }
+
         job_id = self.app.post(
             url="/jobs",
             content_type='application/json',
@@ -1074,7 +1091,7 @@ class TestJobSubmission(TestController):
         for r in xrange(5000):
             files.append({
                 'sources': ["root://source.es/file%d" % r],
-                'destinations': ["root://dest.ch/file%d" % r]
+                'destinations': ["root://dest.ch/file%d%d" % (r,random.randint(0, 100))]
             })
 
         job = {'files': files}
