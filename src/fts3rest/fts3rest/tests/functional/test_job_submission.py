@@ -1059,7 +1059,7 @@ class TestJobSubmission(TestController):
         job = {
             'files': [{
                 'sources': ['http://source.es:8446/file'],
-                'destinations': [root://destipv6tofalse.ch:8447/file],
+                'destinations': ['root://destipv6tofalse.ch:8447/file'],
             }],
             'params': {
                 'ipv6': False

@@ -161,7 +161,7 @@ class TestScheduler(TestController):
                         'http://site03.fr/file'
                         ],
 
-                    'destinations': ['http://dest.ch/file'+str(random.randint(0, 100)]),
+                    'destinations': ['http://dest.ch/file'+str(random.randint(0, 100))],
                     'selection_strategy': strategy,
                     'checksum': 'adler32:1234',
                     'filesize': 1024,
