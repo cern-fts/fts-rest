@@ -539,7 +539,7 @@ class TestJobListing(TestController):
         self.setup_gridsite_environment()
         self.push_delegation()
 
-        job1 = self._submit(dest_surl='gsiftp://test/path')
+        job1 = self._submit(dest_surl='gsiftp://test1/path')
         job2 = self._submit(dest_surl='gsiftp://test2/path')
 
         files = self.app.get(
@@ -551,7 +551,7 @@ class TestJobListing(TestController):
         self.assertIn(job2, map(lambda f: f['job_id'], files))
 
         files = self.app.get(
-            url="/files?dest_surl=gsiftp://test/path",
+            url="/files?dest_surl=gsiftp://test1/path",
             status=200
         ).json
 
