@@ -44,10 +44,10 @@ class TestJobCancel(TestController):
 
         files = []
         for i in xrange(count):
-	    u = random.randint(100, 1000)
+	    u = random.randint(500, 5000)
             files.append({
                 'sources': ['root://source.es/file%d' % i],
-                'destinations': ['root://dest.ch/file'+str(i)+str(u)],
+                'destinations': ['root://destcancel.ch/file'+str(i)+str(u)],
                 'selection_strategy': 'orderly',
                 'checksum': 'adler32:1234',
                 'filesize': 1024,
