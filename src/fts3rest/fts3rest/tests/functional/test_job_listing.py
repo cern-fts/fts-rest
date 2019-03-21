@@ -540,11 +540,11 @@ class TestJobListing(TestController):
         self.setup_gridsite_environment()
         self.push_delegation()
 
-        job1 = self._submit(dest_surl='gsiftp://test_query1/path', random_url=False)
-        job2 = self._submit(dest_surl='gsiftp://test_query2/path', random_url=False)
+        job1 = self._submit(dest_surl='gsiftp://test-query1/path', random_url=False)
+        job2 = self._submit(dest_surl='gsiftp://test-query2/path', random_url=False)
 
         files = self.app.get(
-            url="/files?dest_surl=gsiftp://test_query2/path",
+            url="/files?dest_surl=gsiftp://test-query2/path",
             status=200
         ).json
 

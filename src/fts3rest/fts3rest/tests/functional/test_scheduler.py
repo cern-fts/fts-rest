@@ -99,7 +99,7 @@ class TestScheduler(TestController):
         evolution = OptimizerEvolution(
             datetime=datetime.datetime.utcnow(),
             source_se='http://site01.es',
-            dest_se='http://dest.ch'+str(random.randint(0, 100)),
+            dest_se='http://dest.ch',
             success=90,
             active=10,
             throughput=10
@@ -109,7 +109,7 @@ class TestScheduler(TestController):
         evolution = OptimizerEvolution(
             datetime=datetime.datetime.utcnow(),
             source_se='http://site02.ch',
-            dest_se='http://dest.ch'+str(random.randint(0, 100)),
+            dest_se='http://dest.ch',
             success=95,
             active=10,
             throughput=15
@@ -119,7 +119,7 @@ class TestScheduler(TestController):
         evolution = OptimizerEvolution(
             datetime=datetime.datetime.utcnow(),
             source_se='http://site03.fr',
-            dest_se='http://dest.ch'+str(random.randint(0, 100)),
+            dest_se='http://dest.ch',
             success=100,
             active=10,
             throughput=20
@@ -161,7 +161,7 @@ class TestScheduler(TestController):
                         'http://site03.fr/file'
                         ],
 
-                    'destinations': ['http://dest.ch/file'+str(random.randint(1000, 2000))],
+                    'destinations': ['http://dest.ch/file'+str(random.randint(2000, 10000))],
                     'selection_strategy': strategy,
                     'checksum': 'adler32:1234',
                     'filesize': 1024,
