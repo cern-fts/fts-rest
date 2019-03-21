@@ -53,7 +53,7 @@ class TestScheduler(TestController):
                 params=json.dumps({
                     'files': [{
                         'sources': ['http://site01.es/file%d' % i],
-                        'destinations': ['http://dest.ch/file%d%d' % (i, random.randint(0, 100))],
+                        'destinations': ['http://dest.ch/file%d%d' % (i, random.randint(0, 1000))],
                         'selection_strategy': 'orderly',
                         'filesize':4096,
                         'success':90
@@ -69,7 +69,7 @@ class TestScheduler(TestController):
                 params=json.dumps({
                     'files': [{
                         'sources': ['http://site02.ch/file%d' % i],
-                        'destinations': ['http://dest.ch/file%d%d' % (i, random.randint(0, 100))],
+                        'destinations': ['http://dest.ch/file%d%d' % (i, random.randint(0, 1000))],
                         'selection_strategy': 'orderly',
                         'filesize':2048,
                         'success':95
@@ -85,7 +85,7 @@ class TestScheduler(TestController):
                 params=json.dumps({
                     'files': [{
                         'sources': ['http://site03.fr/file%d' % i],
-                        'destinations': ['http://dest.ch/file%d%d' % (i, random.randint(0, 100))],
+                        'destinations': ['http://dest.ch/file%d%d' % (i, random.randint(0, 1000))],
                         'selection_strategy': 'orderly',
                         'filesize':1024,
                         'success':100
@@ -161,7 +161,7 @@ class TestScheduler(TestController):
                         'http://site03.fr/file'
                         ],
 
-                    'destinations': ['http://dest.ch/file'+str(random.randint(2000, 10000))],
+                    'destinations': ['http://dest.ch/file'+str(random.randint(20000, 100000))],
                     'selection_strategy': strategy,
                     'checksum': 'adler32:1234',
                     'filesize': 1024,

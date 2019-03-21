@@ -44,7 +44,7 @@ class TestJobCancel(TestController):
 
         files = []
         for i in xrange(count):
-	    u = random.randint(500, 5000)
+	    u = random.randint(500, 50000)
             files.append({
                 'sources': ['root://source.es/file%d' % i],
                 'destinations': ['root://destcancel.ch/file'+str(i)+str(u)],
@@ -76,7 +76,7 @@ class TestJobCancel(TestController):
 
         files = []
         for i in xrange(count):
-            u = random.randint(100, 1000)
+            u = random.randint(500001, 1000000)
             files.append({
                 'sources': ['root://source.es/file%d' % i],
                 'destinations': ['root://dest.ch/file'+str(i)+str(u)],
