@@ -29,8 +29,9 @@ class TestJobListing(TestController):
     Tests for the job controller, listing, stating, etc.
     """
 
-    def _submit(self, file_metadata=None, dest_surl='root://dest.ch/file'):
-	dest_surl = dest_surl+str(random.randint(200,1000))
+    def _submit(self, file_metadata=None, dest_surl='root://dest.ch/file', random_url=True):
+        if random_url:
+	    dest_surl = dest_surl+str(random.randint(200,1000))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
@@ -539,11 +540,11 @@ class TestJobListing(TestController):
         self.setup_gridsite_environment()
         self.push_delegation()
 
-        job1 = self._submit(dest_surl='gsiftp://test1/path')
-        job2 = self._submit(dest_surl='gsiftp://test2/path')
+        job1 = self._submit(dest_surl='gsiftp://test_query1/path', random_url=False)
+        job2 = self._submit(dest_surl='gsiftp://test_query2/path', random_url=False)
 
         files = self.app.get(
-            url="/files?dest_surl=gsiftp://test2/path",
+            url="/files?dest_surl=gsiftp://test_query2/path",
             status=200
         ).json
 
@@ -551,7 +552,7 @@ class TestJobListing(TestController):
         self.assertIn(job2, map(lambda f: f['job_id'], files))
 
         files = self.app.get(
-            url="/files?dest_surl=gsiftp://test1/path",
+            url="/files?dest_surl=gsiftp://test-query1/path",
             status=200
         ).json
 
