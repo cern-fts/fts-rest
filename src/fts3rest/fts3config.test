@@ -7,7 +7,7 @@ Infosys=lcg-bdii.cern.ch:2170
 AuthorizedVO=dteam;*
 CleanRecordsHost=false
 
-EnableDestUUID=dteam;*
+CheckDuplicates=dteam;*
 
 MessagingDirectory=/tmp/rest-msgs
 HeartBeatInterval=0
