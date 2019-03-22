@@ -79,7 +79,7 @@ def _is_dest_surl_uuid_enabled(vo_name):
     Args:
         vo_name: Name of the vo
     """
-    list_of_vos = pylons.config.get('fts3.EnableDestUUID', 'None')
+    list_of_vos = pylons.config.get('fts3.CheckDuplicates', 'None')
     if not list_of_vos:
 	return False	
     if vo_name in list_of_vos or "*" in list_of_vos:
