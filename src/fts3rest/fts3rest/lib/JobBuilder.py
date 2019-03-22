@@ -72,6 +72,19 @@ def get_storage_element(uri):
     """
     return "%s://%s" % (uri.scheme, uri.hostname)
 
+def _is_dest_surl_uuid_enabled(vo_name):
+    """
+    Returns True if the given vo_name allows dest_surl_uuid.
+
+    Args:
+        vo_name: Name of the vo
+    """
+    list_of_vos = pylons.config.get('fts3.EnableDestUUID', 'None')
+    if not list_of_vos:
+	return False	
+    if vo_name in list_of_vos or "*" in list_of_vos:
+	return True
+    return False
 
 def _validate_url(url):
     """
@@ -204,7 +217,8 @@ def _select_best_replica(files, vo_name, entry_state, strategy):
             break
     
     files[best_index]['file_state'] = entry_state
-    files[best_index]['dest_surl_uuid'] = str(uuid.uuid5(BASE_ID, files[best_index]['dest_surl'].encode('utf-8'))) 
+    if _is_dest_surl_uuid_enabled(vo_name):
+    	files[best_index]['dest_surl_uuid'] = str(uuid.uuid5(BASE_ID, files[best_index]['dest_surl'].encode('utf-8'))) 
 
 
 def _apply_banning(files):
@@ -366,9 +380,9 @@ class JobBuilder(object):
             # Multiple replicas, all must share the hashed-id
             if shared_hashed_id is None:
                 shared_hashed_id = _generate_hashed_id()
-	 
+	vo_name = self.user.vos[0] 
         for source, destination in pairs:
-	    if len(file_dict['sources']) > 1:
+	    if len(file_dict['sources']) > 1 or not _is_dest_surl_uuid_enabled(vo_name):
 		dest_uuid = None
 	    else:
 		dest_uuid = str(uuid.uuid5(BASE_ID, destination.geturl().encode('utf-8')))
