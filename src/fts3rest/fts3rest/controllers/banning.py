@@ -102,7 +102,7 @@ def _cancel_transfers(storage=None, vo_name=None):
             Session.query(File).filter(File.file_id == file_id)\
                 .update({
                     'file_state': 'CANCELED', 'reason': 'Storage banned',
-                    'finish_time': now
+                    'finish_time': now, 'dest_surl_uuid': None
                 }, synchronize_session=False)
             # If there are alternatives, enable them
             if Session.bind.dialect.name == 'mysql':
