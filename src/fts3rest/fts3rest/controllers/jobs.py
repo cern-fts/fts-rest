@@ -315,6 +315,7 @@ class JobsController(BaseController):
 
                 file.file_state = 'CANCELED'
                 file.finish_time = datetime.utcnow()
+                file.dest_surl_uuid = None
                 changed_states.append('CANCELED')
                 Session.merge(file)
 
