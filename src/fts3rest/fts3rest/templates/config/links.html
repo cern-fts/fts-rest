@@ -37,11 +37,11 @@
                 </td>
                 <td>
                     <input class="form-control" type="text" placeholder="Source" name="source"
-                        id="link-add-field-source" pattern="(\*|.*://?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))" required title="i.e. http://mysite.ch or *" />
+                        id="link-add-field-source" pattern="(\*|.*://?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,6}[^\/])" required title="i.e. http://mysite.ch or *" />
                 </td>
                 <td>
                     <input class="form-control" type="text" placeholder="Destination" name="destination"
-                        id="link-add-field-destination" pattern="(\*|.*://?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))" required title="i.e. http://mysite.ch or *" />
+                        id="link-add-field-destination" pattern="(\*|.*://?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,6}\b[^\/])" required title="i.e. http://mysite.ch or *" />
                 </td>
                 <td>
                     <input class="form-control" type="number" placeholder="Streams" name="nostreams"
