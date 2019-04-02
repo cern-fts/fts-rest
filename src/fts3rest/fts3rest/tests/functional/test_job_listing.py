@@ -22,14 +22,16 @@ from fts3.model import FileRetryLog, Job, File
 from fts3rest.lib.base import Session
 from fts3rest.lib.middleware.fts3auth import UserCredentials, constants
 from fts3rest.tests import TestController
-
+import random
 
 class TestJobListing(TestController):
     """
     Tests for the job controller, listing, stating, etc.
     """
 
-    def _submit(self, file_metadata=None, dest_surl='root://dest.ch/file'):
+    def _submit(self, file_metadata=None, dest_surl='root://dest.ch/file', random_url=True):
+        if random_url:
+	    dest_surl = dest_surl+str(random.randint(200,1000))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
@@ -349,7 +351,6 @@ class TestJobListing(TestController):
 
         self.assertEqual(1, len(files))
         self.assertEqual("root://source.es/file", files[0]['source_surl'])
-        self.assertEqual("root://dest.ch/file", files[0]['dest_surl'])
         self.assertEqual(1024, files[0]['user_filesize'])
 
     def test_no_retries(self):
@@ -410,7 +411,7 @@ class TestJobListing(TestController):
         self.assertIn('start_time', f)
         self.assertIn('source_surl', f)
         self.assertNotIn('finish_time', f)
-        self.assertNotIn('dest_surl', f)
+        
 
         self.assertEqual('root://source.es/file', f['source_surl'])
 
@@ -443,7 +444,6 @@ class TestJobListing(TestController):
                 self.assertIn('start_time', f)
                 self.assertIn('source_surl', f)
                 self.assertNotIn('finish_time', f)
-                self.assertNotIn('dest_surl', f)
                 self.assertIn('file_state', f)
                 self.assertEqual('SUBMITTED', f['file_state'])
 
@@ -540,11 +540,11 @@ class TestJobListing(TestController):
         self.setup_gridsite_environment()
         self.push_delegation()
 
-        job1 = self._submit(dest_surl='gsiftp://test/path')
-        job2 = self._submit(dest_surl='gsiftp://test2/path')
+        job1 = self._submit(dest_surl='gsiftp://test-query1/path', random_url=False)
+        job2 = self._submit(dest_surl='gsiftp://test-query2/path', random_url=False)
 
         files = self.app.get(
-            url="/files?dest_surl=gsiftp://test2/path",
+            url="/files?dest_surl=gsiftp://test-query2/path",
             status=200
         ).json
 
@@ -552,7 +552,7 @@ class TestJobListing(TestController):
         self.assertIn(job2, map(lambda f: f['job_id'], files))
 
         files = self.app.get(
-            url="/files?dest_surl=gsiftp://test/path",
+            url="/files?dest_surl=gsiftp://test-query1/path",
             status=200
         ).json
 
