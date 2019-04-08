@@ -4,7 +4,7 @@
 %{!?nosetest_path: %global nosetest_path "/tmp"}
 
 Name:           fts-rest
-Version:        3.9.0
+Version:        3.10.0
 Release:        2%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
@@ -29,6 +29,7 @@ BuildRequires:  python-nose1.1
 %if %{?rhel}%{!?rhel:0} >= 7
 BuildRequires:  python-nose
 %endif
+
 BuildRequires:  python-dateutil
 BuildRequires:  python-pylons
 BuildRequires:  scipy
@@ -51,6 +52,7 @@ BuildRequires:  python-pycurl
 BuildRequires:  python-jwcrypto
 BuildRequires:  python-jwt
 %endif
+BuildRequires:  MySQL-python
 
 Requires:       gridsite%{?_isa} >= 1.7
 %if %{?rhel}%{!?rhel:0} == 6
@@ -69,6 +71,17 @@ Requires:       gfal2-python%{?_isa}
 Requires: 	python-requests
 %description
 This package provides the FTS3 REST interface
+
+%if %{?rhel}%{!?rhel:0} >= 7
+%package firewalld
+Summary: FTS3 Rest Firewalld
+Group: Applications/Internet
+
+Requires:  firewalld-filesystem
+
+%description firewalld
+FTS3 Rest firewalld.
+%endif
 
 %package cloud-storage
 Summary:        FTS3 Rest Cloud Storage extensions
@@ -133,6 +146,7 @@ Requires:       python-sqlalchemy0.8
 This package provides an object model of the FTS3
 database, using sqlalchemy ORM.
 
+
 %post
 /sbin/service httpd condrestart >/dev/null 2>&1 || :
 if [ "$1" -eq "2" ]; then # Upgrade
@@ -177,6 +191,7 @@ if [ "$fts_api_ver" != "$fts_spec_ver" ]; then
 fi
 
 %cmake . -DCMAKE_INSTALL_PREFIX=/ -DPYTHON_SITE_PACKAGES=%{python_sitelib}
+
 make %{?_smp_mflags}
 
 %check
@@ -194,12 +209,14 @@ popd
 %install
 mkdir -p %{buildroot}
 make install DESTDIR=%{buildroot}
-
+%if %{?rhel}%{!?rhel:0} == 6
+rm -rf %{buildroot}/%{_prefix}/lib/firewalld/services/fts3rest.xml
+%endif
 mkdir -p %{buildroot}/%{_var}/cache/fts3rest/
 mkdir -p %{buildroot}/%{_var}/log/fts3rest/
 
-cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 
+cp --preserve=timestamps -r src/fts3 %{buildroot}/%{python_sitelib}
 cat > %{buildroot}/%{python_sitelib}/fts3.egg-info <<EOF
 Metadata-Version: 1.0
 Name: fts3
@@ -211,7 +228,8 @@ Author-email: fts-devel@cern.ch
 License: Apache2
 EOF
 
-%files
+%files 
+
 %dir %{python_sitelib}/fts3rest/
 
 %{python_sitelib}/fts3rest.egg-info/*
@@ -272,6 +290,11 @@ EOF
 %doc docs/install.md
 %doc docs/api.md
 
+%if %{?rhel}%{!?rhel:0} >= 7
+%files firewalld
+%config(noreplace) %{_prefix}/lib/firewalld/services/fts3rest.xml
+%endif
+
 %files cloud-storage
 %{python_sitelib}/fts3rest/config/routing/cstorage.py*
 %{python_sitelib}/fts3rest/controllers/cloudStorage.py*
@@ -306,11 +329,16 @@ EOF
 %{python_sitelib}/fts3.egg-info
 %doc LICENSE
 
+
+
 %changelog
-* Mon Jan 28 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.0-2
+* Mon Apr 8 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.0-2
 - New Minor release
 - Support for OIDC
 - Support for QoS job submission
+
+* Thu Feb 21 2019 Andrea Manzi <amanzi@cern.ch> - 3.8.3-1
+- New bugfix release
 
 * Thu Jan 10 2019 Andrea Manzi <amanzi@cern.ch> - 3.8.2-1
 - New bugfix release
@@ -350,9 +378,7 @@ EOF
 * Tue Nov 15 2016 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.5.4-1
 - Update for new upstream release
 
-* Tue Apr 19 2016 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.4.0-1
-- Update for new upstream release
-
+>>>>>>> develop
 * Tue Apr 19 2016 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.4.0-1
 - Update for new upstream release
 

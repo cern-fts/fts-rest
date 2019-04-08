@@ -25,3 +25,7 @@ install (FILES          fts-rest.logrotate
 install (FILES          fts3rest.conf
          DESTINATION    etc/httpd/conf.d
 )
+# firewalld configuration file
+install (FILES          fts3rest.xml
+         DESTINATION    usr/lib/firewalld/services/
+)
