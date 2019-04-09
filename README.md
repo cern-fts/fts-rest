@@ -3,6 +3,19 @@ FTS3-REST
 This is the FTS3 RESTful API.
 For more detailed information about installation, usage, etc... please, check the [docs](docs/README.md) subdirectory.
 
+## Firewalld: How to set up a firewall using firewalld on centos7
+
+In order to setup the firewalld support for FTS REST you need to install the fts-rest-firewalld package.
+
+When running fts-rest, we can allow this traffic for interfaces in our "public" zone for this session by typing:
+
+    sudo firewall-cmd --zone=public --add-service=fts3rest
+
+You can leave out the --zone= if you wish to modify the default zone. We can verify the operation was successful by using the --list-all or --list-services operations:
+
+    sudo firewall-cmd --zone=public --list-services
+
+
 ## Vagrant
 This repository contains a [Vagrantfile](https://www.vagrantup.com/) to make easier to develop.
 Please, check [Vagran't install documentation](https://www.vagrantup.com/docs/installation/) to see how to get it

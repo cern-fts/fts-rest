@@ -30,11 +30,35 @@ class Inquirer(object):
         self.context = context
 
     def get_job_status(self, job_id, list_files=False):
+
+        if not isinstance(job_id, basestring):
+            raise Exception('The job_id provided is not a string!')
+
         try:
             job_info = json.loads(self.context.get("/jobs/%s" % job_id))
+
             if list_files:
                 job_info['files'] = json.loads(self.context.get("/jobs/%s/files" % job_id))
                 job_info['dm'] = json.loads(self.context.get("/jobs/%s/dm" % job_id))
+
+            return job_info
+
+        except NotFound:
+            raise NotFound(job_id)
+
+    def get_jobs_statuses(self, job_ids, list_files=False):
+
+        if isinstance(job_ids, list):
+            xfer_ids = ','.join(job_ids)
+        else:
+            raise Exception('The input provided is not a list of ids!')
+
+        try:
+            if not list_files:
+                job_info = json.loads(self.context.get("/jobs/%s" % xfer_ids))
+            else:
+                job_info = json.loads(self.context.get("/jobs/%s?files=file_state,dest_surl,finish_time,start_time,reason,source_surl,file_metadata" % xfer_ids))
+
             return job_info
         except NotFound:
             raise NotFound(job_id)
