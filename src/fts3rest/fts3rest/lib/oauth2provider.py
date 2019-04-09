@@ -183,15 +183,14 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 credential = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
                 if credential:
                     log.debug("Credential is as follows: " + str(offline_credential))
-                    refresh_credential = self._generate_refresh_token(access_token)
-                    log.debug("Refresh credential is as follows: " + str(refresh_credential))
+                    log.debug("Refresh credential is as follows: " + str(credential.proxy.split(':')[1]))
                     c = Session.query(Credential).filter(Credential.dlg_id == credential.dlg_id).first()
                     if c:
                         Session.delete(c)
 
                     credential = self._save_credential(generate_delegation_id(credential.dn, ""),
                                                        credential.dn,
-                                                       access_token + ':' + refresh_credential['refresh_token'],
+                                                       access_token + ':' + credential.proxy.split(':')[1],
                                                        credential.voms_attrs,
                                                        datetime.utcfromtimestamp(offline_credential['exp']))
 
