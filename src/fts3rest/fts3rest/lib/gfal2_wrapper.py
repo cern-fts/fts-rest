@@ -101,7 +101,7 @@ class Gfal2Wrapper(object):
 
             if isinstance(self.cred, basestring):
                 # A IAM token is used for authentication, set it in the context
-                s_cred = gfal2.cred_new("BEARER", self.cred)
+                s_cred = gfal2.cred_new("BEARER", self.cred.split(':')[0])
                 try:
                     if isinstance(args[0], dict):
                         if "surl" in args[0].keys():
