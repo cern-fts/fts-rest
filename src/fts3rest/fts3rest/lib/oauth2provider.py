@@ -178,22 +178,10 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         if self._should_validate_offline():
             valid, offline_credential = self._validate_token_offline(access_token)
             if valid:
-                # If token is valid, check if this user has been seen before and if yes update the db with the new access and refresh tokens.
+                # If token is valid, check if this user has been seen before and if yes authorize.
                 # If not, validate online in order to get the extra info i.e. email etc
-                credential = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
-                if credential:
-                    log.debug("Credential is as follows: " + str(offline_credential))
-                    log.debug("Refresh credential is as follows: " + str(credential.proxy.split(':')[1]))
-                    c = Session.query(Credential).filter(Credential.dlg_id == credential.dlg_id).first()
-                    if c:
-                        Session.delete(c)
-
-                    credential = self._save_credential(generate_delegation_id(credential.dn, ""),
-                                                       credential.dn,
-                                                       access_token + ':' + credential.proxy.split(':')[1],
-                                                       credential.voms_attrs,
-                                                       datetime.utcfromtimestamp(offline_credential['exp']))
-
+                credential_stored_offline = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
+                if credential_stored_offline:
                     validated_offline = True
             else:
                 log.debug("Access token provided is not valid - offline validation")
@@ -229,6 +217,8 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                                                self._generate_voms_attrs(credential),
                                                datetime.utcfromtimestamp(credential['exp']))
 
+        if validated_offline:
+            credential = credential_stored_offline
         authorization.is_oauth = True
         authorization.expires_in = credential.termination_time - datetime.utcnow()
         authorization.token = credential.proxy.split(':')[0]
