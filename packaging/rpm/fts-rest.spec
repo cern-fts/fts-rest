@@ -378,7 +378,6 @@ EOF
 * Tue Nov 15 2016 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.5.4-1
 - Update for new upstream release
 
->>>>>>> develop
 * Tue Apr 19 2016 Alejandro Alvarez Ayllon <aalvarez@cern.ch> - 3.4.0-1
 - Update for new upstream release
 
