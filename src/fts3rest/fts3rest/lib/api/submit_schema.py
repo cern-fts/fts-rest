@@ -27,7 +27,11 @@ fileSchema = {
     'properties': {
         'sources':      {'type': 'array', 'items': urlSchema, 'minItems': 1},
         'destinations': {'type': 'array', 'items': urlSchema, 'minItems': 1},
-        'metadata':     {'type': ['object', 'null']},
+        'priority': {
+            'type': ['integer', 'null'],
+            'title': 'Job priority'
+        },
+	'metadata':     {'type': ['object', 'null']},
         'filesize':     {'type': ['integer', 'null'], 'minimum': 0},
         'checksum':     {
             'type': ['string', 'null'],

@@ -315,6 +315,7 @@ class JobsController(BaseController):
 
                 file.file_state = 'CANCELED'
                 file.finish_time = datetime.utcnow()
+                file.dest_surl_uuid = None
                 changed_states.append('CANCELED')
                 Session.merge(file)
 
@@ -414,13 +415,13 @@ class JobsController(BaseController):
                 Session.query(File).filter(File.job_id == job.job_id)\
                     .filter(File.file_state.in_(FileActiveStates), File.pid != None)\
                     .update({
-                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user', 'dest_surl_uuid':None,
                         'finish_time': None 
                     }, synchronize_session=False)
                 Session.query(File).filter(File.job_id == job.job_id)\
                     .filter(File.file_state.in_(FileActiveStates), File.pid == None) \
                     .update({
-                    'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                    'file_state': 'CANCELED', 'reason': 'Job canceled by the user', 'dest_surl_uuid':None,
                     'finish_time': now
                 }, synchronize_session=False)
                 # However, for data management operations there is nothing to signal, so
@@ -493,6 +494,10 @@ class JobsController(BaseController):
         try:
             for job in modifiable_jobs:
                 if priority:
+		    for file in job.files:
+			file.priority = priority
+			file = Session.merge(file)
+			log.info("File from Job %s priority changed to %d" % (job.job_id, priority))
                     job.priority = priority
                     job = Session.merge(job)
                     log.info("Job %s priority changed to %d" % (job.job_id, priority))
@@ -560,6 +565,9 @@ class JobsController(BaseController):
                 Session.execute(DataManagement.__table__.insert(), populated.datamanagement)
             Session.flush()
             Session.commit()
+	except IntegrityError as err:
+		Session.rollback()
+		raise HTTPConflict('The submission is duplicated '+ str(err))
         except:
             Session.rollback()
             raise
@@ -605,7 +613,7 @@ class JobsController(BaseController):
             file_count = Session.query(File).filter(File.vo_name == vo_name)\
                 .filter(File.file_state.in_(FileActiveStates))\
                 .update({
-                    'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                    'file_state': 'CANCELED', 'reason': 'Job canceled by the user', 'dest_surl_uuid':None,
                     'finish_time': None
                 }, synchronize_session=False)
 
@@ -657,7 +665,7 @@ class JobsController(BaseController):
             # to fts_url_copy
             file_count = Session.query(File).filter(File.file_state.in_(FileActiveStates))\
                 .update({
-                    'file_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                    'file_state': 'CANCELED', 'reason': 'Job canceled by the user',  'dest_surl_uuid':None,
                     'finish_time': None
                 }, synchronize_session=False)
 
@@ -672,7 +680,7 @@ class JobsController(BaseController):
 
             job_count = Session.query(Job).filter(Job.job_state.in_(JobActiveStates))\
                 .update({
-                    'job_state': 'CANCELED', 'reason': 'Job canceled by the user',
+                    'job_state': 'CANCELED', 'reason': 'Job canceled by the user', 
                     'job_finished': now
                 }, synchronize_session=False)
             Session.commit()

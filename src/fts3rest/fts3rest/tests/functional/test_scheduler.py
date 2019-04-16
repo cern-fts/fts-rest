@@ -23,6 +23,7 @@ from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3rest.lib.scheduler.Cache import ThreadLocalCache
 from fts3.model import Job, File, OptimizerEvolution, ActivityShare
+import random
 
 log = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class TestScheduler(TestController):
                 params=json.dumps({
                     'files': [{
                         'sources': ['http://site01.es/file%d' % i],
-                        'destinations': ['http://dest.ch/file%d' % i],
+                        'destinations': ['http://dest.ch/file%d%d' % (i, random.randint(0, 1000))],
                         'selection_strategy': 'orderly',
                         'filesize':4096,
                         'success':90
@@ -68,7 +69,7 @@ class TestScheduler(TestController):
                 params=json.dumps({
                     'files': [{
                         'sources': ['http://site02.ch/file%d' % i],
-                        'destinations': ['http://dest.ch/file%d' % i],
+                        'destinations': ['http://dest.ch/file%d%d' % (i, random.randint(0, 1000))],
                         'selection_strategy': 'orderly',
                         'filesize':2048,
                         'success':95
@@ -84,7 +85,7 @@ class TestScheduler(TestController):
                 params=json.dumps({
                     'files': [{
                         'sources': ['http://site03.fr/file%d' % i],
-                        'destinations': ['http://dest.ch/file%d' % i],
+                        'destinations': ['http://dest.ch/file%d%d' % (i, random.randint(0, 1000))],
                         'selection_strategy': 'orderly',
                         'filesize':1024,
                         'success':100
@@ -159,7 +160,8 @@ class TestScheduler(TestController):
                         'http://site02.ch/file',
                         'http://site03.fr/file'
                         ],
-                    'destinations': ['http://dest.ch/file'],
+
+                    'destinations': ['http://dest.ch/file'+str(random.randint(20000, 100000))],
                     'selection_strategy': strategy,
                     'checksum': 'adler32:1234',
                     'filesize': 1024,
@@ -184,7 +186,7 @@ class TestScheduler(TestController):
 
         for f in db_job.files:
             self.assertEqual(f.file_index, 0)
-            self.assertEqual(f.dest_surl, 'http://dest.ch/file')
+            
             if f.source_surl == expected_submitted:
                 self.assertEqual(f.file_state, 'SUBMITTED')
             else:
@@ -318,7 +320,7 @@ class TestScheduler(TestController):
                         'http://site02.ch/file',
                         'http://site03.fr/file'
                         ],
-                    'destinations': ['http://dest.ch/file'],
+                    'destinations': ['http://dest.ch/file'+str(random.randint(100, 200))],
                     'selection_strategy': "YOLO",
                     'checksum': 'adler32:1234',
                     'filesize': 1024,
@@ -365,7 +367,7 @@ class TestScheduler(TestController):
                         'http://site02.ch/file',
                         'http://site01.es/file'
                         ],
-                    'destinations': ['http://dest.ch/file'],
+                    'destinations': ['http://dest.ch/file'+str(random.randint(0, 100))],
                     'selection_strategy': 'orderly',
                     'checksum': 'adler32:1234',
                     'filesize': 1024,
