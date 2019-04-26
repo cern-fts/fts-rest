@@ -22,7 +22,8 @@ import uuid
 import pylons
 
 from datetime import datetime
-from urlparse import urlparse
+from urlparse import urlparse,parse_qsl, ParseResult
+from urllib import urlencode
 
 from fts3.model import File, BannedSE
 from fts3rest.lib.base import Session
@@ -386,7 +387,18 @@ class JobBuilder(object):
 		dest_uuid = None
 	    else:
 		dest_uuid = str(uuid.uuid5(BASE_ID, destination.geturl().encode('utf-8')))
-
+            if self.is_bringonline:
+                # add the new query parameter only for root -> EOS-CTA for now
+                if source.scheme == "root":
+                     query_p = parse_qsl(source.query)
+                     query_p.append(('activity', file_dict.get('activity', 'default')))
+                     query_str = urlencode(query_p)
+                     source = ParseResult(scheme=source.scheme, 
+                                          netloc=source.netloc, 
+                                          path=source.path,
+                                          params=source.params,
+                                          query= query_str, 
+                                          fragment=source.fragment)
             f = dict(
                 job_id=self.job_id,
                 file_index=f_index,
