@@ -29,3 +29,7 @@ install (FILES          fts3rest.conf
 install (FILES          fts3rest.xml
          DESTINATION    usr/lib/firewalld/services/
 )
+# cron
+install (FILES          fts-rest-graceful.cron
+         DESTINATION    etc/cron.d
+)

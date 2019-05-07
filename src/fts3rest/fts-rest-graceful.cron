@@ -1,0 +1,1 @@
+12 */6 * * * root /usr/sbin/apachectl graceful >& /dev/null
