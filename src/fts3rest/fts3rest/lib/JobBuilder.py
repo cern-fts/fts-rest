@@ -22,7 +22,8 @@ import uuid
 import pylons
 
 from datetime import datetime
-from urlparse import urlparse
+from urlparse import urlparse,parse_qsl, ParseResult
+from urllib import urlencode
 
 from fts3.model import File, BannedSE
 from fts3rest.lib.base import Session
@@ -72,6 +73,19 @@ def get_storage_element(uri):
     """
     return "%s://%s" % (uri.scheme, uri.hostname)
 
+def _is_dest_surl_uuid_enabled(vo_name):
+    """
+    Returns True if the given vo_name allows dest_surl_uuid.
+
+    Args:
+        vo_name: Name of the vo
+    """
+    list_of_vos = pylons.config.get('fts3.CheckDuplicates', 'None')
+    if not list_of_vos:
+	return False	
+    if vo_name in list_of_vos or "*" in list_of_vos:
+	return True
+    return False
 
 def _validate_url(url):
     """
@@ -202,7 +216,10 @@ def _select_best_replica(files, vo_name, entry_state, strategy):
         if transfer['source_se'] == best_se:
             best_index = index
             break
+    
     files[best_index]['file_state'] = entry_state
+    if _is_dest_surl_uuid_enabled(vo_name):
+    	files[best_index]['dest_surl_uuid'] = str(uuid.uuid5(BASE_ID, files[best_index]['dest_surl'].encode('utf-8'))) 
 
 
 def _apply_banning(files):
@@ -364,17 +381,35 @@ class JobBuilder(object):
             # Multiple replicas, all must share the hashed-id
             if shared_hashed_id is None:
                 shared_hashed_id = _generate_hashed_id()
-
+	vo_name = self.user.vos[0] 
         for source, destination in pairs:
+	    if len(file_dict['sources']) > 1 or not _is_dest_surl_uuid_enabled(vo_name):
+		dest_uuid = None
+	    else:
+		dest_uuid = str(uuid.uuid5(BASE_ID, destination.geturl().encode('utf-8')))
+            if self.is_bringonline:
+                # add the new query parameter only for root -> EOS-CTA for now
+                if source.scheme == "root":
+                     query_p = parse_qsl(source.query)
+                     query_p.append(('activity', file_dict.get('activity', 'default')))
+                     query_str = urlencode(query_p)
+                     source = ParseResult(scheme=source.scheme, 
+                                          netloc=source.netloc, 
+                                          path=source.path,
+                                          params=source.params,
+                                          query= query_str, 
+                                          fragment=source.fragment)
             f = dict(
                 job_id=self.job_id,
                 file_index=f_index,
+		dest_surl_uuid=dest_uuid,
                 file_state=initial_file_state,
                 source_surl=source.geturl(),
                 dest_surl=destination.geturl(),
                 source_se=get_storage_element(source),
                 dest_se=get_storage_element(destination),
                 vo_name=None,
+		priority=self.job['priority'],
                 user_filesize=_safe_filesize(file_dict.get('filesize', 0)),
                 selection_strategy=file_dict.get('selection_strategy', 'auto'),
                 checksum=file_dict.get('checksum', None),

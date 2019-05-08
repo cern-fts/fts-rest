@@ -4,8 +4,8 @@
 %{!?nosetest_path: %global nosetest_path "/tmp"}
 
 Name:           fts-rest
-Version:        3.8.4
-Release:        2%{?dist}
+Version:        3.9.0
+Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
@@ -278,6 +278,7 @@ EOF
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.ini
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/fts3rest.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/fts-rest
+%config(noreplace) %{_sysconfdir}/cron.d/fts-rest-graceful.cron
 %dir %attr(0755,fts3,fts3) %{_var}/cache/fts3rest
 %dir %attr(0755,fts3,fts3) %{_var}/log/fts3rest
 %doc docs/README.md
