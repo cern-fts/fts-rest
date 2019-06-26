@@ -187,11 +187,15 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 log.debug("Access token provided is not valid - offline validation")
                 return
 
-        credential = Session.query(Credential).filter(Credential.proxy.like(access_token + "%")).first()
-        if (not validated_offline) and (not credential or credential.expired()):
+        if validated_offline:
+            credential = credential_stored_offline
+        else:
+            credential = Session.query(Credential).filter(Credential.proxy.like(access_token + "%")).first()
+        if (not credential or credential.expired()):
             # Delete the db entry in case of credential expired before validating the new one
             if credential:
                 Session.delete(credential)
+                Session.commit()
 
             requestor = Request(None, None)  # VERIFY:TRUE
             body = {'token': access_token}
@@ -206,19 +210,23 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             c = Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
             if c:
                 Session.delete(c)
+                Session.commit()
 
             log.debug("Credential is as follows: " + str(credential))
 
             refresh_credential = self._generate_refresh_token(access_token)
-            log.debug("Refresh credential is as follows: " + str(refresh_credential))
+            if refresh_credential:
+                log.debug("Refresh credential is as follows: " + str(refresh_credential))
+		refresh_token= refresh_credential['refresh_token']
+            else:
+                refresh_token = ""
 
             credential = self._save_credential(dlg_id, credential['sub'],
-                                               access_token + ':' + refresh_credential['refresh_token'],
+                                               access_token + ':' + refresh_token,
                                                self._generate_voms_attrs(credential),
                                                datetime.utcfromtimestamp(credential['exp']))
+            log.debug("credentials stored")
 
-        if validated_offline:
-            credential = credential_stored_offline
         authorization.is_oauth = True
         authorization.expires_in = credential.termination_time - datetime.utcnow()
         authorization.token = credential.proxy.split(':')[0]
@@ -236,10 +244,17 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         return Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
 
     def _generate_voms_attrs(self, credential):
+           
         if 'email' in credential:
-            return credential['email'] + " " + credential['user_id']
+            if 'username' in credential:
+                return credential['email'] + " " + credential['username']
+            else:
+                return credential['email'] + " " + credential['user_id']
         else:
-            return credential['user_id'] + " "
+            if 'username' in credential:
+                return credential['username'] + " "
+            else:
+                return credential['user_id'] + " "
 
     def _validate_token_offline(self, access_token):
         try:
@@ -250,6 +265,8 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             if not jwkProvider:
                 requestor = Request(None, None)
                 jwksIAM = json.loads(requestor.method('GET', self.config['fts3.AuthorizationProviderJwkEndpoint']))
+                if jwksIAM is None:
+                    raise  Exception("Failed to contact the provider JWK endpoint")
                 oauth2provider = OAuth2Providers(
                     provider_url=self.config['fts3.AuthorizationProviderJwkEndpoint'],
                     provider_jwk=str(jwksIAM).replace("\'","\"").replace("u\"","\""))
@@ -260,14 +277,20 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 jwksIAM = jwkProvider.provider_jwk
             # jwksIAM contains keys as json/dict
             # Import json key
+            kid_id = json.loads(jwksIAM)
+            kid_id = kid_id.get("keys")[0].get("kid", "rsa1")
+            log.debug("kid id " + kid_id)
             jwks = jwk.JWKSet.from_json(jwksIAM)
             # Extract public key
-            pub_key = jwks.get_key("rsa1")
-
+            pub_key = jwks.get_key(kid_id)
+            if pub_key is None:
+                err = "Offline token validation failed: not able to acquire the provider public key with kid: " + kid_id
+                log.debug(err)
+                raise Exception(err)
             # Validate
             credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithm='RS256')
         except Exception as e:
-            log.debug("Offline token validation failed: " + str(e))
+            log.error("Offline token validation failed: " + str(e))
             return False, None
         return True, credential
 
@@ -279,11 +302,14 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 'subject_token': access_token,
                 'scope': 'offline_access openid profile',
                 'audience': self.config['fts3.ClientId']}
-
-        refresh_credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'],
+        refresh_credential = None 
+        try:
+            refresh_credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'],
                                         body=body,
                                         user=self.config['fts3.ClientId'],
                                         passw=self.config['fts3.ClientSecret']))
+        except Exception as e:
+            log.error("Error when requesting a refresh token: " + str(e))
         return refresh_credential
 
     def _save_credential(self, dlg_id, dn, proxy, voms_attrs, termination_time):
@@ -296,6 +322,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         )
         Session.add(credential)
         Session.commit()
+	return credential
 
     def _should_validate_offline(self):
         return 'fts3.AuthorizationProviderJwkEndpoint' in self.config.keys()
