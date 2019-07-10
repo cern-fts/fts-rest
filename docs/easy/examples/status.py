@@ -40,3 +40,7 @@ logging.getLogger('fts3.rest.client').setLevel(logging.DEBUG)
 context = fts3.Context(options.endpoint)
 job_status = fts3.get_job_status(context, job_id, list_files=options.list_files)
 print json.dumps(job_status, indent=2)
+
+jobs_statuses = fts3.get_jobs_statuses(context, [job_id], list_files=options.list_files)
+print json.dumps(job_status, indent=2)
+

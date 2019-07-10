@@ -96,6 +96,9 @@ Usage: fts-rest-delegate [options]
 -f/--force
 :	Force the delegation
 
+-H/--hours
+:	Duration of the delegation in hours (default: 12)
+
 
 ### Example
 ```
@@ -103,12 +106,11 @@ $ fts-rest-delegate -s https://fts3-devel.cern.ch:8446
 Delegation id: 9a4257f435fa2010"
 
 ```
-## fts-rest-snapshot
-This command can be used to retrieve the internal status FTS3 has on all pairs with ACTIVE transfers.
-It allows to filter by VO, source SE and destination SE
+## fts-rest-delete-submit
+This command can be used to submit a deletion job to FTS3. It supports simple and bulk submissions.
 
 ### Usage
-Usage: fts-rest-snapshot [options]
+Usage: fts-rest-delete-submit [options] SURL1 [SURL2] [SURL3] [...]
 
 ### Options
 -h/--help
@@ -138,34 +140,88 @@ Usage: fts-rest-snapshot [options]
 --access-token
 :	Oauth2 access token (supported only by some endpoints, takes precedence)
 
---vo
-:	Filter by vo
+-b/--blocking
+:	Blocking mode. Wait until the operation completes. 
 
---source
-:	Filter by source se
+-i/--interval
+:	Interval between two poll operations in blocking mode. 
 
---destination
-:	Filter by destination se
+-e/--expire
+:	Expiration time of the delegation in minutes. 
+
+--job-metadata
+:	Transfer job metadata. 
+
+--file-metadata
+:	File metadata. 
+
+-S/--spacetoken
+:	The space token or its description. 
+
+--dry-run
+:	Do not send anything, just print the json message. 
+
+-f/--file
+:	Name of configuration file
+
+--retry
+:	Number of retries. If 0, the server default will be used. If negative, there will be no retries. 
+
+--cloud-credentials
+:	Use cloud credentials for the job (i. E. Dropbox). 
 
 
 ### Example
 ```
-$ fts-rest-snapshot -s https://fts3-devel.cern.ch:8446
-Source:              gsiftp://whatever
-Destination:         gsiftp://whatnot
-VO:                  dteam
-Max. Active:         5
-Active:              1
-Submitted:           0
-Finished:            0
-Failed:              0
-Success ratio:       -
-Avg. Throughput:     -
-Avg. Duration:       -
-Avg. Queued:         0 seconds
-Most frequent error: -
+$ fts-rest-delete-submit -s https://fts3-devel.cern.ch:8446 gsiftp://source.host/file1 gsiftp://source.host/file2
+Job successfully submitted.
+Job id: 9fee8c1e-c46d-11e3-8299-02163e00a17a
+
+$ fts-rest-delete-submit -s https://fts3-devel.cern.ch:8446 -f bulk.list
+Job successfully submitted.
+Job id: 9fee8c1e-c46d-11e3-8299-02163e00a17a
 
 ```
+## fts-rest-server-status
+Use this command to check on the service status.
+### Usage
+Usage: fts-rest-server-status [options]
+
+### Options
+-h/--help
+:	Show this help message and exit
+
+-v/--verbose
+:	Verbose output. 
+
+-s/--endpoint
+:	Fts3 rest endpoint. 
+
+-j/--json
+:	Print the output in json format. 
+
+--key
+:	The user certificate private key. 
+
+--cert
+:	The user certificate. 
+
+--capath
+:	Use the specified directory to verify the peer
+
+--insecure
+:	Do not validate the server certificate
+
+--access-token
+:	Oauth2 access token (supported only by some endpoints, takes precedence)
+
+-H/--host
+:	Limit the output to a given host
+
+--is-active
+:	The tool will return < 0 on error, 0 if nothing is active, 1 if there are active transfers, 2 if there are active staging, 3 if there are both
+
+
 ## fts-rest-transfer-cancel
 This command can be used to cancel a running job.  It returns the final state of the canceled job.
 Please, mind that if the job is already in a final state (FINISHEDDIRTY, FINISHED, FAILED),
@@ -276,51 +332,6 @@ Reason: None
 Submission time: 2014-04-15T07:07:33
 Priority: 3
 VO Name: atlas
-
-```
-## fts-rest-whoami
-This command exists for convenience. It can be used to check, as the name suggests,
-who are we for the server.
-
-### Usage
-Usage: fts-rest-whoami [options]
-
-### Options
--h/--help
-:	Show this help message and exit
-
--v/--verbose
-:	Verbose output. 
-
--s/--endpoint
-:	Fts3 rest endpoint. 
-
--j/--json
-:	Print the output in json format. 
-
---key
-:	The user certificate private key. 
-
---cert
-:	The user certificate. 
-
---capath
-:	Use the specified directory to verify the peer
-
---insecure
-:	Do not validate the server certificate
-
---access-token
-:	Oauth2 access token (supported only by some endpoints, takes precedence)
-
-
-### Example
-```
-$ fts-rest-whoami -s https://fts3-pilot.cern.ch:8446
-User DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=saketag/CN=678984/CN=Alejandro Alvarez Ayllon
-VO: dteam
-VO: dteam/cern
-Delegation id: 9a4257f435fa2010
 
 ```
 ## fts-rest-transfer-status
@@ -471,13 +482,19 @@ Usage: fts-rest-transfer-submit [options] SOURCE DESTINATION [CHECKSUM]
 :	The source space token or its description. 
 
 -K/--compare-checksum
-:	Compare checksums between source and destination. 
+:	Deprecated: compare checksums between source and destination. 
+
+-C/--checksum-mode
+:	Compare checksums in source, target, both or none. 
 
 --copy-pin-lifetime
 :	Pin lifetime of the copy in seconds. 
 
 --bring-online
 :	Bring online timeout in seconds. 
+
+--timeout
+:	Transfer timeout in seconds. 
 
 --fail-nearline
 :	Fail the transfer is the file is nearline. 
@@ -518,11 +535,12 @@ Job successfully submitted.
 Job id: 9fee8c1e-c46d-11e3-8299-02163e00a17a
 
 ```
-## fts-rest-delete-submit
-This command can be used to submit a deletion job to FTS3. It supports simple and bulk submissions.
+## fts-rest-whoami
+This command exists for convenience. It can be used to check, as the name suggests,
+who are we for the server.
 
 ### Usage
-Usage: fts-rest-delete-submit [options] SURL1 [SURL2] [SURL3] [...]
+Usage: fts-rest-whoami [options]
 
 ### Options
 -h/--help
@@ -551,86 +569,14 @@ Usage: fts-rest-delete-submit [options] SURL1 [SURL2] [SURL3] [...]
 
 --access-token
 :	Oauth2 access token (supported only by some endpoints, takes precedence)
-
--b/--blocking
-:	Blocking mode. Wait until the operation completes. 
-
--i/--interval
-:	Interval between two poll operations in blocking mode. 
-
--e/--expire
-:	Expiration time of the delegation in minutes. 
-
---job-metadata
-:	Transfer job metadata. 
-
---file-metadata
-:	File metadata. 
-
--S/--spacetoken
-:	The space token or its description. 
-
---dry-run
-:	Do not send anything, just print the json message. 
-
--f/--file
-:	Name of configuration file
-
---retry
-:	Number of retries. If 0, the server default will be used. If negative, there will be no retries. 
-
---cloud-credentials
-:	Use cloud credentials for the job (i. E. Dropbox). 
 
 
 ### Example
 ```
-$ fts-rest-delete-submit -s https://fts3-devel.cern.ch:8446 gsiftp://source.host/file1 gsiftp://source.host/file2
-Job successfully submitted.
-Job id: 9fee8c1e-c46d-11e3-8299-02163e00a17a
-
-$ fts-rest-delete-submit -s https://fts3-devel.cern.ch:8446 -f bulk.list
-Job successfully submitted.
-Job id: 9fee8c1e-c46d-11e3-8299-02163e00a17a
+$ fts-rest-whoami -s https://fts3-pilot.cern.ch:8446
+User DN: /DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=saketag/CN=678984/CN=Alejandro Alvarez Ayllon
+VO: dteam
+VO: dteam/cern
+Delegation id: 9a4257f435fa2010
 
 ```
-## fts-rest-server-status
-Use this command to check on the service status.
-### Usage
-Usage: fts-rest-server-status [options]
-
-### Options
--h/--help
-:	Show this help message and exit
-
--v/--verbose
-:	Verbose output. 
-
--s/--endpoint
-:	Fts3 rest endpoint. 
-
--j/--json
-:	Print the output in json format. 
-
---key
-:	The user certificate private key. 
-
---cert
-:	The user certificate. 
-
---capath
-:	Use the specified directory to verify the peer
-
---insecure
-:	Do not validate the server certificate
-
---access-token
-:	Oauth2 access token (supported only by some endpoints, takes precedence)
-
--H/--host
-:	Limit the output to a given host
-
---is-active
-:	The tool will return < 0 on error, 0 if nothing is active, 1 if there are active transfers, 2 if there are active staging, 3 if there are both
-
-

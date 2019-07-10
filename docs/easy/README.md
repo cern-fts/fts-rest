@@ -55,6 +55,12 @@ That's the purpose of a Context.
 context = fts3.Context(endpoint, ucert, ukey, verify=True)
 ```
 
+The endpoint to use corresponds to the FTS instance REST server and it must have the following format:
+
+`https://<host>:<port>` 
+
+for instance https://fts3.cern.ch:8446
+
 If you are using a proxy certificate, you can either specify only user_certificate, or point both parameters
 to the proxy.
 
@@ -118,7 +124,7 @@ Deserialized JSON message returned by the server (list of jobs)
 
 #### Example:
 ```python
-fts3.list_jobs(context. user_dn=None, vo=None)
+fts3.list_jobs(context, user_dn=None, vo=None)
 ```
 
 ```json
@@ -241,6 +247,208 @@ fts3.get_job_status(context, '1234-5678-abcdef', list_files=False)
 }
 ```
 
+### get_jobs_statuses
+Get the status of a list of jobs
+
+#### Args:
+* **context**    fts3.rest.client.context.Context instance
+* **job_ids**    A list of job IDs
+* **list_files** If True, the status of each individual file will be queried
+
+#### Returns:
+Deserialized JSON message returned by the server containing a list of jobs plus optionally a list of the following fields for each transfer part of the job:
+file_state, dest_surl, finish_time, start_time, reason, source_surl, file_metadata
+
+#### Example:
+```python
+fts3.get_jobs_statuses(context, ['e360232c-7ba6-11e9-aea1-02163e00a077', 'e3941092-7ba6-11e9-8851-02163e00a077', 'e3b1d898-7ba6-11e9-8851-02163e00a077'], list_files=True)
+```
+
+```json
+[
+  {
+    'cred_id': 'bfd3b0c180c099ea',
+    'user_dn': '/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=amanzi/CN=683749/CN=Andrea Manzi',
+    'job_type': 'N',
+    'retry': -1,
+    'job_id': 'e360232c-7ba6-11e9-aea1-02163e00a077',
+    'cancel_job': False,
+    'job_state': 'SUBMITTED',
+    'submit_host': 'fts3devel02.cern.ch',
+    'priority': 3,
+    'source_space_token': '',
+    'max_time_in_queue': None,
+    'job_metadata': {
+      'test': 'test_multiple_jobs',
+      'label': 'fts3-tests'
+    },
+    'source_se': None,
+    'files': [
+      {
+        'dest_surl': 'mock://test.cern.ch/ttqv/pryb/nnvw?size_post=1048576&time=2',
+        'finish_time': None,
+        'start_time': None,
+        'file_metadata': None,
+        'reason': None,
+        'source_surl': 'mock://somewhere.uk/qtgc/mxar/aohc?size=1048576',
+        'file_state': 'SUBMITTED'
+      },
+      {
+        'dest_surl': 'mock://test.cern.ch/swnx/jznu/laso?size_post=1048576&time=2',
+        'finish_time': None,
+        'start_time': None,
+        'file_metadata': None,
+        'reason': None,
+        'source_surl': 'mock://aplace.es/vgcl/cpwh/umfo?size=1048576',
+        'file_state': 'SUBMITTED'
+      },
+      {
+        'dest_surl': 'mock://test2.cern.ch/kzqa/pvhf/jmto?size_post=1048576&time=2',
+        'finish_time': None,
+        'start_time': None,
+        'file_metadata': None,
+        'reason': None,
+        'source_surl': 'mock://test2.cern.ch/yasr/anan/zhbz?size=1048576',
+        'file_state': 'SUBMITTED'
+      }
+    ],
+    'http_status': '200 Ok',
+    'bring_online': -1,
+    'reason': None,
+    'space_token': '',
+    'submit_time': '2019-05-21T09:00:32',
+    'retry_delay': 0,
+    'dest_se': None,
+    'internal_job_params': 'nostreams:1',
+    'vo_name': 'dteam',
+    'copy_pin_lifetime': -1,
+    'verify_checksum': 'n',
+    'job_finished': None,
+    'overwrite_flag': False
+  },
+  {
+    'cred_id': 'bfd3b0c180c099ea',
+    'user_dn': '/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=amanzi/CN=683749/CN=Andrea Manzi',
+    'job_type': 'N',
+    'retry': -1,
+    'job_id': 'e3941092-7ba6-11e9-8851-02163e00a077',
+    'cancel_job': False,
+    'job_state': 'SUBMITTED',
+    'submit_host': 'fts3devel02.cern.ch',
+    'priority': 3,
+    'source_space_token': '',
+    'max_time_in_queue': None,
+    'job_metadata': {
+      'test': 'test_multiple_jobs',
+      'label': 'fts3-tests'
+    },
+    'source_se': None,
+    'files': [
+      {
+        'dest_surl': 'mock://test2.cern.ch/plym/iotw/awln?size_post=1048576&time=2',
+        'finish_time': None,
+        'start_time': None,
+        'file_metadata': None,
+        'reason': None,
+        'source_surl': 'mock://aplace.es/dlgj/tvlr/kyqh?size=1048576',
+        'file_state': 'SUBMITTED'
+      },
+      {
+        'dest_surl': 'mock://test.cern.ch/zjtl/tuyd/wsrm?size_post=1048576&time=2',
+        'finish_time': None,
+        'start_time': None,
+        'file_metadata': None,
+        'reason': None,
+        'source_surl': 'mock://somewhere.uk/ktmp/wmly/pjrv?size=1048576',
+        'file_state': 'SUBMITTED'
+      },
+      {
+        'dest_surl': 'mock://somewhere.uk/yzau/bhzw/ggdp?size_post=1048576&time=2',
+        'finish_time': None,
+        'start_time': None,
+        'file_metadata': None,
+        'reason': None,
+        'source_surl': 'mock://aplace.es/mwrb/eoiy/rvjm?size=1048576',
+        'file_state': 'SUBMITTED'
+      }
+    ],
+    'http_status': '200 Ok',
+    'bring_online': -1,
+    'reason': None,
+    'space_token': '',
+    'submit_time': '2019-05-21T09:00:32',
+    'retry_delay': 0,
+    'dest_se': None,
+    'internal_job_params': 'nostreams:1',
+    'vo_name': 'dteam',
+    'copy_pin_lifetime': -1,
+    'verify_checksum': 'n',
+    'job_finished': None,
+    'overwrite_flag': False
+  },
+  {
+    'cred_id': 'bfd3b0c180c099ea',
+    'user_dn': '/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=amanzi/CN=683749/CN=Andrea Manzi',
+    'job_type': 'N',
+    'retry': -1,
+    'job_id': 'e3b1d898-7ba6-11e9-8851-02163e00a077',
+    'cancel_job': False,
+    'job_state': 'SUBMITTED',
+    'submit_host': 'fts3devel02.cern.ch',
+    'priority': 3,
+    'source_space_token': '',
+    'max_time_in_queue': None,
+    'job_metadata': {
+      'test': 'test_multiple_jobs',
+      'label': 'fts3-tests'
+    },
+    'source_se': None,
+    'files': [
+      {
+        'dest_surl': 'mock://somewhere.uk/zpun/fbmb/jvln?size_post=1048576&time=2',
+        'finish_time': None,
+        'start_time': None,
+        'file_metadata': None,
+        'reason': None,
+        'source_surl': 'mock://aplace.es/tpfb/uoin/ipmb?size=1048576',
+        'file_state': 'SUBMITTED'
+      },
+      {
+        'dest_surl': 'mock://test2.cern.ch/qqxk/cjge/ysdf?size_post=1048576&time=2',
+        'finish_time': None,
+        'start_time': None,
+        'file_metadata': None,
+        'reason': None,
+        'source_surl': 'mock://test2.cern.ch/vrmj/rlnk/yxmx?size=1048576',
+        'file_state': 'SUBMITTED'
+      },
+      {
+        'dest_surl': 'mock://test2.cern.ch/dqmq/yrvi/liqz?size_post=1048576&time=2',
+        'finish_time': None,
+        'start_time': None,
+        'file_metadata': None,
+        'reason': None,
+        'source_surl': 'mock://somewhere.uk/jiyx/nxml/mzzc?size=1048576',
+        'file_state': 'SUBMITTED'
+      }
+    ],
+    'http_status': '200 Ok',
+    'bring_online': -1,
+    'reason': None,
+    'space_token': '',
+    'submit_time': '2019-05-21T09:00:32',
+    'retry_delay': 0,
+    'dest_se': None,
+    'internal_job_params': 'nostreams:1',
+    'vo_name': 'dteam',
+    'copy_pin_lifetime': -1,
+    'verify_checksum': 'n',
+    'job_finished': None,
+    'overwrite_flag': False
+  }
+]
+```
+
 ### delegate
 Delegates the credentials
 
@@ -261,23 +469,6 @@ dlg_id = fts3.delegate(context, lifetime=timedelta(hours=48), force=False)
 ### submit
 Check the documentation on [submit](submit.md) to see how to build a job and submit it.
 
-
-### get_snapshot
-Gets a server snapshot
-
-#### Args:
-* **context** fts3.rest.client.context.Context instance
-* **vo**      Filter by vo. Can be left empty.
-* **source**  Filter by source SE. Can be left empty
-* **destination** Filter by destination SE. Can be left empty.
-
-#### Returns
-Decoded JSON message returned by the server (server snapshot)
-
-#### Example
-```python
-snapshot = fts3.get_snapshot(context, vo='lhcb', source='srm://server/path')
-```
 
 ### ban_se / unban_se
 Ban and unban a storage element.

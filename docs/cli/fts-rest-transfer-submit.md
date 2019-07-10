@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-transfer-submit
 % fts-devel@cern.ch
-% August 24, 2016
+% May 21, 2019
 # NAME
 
 fts-rest-transfer-submit
@@ -72,10 +72,7 @@ format is as follows:
 :	Do not validate the server certificate
 
 --access-token
-:	IAM-XDC access token (supported only by some endpoints, takes precedence)
-
---target-qos
-:   the target QoS that the destination has to have when the operation is finished
+:	Oauth2 access token (supported only by some endpoints, takes precedence)
 
 -b/--blocking
 :	Blocking mode. Wait until the operation completes. 
@@ -117,16 +114,16 @@ format is as follows:
 :	Deprecated: compare checksums between source and destination. 
 
 -C/--checksum-mode
-: 	Compare checksums in source, target, both or none.
+:	Compare checksums in source, target, both or none. 
 
 --copy-pin-lifetime
 :	Pin lifetime of the copy in seconds. 
 
 --bring-online
-:	Bring online timeout in seconds.
+:	Bring online timeout in seconds. 
 
 --timeout
-: Transfer timeout in seconds. 
+:	Transfer timeout in seconds. 
 
 --fail-nearline
 :	Fail the transfer is the file is nearline. 
@@ -154,9 +151,6 @@ format is as follows:
 
 --ipv6
 :	Force ipv6
-
-
-
 
 # EXAMPLE
 ```
