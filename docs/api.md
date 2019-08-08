@@ -1,3 +1,4 @@
+```
 /usr/bin/python2.7 /opt/pycharm-community-2018.1/helpers/pydev/pydevd.py --multiproc --qt-support=auto --client 127.0.0.1 --port 33255 --file /home/aris/projects/fts-rest/docs/generate-api-md.py
 pydev debugger: process 24104 is connecting
 
@@ -31,6 +32,7 @@ Found controller oauth2
 Found controller serverstatus
 config not found in controllers
 content not found in controllers
+```
 API
 ===
 This document has been generated automatically
