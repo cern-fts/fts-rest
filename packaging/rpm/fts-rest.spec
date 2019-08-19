@@ -5,7 +5,7 @@
 
 Name:           fts-rest
 Version:        3.9.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
@@ -327,6 +327,9 @@ EOF
 
 
 %changelog
+* Mon Aug 19 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.2-1
+- New bugfix release
+
 * Thu Feb 21 2019 Andrea Manzi <amanzi@cern.ch> - 3.8.3-1
 - New bugfix release
 
