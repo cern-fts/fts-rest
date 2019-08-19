@@ -4,7 +4,7 @@
 %{!?nosetest_path: %global nosetest_path "/tmp"}
 
 Name:           fts-rest
-Version:        3.9.1
+Version:        3.9.2
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
@@ -327,6 +327,9 @@ EOF
 
 
 %changelog
+* Mon Aug 19 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.2-1
+- New bugfix release
+
 * Thu Feb 21 2019 Andrea Manzi <amanzi@cern.ch> - 3.8.3-1
 - New bugfix release
 
