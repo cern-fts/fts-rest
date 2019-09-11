@@ -1,6 +1,6 @@
 % FTS-REST-CLI(1) fts-rest-delegate
 % fts-devel@cern.ch
-% August 24, 2016
+% May 21, 2019
 # NAME
 
 fts-rest-delegate
@@ -44,6 +44,9 @@ This command can be used to (re)delegate your credentials to the FTS3 server
 
 -f/--force
 :	Force the delegation
+
+-H/--hours
+:	Duration of the delegation in hours (default: 12)
 
 # EXAMPLE
 ```

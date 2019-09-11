@@ -22,7 +22,8 @@ import uuid
 import pylons
 
 from datetime import datetime
-from urlparse import urlparse
+from urlparse import urlparse,parse_qsl, ParseResult
+from urllib import urlencode
 
 from fts3.model import File, BannedSE
 from fts3rest.lib.base import Session
@@ -375,20 +376,34 @@ class JobBuilder(object):
 
         # Multiple replica job or multihop? Then, the initial state is NOT_USED
         if len(file_dict['sources']) > 1 or self.params['multihop']:
-            if self.is_bringonline:
-                raise HTTPBadRequest('Staging with multiple replicas is not allowed')
+            #if self.is_bringonline:
+                #set the first as STAGING and the rest as 'NOT_USED'
+                #staging_and_multihop = True
+                #raise HTTPBadRequest('Staging with multiple replicas is not allowed')
             # On multiple replica job, we mark all files initially with NOT_USED
             initial_file_state = 'NOT_USED'
             # Multiple replicas, all must share the hashed-id
             if shared_hashed_id is None:
                 shared_hashed_id = _generate_hashed_id()
-	vo_name = self.user.vos[0] 
-        for source, destination in pairs:
+	vo_name = self.user.vos[0]
+
+        for source,destination in pairs:
 	    if len(file_dict['sources']) > 1 or not _is_dest_surl_uuid_enabled(vo_name):
 		dest_uuid = None
 	    else:
 		dest_uuid = str(uuid.uuid5(BASE_ID, destination.geturl().encode('utf-8')))
-
+            if self.is_bringonline:
+                # add the new query parameter only for root -> EOS-CTA for now
+                if source.scheme == "root":
+                     query_p = parse_qsl(source.query)
+                     query_p.append(('activity', file_dict.get('activity', 'default')))
+                     query_str = urlencode(query_p)
+                     source = ParseResult(scheme=source.scheme, 
+                                          netloc=source.netloc, 
+                                          path=source.path,
+                                          params=source.params,
+                                          query= query_str, 
+                                          fragment=source.fragment)
             f = dict(
                 job_id=self.job_id,
                 file_index=f_index,
@@ -526,6 +541,9 @@ class JobBuilder(object):
             self.job['job_type'] = 'R'
             # Apply selection strategy
             self._apply_selection_strategy()
+        # For multihop + staging mark the first as STAGING
+        elif self.params['multihop'] and self.is_bringonline:
+            self.files[0]['file_state'] = 'STAGING'
         # For multihop, mark the first as SUBMITTED
         elif self.params['multihop']:
             self.files[0]['file_state'] = 'SUBMITTED'

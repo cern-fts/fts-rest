@@ -284,6 +284,7 @@ EOF
 %config(noreplace) %{_sysconfdir}/fts3/fts3rest.ini
 %config(noreplace) %{_sysconfdir}/httpd/conf.d/fts3rest.conf
 %config(noreplace) %{_sysconfdir}/logrotate.d/fts-rest
+%config(noreplace) %{_sysconfdir}/cron.d/fts-rest-graceful.cron
 %dir %attr(0755,fts3,fts3) %{_var}/cache/fts3rest
 %dir %attr(0755,fts3,fts3) %{_var}/log/fts3rest
 %doc docs/README.md
@@ -332,10 +333,15 @@ EOF
 
 
 %changelog
+<<<<<<< HEAD
 * Mon Apr 8 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.0-2
 - New Minor release
 - Support for OIDC
 - Support for QoS job submission
+=======
+* Mon Aug 19 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.2-1
+- New bugfix release
+>>>>>>> develop
 
 * Thu Feb 21 2019 Andrea Manzi <amanzi@cern.ch> - 3.8.3-1
 - New bugfix release

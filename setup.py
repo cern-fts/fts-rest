@@ -55,13 +55,10 @@ def apply_pycurl_workaround():
 pycurl_ver = '==7.19.0'
 dist = platform.dist()
 if dist[0] in ('redhat', 'centos'):
-    apply_m2crypto_workaround()
     os_major = dist[1].split('.')[0]
     if os_major == '6':
-        pycurl_ver = '==7.19.0'
         apply_pycurl_workaround()
-    elif os_major == '5':
-        pycurl_ver = '==7.15.5'
+        apply_m2crypto_workaround()
 
 base_dir = os.path.dirname(__file__)
 
