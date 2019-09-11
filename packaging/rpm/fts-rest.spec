@@ -333,15 +333,8 @@ EOF
 
 
 %changelog
-<<<<<<< HEAD
-* Mon Apr 8 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.0-2
-- New Minor release
-- Support for OIDC
-- Support for QoS job submission
-=======
 * Mon Aug 19 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.2-1
 - New bugfix release
->>>>>>> develop
 
 * Thu Feb 21 2019 Andrea Manzi <amanzi@cern.ch> - 3.8.3-1
 - New bugfix release
