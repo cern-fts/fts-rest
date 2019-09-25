@@ -118,10 +118,10 @@ class JobSubmitter(Base):
                                    help='pin lifetime of the copy in seconds.')
         self.opt_parser.add_option('--bring-online', dest='bring_online', type='long', default=None,
                                    help='bring online timeout in seconds.')
+        self.opt_parser.add_option('--archive-timeout', dest='archive_timeout', type='long', default=None,
+                                   help='archive timeout in seconds.')
         self.opt_parser.add_option('--timeout', dest='timeout', type='long', default=None,
                                    help='transfer timeout in seconds.')
-        self.opt_parser.add_option('--fail-nearline', dest='fail_nearline', default=False, action='store_true',
-                                   help='fail the transfer is the file is nearline.')
         self.opt_parser.add_option('--dry-run', dest='dry_run', default=False, action='store_true',
                                    help='do not send anything, just print the JSON message.')
         self.opt_parser.add_option('-f', '--file', dest='bulk_file', type='string',
@@ -208,11 +208,11 @@ class JobSubmitter(Base):
             self._build_transfers(),
             checksum=self.checksum,
             bring_online=self.options.bring_online,
+            archive_timeout=self.options.archive_timeout,
             timeout = self.options.timeout,
             verify_checksum=checksum_mode[0],
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,
-            fail_nearline=self.options.fail_nearline,
             file_metadata=_metadata(self.options.file_metadata),
             filesize=self.options.file_size,
             gridftp=self.options.gridftp_params,
@@ -271,11 +271,11 @@ class JobSubmitter(Base):
             self._build_transfers(),
             checksum=self.checksum,
             bring_online=self.options.bring_online,
+            archive_timeout = self.options.archive_timeout, 
             timeout = self.options.timeout,
             verify_checksum=checksum_mode,
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,
-            fail_nearline=self.options.fail_nearline,
             file_metadata=_metadata(self.options.file_metadata),
             filesize=self.options.file_size,
             gridftp=self.options.gridftp_params,

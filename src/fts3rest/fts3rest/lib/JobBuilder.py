@@ -40,6 +40,7 @@ BASE_ID = uuid.UUID('urn:uuid:01874efb-4735-4595-bc9c-591aef8240c9')
 
 DEFAULT_PARAMS = {
     'bring_online': -1,
+    'archive_timeout': -1,
     'verify_checksum': False,
     'copy_pin_lifetime': -1,
     'gridftp': '',
@@ -475,6 +476,7 @@ class JobBuilder(object):
             copy_pin_lifetime=int(self.params['copy_pin_lifetime']),
             checksum_method=self.params['verify_checksum'],
             bring_online=self.params['bring_online'],
+            archive_timeout=self.params['archive_timeout'],
             job_metadata=self.params['job_metadata'],
             internal_job_params=self._build_internal_job_params(),
             max_time_in_queue=expiration_time
@@ -610,6 +612,7 @@ class JobBuilder(object):
             copy_pin_lifetime=-1,
             checksum_method=None,
             bring_online=None,
+            archive_timeout=None,
             job_metadata=self.params['job_metadata'],
             internal_job_params=None,
             max_time_in_queue=self.params['max_time_in_queue']

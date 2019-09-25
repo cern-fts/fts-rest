@@ -52,6 +52,7 @@ class Job(Base):
     verify_checksum          = Column(String(1),
                                       name='checksum_method')
     bring_online             = Column(Integer)
+    archive_timeout          = Column(Integer)
     job_metadata             = Column(Json(255))
     retry                    = Column(Integer)
     retry_delay              = Column(Integer, default=0)
@@ -96,6 +97,7 @@ class ArchivedJob(Base):
     verify_checksum          = Column(String(1),
                                       name='checksum_method')
     bring_online             = Column(Integer)
+    archive_timeout          = Column(Integer)
     job_metadata             = Column(Json(255))
     retry                    = Column(Integer)
 
