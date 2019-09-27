@@ -7,8 +7,8 @@ from pyvirtualdisplay import Display
 class FTS3develSeTab(unittest.TestCase):
 
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
         profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
         self.driver = webdriver.Firefox(profile)
 
@@ -19,15 +19,15 @@ class FTS3develSeTab(unittest.TestCase):
         driver = self.driver
         driver.get("https://fts3-devel.cern.ch:8446/config/links")
 
-	#SET UP data for the test
-	
+        #SET UP data for the test
+
         setup_list = [
-                      ("test14", "test14://test.test", "test://test0.test", "0", "2","2", "0", "0"),
-                      ("test15", "test15://test.test", "test://test1.test", "10", "15", "25", "5", "30"),
-                      ("test16", "test16://test.test", "test://test2.test", "1", "150", "250", "5", "70"), 
-                      ("test17", "test17://test.test", "test://test3.test", "0", "2","2", "0", "0"),
-                      ("test18", "test18://test.test", "test://test4.test", "10", "15", "25", "5", "30")
-                  ]
+            ("test14", "test14://test.test", "test://test0.test", "0", "2","2", "0", "0"),
+            ("test15", "test15://test.test", "test://test1.test", "10", "15", "25", "5", "30"),
+            ("test16", "test16://test.test", "test://test2.test", "1", "150", "250", "5", "70"), 
+            ("test17", "test17://test.test", "test://test3.test", "0", "2","2", "0", "0"),
+            ("test18", "test18://test.test", "test://test4.test", "10", "15", "25", "5", "30")
+        ]
 
         for element in setup_list:
             count = 0
@@ -68,34 +68,34 @@ class FTS3develSeTab(unittest.TestCase):
             time.sleep(1)
 
         #CHECK IF EVERYTHING WAS SAVED
-	check0_list = []
-	check1_list = []
+        check0_list = []
+        check1_list = []
 
         count = 0
-	page_list = driver.find_elements_by_id('symname')
+        page_list = driver.find_elements_by_id('symname')
         for elem in page_list:
             check0_list.append(elem.text)
         count = count + 1
 
         count = 0
         for element in setup_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if not set(check1_list) < set(check0_list):
-	    return self.assertFalse("SETUP: Problem with adding link configuration", set(check1_list) - set(check0_list))
+        if not set(check1_list) < set(check0_list):
+            return self.assertFalse("SETUP: Problem with adding link configuration", set(check1_list) - set(check0_list))
 
-	# SET UP add elements to share configuration
+        # SET UP add elements to share configuration
         setup2_list = [
-                      ("test14://test.test", "test://test0.test", "share_0", "2"),
-                      ("test15://test.test", "test://test1.test", "share_1", "58"),
-                      ("test16://test.test", "test://test2.test", "share_2", "100"),
-		      ("test17://test.test", "test://test3.test", "share_3", "70"),
-		      ("test18://test.test", "test://test4.test", "share_4", "30")
-                     ]
+            ("test14://test.test", "test://test0.test", "share_0", "2"),
+            ("test15://test.test", "test://test1.test", "share_1", "58"),
+            ("test16://test.test", "test://test2.test", "share_2", "100"),
+            ("test17://test.test", "test://test3.test", "share_3", "70"),
+            ("test18://test.test", "test://test4.test", "share_4", "30")
+        ]
 
         for element in setup2_list:
-	    count = 0
+            count = 0
             source_field = driver.find_element_by_id('share-add-field-source')
             source_field.clear()
             source_field.click()
@@ -114,43 +114,43 @@ class FTS3develSeTab(unittest.TestCase):
             share_field.send_keys(Keys.BACKSPACE)
             share_field.send_keys(element[3])
 
-	    button_add = driver.find_element_by_id('button_share_link')
-	    button_add.click()
-	    time.sleep(1)
+            button_add = driver.find_element_by_id('button_share_link')
+            button_add.click()
+            time.sleep(1)
 
-	#CHECK IF IT WAS SAVED
-	check2_list = []
-	check3_list = []
+        #CHECK IF IT WAS SAVED
+        check2_list = []
+        check3_list = []
 
         count = 0
-	page_list = driver.find_elements_by_id('share_name')
+        page_list = driver.find_elements_by_id('share_name')
         for elem in page_list:
             check2_list.append(elem.text)
         count = count + 1
 
         count = 0
         for element in setup2_list:
-	    check3_list.append(element[0])
+            check3_list.append(element[0])
         count = count + 1
 
-	if not set(check3_list) < set(check2_list):
-	    return self.assertFalse("SETUP: The share configuration wasn't saved", set(check3_list) - set(check2_list))
+        if not set(check3_list) < set(check2_list):
+            return self.assertFalse("SETUP: The share configuration wasn't saved", set(check3_list) - set(check2_list))
 
 
-	# TEST test_save_good_share
+        # TEST test_save_good_share
 
         input_list = [
-                      ("test14://test.test", "test://test0.test", "share_0", "33"),
-                      ("test15://test.test", "test://test1.test", "share_1", "88"),
-                      ("test16://test.test", "test://test2.test", "share_2", "66"),
-		      ("test17://test.test", "test://test3.test", "share_3", "11"),
-		      ("test18://test.test", "test://test4.test", "share_4", "22")
-                     ]
+            ("test14://test.test", "test://test0.test", "share_0", "33"),
+            ("test15://test.test", "test://test1.test", "share_1", "88"),
+            ("test16://test.test", "test://test2.test", "share_2", "66"),
+            ("test17://test.test", "test://test3.test", "share_3", "11"),
+            ("test18://test.test", "test://test4.test", "share_4", "22")
+        ]
 
         #FIND ELEMENTS FROM THE INPUT_LIST THAT ARE ON THE PAGE
         output_list = []
-	share_list = driver.find_elements_by_id('share_name')
-	vo_list = driver.find_elements_by_id('vo_name')
+        share_list = driver.find_elements_by_id('share_name')
+        vo_list = driver.find_elements_by_id('vo_name')
         for element in input_list:
             count = 0
             for sh in share_list:
@@ -162,11 +162,11 @@ class FTS3develSeTab(unittest.TestCase):
         for element in output_list:
             count = 0
             savebtn_list = driver.find_elements_by_id('button_save_share')
-	    share_field = driver.find_elements_by_xpath('//input[@name="share-saved"]')
+            share_field = driver.find_elements_by_xpath('//input[@name="share-saved"]')
             time.sleep(1)
             for sh,vo in zip(share_list, vo_list):
                 if sh.text == element[0] and vo.text==element[2]:    
-		    share_field[count].click()
+                    share_field[count].click()
                     share_field[count].send_keys(Keys.CONTROL + 'a')
                     share_field[count].send_keys(Keys.BACKSPACE)
                     share_field[count].send_keys(element[3])
@@ -177,7 +177,7 @@ class FTS3develSeTab(unittest.TestCase):
 
         #CHECK IF IT WAS SAVED
         check_list3 = []
-	sh_list = driver.find_elements_by_xpath('//input[@name="share-saved"]')
+        sh_list = driver.find_elements_by_xpath('//input[@name="share-saved"]')
         for element in input_list:
             count = 0
             for sh,vo,s in zip(share_list, vo_list, sh_list):
@@ -192,8 +192,8 @@ class FTS3develSeTab(unittest.TestCase):
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()
 

@@ -6,8 +6,8 @@ from pyvirtualdisplay import Display
 class FTS3develSeTab(unittest.TestCase):
 
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
         profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
         self.driver = webdriver.Firefox(profile)
 
@@ -19,16 +19,16 @@ class FTS3develSeTab(unittest.TestCase):
         driver.get("https://fts3-devel.cern.ch:8446/config/global")
 
         input_list = [
-		      ("*", "1", "1", "1", "1", "true"),
-                      ("testvo", "0", "0", "0", "0", "true"),
-                      ("testvo1", "5", "15", "20", "25", "false"),
-                      ("testvo2", "10", "20", "30", "40", "false"),
-		      ("testvo3@vo.ru", "1", "1", "1", "1", "true"),
-                      ("testvo4_vo", "0", "0", "0", "0", "false")
-                     ]
-     
+            ("*", "1", "1", "1", "1", "true"),
+            ("testvo", "0", "0", "0", "0", "true"),
+            ("testvo1", "5", "15", "20", "25", "false"),
+            ("testvo2", "10", "20", "30", "40", "false"),
+            ("testvo3@vo.ru", "1", "1", "1", "1", "true"),
+            ("testvo4_vo", "0", "0", "0", "0", "false")
+        ]
+
         for element in input_list:
-	
+
             voname_field = driver.find_element_by_id('vo-config-add-field-vo')
             voname_field.clear()
             voname_field.send_keys(element[0])
@@ -51,30 +51,30 @@ class FTS3develSeTab(unittest.TestCase):
 
 
             showdn_field = driver.find_element_by_xpath('//tbody[@id="vo-config-add"][tr/td/select[@id="show_user_dn"]]')
-	    if element[5] == 'false':
-		showdn_field.click()
-		options = showdn_field.find_elements_by_tag_name("option")
-		for option in options:
-		    if option.get_attribute("value") == 'false':
-			option.click()
-	    elif element[5] == 'true':
-		showdn_field.click()
-		options = showdn_field.find_elements_by_tag_name("option")
-		for option in options:
-		    if option.get_attribute("value") == 'true':
-		        option.click()
+            if element[5] == 'false':
+                showdn_field.click()
+                options = showdn_field.find_elements_by_tag_name("option")
+                for option in options:
+                    if option.get_attribute("value") == 'false':
+                        option.click()
+            elif element[5] == 'true':
+                showdn_field.click()
+                options = showdn_field.find_elements_by_tag_name("option")
+                for option in options:
+                    if option.get_attribute("value") == 'true':
+                        option.click()
 
 
-	    button_add = driver.find_element_by_id('button_add_global')
-	    button_add.click()
-	    time.sleep(1)
+            button_add = driver.find_element_by_id('button_add_global')
+            button_add.click()
+            time.sleep(1)
 
-	#CHECK IF EVERYTHING WAS SAVED
-	check0_list = []
-	check1_list = []
+        #CHECK IF EVERYTHING WAS SAVED
+        check0_list = []
+        check1_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//td[@class="vo_name"]')
+        page_list = driver.find_elements_by_xpath('//td[@class="vo_name"]')
 
         for elem in page_list:
             check0_list.append(elem.text)
@@ -82,16 +82,16 @@ class FTS3develSeTab(unittest.TestCase):
 
         count = 0
         for element in input_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if not set(check1_list) < set(check0_list):
-	    return self.assertFalse("TEST: The retry wasn't saved", set(check1_list) - set(check0_list))
+        if not set(check1_list) < set(check0_list):
+            return self.assertFalse("TEST: The retry wasn't saved", set(check1_list) - set(check0_list))
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()
 

@@ -32,28 +32,28 @@ class TestConfigShares(TestController):
         Set up shares config
         """
         self.app.post_json(url="/config/shares",
-            params=dict(
-                source='gsiftp://source',
-                destination='gsiftp://nowhere',
-                vo='dteam',
-                share=80
-            ),
-            status=200
-        )
+                           params=dict(
+                               source='gsiftp://source',
+                               destination='gsiftp://nowhere',
+                               vo='dteam',
+                               share=80
+                           ),
+                           status=200
+                           )
 
     def test_wrong_config_shares0(self):
         """
         Test wrong value for share in params
         """
         self.app.post_json(url="/config/shares",
-            params=dict(
-                source='gsiftp://source',
-                destination='gsiftp://nowhere',
-                vo='dteam',
-                share='dfdf'
-            ),
-            status=400
-        )
+                           params=dict(
+                               source='gsiftp://source',
+                               destination='gsiftp://nowhere',
+                               vo='dteam',
+                               share='dfdf'
+                           ),
+                           status=400
+                           )
 
     def test_wrong_config_shares1(self):
         """
@@ -73,24 +73,24 @@ class TestConfigShares(TestController):
         Test wrong source or destination
         """
         self.app.post_json(url="/config/shares",
-            params=dict(
-                source='dfgsdfsg',
-                destination='gsiftp://nowhere',
-                vo='dteam',
-                share=80
-            ),
-            status=400
-        )
+                           params=dict(
+                               source='dfgsdfsg',
+                               destination='gsiftp://nowhere',
+                               vo='dteam',
+                               share=80
+                           ),
+                           status=400
+                           )
 
         self.app.post_json(url="/config/shares",
-            params=dict(
-                source='gsiftp://source',
-                destination='klhjkhjk',
-                vo='dteam',
-                share=80
-            ),
-            status=400
-        )
+                           params=dict(
+                               source='gsiftp://source',
+                               destination='klhjkhjk',
+                               vo='dteam',
+                               share=80
+                           ),
+                           status=400
+                           )
 
     def test_get_share_config(self):
         """

@@ -48,8 +48,8 @@ class TestConfigAuthz(TestController):
         """
         self.test_add_authz()
         self.app.delete("/config/authorize?dn=/DN=a.test.user&operation=config",
-            status = 204
-        )
+                        status = 204
+                        )
 
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(2, len(audits))

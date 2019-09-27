@@ -5,13 +5,13 @@ from selenium.webdriver.common.keys import Keys
 from pyvirtualdisplay import Display
 
 class FTS3develSeTab(unittest.TestCase):
- 
+
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
-	profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
-	self.driver = webdriver.Firefox(profile)
-	
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
+        profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
+        self.driver = webdriver.Firefox(profile)
+
     def test_add_bad_se(self):
         """
         Put not proper types into input fields
@@ -20,77 +20,77 @@ class FTS3develSeTab(unittest.TestCase):
         driver.get("https://fts3-devel.cern.ch:8446/config/se")
 
         input_list = [
-                      (" ", "", "", "", "", "", "", "", ""),
-                      ("sometext", "", "", "", "", "", "", "", ""),
-                      ("104958434", "", "", "", "", "", "", "", ""),
-                      ("&(#)%&#*+", "", "", "", "", "", "", "", ""),
-                      ("site.ch", "", "", "", "", "", "", "", ""),
-                      ("http://site", "", "", "", "", "", "", "", ""),
-                      ("s3://badse1.cern.ch", "", "3.14", "", "", "", "", "", ""),
-                      ("s3://badse2.cern.ch", "", "", "3.14", "", "", "", "", ""),
-                      ("s3://badse3.cern.ch", "", "", "", "3.14", "", "", "", ""),
-                      ("s3://badse4.cern.ch", "", "", "", "", "3.14", "", "", ""),
-                      ("s3://badse5.cern.ch", "", "", "", "", "", "3.14", "", ""),
-                      ("s3://badse6.cern.ch", "", "", "", "", "", "", "3.14", ""),
-                      ("s3://badse7.cern.ch", "", "", "", "", "", "", "", "3.14"),
-                      ("s3://badse8.cern.ch", "", "-8", "", "", "", "", "", ""),
-                      ("s3://badse9.cern.ch", "", "", "-8", "", "", "", "", ""),
-                      ("s3://badse10.cern.ch", "", "", "", "-8", "", "", "", ""),
-                      ("s3://badse11.cern.ch", "", "", "", "", "-8", "", "", ""),
-                      ("s3://badse12.cern.ch", "", "", "", "", "", "-8", "", ""),
-                      ("s3://badse13.cern.ch", "", "", "", "", "", "", "-8", ""),
-                      ("s3://badse14.cern.ch", "", "", "", "", "", "", "", "-8"),
-                      ("s3://badse15.cern.ch", "", "abc", "", "", "", "", "", ""),
-                      ("s3://badse16.cern.ch", "", "", "abc", "", "", "", "", ""),
-                      ("s3://badse17.cern.ch", "", "", "", "abc", "", "", "", ""),
-                      ("s3://badse18.cern.ch", "", "", "", "", "abc", "", "", ""),
-                      ("s3://badse19.cern.ch", "", "", "", "", "", "abc", "", ""),
-                      ("s3://badse20.cern.ch", "", "", "", "", "", "", "abc", ""),
-                      ("s3://badse21.cern.ch", "", "", "", "", "", "", "", "abc"),
-                      ("s3://badse22.cern.ch", "", "$", "", "", "", "", "", ""),
-                      ("s3://badse23.cern.ch", "", "", "$", "", "", "", "", ""),
-                      ("s3://badse24.cern.ch", "", "", "", "$", "", "", "", ""),
-                      ("s3://badse25.cern.ch", "", "", "", "", "$", "", "", ""),
-                      ("s3://badse26.cern.ch", "", "", "", "", "", "$", "", ""),
-                      ("s3://badse27.cern.ch", "", "", "", "", "", "", "$", ""),
-                      ("s3://badse28.cern.ch", "", "", "", "", "", "", "", "$"),
-                      ("s3://badse29.cern.ch", "", " ", "", "", "", "", "", ""),
-                      ("s3://badse30.cern.ch", "", "", " ", "", "", "", "", ""),
-                      ("s3://badse31.cern.ch", "", "", "", " ", "", "", "", ""),
-                      ("s3://badse32.cern.ch", "", "", "", "", " ", "", "", ""),
-                      ("s3://badse33.cern.ch", "", "", "", "", "", " ", "", ""),
-                      ("s3://badse34.cern.ch", "", "", "", "", "", "", " ", ""),
-                      ("s3://badse35.cern.ch", "", "", "", "", "", "", "", " ")
-                     ]
-	output_list = []
+            (" ", "", "", "", "", "", "", "", ""),
+            ("sometext", "", "", "", "", "", "", "", ""),
+            ("104958434", "", "", "", "", "", "", "", ""),
+            ("&(#)%&#*+", "", "", "", "", "", "", "", ""),
+            ("site.ch", "", "", "", "", "", "", "", ""),
+            ("http://site", "", "", "", "", "", "", "", ""),
+            ("s3://badse1.cern.ch", "", "3.14", "", "", "", "", "", ""),
+            ("s3://badse2.cern.ch", "", "", "3.14", "", "", "", "", ""),
+            ("s3://badse3.cern.ch", "", "", "", "3.14", "", "", "", ""),
+            ("s3://badse4.cern.ch", "", "", "", "", "3.14", "", "", ""),
+            ("s3://badse5.cern.ch", "", "", "", "", "", "3.14", "", ""),
+            ("s3://badse6.cern.ch", "", "", "", "", "", "", "3.14", ""),
+            ("s3://badse7.cern.ch", "", "", "", "", "", "", "", "3.14"),
+            ("s3://badse8.cern.ch", "", "-8", "", "", "", "", "", ""),
+            ("s3://badse9.cern.ch", "", "", "-8", "", "", "", "", ""),
+            ("s3://badse10.cern.ch", "", "", "", "-8", "", "", "", ""),
+            ("s3://badse11.cern.ch", "", "", "", "", "-8", "", "", ""),
+            ("s3://badse12.cern.ch", "", "", "", "", "", "-8", "", ""),
+            ("s3://badse13.cern.ch", "", "", "", "", "", "", "-8", ""),
+            ("s3://badse14.cern.ch", "", "", "", "", "", "", "", "-8"),
+            ("s3://badse15.cern.ch", "", "abc", "", "", "", "", "", ""),
+            ("s3://badse16.cern.ch", "", "", "abc", "", "", "", "", ""),
+            ("s3://badse17.cern.ch", "", "", "", "abc", "", "", "", ""),
+            ("s3://badse18.cern.ch", "", "", "", "", "abc", "", "", ""),
+            ("s3://badse19.cern.ch", "", "", "", "", "", "abc", "", ""),
+            ("s3://badse20.cern.ch", "", "", "", "", "", "", "abc", ""),
+            ("s3://badse21.cern.ch", "", "", "", "", "", "", "", "abc"),
+            ("s3://badse22.cern.ch", "", "$", "", "", "", "", "", ""),
+            ("s3://badse23.cern.ch", "", "", "$", "", "", "", "", ""),
+            ("s3://badse24.cern.ch", "", "", "", "$", "", "", "", ""),
+            ("s3://badse25.cern.ch", "", "", "", "", "$", "", "", ""),
+            ("s3://badse26.cern.ch", "", "", "", "", "", "$", "", ""),
+            ("s3://badse27.cern.ch", "", "", "", "", "", "", "$", ""),
+            ("s3://badse28.cern.ch", "", "", "", "", "", "", "", "$"),
+            ("s3://badse29.cern.ch", "", " ", "", "", "", "", "", ""),
+            ("s3://badse30.cern.ch", "", "", " ", "", "", "", "", ""),
+            ("s3://badse31.cern.ch", "", "", "", " ", "", "", "", ""),
+            ("s3://badse32.cern.ch", "", "", "", "", " ", "", "", ""),
+            ("s3://badse33.cern.ch", "", "", "", "", "", " ", "", ""),
+            ("s3://badse34.cern.ch", "", "", "", "", "", "", " ", ""),
+            ("s3://badse35.cern.ch", "", "", "", "", "", "", "", " ")
+        ]
+        output_list = []
         for element in input_list:
-	    count = 0
+            count = 0
 
             storage_field = driver.find_element_by_id('se-add-field-se')
-	    storage_field.clear()
+            storage_field.clear()
             storage_field.send_keys(element[0])
 
             se_meta_field = driver.find_element_by_id('se_metadata')
-	    se_meta_field.clear()
+            se_meta_field.clear()
             se_meta_field.send_keys(element[1])
 
             inbound_field = driver.find_element_by_id('inbound_max_active')
-	    inbound_field.send_keys(Keys.CONTROL + 'a')
-	    inbound_field.send_keys(Keys.BACKSPACE)
-	    inbound_field.send_keys(element[2])
+            inbound_field.send_keys(Keys.CONTROL + 'a')
+            inbound_field.send_keys(Keys.BACKSPACE)
+            inbound_field.send_keys(element[2])
 
             outbound_field = driver.find_element_by_id('outbound_max_active')
-	    outbound_field.send_keys(Keys.CONTROL + 'a')
-	    outbound_field.send_keys(Keys.BACKSPACE)
+            outbound_field.send_keys(Keys.CONTROL + 'a')
+            outbound_field.send_keys(Keys.BACKSPACE)
             outbound_field.send_keys(element[3])
 
             i_throughput_field = driver.find_element_by_id('inbound_max_throughput')
-	    i_throughput_field.send_keys(Keys.CONTROL + 'a')
-	    i_throughput_field.send_keys(Keys.BACKSPACE)
+            i_throughput_field.send_keys(Keys.CONTROL + 'a')
+            i_throughput_field.send_keys(Keys.BACKSPACE)
             i_throughput_field.send_keys(element[4])
 
             o_throughput_field = driver.find_element_by_id('outbound_max_throughput')
-	    o_throughput_field.send_keys(Keys.CONTROL + 'a')
+            o_throughput_field.send_keys(Keys.CONTROL + 'a')
             o_throughput_field.send_keys(Keys.BACKSPACE)
             o_throughput_field.send_keys(element[5])
 
@@ -100,12 +100,12 @@ class FTS3develSeTab(unittest.TestCase):
             ipv6_field.send_keys(element[6])
 
             udt_field = driver.find_element_by_id('udt')
-	    udt_field.send_keys(Keys.CONTROL + 'a')
-	    udt_field.send_keys(Keys.BACKSPACE)
+            udt_field.send_keys(Keys.CONTROL + 'a')
+            udt_field.send_keys(Keys.BACKSPACE)
             udt_field.send_keys(element[7])
 
             debug_field = driver.find_element_by_id('debug_level')
-	    debug_field.send_keys(Keys.CONTROL + 'a')
+            debug_field.send_keys(Keys.CONTROL + 'a')
             debug_field.send_keys(Keys.BACKSPACE)
             debug_field.send_keys(element[8])
 
@@ -113,30 +113,30 @@ class FTS3develSeTab(unittest.TestCase):
             time.sleep(1)
 
 
-	#CHECK IF SOMETHING WAS SAVED
-	check0_list = []
-	check1_list = []
-	check2_list = []
+        #CHECK IF SOMETHING WAS SAVED
+        check0_list = []
+        check1_list = []
+        check2_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//div[@id="se-list"]//h2[@class="panel-title"]')
+        page_list = driver.find_elements_by_xpath('//div[@id="se-list"]//h2[@class="panel-title"]')
 
         for elem in page_list:
             check0_list.append(elem.text)
-   	    check2_list.append(elem)
+            check2_list.append(elem)
         count = count + 1
 
         count = 0
         for element in input_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if set(check0_list)&set(check1_list):
-	    return self.assertFalse("TEST: The storage should NOT be saved", set(check0_list)&set(check1_list))
+        if set(check0_list)&set(check1_list):
+            return self.assertFalse("TEST: The storage should NOT be saved", set(check0_list)&set(check1_list))
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-	unittest.main()
+    unittest.main()
