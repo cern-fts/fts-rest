@@ -28,35 +28,33 @@ class TestConfigSe(TestController):
         Session.query(OperationConfig).delete()
         Session.query(Se).delete()
         Session.commit()
-
+        self.host_config = {
+            'operations': {
+                'atlas': {
+                    'delete': 22,
+                    'staging': 32,
+                },
+                'dteam': {
+                    'delete': 10,
+                    'staging': 11
+                }
+            },
+            'se_info': {
+                'ipv6': 1,
+                'outbound_max_active': 55,
+                'inbound_max_active': 11,
+                'inbound_max_throughput': 33,
+                'se_metadata': 'metadata'
+            }
+        }
 
     def test_set_se_config(self):
         """
         Set SE config
         """
-        config = {
-            'test.cern.ch': {
-                'operations': {
-                    'atlas': {
-                        'delete': 22,
-                        'staging': 32,
-                    },
-                    'dteam': {
-                        'delete': 10,
-                        'staging': 11
-                    }
-                },
-                'se_info': {
-                    'ipv6': 1,
-                    'outbound_max_active': 55,
-                    'inbound_max_active': 11,
-                    'inbound_max_throughput': 33,
-                    'se_metadata': 'metadata'
-                }
-            }
-        }
+        config = {'test.cern.ch': self.host_config}
         self.app.post_json("/config/se",
-                           params= config,
+                           params=config,
                            status=200
                            )
 
@@ -73,6 +71,27 @@ class TestConfigSe(TestController):
         self.assertEqual(55, se.outbound_max_active)
         self.assertEqual(11, se.inbound_max_active)
         self.assertEqual(33, se.inbound_max_throughput)
+
+    def test_set_se_config_bad_name(self):
+        """
+        Set SE config with invalid storage names
+        """
+        for storage_name in (' ', '', '\n', '\t'):
+            config = {storage_name: self.host_config}
+
+            self.app.post_json("/config/se",
+                               params= config,
+                               status=400
+                               )
+
+            audits = Session.query(ConfigAudit).all()
+            self.assertEqual(0, len(audits))
+
+            ops = Session.query(OperationConfig).filter(OperationConfig.host == storage_name).all()
+            self.assertEqual(0, len(ops))
+
+            se = Session.query(Se).filter(Se.storage == storage_name).all()
+            self.assertEqual(0, len(se))
 
     def test_reset_se_config(self):
         """
