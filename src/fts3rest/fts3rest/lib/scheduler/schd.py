@@ -8,7 +8,7 @@ class Scheduler:
     """
     The scheduler class is used to rank the source sites based on a number 
     of factors e.g queued files, success rate etc. 
-    
+
     If the throughput is 0 for a given src dst pair, we should select this 
     source site, in this way we can probe the network to get throughput info 
     for future transfers
@@ -23,13 +23,13 @@ class Scheduler:
         queue_provider = Database(Session)
         cache_provider = ThreadLocalCache(queue_provider)
         s = Scheduler (cache_provider)
-      
+
         Using a direct database implementation with scheduler:
         queue_provider = Database(Session)
         s = Scheduler (queue_provider)
         """
         self.cls = cls
-    
+
     @staticmethod
     def select_source(source, throughput):
         myList = []
@@ -92,7 +92,7 @@ class Scheduler:
         ranks = []
         for src in sources:
             ranks.append((src, self.cls.get_pending_data(src, dst, vo,
-                                                        user_activity)))
+                                                         user_activity)))
         return sorted(ranks, key=operator.itemgetter(1))
 
     def rank_waiting_time(self, sources, dst, vo, user_activity):

@@ -58,18 +58,18 @@ def do_authentication(credentials, env):
         sign = b64decode(cred['sign'])
         proxy = None
         try:
-                proxy = b64decode(cred['prx'])
-                log.info("found a proxy on the request")
+            proxy = b64decode(cred['prx'])
+            log.info("found a proxy on the request")
         except:
-                pass
-        
+            pass
+
         ts = dateutil.parser.parse(cred['ts'])
     except (TypeError, ValueError):
         log.info("Cannot decode certificate, signature or timestamp")
         raise InvalidCredentials("Cannot decode certificate, signature or timestamp")
 
     td = datetime.utcnow() - ts.replace(tzinfo=None)
-    
+
     if td > timedelta(seconds=600):
         msg = "Authorization has left %s" % td
         log.info(msg)
@@ -113,8 +113,8 @@ def do_authentication(credentials, env):
     if proxy:
         log.info("Trying to verify the proxy")
         if not ctx.validate_certificate(chain):
-                log.info("Certificate verification failed")
-                raise InvalidCredentials("Certificate verification failed")
+            log.info("Certificate verification failed")
+            raise InvalidCredentials("Certificate verification failed")
     elif not ctx.validate_certificate(x509):
         log.info("Certificate verification failed")
         raise InvalidCredentials("Certificate verification failed")
@@ -129,10 +129,10 @@ def do_authentication(credentials, env):
         log.info("proxy path: " + voms_client.proxy_path)
         fqans = voms_client.get_proxy_fqans()
         for fqan in fqans:
-                vo = vo_from_fqan(fqan)
-                credentials.voms_cred.append(fqan)
-                if vo not in credentials.vos and vo:
-                        credentials.vos.append(vo)
+            vo = vo_from_fqan(fqan)
+            credentials.voms_cred.append(fqan)
+            if vo not in credentials.vos and vo:
+                credentials.vos.append(vo)
 
     # Generate the delegation ID
     credentials.delegation_id = generate_delegation_id(credentials.user_dn, credentials.voms_cred)

@@ -54,36 +54,36 @@ class SeConfigurationController(BaseController):
         input_dict = get_input_as_dict(request)
         try:
             for storage, cfg in input_dict.iteritems():
-	       se_info = None
-               se_info_new = cfg.get('se_info', None)
-               if se_info_new:
-                se_info = Session.query(Se).get(storage)
-                if not se_info:
-                    se_info = Se(storage=storage)
-                for key, value in se_info_new.iteritems():
-                    #value = validate_type(Se, key, value)
-                    setattr(se_info, key, value)
-                 
-                audit_configuration('set-se-config', 'Set config %s: %s' % (storage, json.dumps(cfg)))
-                Session.merge(se_info)
-                
-                # Operation limits
-                operations = cfg.get('operations', None)
-                if operations:
-                    for vo, limits in operations.iteritems():
-                        for op, limit in limits.iteritems():
-                            limit = int(limit)
-                            new_limit = Session.query(OperationConfig).get((vo, storage, op))
-                            if limit > 0:
-                                if not new_limit:
-                                    new_limit = OperationConfig(
-                                        vo_name=vo, host=storage, operation=op
-                                    )
-                                new_limit.concurrent_ops = limit
-                                Session.merge(new_limit)
-                            elif new_limit:
-                                Session.delete(new_limit)
-                    audit_configuration('set-se-limits', 'Set limits for %s: %s' % (storage, json.dumps(operations)))
+                se_info = None
+                se_info_new = cfg.get('se_info', None)
+                if se_info_new:
+                    se_info = Session.query(Se).get(storage)
+                    if not se_info:
+                        se_info = Se(storage=storage)
+                    for key, value in se_info_new.iteritems():
+                        #value = validate_type(Se, key, value)
+                        setattr(se_info, key, value)
+
+                    audit_configuration('set-se-config', 'Set config %s: %s' % (storage, json.dumps(cfg)))
+                    Session.merge(se_info)
+
+                    # Operation limits
+                    operations = cfg.get('operations', None)
+                    if operations:
+                        for vo, limits in operations.iteritems():
+                            for op, limit in limits.iteritems():
+                                limit = int(limit)
+                                new_limit = Session.query(OperationConfig).get((vo, storage, op))
+                                if limit > 0:
+                                    if not new_limit:
+                                        new_limit = OperationConfig(
+                                            vo_name=vo, host=storage, operation=op
+                                        )
+                                    new_limit.concurrent_ops = limit
+                                    Session.merge(new_limit)
+                                elif new_limit:
+                                    Session.delete(new_limit)
+                        audit_configuration('set-se-limits', 'Set limits for %s: %s' % (storage, json.dumps(operations)))
             Session.commit()
         except (AttributeError, ValueError):
             Session.rollback()

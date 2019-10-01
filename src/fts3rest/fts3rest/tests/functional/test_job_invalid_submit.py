@@ -466,7 +466,7 @@ class TestJobInvalidSubmits(TestController):
                 'sources': ['root://source.es/file'],
                 'destinations': ['root://dest.ch/file'],
             },
-            {
+                {
                 'sources': ['root://somewhere.else.fr/file'],
                 'destinations': ['root://dest.ch/file'],
             }],

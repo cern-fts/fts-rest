@@ -32,16 +32,16 @@ class TestConfigGlobal(TestController):
         Set the number of retries per VO and also globally
         """
         self.app.post_json(url="/config/global",
-            params = dict(
-                retry=42,
-                max_time_queue=22,
-                global_timeout=55,
-                sec_per_mb=1,
-                show_user_dn=True,
-                vo_name='dteam'
-            ),
-            status=200
-        )
+                           params = dict(
+                               retry=42,
+                               max_time_queue=22,
+                               global_timeout=55,
+                               sec_per_mb=1,
+                               show_user_dn=True,
+                               vo_name='dteam'
+                           ),
+                           status=200
+                           )
 
         config = Session.query(ServerConfig).get('dteam')
         self.assertEqual(42, config.retry)
@@ -54,12 +54,12 @@ class TestConfigGlobal(TestController):
         """
         self.test_set()
         self.app.post_json(url="/config/global",
-            params = dict(
-                retry=55,
-                vo_name='dteam'
-            ),
-            status=200
-        )
+                           params = dict(
+                               retry=55,
+                               vo_name='dteam'
+                           ),
+                           status=200
+                           )
 
         config = Session.query(ServerConfig).get('dteam')
         self.assertEqual(55, config.retry)
@@ -74,16 +74,16 @@ class TestConfigGlobal(TestController):
         self.test_reset()
 
         self.app.post_json(url="/config/global",
-            params = dict(
-                retry=42,
-                max_time_queue=22,
-                global_timeout=55,
-                sec_per_mb=1,
-                show_user_dn=True,
-                vo_name='atlas'
-            ),
-            status=200
-        )
+                           params = dict(
+                               retry=42,
+                               max_time_queue=22,
+                               global_timeout=55,
+                               sec_per_mb=1,
+                               show_user_dn=True,
+                               vo_name='atlas'
+                           ),
+                           status=200
+                           )
 
         config = Session.query(ServerConfig).get('atlas')
         self.assertIsNotNone(config)
@@ -98,16 +98,16 @@ class TestConfigGlobal(TestController):
         Try to set something with an invalid value
         """
         self.app.post_json(url="/config/global",
-            params = dict(
-                retry='this should be an integer',
-                max_time_queue=22,
-                global_timeout=55,
-                sec_per_mb=1,
-                show_user_dn=True,
-                vo_name='atlas'
-            ),
-            status=400
-        )
+                           params = dict(
+                               retry='this should be an integer',
+                               max_time_queue=22,
+                               global_timeout=55,
+                               sec_per_mb=1,
+                               show_user_dn=True,
+                               vo_name='atlas'
+                           ),
+                           status=400
+                           )
 
     def test_delete_vo_global_config(self):
         """
@@ -119,5 +119,5 @@ class TestConfigGlobal(TestController):
         self.app.delete(url="/config/global?vo_name=dteam",  status=204)
         vo_name = Session.query(ServerConfig).get("dteam")
         self.assertIsNone(vo_name)
-        
-        
+
+

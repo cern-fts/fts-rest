@@ -56,9 +56,9 @@ class TestConfigSe(TestController):
             }
         }
         self.app.post_json("/config/se",
-            params= config,
-            status=200
-        )
+                           params= config,
+                           status=200
+                           )
 
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(2, len(audits))
@@ -101,9 +101,9 @@ class TestConfigSe(TestController):
             }
         }
         self.app.post_json("/config/se",
-            params= config,
-            status=200
-        )
+                           params= config,
+                           status=200
+                           )
 
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(4, len(audits))

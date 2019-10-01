@@ -38,12 +38,12 @@ class TestJobModify(TestController):
         self.push_delegation()
 
         job = {'files': [{
-                'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
-            }],
+            'sources': ['root://source.es/file'],
+            'destinations': ['root://dest.ch/file'],
+        }],
             'params': {
                 'priority': 2
-            }
+        }
         }
 
         job_id = self.app.post_json(
@@ -76,12 +76,12 @@ class TestJobModify(TestController):
         self.push_delegation()
 
         job = {'files': [{
-                'sources': ['root://source.es/file'],
-                'destinations': ['root://dest.ch/file'],
-            }],
+            'sources': ['root://source.es/file'],
+            'destinations': ['root://dest.ch/file'],
+        }],
             'params': {
                 'priority': 2
-            }
+        }
         }
 
         job_id = self.app.post_json(

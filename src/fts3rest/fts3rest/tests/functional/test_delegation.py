@@ -220,8 +220,8 @@ class TestDelegation(TestController):
 
         # Now, request the voms extensions
         self.app.post_json(url="/delegation/%s/voms" % creds.delegation_id,
-                      params=['dteam:/dteam/Role=lcgadmin'],
-                      status=203)
+                           params=['dteam:/dteam/Role=lcgadmin'],
+                           status=203)
 
         # And validate
         proxy2 = Session.query(Credential).get((creds.delegation_id, creds.user_dn))
