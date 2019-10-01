@@ -51,7 +51,6 @@ class SeConfigurationController(BaseController):
         """
         Set the configuration parameters for a given SE
         """
-        log.info("enter set se config")
         input_dict = get_input_as_dict(request)
         try:
             for storage, cfg in input_dict.iteritems():
