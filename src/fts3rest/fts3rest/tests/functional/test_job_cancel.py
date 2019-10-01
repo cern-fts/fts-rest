@@ -44,7 +44,7 @@ class TestJobCancel(TestController):
 
         files = []
         for i in xrange(count):
-	    u = random.randint(500, 50000)
+            u = random.randint(500, 50000)
             files.append({
                 'sources': ['root://source.es/file%d' % i],
                 'destinations': ['root://destcancel.ch/file'+str(i)+str(u)],
@@ -66,7 +66,7 @@ class TestJobCancel(TestController):
         ).json['job_id']
 
         return str(job_id)
-    
+
     def _submit_none_reuse(self, count=1, big_files=0):
         """
         Submit a valid job without specifying reuse
@@ -86,7 +86,7 @@ class TestJobCancel(TestController):
                 'metadata': {'mykey': 'myvalue'},
             })
         for j in xrange(big_files):
-	    u = random.randint(100, 1000)
+            u = random.randint(100, 1000)
             files.append({
                 'sources': ['root://source.es/file%d' % i],
                 'destinations': ['root://dest.ch/file%d%d' % (i,u)],
@@ -382,8 +382,8 @@ class TestJobCancel(TestController):
 
         file_ids = ','.join(map(lambda f: str(f['file_id']), files[0:2]))
         self.app.delete(url="/jobs/%s/files/%s" % (job_id, file_ids), status=400)
-        
-    
+
+
     def test_cancel_reuse_small_files_and_big_files(self):
         """
         Cancel a job with small files and two big files cannot be reused
@@ -404,7 +404,7 @@ class TestJobCancel(TestController):
         for f in job.files:
             self.assertEqual(f.file_state, 'CANCELED')
             self.assertNotEqual(None, f.finish_time)
-            
+
     def test_cancel_reuse_small_files_and_big_files(self):
         """
         Cancel a job with small files and one big file is reused
@@ -419,7 +419,7 @@ class TestJobCancel(TestController):
         # Is it in the database?
         job = Session.query(Job).get(job_id)
         self.assertEqual(job.job_state, 'CANCELED')
-        
+
         auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false');
         if auto_session_reuse == 'true':
             self.assertEqual(job.job_type, 'Y')

@@ -38,7 +38,7 @@ class TestOptimizer(TestController):
             'nostreams': 16,
             'active': 4096,
             'ema': 5
-            }, status=200).json
+        }, status=200).json
 
         optimizer = Session.query(Optimizer).get(('test.cern.ch', 'test2.cern.ch'))
         self.assertEqual('test.cern.ch', optimizer.source_se)
@@ -62,13 +62,13 @@ class TestOptimizer(TestController):
         self.app.post_json("/optimizer/current", params={
             'destination': 'only-dest',
             'nostreams': 16,
-            
+
         }, status=400)
         self.app.post_json("/optimizer/current", params={
             'source_se': 'test.cern.ch',
             'dest_se': 'test2.cern.ch',
             'nostreams': -16,
-            
+
         }, status=400)
 
     def test_reset_optimizer_values(self):
@@ -82,7 +82,7 @@ class TestOptimizer(TestController):
             'nostreams': 4,
             'active': 1024,
             'ema': 5
-            
+
         }, status=200).json
 
 
@@ -98,4 +98,4 @@ class TestOptimizer(TestController):
 
 
 
-    
+

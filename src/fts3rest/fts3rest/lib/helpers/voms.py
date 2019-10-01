@@ -58,12 +58,12 @@ def _get_proxy_fqans(proxy_path):
         raise VomsException('Failed to get the FQANs of a proxy: ' + out)
     fqans = []
     try:
-	for fqan in out.split('\n'):
-	        fqans.append(fqan)
+        for fqan in out.split('\n'):
+            fqans.append(fqan)
         return fqans
     except Exception, e:
         raise VomsException('Failed to get the FQANs of a proxy: ' + str(e))
-    
+
 
 
 def _get_proxy_termination_time(proxy_path):
@@ -151,14 +151,14 @@ class VomsClient(object):
         """
         new_proxy = NamedTemporaryFile(mode='w', suffix='.pem', delete=False).name
         args = ['voms-proxy-init',
-            '--cert', self.proxy_path,
-            '--key', self.proxy_path,
-            '--out', new_proxy,
-            '--noregen', '--ignorewarn']
-        
+                '--cert', self.proxy_path,
+                '--key', self.proxy_path,
+                '--out', new_proxy,
+                '--noregen', '--ignorewarn']
+
         if _get_proxy_type(self.proxy_path) == 'RFC':
             args.append('--rfc')
-            
+
         for v in voms_list:
             args.extend(('--voms', v))
         if lifetime:
@@ -175,9 +175,9 @@ class VomsClient(object):
             raise VomsException("Failed to generate a proxy (%d): %s" % (rcode, out))
 
         return new_proxy
-   
+
     def get_proxy_fqans(self):
-	"""
+        """
         Get the proxy fqans
         """
-	return _get_proxy_fqans(self.proxy_path)
+        return _get_proxy_fqans(self.proxy_path)

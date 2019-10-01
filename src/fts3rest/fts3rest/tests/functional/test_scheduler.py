@@ -131,22 +131,22 @@ class TestScheduler(TestController):
     @staticmethod
     def fill_activities():
         activity = ActivityShare(
-          vo='testvo',
-          activity_share=json.dumps({
-              "data brokering": 0.3,
-              "data consolidation": 0.4,
-              "default": 0.02,
-              "express": 0.4,
-              "functional test": 0.2,
-              "production": 0.5,
-              "production input": 0.25,
-              "production output": 0.25,
-              "recovery": 0.4,
-              "staging": 0.5,
-              "t0 export": 0.7,
-              "t0 tape": 0.7,
-              "user subscriptions": 0.1
-          })
+            vo='testvo',
+            activity_share=json.dumps({
+                "data brokering": 0.3,
+                "data consolidation": 0.4,
+                "default": 0.02,
+                "express": 0.4,
+                "functional test": 0.2,
+                "production": 0.5,
+                "production input": 0.25,
+                "production output": 0.25,
+                "recovery": 0.4,
+                "staging": 0.5,
+                "t0 export": 0.7,
+                "t0 tape": 0.7,
+                "user subscriptions": 0.1
+            })
         )
         Session.add(activity)
         Session.commit()
@@ -159,7 +159,7 @@ class TestScheduler(TestController):
                         'http://site01.es/file',
                         'http://site02.ch/file',
                         'http://site03.fr/file'
-                        ],
+                    ],
 
                     'destinations': ['http://dest.ch/file'+str(random.randint(20000, 100000))],
                     'selection_strategy': strategy,
@@ -186,7 +186,7 @@ class TestScheduler(TestController):
 
         for f in db_job.files:
             self.assertEqual(f.file_index, 0)
-            
+
             if f.source_surl == expected_submitted:
                 self.assertEqual(f.file_state, 'SUBMITTED')
             else:
@@ -319,7 +319,7 @@ class TestScheduler(TestController):
                         'http://site01.es/file',
                         'http://site02.ch/file',
                         'http://site03.fr/file'
-                        ],
+                    ],
                     'destinations': ['http://dest.ch/file'+str(random.randint(100, 200))],
                     'selection_strategy': "YOLO",
                     'checksum': 'adler32:1234',
@@ -366,7 +366,7 @@ class TestScheduler(TestController):
                         'http://site01.es/file',
                         'http://site02.ch/file',
                         'http://site01.es/file'
-                        ],
+                    ],
                     'destinations': ['http://dest.ch/file'+str(random.randint(0, 100))],
                     'selection_strategy': 'orderly',
                     'checksum': 'adler32:1234',

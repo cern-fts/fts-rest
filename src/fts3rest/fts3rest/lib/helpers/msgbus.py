@@ -34,12 +34,12 @@ def submit_state_change(job, transfer, transfer_state):
     msg_enabled = pylons.config.get('fts3.MonitoringMessaging', False)
     if not msg_enabled or msg_enabled.lower() == 'false':
         return
-    
+
     publish_dn = pylons.config.get('fts3.MonitoringPublishDN', False)
 
     msg_dir = pylons.config.get('fts3.MessagingDirectory', '/var/lib/fts3')
     mon_dir = os.path.join(msg_dir, 'monitoring')
- 
+
     _user_dn = job['user_dn'] if publish_dn else ''
 
     msg = dict(
