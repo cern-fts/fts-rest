@@ -54,6 +54,8 @@ class SeConfigurationController(BaseController):
         input_dict = get_input_as_dict(request)
         try:
             for storage, cfg in input_dict.iteritems():
+                if not storage or storage.isspace():
+                    raise ValueError
                 se_info = None
                 se_info_new = cfg.get('se_info', None)
                 if se_info_new:
