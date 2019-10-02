@@ -78,11 +78,11 @@ class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
         cred = Session.query(CredentialCache).filter(CredentialCache.dlg_id == user.delegation_id).first()
         if not cred:
             cred = CredentialCache(
-                    dlg_id=user.delegation_id,
-                    dn=user.user_dn,
-                    cert_request=None,
-                    priv_key=None,
-                    voms_attrs='\n'.join(user.voms_cred)
+                dlg_id=user.delegation_id,
+                dn=user.user_dn,
+                cert_request=None,
+                priv_key=None,
+                voms_attrs='\n'.join(user.voms_cred)
             )
             Session.merge(cred)
 

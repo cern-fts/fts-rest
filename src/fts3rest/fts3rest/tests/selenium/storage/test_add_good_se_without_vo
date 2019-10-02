@@ -6,41 +6,41 @@ from pyvirtualdisplay import Display
 
 
 class FTS3develSeTab(unittest.TestCase):
- 
+
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
-	profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
-	self.driver = webdriver.Firefox(profile)
-	
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
+        profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
+        self.driver = webdriver.Firefox(profile)
+
 
     def test_add_good_se_without_vo(self):
-	"""
-	Test adding SE with correct inputs (without operation fields)
-	"""   	
-	driver = self.driver
-	driver.get("https://fts3-devel.cern.ch:8446/config/se")
+        """
+        Test adding SE with correct inputs (without operation fields)
+        """   	
+        driver = self.driver
+        driver.get("https://fts3-devel.cern.ch:8446/config/se")
 
-	input_list = [
-		      ("*", "", "", "", "", "", "", "", ""),
-		      ("s3://goodse.cern.ch", "", "", "", "", "", "", "", ""),
-		      ("s3://goodse1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
-		      ("s3://goodse2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
-		      ("s3://goodse3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0")
-	             ]
-	for element in input_list:
+        input_list = [
+            ("*", "", "", "", "", "", "", "", ""),
+            ("s3://goodse.cern.ch", "", "", "", "", "", "", "", ""),
+            ("s3://goodse1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
+            ("s3://goodse2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
+            ("s3://goodse3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0")
+        ]
+        for element in input_list:
 
             storage_field = driver.find_element_by_id('se-add-field-se')
-	    storage_field.clear()
+            storage_field.clear()
             storage_field.send_keys(element[0])
 
             se_meta_field = driver.find_element_by_id('se_metadata')
-	    se_meta_field.clear()
+            se_meta_field.clear()
             se_meta_field.send_keys(element[1])
 
             inbound_field = driver.find_element_by_id('inbound_max_active')
             inbound_field.clear()
-	    inbound_field.send_keys(element[2])
+            inbound_field.send_keys(element[2])
 
             outbound_field = driver.find_element_by_id('outbound_max_active')
             outbound_field.clear()
@@ -67,15 +67,15 @@ class FTS3develSeTab(unittest.TestCase):
             debug_field.send_keys(element[8])
 
 
-	    driver.find_element_by_css_selector("button[type='submit']").click()
-	    time.sleep(1)
+            driver.find_element_by_css_selector("button[type='submit']").click()
+            time.sleep(1)
 
-	#CHECK IF EVERYTHING WAS SAVED
-	check0_list = []
-	check1_list = []
+        #CHECK IF EVERYTHING WAS SAVED
+        check0_list = []
+        check1_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+        page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
 
         for elem in page_list:
             check0_list.append(elem.text)
@@ -83,16 +83,16 @@ class FTS3develSeTab(unittest.TestCase):
 
         count = 0
         for element in input_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if not set(check1_list) < set(check0_list):
-	    return self.assertFalse("TEST: The storage wasn't saved", set(check1_list) - set(check0_list))
+        if not set(check1_list) < set(check0_list):
+            return self.assertFalse("TEST: The storage wasn't saved", set(check1_list) - set(check0_list))
 
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-	unittest.main()
+    unittest.main()

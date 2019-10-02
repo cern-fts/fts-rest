@@ -7,8 +7,8 @@ from pyvirtualdisplay import Display
 class FTS3develSeTab(unittest.TestCase):
 
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
         profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
         self.driver = webdriver.Firefox(profile)
 
@@ -20,47 +20,47 @@ class FTS3develSeTab(unittest.TestCase):
         driver.get("https://fts3-devel.cern.ch:8446/config/links")
 
         input_list = [
-            	      (" ", "bug://bug.bug", "bug://bug.bug", "0", "2","2", "0", "0"),
-	              ("bug1", " ", "bug://bug.bug", "0", "2","2", "0", "0"),
-                      ("bug2", "bug://bug.bug", " ", "0", "2","2", "0", "0"),
-                      ("bug3", "", "bug://bug.bug", "0", "2","2", "0", "0"),
-                      ("bug4", "bug://bug.bug", "", "0", "2","2", "0", "0"),
-                      ("bug5", "123", "bug://bug.bug", "0", "2","2", "0", "0"),
-		      ("bug6", "-123", "bug://bug.bug", "0", "2","2", "0", "0"),
-		      ("bug7", "3.14", "bug://bug.bug", "0", "2","2", "0", "0"),
-                      ("bug8", "$#&", "bug://bug.bug", "0", "2","2", "0", "0"),
-                      ("bug9", "word", "bug://bug.bug", "0", "2","2", "0", "0"),
-                      ("bug10", "bug10://bug", "bug://bug.bug", "0", "2","2", "0", "0"),
-                      ("bug11", "bug11://bug.bug", "123", "0", "2","2", "0", "0"),
-                      ("bug12", "bug12://bug.bug", "-123", "0", "2","2", "0", "0"),
-                      ("bug13", "bug13://bug.bug", "3.14", "0", "2","2", "0", "0"),
-                      ("bug14", "bug14://bug.bug", "$#%", "0", "2","2", "0", "0"),
-                      ("bug15", "bug15://bug.bug", "word", "0", "2","2", "0", "0"),
-                      ("bug16", "bug16://bug.bug", "bug://bug", "0", "2","2", "0", "0"),
-                      ("bug17", "bug17://bug.bug ", "bug://bug.bug", "0", "2","2", "0", "0"),
-                      ("bug18", "bug18://bug.bug", "bug://bug.bug ", "0", "2","2", "0", "0"),
-                      ("bug19", "bug19://bug.bug", "bug://bug.bug", " ", "2","2", "0", "0"),
-                      ("bug20", "bug20://bug.bug", "bug://bug.bug", "0", " ","2", "0", "0"),
-                      ("bug21", "bug21://bug.bug", "bug://bug.bug", "0", "2"," ", "0", "0"),
-                      ("bug22", "bug22://bug.bug", "bug://bug.bug", "0", "2","2", " ", "0"),
-                      ("bug23", "bug23://bug.bug", "bug://bug.bug", "0", "2","2", "0", " "),
-                      ("bug24", "bug23://bug.bug", "bug://bug.bug", "101", "2","2", "0", "0"),
-                      ("bug25", "bug23://bug.bug", "bug://bug.bug", "-10", "2","2", "0", "0"),
-                      ("bug26", "bug23://bug.bug", "bug://bug.bug", "0", "0","2", "0", "0"),
-                      ("bug27", "bug23://bug.bug", "bug://bug.bug", "0", "1000000","2", "0", "0"),
-                      ("bug28", "bug23://bug.bug", "bug://bug.bug", "0", "2","0", "0", "0"),
-                      ("bug29", "bug23://bug.bug", "bug://bug.bug", "0", "2","1000000", "0", "0"),
-                      ("bug30", "bug23://bug.bug", "bug://bug.bug", "0", "2","2", "-1", "0"),
-                      ("bug31", "bug23://bug.bug", "bug://bug.bug", "0", "2","2", "6", "0"),
-                      ("bug32", "bug23://bug.bug", "bug://bug.bug", "0", "2","2", "0", "-10"),
-                      ("bug33", "bug23://bug.bug", "bug://bug.bug", "0", "2","2", "0", "1000000"),
-                      ("bug34", "bug23://bug.bug", "bug://bug.bug", "0", "100","50", "0", "0")
-                     ]
+            (" ", "bug://bug.bug", "bug://bug.bug", "0", "2","2", "0", "0"),
+            ("bug1", " ", "bug://bug.bug", "0", "2","2", "0", "0"),
+            ("bug2", "bug://bug.bug", " ", "0", "2","2", "0", "0"),
+            ("bug3", "", "bug://bug.bug", "0", "2","2", "0", "0"),
+            ("bug4", "bug://bug.bug", "", "0", "2","2", "0", "0"),
+            ("bug5", "123", "bug://bug.bug", "0", "2","2", "0", "0"),
+            ("bug6", "-123", "bug://bug.bug", "0", "2","2", "0", "0"),
+            ("bug7", "3.14", "bug://bug.bug", "0", "2","2", "0", "0"),
+            ("bug8", "$#&", "bug://bug.bug", "0", "2","2", "0", "0"),
+            ("bug9", "word", "bug://bug.bug", "0", "2","2", "0", "0"),
+            ("bug10", "bug10://bug", "bug://bug.bug", "0", "2","2", "0", "0"),
+            ("bug11", "bug11://bug.bug", "123", "0", "2","2", "0", "0"),
+            ("bug12", "bug12://bug.bug", "-123", "0", "2","2", "0", "0"),
+            ("bug13", "bug13://bug.bug", "3.14", "0", "2","2", "0", "0"),
+            ("bug14", "bug14://bug.bug", "$#%", "0", "2","2", "0", "0"),
+            ("bug15", "bug15://bug.bug", "word", "0", "2","2", "0", "0"),
+            ("bug16", "bug16://bug.bug", "bug://bug", "0", "2","2", "0", "0"),
+            ("bug17", "bug17://bug.bug ", "bug://bug.bug", "0", "2","2", "0", "0"),
+            ("bug18", "bug18://bug.bug", "bug://bug.bug ", "0", "2","2", "0", "0"),
+            ("bug19", "bug19://bug.bug", "bug://bug.bug", " ", "2","2", "0", "0"),
+            ("bug20", "bug20://bug.bug", "bug://bug.bug", "0", " ","2", "0", "0"),
+            ("bug21", "bug21://bug.bug", "bug://bug.bug", "0", "2"," ", "0", "0"),
+            ("bug22", "bug22://bug.bug", "bug://bug.bug", "0", "2","2", " ", "0"),
+            ("bug23", "bug23://bug.bug", "bug://bug.bug", "0", "2","2", "0", " "),
+            ("bug24", "bug23://bug.bug", "bug://bug.bug", "101", "2","2", "0", "0"),
+            ("bug25", "bug23://bug.bug", "bug://bug.bug", "-10", "2","2", "0", "0"),
+            ("bug26", "bug23://bug.bug", "bug://bug.bug", "0", "0","2", "0", "0"),
+            ("bug27", "bug23://bug.bug", "bug://bug.bug", "0", "1000000","2", "0", "0"),
+            ("bug28", "bug23://bug.bug", "bug://bug.bug", "0", "2","0", "0", "0"),
+            ("bug29", "bug23://bug.bug", "bug://bug.bug", "0", "2","1000000", "0", "0"),
+            ("bug30", "bug23://bug.bug", "bug://bug.bug", "0", "2","2", "-1", "0"),
+            ("bug31", "bug23://bug.bug", "bug://bug.bug", "0", "2","2", "6", "0"),
+            ("bug32", "bug23://bug.bug", "bug://bug.bug", "0", "2","2", "0", "-10"),
+            ("bug33", "bug23://bug.bug", "bug://bug.bug", "0", "2","2", "0", "1000000"),
+            ("bug34", "bug23://bug.bug", "bug://bug.bug", "0", "100","50", "0", "0")
+        ]
 
         for element in input_list:
-	    count = 0
+            count = 0
             symbname_field = driver.find_element_by_xpath('//input[@name="symbolicname"]')
-	    symbname_field.click()
+            symbname_field.click()
             symbname_field.clear()
             symbname_field.send_keys(element[0])
 
@@ -96,33 +96,33 @@ class FTS3develSeTab(unittest.TestCase):
             tcp_field.send_keys(Keys.CONTROL + 'a')
             tcp_field.send_keys(Keys.BACKSPACE)
             tcp_field.send_keys(element[7])
-	    
-	    button_add = driver.find_element_by_id('button_add_link')
-	    button_add.click()
-	    time.sleep(1)
 
-	#CHECK IF BUGS WERE SAVED
-	check0_list = []
-	check1_list = []
+            button_add = driver.find_element_by_id('button_add_link')
+            button_add.click()
+            time.sleep(1)
+
+        #CHECK IF BUGS WERE SAVED
+        check0_list = []
+        check1_list = []
 
         count = 0
-	page_list = driver.find_elements_by_id('symname')
+        page_list = driver.find_elements_by_id('symname')
         for elem in page_list:
             check0_list.append(elem.text)
         count = count + 1
 
         count = 0
         for element in input_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if set(check0_list)&set(check1_list):
-	    return self.assertFalse("TEST: The link configuration should NOT be saved", set(check0_list)&set(check1_list))
+        if set(check0_list)&set(check1_list):
+            return self.assertFalse("TEST: The link configuration should NOT be saved", set(check0_list)&set(check1_list))
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()
 

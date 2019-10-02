@@ -31,7 +31,7 @@ fileSchema = {
             'type': ['integer', 'null'],
             'title': 'Job priority'
         },
-	'metadata':     {'type': ['object', 'null']},
+        'metadata':     {'type': ['object', 'null']},
         'filesize':     {'type': ['integer', 'null'], 'minimum': 0},
         'checksum':     {
             'type': ['string', 'null'],

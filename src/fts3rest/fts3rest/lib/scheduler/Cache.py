@@ -12,13 +12,13 @@ class ThreadLocalCache:
     ThreadLocalCache class provides an in memory cache for each thread
     """
     initialized = False
- 
+
     # Run cache clean_cleanup after every 5 mins (1800 secs)
     cache_refresh_time = 1800
 
     # Expire cache entry after 5 mins (300 secs)
     cache_entry_life = 300
-    
+
     def __init__(self, queue_provider):
         self.queue_provider = queue_provider
         if getattr(threadLocal, 'initialized', None) is None:
@@ -42,7 +42,7 @@ class ThreadLocalCache:
     def get_seconds_elapsed(time_diff):
         seconds = (time_diff.days * 86400) + time_diff.seconds
         return seconds
- 
+
     @staticmethod
     def check_expiry(t, entry_life):
         secs = ThreadLocalCache.get_seconds_elapsed(datetime.utcnow() - t)
@@ -58,7 +58,7 @@ class ThreadLocalCache:
     @staticmethod
     def cache_cleanup():
         threadLocal.creation_time = datetime.utcnow()
-        
+
         # Get dictionaries from threadLocal
         dict_list = []
         for attr in dir(threadLocal):
@@ -69,9 +69,9 @@ class ThreadLocalCache:
         for _dict in dict_list:
             for key in _dict.keys():
                 if ThreadLocalCache.check_expiry(_dict[key][1],
-                                           ThreadLocalCache.cache_entry_life):
+                                                 ThreadLocalCache.cache_entry_life):
                     del _dict[key]
-                 
+
     @staticmethod
     def cache_wrapper(dict_name, func, *args):
         """
@@ -105,25 +105,25 @@ class ThreadLocalCache:
 
     def get_submitted(self, src, dst, vo):
         return ThreadLocalCache.cache_wrapper('submitted_dict',
-                                             self.queue_provider.get_submitted,
-                                             src, dst, vo)
+                                              self.queue_provider.get_submitted,
+                                              src, dst, vo)
 
     def get_success_rate(self, src, dst):
         return ThreadLocalCache.cache_wrapper('success_dict',
-                                          self.queue_provider.get_success_rate,
-                                          src, dst)
+                                              self.queue_provider.get_success_rate,
+                                              src, dst)
 
     def get_throughput(self, src, dst):
         return ThreadLocalCache.cache_wrapper('throughput_dict',
-                                          self.queue_provider.get_throughput,
-                                          src, dst)
+                                              self.queue_provider.get_throughput,
+                                              src, dst)
 
     def get_per_file_throughput(self, src, dst):
         return ThreadLocalCache.cache_wrapper('per_file_throughput_dict',
-                                   self.queue_provider.get_per_file_throughput,
-                                   src, dst)
+                                              self.queue_provider.get_per_file_throughput,
+                                              src, dst)
 
     def get_pending_data(self, src, dst, vo, user_activity):
         return ThreadLocalCache.cache_wrapper('pending_data_dict',
-                                        self.queue_provider.get_pending_data,
-                                        src, dst, vo, user_activity)
+                                              self.queue_provider.get_pending_data,
+                                              src, dst, vo, user_activity)
