@@ -201,8 +201,8 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             body = {'token': access_token}
             log.debug("About to contact IAM server in order to verify the token")
             credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProvider'], body=body,
-                                                   user=self.config['fts3.ClientId'],
-                                                   passw=self.config['fts3.ClientSecret']))
+                                                     user=self.config['fts3.ClientId'],
+                                                     passw=self.config['fts3.ClientSecret']))
             if not credential or not credential['active']:
                 return
 
@@ -217,7 +217,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             refresh_credential = self._generate_refresh_token(access_token)
             if refresh_credential:
                 log.debug("Refresh credential is as follows: " + str(refresh_credential))
-		refresh_token= refresh_credential['refresh_token']
+                refresh_token= refresh_credential['refresh_token']
             else:
                 refresh_token = ""
 
@@ -244,7 +244,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         return Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
 
     def _generate_voms_attrs(self, credential):
-           
+
         if 'email' in credential:
             if 'username' in credential:
                 return credential['email'] + " " + credential['username']
@@ -305,9 +305,9 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         refresh_credential = None 
         try:
             refresh_credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'],
-                                        body=body,
-                                        user=self.config['fts3.ClientId'],
-                                        passw=self.config['fts3.ClientSecret']))
+                                                             body=body,
+                                                             user=self.config['fts3.ClientId'],
+                                                             passw=self.config['fts3.ClientSecret']))
         except Exception as e:
             log.error("Error when requesting a refresh token: " + str(e))
         return refresh_credential
@@ -322,7 +322,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         )
         Session.add(credential)
         Session.commit()
-	return credential
+        return credential
 
     def _should_validate_offline(self):
         return 'fts3.AuthorizationProviderJwkEndpoint' in self.config.keys()
