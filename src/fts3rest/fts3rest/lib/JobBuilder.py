@@ -352,6 +352,20 @@ class JobBuilder(object):
                 if elem['dest_se'] != self.job['dest_se']:
                     self.job['dest_se'] = None
 
+    def _set_activity_query_string(self, url, file_dict):
+        """
+        Set the activity query string in the given url
+        """
+        query_p = parse_qsl(url.query)
+        query_p.append(('activity', file_dict.get('activity', 'default')))
+        query_str = urlencode(query_p)
+        return ParseResult(scheme=url.scheme,
+                           netloc=url.netloc,
+                           path=url.path,
+                           params=url.params,
+                           query= query_str,
+                           fragment=url.fragment)
+        
     def _populate_files(self, file_dict, f_index, shared_hashed_id):
         """
         From the dictionary file_dict, generate a list of transfers for a job
@@ -393,15 +407,10 @@ class JobBuilder(object):
             if self.is_bringonline:
                 # add the new query parameter only for root -> EOS-CTA for now
                 if source.scheme == "root":
-                    query_p = parse_qsl(source.query)
-                    query_p.append(('activity', file_dict.get('activity', 'default')))
-                    query_str = urlencode(query_p)
-                    source = ParseResult(scheme=source.scheme, 
-                                         netloc=source.netloc, 
-                                         path=source.path,
-                                         params=source.params,
-                                         query= query_str, 
-                                         fragment=source.fragment)
+                    if source == destination:
+                        destination = self._set_activity_query_string(destination,file_dict)    
+                    source = self._set_activity_query_string(source,file_dict)
+
             f = dict(
                 job_id=self.job_id,
                 file_index=f_index,
