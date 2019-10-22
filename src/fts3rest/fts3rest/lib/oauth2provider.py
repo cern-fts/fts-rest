@@ -27,6 +27,8 @@ from fts3.rest.client.request import Request
 from ast import literal_eval
 import json
 
+import oic
+
 log = logging.getLogger(__name__)
 
 class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):

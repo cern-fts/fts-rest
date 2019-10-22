@@ -10,6 +10,10 @@ CleanRecordsHost=false
 AuthorizationProvider=https://iam.extreme-datacloud.eu/introspect
 AuthorizationProviderTokenEndpoint=https://iam.extreme-datacloud.eu/token
 AuthorizationProviderJwkEndpoint=https://iam.extreme-datacloud.eu/jwk/
+# https://iam.extreme-datacloud.eu/.well-known/openid-configuration
+# introspection_endpoint
+# token_endpoint
+# jwks_uri
 CheckDuplicates=dteam;*
 
 MessagingDirectory=/tmp/rest-msgs
@@ -22,3 +26,6 @@ TokenRefreshTimeSinceLastTransferInSeconds=2629743
 [roles]
 Public=vo:transfer;all:datamanagement
 lcgadmin=all:config
+
+[providers]
+XDC=https://iam.extreme-datacloud.eu,clientid,clientsecret
