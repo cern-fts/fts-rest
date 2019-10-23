@@ -27,7 +27,7 @@ from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token, OAuth2
 from fts3.rest.client.request import Request
 from ast import literal_eval
 import json
-
+import jwt
 import oic
 
 log = logging.getLogger(__name__)
@@ -179,8 +179,8 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         # Try to first validate the supplied access_token offline in order to avoid the expensive REST query to IAM
         validated_offline = False
         if self._should_validate_offline():
-            valid, offline_credential = self._validate_token_offline(access_token)
-            if valid:
+            offline_credential = self._validate_token_offline(access_token)
+            if offline_credential:
                 # If token is valid, check if this user has been seen before and if yes authorize.
                 # If not, validate online in order to get the extra info i.e. email etc
                 credential_stored_offline = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
@@ -260,51 +260,25 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 return credential['user_id'] + " "
 
     def _validate_token_offline(self, access_token):
+        """
+        Validate access token using cached information from the provider
+        :param access_token:
+        :return: valid credential or None
+        """
         try:
-            from jwcrypto import jwk
-            import jwt
-########### not needed
-            jwkProvider = Session.query(OAuth2Providers).filter(OAuth2Providers.provider_url.like(self.config['fts3.AuthorizationProviderJwkEndpoint'] + "%")).first()
-            if not jwkProvider:
-                requestor = Request(None, None)
-                jwksIAM = json.loads(requestor.method('GET', self.config['fts3.AuthorizationProviderJwkEndpoint']))
-                if jwksIAM is None:
-                    raise  Exception("Failed to contact the provider JWK endpoint")
-                oauth2provider = OAuth2Providers(
-                    provider_url=self.config['fts3.AuthorizationProviderJwkEndpoint'],
-                    provider_jwk=str(jwksIAM).replace("\'","\"").replace("u\"","\""))
-                Session.add(oauth2provider)
-                Session.commit()
-                jwksIAM = oauth2provider.provider_jwk
-            else:
-                jwksIAM = jwkProvider.provider_jwk
-########### not needed end
-
+            unverified_payload = jwt.decode(access_token, verify=False)
             unverified_header = jwt.get_unverified_header(access_token)
-            issuer = unverified_header['iss']
+            issuer = unverified_payload['iss']
             key_id = unverified_header['kid']
-
+            algorithm = unverified_header['alg']
             client = oidc_manager.clients[issuer]
-            issuer_keys = client.keyjar.get_issuer_keys(issuer)
+            pub_key = client.keyjar.get_key_by_kid(key_id)
+            # Verify & Validate
+            credential = jwt.decode(access_token, pub_key)
+        except Exception:
+            return None
 
-            # jwksIAM contains keys as json/dict
-            # Import json key
-            kid_id = json.loads(jwksIAM)
-            kid_id = kid_id.get("keys")[0].get("kid", "rsa1")
-            log.debug("kid id " + kid_id)
-            jwks = jwk.JWKSet.from_json(jwksIAM)
-            # Extract public key
-            pub_key = jwks.get_key(kid_id)
-            if pub_key is None:
-                err = "Offline token validation failed: not able to acquire the provider public key with kid: " + kid_id
-                log.debug(err)
-                raise Exception(err)
-            # Validate
-            credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithm='RS256')
-        except Exception as e:
-            log.error("Offline token validation failed: " + str(e))
-            return False, None
-        return True, credential
+        return credential
 
     def _generate_refresh_token(self, access_token):
         requestor = Request(None, None)  # VERIFY:TRUE
