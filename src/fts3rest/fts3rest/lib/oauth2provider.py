@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from fts3rest.lib.base import Session
 from fts3rest.lib.middleware.fts3auth.constants import VALID_OPERATIONS
 from fts3rest.lib.middleware.fts3auth.credentials import generate_delegation_id
+from fts3rest.lib.oidc_configuration import oidc_manager
 from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceProvider, ResourceAuthorization
 from fts3.model.credentials import CredentialCache, Credential
 from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token, OAuth2Providers
@@ -262,7 +263,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         try:
             from jwcrypto import jwk
             import jwt
-
+########### not needed
             jwkProvider = Session.query(OAuth2Providers).filter(OAuth2Providers.provider_url.like(self.config['fts3.AuthorizationProviderJwkEndpoint'] + "%")).first()
             if not jwkProvider:
                 requestor = Request(None, None)
@@ -277,6 +278,15 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 jwksIAM = oauth2provider.provider_jwk
             else:
                 jwksIAM = jwkProvider.provider_jwk
+########### not needed end
+
+            unverified_header = jwt.get_unverified_header(access_token)
+            issuer = unverified_header['iss']
+            key_id = unverified_header['kid']
+
+            client = oidc_manager.clients[issuer]
+            issuer_keys = client.keyjar.get_issuer_keys(issuer)
+
             # jwksIAM contains keys as json/dict
             # Import json key
             kid_id = json.loads(jwksIAM)
@@ -327,4 +337,4 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         return credential
 
     def _should_validate_offline(self):
-        return 'fts3.AuthorizationProviderJwkEndpoint' in self.config.keys()
+        return 'fts3.ValidateAccessTokenOffline' in self.config.keys()

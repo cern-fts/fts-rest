@@ -26,7 +26,7 @@ from pylons.wsgiapp import PylonsApp
 from routes.middleware import RoutesMiddleware
 
 from fts3rest.lib.heartbeat import Heartbeat
-from fts3rest.lib.oidc_configuration import OIDCconfig
+from fts3rest.lib.oidc_configuration import oidc_manager
 from fts3rest.lib.IAMTokenRefresher import IAMTokenRefresher
 from fts3rest.lib.middleware.fts3auth import FTS3AuthMiddleware
 from fts3rest.lib.middleware.error_as_json import ErrorAsJson
@@ -96,7 +96,8 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
 
     # Heartbeat thread
     Heartbeat('fts_rest', int(config.get('fts3.HeartBeatInterval', 60))).start()
-    OIDCconfig(config)
+    # Start OIDC clients
+    oidc_manager(config)
     IAMTokenRefresher('fts_token_refresh_daemon', int(config.get('fts3.TokenRefreshDaemonIntervalInSeconds', 600)), config).start()
 
     return app

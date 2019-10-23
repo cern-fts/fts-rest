@@ -7,6 +7,8 @@ Infosys=lcg-bdii.cern.ch:2170
 AuthorizedVO=dteam;*
 CleanRecordsHost=false
 
+ValidateAccessTokenOffline=True
+
 AuthorizationProvider=https://iam.extreme-datacloud.eu/introspect
 AuthorizationProviderTokenEndpoint=https://iam.extreme-datacloud.eu/token
 AuthorizationProviderJwkEndpoint=https://iam.extreme-datacloud.eu/jwk/
@@ -28,4 +30,4 @@ Public=vo:transfer;all:datamanagement
 lcgadmin=all:config
 
 [providers]
-XDC=https://iam.extreme-datacloud.eu,clientid,clientsecret
+https://iam.extreme-datacloud.eu=clientid,clientsecret

@@ -96,8 +96,7 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
     # Initialize providers
     fts3cfg['fts3.Providers'] = {}
     for provider in parser.options('providers'):
-        url, client_id, client_secret = parser.get('providers', provider).split(',')
-        fts3cfg['fts3.Providers'][provider]['url'] = url
+        client_id, client_secret = parser.get('providers', provider).split(',')
         fts3cfg['fts3.Providers'][provider]['client_id'] = client_id
         fts3cfg['fts3.Providers'][provider]['client_secret'] = client_secret
 
