@@ -179,8 +179,8 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         # Try to first validate the supplied access_token offline in order to avoid the expensive REST query to IAM
         validated_offline = False
         if self._should_validate_offline():
-            offline_credential = self._validate_token_offline(access_token)
-            if offline_credential:
+            valid, offline_credential = self._validate_token_offline(access_token)
+            if valid:
                 # If token is valid, check if this user has been seen before and if yes authorize.
                 # If not, validate online in order to get the extra info i.e. email etc
                 credential_stored_offline = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
@@ -194,7 +194,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             credential = credential_stored_offline
         else:
             credential = Session.query(Credential).filter(Credential.proxy.like(access_token + "%")).first()
-        if (not credential or credential.expired()):
+        if not credential or credential.expired():
             # Delete the db entry in case of credential expired before validating the new one
             if credential:
                 Session.delete(credential)
@@ -276,9 +276,26 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             # Verify & Validate
             credential = jwt.decode(access_token, pub_key)
         except Exception:
-            return None
+            return False, None
 
-        return credential
+        return True, credential
+
+    def _validate_token_online(self, access_token):
+        """
+        Validate access token using Introspection (RFC 7662)
+        :param access_token:
+        :return: valid credential or None
+        """
+        try:
+            unverified_payload = jwt.decode(access_token, verify=False)
+            issuer = unverified_payload['iss']
+            client = oidc_manager.clients[issuer]
+            response = client.do_token_introspection(request_args={'token': access_token})
+            credential = response.json()
+            return response["active"], credential
+        except Exception:
+            return False, None
+
 
     def _generate_refresh_token(self, access_token):
         requestor = Request(None, None)  # VERIFY:TRUE
