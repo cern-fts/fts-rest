@@ -32,6 +32,7 @@ import oic
 
 log = logging.getLogger(__name__)
 
+
 class FTS3OAuth2AuthorizationProvider(AuthorizationProvider):
     """
     OAuth2 Authorization provider, specific methods
@@ -220,7 +221,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             refresh_credential = self._generate_refresh_token(access_token)
             if refresh_credential:
                 log.debug("Refresh credential is as follows: " + str(refresh_credential))
-                refresh_token= refresh_credential['refresh_token']
+                refresh_token = refresh_credential['refresh_token']
             else:
                 refresh_token = ""
 
@@ -263,7 +264,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         """
         Validate access token using cached information from the provider
         :param access_token:
-        :return: valid credential or None
+        :return: tuple(valid, credential) or tuple(False, None)
         """
         try:
             unverified_payload = jwt.decode(access_token, verify=False)
@@ -284,18 +285,20 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         """
         Validate access token using Introspection (RFC 7662)
         :param access_token:
-        :return: valid credential or None
+        :return: tuple(valid, credential) or tuple(False, None)
         """
         try:
             unverified_payload = jwt.decode(access_token, verify=False)
             issuer = unverified_payload['iss']
             client = oidc_manager.clients[issuer]
             response = client.do_token_introspection(request_args={'token': access_token})
-            credential = response.json()
-            return response["active"], credential
+            if response.status_code == 200:
+                credential = response.json()
+                return response["active"], credential
+            else:
+                return False, None
         except Exception:
             return False, None
-
 
     def _generate_refresh_token(self, access_token):
         requestor = Request(None, None)  # VERIFY:TRUE
@@ -305,7 +308,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 'subject_token': access_token,
                 'scope': 'offline_access openid profile',
                 'audience': self.config['fts3.ClientId']}
-        refresh_credential = None 
+        refresh_credential = None
         try:
             refresh_credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'],
                                                              body=body,
