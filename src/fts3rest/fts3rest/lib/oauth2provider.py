@@ -201,6 +201,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 Session.delete(credential)
                 Session.commit()
 
+            ####################################
             requestor = Request(None, None)  # VERIFY:TRUE
             body = {'token': access_token}
             log.debug("About to contact IAM server in order to verify the token")
@@ -209,6 +210,10 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                                                      passw=self.config['fts3.ClientSecret']))
             if not credential or not credential['active']:
                 return
+            #####################################
+            # valid, credential = self._validate_token_online(access_token)
+            # if not valid:
+            #     return
 
             dlg_id = generate_delegation_id(credential['sub'], "")
             c = Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
@@ -271,7 +276,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             unverified_header = jwt.get_unverified_header(access_token)
             issuer = unverified_payload['iss']
             key_id = unverified_header['kid']
-            algorithm = unverified_header['alg']
+            # algorithm = unverified_header['alg']
             client = oidc_manager.clients[issuer]
             pub_key = client.keyjar.get_key_by_kid(key_id)
             # Verify & Validate

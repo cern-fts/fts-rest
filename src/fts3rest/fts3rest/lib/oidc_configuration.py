@@ -24,4 +24,5 @@ class OIDCmanager:
             self.clients[provider] = client
 
 
+# Should be the only instance, called during the middleware initialization
 oidc_manager = OIDCmanager()
