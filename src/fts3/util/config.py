@@ -98,11 +98,15 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
         if 'ClientId' in option:
             provider_name, _ = option.split('_')
             provider_url = parser.get('providers', provider_name)
+            if provider_url not in fts3cfg['fts3.Providers']:
+                fts3cfg['fts3.Providers'][provider_url] = {}
             client_id = parser.get('providers', option)
             fts3cfg['fts3.Providers'][provider_url]['client_id'] = client_id
         elif 'ClientSecret' in option:
             provider_name, _ = option.split('_')
             provider_url = parser.get('providers', provider_name)
+            if provider_url not in fts3cfg['fts3.Providers']:
+                fts3cfg['fts3.Providers'][provider_url] = {}
             client_secret = parser.get('providers', option)
             fts3cfg['fts3.Providers'][provider_url]['client_secret'] = client_secret
     return fts3cfg
