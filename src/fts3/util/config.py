@@ -92,12 +92,17 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
                 fts3cfg['fts3.Roles'][role.lower()] = {}
             fts3cfg['fts3.Roles'][role.lower()][operation.lower()] = level.lower()
 
-
     # Initialize providers
     fts3cfg['fts3.Providers'] = {}
-    for provider in parser.options('providers'):
-        client_id, client_secret = parser.get('providers', provider).split(',')
-        fts3cfg['fts3.Providers'][provider]['client_id'] = client_id
-        fts3cfg['fts3.Providers'][provider]['client_secret'] = client_secret
-
+    for option in parser.options('providers'):
+        if 'ClientId' in option:
+            provider_name, _ = option.split('_')
+            provider_url = parser.get('providers', provider_name)
+            client_id = parser.get('providers', option)
+            fts3cfg['fts3.Providers'][provider_url]['client_id'] = client_id
+        elif 'ClientSecret' in option:
+            provider_name, _ = option.split('_')
+            provider_url = parser.get('providers', provider_name)
+            client_secret = parser.get('providers', option)
+            fts3cfg['fts3.Providers'][provider_url]['client_secret'] = client_secret
     return fts3cfg

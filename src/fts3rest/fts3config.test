@@ -30,4 +30,6 @@ Public=vo:transfer;all:datamanagement
 lcgadmin=all:config
 
 [providers]
-https://iam.extreme-datacloud.eu=clientid,clientsecret
+xdc=https://iam.extreme-datacloud.eu
+xdc_ClientId=asdf
+xdc_ClientSecret=asdf
