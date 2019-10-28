@@ -184,6 +184,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             valid, offline_credential = self._validate_token_offline(access_token)
             if valid:
                 log.info("is valid")
+                return
                 # If token is valid, check if this user has been seen before and if yes authorize.
                 # If not, validate online in order to get the extra info i.e. email etc
                 credential_stored_offline = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
@@ -289,7 +290,8 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             # algorithm = unverified_header['alg']
             log.debug('issuer={}'.format(issuer))
             client = oidc_manager.clients[issuer]
-            keys = client.keyjar.get_issuer_keys(issuer+'/')
+            log.debug('provider_info::: {}'.format(client.provider_info))
+            keys = client.keyjar.get_issuer_keys(issuer + '/')
             log.debug('keys::: {}'.format(keys))
             log.debug('key0::: {}'.format(keys[0]))
             pub_key = json.dumps(keys[0].to_dict())
