@@ -34,6 +34,9 @@ from fts3rest.lib.middleware.request_logger import RequestLogger
 from fts3rest.lib.middleware.timeout import TimeoutHandler
 from fts3rest.config.environment import load_environment
 
+import logging
+
+log = logging.getLogger(__name__)
 
 def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     """Create a Pylons WSGI application and return it
@@ -59,6 +62,7 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
 
     """
     # Configure the Pylons environment
+    log.debug('loading environment')
     config = load_environment(global_conf, app_conf)
 
     # The Pylons WSGI app
@@ -97,7 +101,9 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     # Heartbeat thread
     Heartbeat('fts_rest', int(config.get('fts3.HeartBeatInterval', 60))).start()
     # Start OIDC clients
-    oidc_manager(config)
+
+    log.debug('start oidc manager')
+    oidc_manager(app.config)
     IAMTokenRefresher('fts_token_refresh_daemon', int(config.get('fts3.TokenRefreshDaemonIntervalInSeconds', 600)), config).start()
 
     return app

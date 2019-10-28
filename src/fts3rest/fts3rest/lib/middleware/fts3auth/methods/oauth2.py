@@ -18,7 +18,9 @@
 import types
 from fts3rest.lib.oauth2provider import FTS3OAuth2ResourceProvider
 from fts3rest.lib.middleware.fts3auth.credentials import vo_from_fqan, build_vo_from_dn, InvalidCredentials, generate_delegation_id
+import logging
 
+log = logging.getLogger(__name__)
 
 def _oauth2_get_granted_level_for(self, operation):
     # All users authenticated through IAM will be considered root users
@@ -40,6 +42,7 @@ def do_authentication(credentials, env, config):
         return False
     if not authn.is_valid:
         if authn.error == 'access_denied':
+            log.info('about to raise invalid credentials')
             raise InvalidCredentials('Invalid OAuth2 credentials')
         return False
 

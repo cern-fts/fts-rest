@@ -19,13 +19,16 @@ from ConfigParser import ConfigParser, NoOptionError
 from StringIO import StringIO
 from urllib import quote_plus
 import os
+import logging
 
+log = logging.getLogger(__name__)
 
 def fts3_config_load(path='/etc/fts3/fts3config'):
     """
     Read the configuration from the FTS3 configuration file and
     pass it to the Pylons configuration
     """
+    log.debug('entered fts3_config_load')
     fts3cfg = {}
 
     # Dirty workaround: ConfigParser doesn't like files without
@@ -93,6 +96,7 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
             fts3cfg['fts3.Roles'][role.lower()][operation.lower()] = level.lower()
 
     # Initialize providers
+    log.debug('initialize providers config in load environment')
     fts3cfg['fts3.Providers'] = {}
     for option in parser.options('providers'):
         if 'ClientId' in option:

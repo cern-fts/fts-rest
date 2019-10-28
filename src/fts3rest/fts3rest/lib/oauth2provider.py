@@ -23,12 +23,12 @@ from fts3rest.lib.middleware.fts3auth.credentials import generate_delegation_id
 from fts3rest.lib.oidc_configuration import oidc_manager
 from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceProvider, ResourceAuthorization
 from fts3.model.credentials import CredentialCache, Credential
-from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token, OAuth2Providers
+from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
 from fts3.rest.client.request import Request
-from ast import literal_eval
 import json
+
 import jwt
-import oic
+from jwcrypto.jwk import JWK
 
 log = logging.getLogger(__name__)
 
@@ -180,16 +180,20 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         # Try to first validate the supplied access_token offline in order to avoid the expensive REST query to IAM
         validated_offline = False
         if self._should_validate_offline():
+            log.info("should validate offline")
             valid, offline_credential = self._validate_token_offline(access_token)
             if valid:
+                log.info("is valid")
                 # If token is valid, check if this user has been seen before and if yes authorize.
                 # If not, validate online in order to get the extra info i.e. email etc
                 credential_stored_offline = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
                 if credential_stored_offline:
                     validated_offline = True
             else:
+                log.info("not valid")
                 log.debug("Access token provided is not valid - offline validation")
                 return
+        log.info("should NOT validate offline")
 
         if validated_offline:
             credential = credential_stored_offline
@@ -271,19 +275,37 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         :param access_token:
         :return: tuple(valid, credential) or tuple(False, None)
         """
+        log.debug('entered validate_token_offline')
+        import json
         try:
+            log.debug('jwt.decode')
             unverified_payload = jwt.decode(access_token, verify=False)
             unverified_header = jwt.get_unverified_header(access_token)
             issuer = unverified_payload['iss']
+            issuer = issuer.rstrip('/')
+            log.debug('key_id=')
             key_id = unverified_header['kid']
+            log.debug(key_id)
             # algorithm = unverified_header['alg']
+            log.debug('issuer={}'.format(issuer))
             client = oidc_manager.clients[issuer]
-            pub_key = client.keyjar.get_key_by_kid(key_id)
+            keys = client.keyjar.get_issuer_keys(issuer+'/')
+            log.debug('keys::: {}'.format(keys))
+            log.debug('key0::: {}'.format(keys[0]))
+            pub_key = json.dumps(keys[0].to_dict())
+            log.debug('keyjson::: {}'.format(json.dumps(keys[0].to_dict())))
+            log.debug('pub_keyJWK=')
+            pub_key = JWK.from_json(pub_key)
+            log.debug(pub_key)
             # Verify & Validate
-            credential = jwt.decode(access_token, pub_key)
-        except Exception:
-            return False, None
+            log.debug('credential=')
+            credential = jwt.decode(access_token, pub_key.export_to_pem())
 
+        except Exception as ex:
+            log.debug(ex)
+            log.debug('return False (exception)')
+            return False, None
+        log.debug('return True, credential')
         return True, credential
 
     def _validate_token_online(self, access_token):
