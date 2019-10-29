@@ -23,6 +23,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 def fts3_config_load(path='/etc/fts3/fts3config'):
     """
     Read the configuration from the FTS3 configuration file and
@@ -99,18 +100,15 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
     log.debug('initialize providers config in load environment')
     fts3cfg['fts3.Providers'] = {}
     for option in parser.options('providers'):
-        if 'ClientId' in option:
-            provider_name, _ = option.split('_')
+        if '_' not in option:
+            provider_name = option
             provider_url = parser.get('providers', provider_name)
-            if provider_url not in fts3cfg['fts3.Providers']:
-                fts3cfg['fts3.Providers'][provider_url] = {}
-            client_id = parser.get('providers', option)
+            if not provider_url.endswith('/'):
+                provider_url += '/'
+            fts3cfg['fts3.Providers'][provider_url] = {}
+            client_id = parser.get('providers', option + '_ClientId')
             fts3cfg['fts3.Providers'][provider_url]['client_id'] = client_id
-        elif 'ClientSecret' in option:
-            provider_name, _ = option.split('_')
-            provider_url = parser.get('providers', provider_name)
-            if provider_url not in fts3cfg['fts3.Providers']:
-                fts3cfg['fts3.Providers'][provider_url] = {}
-            client_secret = parser.get('providers', option)
+            client_secret = parser.get('providers', option + '_ClientSecret')
             fts3cfg['fts3.Providers'][provider_url]['client_secret'] = client_secret
+
     return fts3cfg

@@ -279,29 +279,22 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         log.debug('entered validate_token_offline')
         import json
         try:
-            log.debug('jwt.decode')
             unverified_payload = jwt.decode(access_token, verify=False)
             unverified_header = jwt.get_unverified_header(access_token)
             issuer = unverified_payload['iss']
-            issuer = issuer.rstrip('/')
-            log.debug('key_id=')
             key_id = unverified_header['kid']
-            log.debug(key_id)
-            # algorithm = unverified_header['alg']
-            log.debug('issuer={}'.format(issuer))
-            client = oidc_manager.clients[issuer]
-            log.debug('provider_info::: {}'.format(client.provider_info))
-            keys = client.keyjar.get_issuer_keys(issuer + '/')
-            log.debug('keys::: {}'.format(keys))
-            log.debug('key0::: {}'.format(keys[0]))
-            pub_key = json.dumps(keys[0].to_dict())
-            log.debug('keyjson::: {}'.format(json.dumps(keys[0].to_dict())))
-            log.debug('pub_keyJWK=')
-            pub_key = JWK.from_json(pub_key)
-            log.debug(pub_key)
+            log.debug('issuer={}, key_id={}'.format(issuer, key_id))
+            try:
+                algorithm = unverified_header['alg']
+                log.debug('alg={}'.format(algorithm))
+            except KeyError:
+                algorithm = 'RS256'
+            pub_key = oidc_manager.get_provider_key(issuer, key_id)
+            log.debug('key={}'.format(pub_key))
+            pub_key = JWK.from_json(json.dumps(pub_key.to_dict()))
+            log.debug('pubkey={}'.format(pub_key))
             # Verify & Validate
-            log.debug('credential=')
-            credential = jwt.decode(access_token, pub_key.export_to_pem())
+            credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm])
 
         except Exception as ex:
             log.debug(ex)

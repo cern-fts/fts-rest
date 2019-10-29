@@ -8,6 +8,7 @@ AuthorizedVO=dteam;*
 CleanRecordsHost=false
 
 ValidateAccessTokenOffline=True
+JWKCacheSeconds=86400
 
 AuthorizationProvider=https://iam.extreme-datacloud.eu/introspect
 AuthorizationProviderTokenEndpoint=https://iam.extreme-datacloud.eu/token
