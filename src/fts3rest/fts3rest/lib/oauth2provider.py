@@ -181,6 +181,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         validated_offline = False
         if self._should_validate_offline():
             valid, offline_credential = self._validate_token_offline(access_token)
+            log.debug('offline_credential iss:::{}'.format(offline_credential['iss']))
             if valid:
                 log.debug("Access token is valid")
                 # If token is valid, check if this user has been seen before and if yes authorize.
@@ -205,11 +206,11 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
             log.debug('validate_token_online')
             valid, credential = self._validate_token_online(access_token)
+            log.debug('online_credential iss:::{}'.format(credential['iss']))
             if not valid:
                 log.debug('online not valid')
                 return
             log.debug('online is valid')
-            return
             dlg_id = generate_delegation_id(credential['sub'], "")
             c = Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
             if c:
@@ -217,6 +218,8 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 Session.commit()
 
             log.debug("Credential is as follows: " + str(credential))
+
+            return
 
             refresh_credential = self._generate_refresh_token(access_token)
             if refresh_credential:
@@ -303,9 +306,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             unverified_payload = jwt.decode(access_token, verify=False)
             issuer = unverified_payload['iss']
             log.debug('issuer={}'.format(issuer))
-            log.debug('instrospect')
             response = oidc_manager.introspect(issuer, access_token)
-            log.debug('response OK')
             return response["active"], response
         except Exception as ex:
             log.debug('exception {}'.format(ex))

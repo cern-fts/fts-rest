@@ -60,6 +60,9 @@ class OIDCmanager:
         log.debug('introspect_response::: {}'.format(response))
         return response
 
+    def generate_refresh_token(self, issuer, access_token):
+        pass
+
     @staticmethod
     def find_key_with_kid(keys, kid):
         """
