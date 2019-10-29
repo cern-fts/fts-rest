@@ -180,21 +180,18 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         # Try to first validate the supplied access_token offline in order to avoid the expensive REST query to IAM
         validated_offline = False
         if self._should_validate_offline():
-            log.info("should validate offline")
             valid, offline_credential = self._validate_token_offline(access_token)
             if valid:
-                log.info("is valid")
-                return
+                log.debug("Access token is valid")
                 # If token is valid, check if this user has been seen before and if yes authorize.
                 # If not, validate online in order to get the extra info i.e. email etc
                 credential_stored_offline = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
                 if credential_stored_offline:
                     validated_offline = True
             else:
-                log.info("not valid")
                 log.debug("Access token provided is not valid - offline validation")
                 return
-        log.info("should NOT validate offline")
+        log.debug('validated_offline={}'.format(validated_offline))
 
         if validated_offline:
             credential = credential_stored_offline
@@ -206,20 +203,13 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 Session.delete(credential)
                 Session.commit()
 
-            ####################################
-            requestor = Request(None, None)  # VERIFY:TRUE
-            body = {'token': access_token}
-            log.debug("About to contact IAM server in order to verify the token")
-            credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProvider'], body=body,
-                                                     user=self.config['fts3.ClientId'],
-                                                     passw=self.config['fts3.ClientSecret']))
-            if not credential or not credential['active']:
+            log.debug('validate_token_online')
+            valid, credential = self._validate_token_online(access_token)
+            if not valid:
+                log.debug('online not valid')
                 return
-            #####################################
-            # valid, credential = self._validate_token_online(access_token)
-            # if not valid:
-            #     return
-
+            log.debug('online is valid')
+            return
             dlg_id = generate_delegation_id(credential['sub'], "")
             c = Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
             if c:
@@ -295,7 +285,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             log.debug('pubkey={}'.format(pub_key))
             # Verify & Validate
             credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm])
-
+            log.debug('offline_response::: {}'.format(credential))
         except Exception as ex:
             log.debug(ex)
             log.debug('return False (exception)')
@@ -312,14 +302,13 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         try:
             unverified_payload = jwt.decode(access_token, verify=False)
             issuer = unverified_payload['iss']
-            client = oidc_manager.clients[issuer]
-            response = client.do_token_introspection(request_args={'token': access_token})
-            if response.status_code == 200:
-                credential = response.json()
-                return response["active"], credential
-            else:
-                return False, None
-        except Exception:
+            log.debug('issuer={}'.format(issuer))
+            log.debug('instrospect')
+            response = oidc_manager.introspect(issuer, access_token)
+            log.debug('response OK')
+            return response["active"], response
+        except Exception as ex:
+            log.debug('exception {}'.format(ex))
             return False, None
 
     def _generate_refresh_token(self, access_token):

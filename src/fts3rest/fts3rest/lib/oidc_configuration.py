@@ -1,6 +1,8 @@
 from oic.oic import Client
 from oic.oic.message import RegistrationResponse
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
+from oic.extension.message import TokenIntrospectionRequest
+from oic.extension.message import TokenIntrospectionResponse
 
 import logging
 log = logging.getLogger(__name__)
@@ -45,6 +47,18 @@ class OIDCmanager:
         client = self.clients[issuer]
         keys = client.keyjar.get_issuer_keys(issuer)
         return self.find_key_with_kid(keys, kid)
+
+    def introspect(self, issuer, access_token):
+        client = self.clients[issuer]
+        response = client.do_any(request_args={'token': access_token},
+                                 request=TokenIntrospectionRequest,
+                                 response=TokenIntrospectionResponse,
+                                 body_type='json',
+                                 method='POST',
+                                 authn_method="client_secret_basic"
+                                 )
+        log.debug('introspect_response::: {}'.format(response))
+        return response
 
     @staticmethod
     def find_key_with_kid(keys, kid):
