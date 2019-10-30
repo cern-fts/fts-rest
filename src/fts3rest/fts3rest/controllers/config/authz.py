@@ -29,7 +29,7 @@ from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify, accept, get_input_as_dict
 from fts3rest.lib.http_exceptions import *
-from fts3rest.lib.middleware.fts3auth import authorize, require_certificate
+from fts3rest.lib.middleware.fts3auth import authorize
 from fts3rest.lib.middleware.fts3auth.constants import CONFIG
 from fts3rest.controllers.config import audit_configuration
 
@@ -44,7 +44,6 @@ class AuthzConfigController(BaseController):
     """
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
-    @require_certificate
     @authorize(CONFIG)
     @jsonify
     def add_authz(self):
@@ -73,7 +72,6 @@ class AuthzConfigController(BaseController):
     @doc.query_arg('dn', 'Filter by DN')
     @doc.query_arg('operation', 'Filter by operation')
     @doc.response(403, 'The user is not allowed to query the configuration')
-    @require_certificate
     @authorize(CONFIG)
     @accept(html_template='/config/authz.html')
     def list_authz(self):
@@ -93,7 +91,6 @@ class AuthzConfigController(BaseController):
     @doc.query_arg('dn', 'The user DN to be removed', required=True)
     @doc.query_arg('operation', 'The operation to be removed', required=False)
     @doc.response(403, 'The user is not allowed to modify the configuration')
-    @require_certificate
     @authorize(CONFIG)
     def remove_authz(self, start_response):
         """

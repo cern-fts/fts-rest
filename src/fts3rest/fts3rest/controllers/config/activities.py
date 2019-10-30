@@ -28,7 +28,7 @@ from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify, accept, get_input_as_dict
 from fts3rest.lib.http_exceptions import *
-from fts3rest.lib.middleware.fts3auth import authorize, require_certificate
+from fts3rest.lib.middleware.fts3auth import authorize
 from fts3rest.lib.middleware.fts3auth.constants import *
 
 
@@ -67,7 +67,6 @@ class ActivitiesConfigController(BaseController):
     """
 
     @doc.response(403, 'The user is not allowed to see the configuration')
-    @require_certificate
     @authorize(CONFIG)
     @accept(html_template='/config/activity_shares.html')
     def get_activity_shares(self):
@@ -83,7 +82,6 @@ class ActivitiesConfigController(BaseController):
         return response
 
     @doc.response(403, 'The user is not allowed to see the configuration')
-    @require_certificate
     @authorize(CONFIG)
     @jsonify
     def get_activity_shares_vo(self, vo_name):
@@ -98,7 +96,6 @@ class ActivitiesConfigController(BaseController):
 
     @doc.response(400, 'Malformed activity share request')
     @doc.response(403, 'The user is not allowed to modify the configuration')
-    @require_certificate
     @authorize(CONFIG)
     @jsonify
     def set_activity_shares(self):
@@ -137,7 +134,6 @@ class ActivitiesConfigController(BaseController):
         return activity_share
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
-    @require_certificate
     @authorize(CONFIG)
     def delete_activity_shares(self, vo_name, start_response):
         """

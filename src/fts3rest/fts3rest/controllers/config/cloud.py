@@ -29,7 +29,7 @@ from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify, accept, get_input_as_dict
 from fts3rest.lib.http_exceptions import *
-from fts3rest.lib.middleware.fts3auth import authorize, require_certificate
+from fts3rest.lib.middleware.fts3auth import authorize
 from fts3rest.lib.middleware.fts3auth.constants import *
 
 
@@ -43,7 +43,6 @@ class CloudConfigController(BaseController):
     """
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
-    @require_certificate
     @authorize(CONFIG)
     @accept(html_template='/config/cloud_storage.html')
     def get_cloud_storages(self):
@@ -57,7 +56,6 @@ class CloudConfigController(BaseController):
         return storages
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
-    @require_certificate
     @authorize(CONFIG)
     @jsonify
     def set_cloud_storage(self, start_response):
@@ -84,7 +82,6 @@ class CloudConfigController(BaseController):
         return storage.storage_name
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
-    @require_certificate
     @authorize(CONFIG)
     @jsonify
     def get_cloud_storage(self, storage_name):
@@ -100,7 +97,6 @@ class CloudConfigController(BaseController):
 
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
-    @require_certificate
     @authorize(CONFIG)
     def remove_cloud_storage(self, storage_name, start_response):
         """
@@ -122,7 +118,6 @@ class CloudConfigController(BaseController):
         return [''] 
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
-    @require_certificate
     @authorize(CONFIG)
     @jsonify
     def add_user_to_cloud_storage(self, storage_name, start_response):
@@ -160,7 +155,6 @@ class CloudConfigController(BaseController):
         return dict(storage_name=cuser.storage_name, user_dn=cuser.user_dn, vo_name=cuser.vo_name)
 
     @doc.response(403, 'The user is not allowed to modify the configuration')
-    @require_certificate
     @authorize(CONFIG)
     def remove_user_from_cloud_storage(self, storage_name, id, start_response):
         """
