@@ -177,9 +177,8 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
     def validate_access_token(self, access_token, authorization):
         authorization.is_valid = False
 
-        # Try to first validate the supplied access_token offline in order to avoid the expensive REST query to IAM
-        validated_offline = False
         if self._should_validate_offline():
+            log.debug("TO VALIDATE OFFLINE")
             valid, credential = self._validate_token_offline(access_token)
         else:
             valid, credential = self._validate_token_online(access_token)
@@ -190,26 +189,41 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         # Check if a credential exists in the DB
         credential_db = Session.query(Credential).filter(Credential.dn == credential['sub']).first()
         credential_db_has_expired = credential_db and credential_db.expired()
+
+        if self._should_validate_offline() and not credential_db:
+            log.debug("offline and not in db")
+            valid, credential = self._validate_token_online(access_token)
+            if not valid:
+                log.debug("Access token provided is not valid")
+                return
+
         if credential_db_has_expired:
+            log.debug("credential_db_has_expired")
             Session.delete(credential_db)
             Session.commit()
         if not credential_db or credential_db_has_expired:
             # Store credential in DB
+            log.debug("Store credential in DB")
             dlg_id = generate_delegation_id(credential['sub'], "")
+            log.debug("generated dlg id")
             refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
-            credential = self._save_credential(dlg_id, credential['sub'],
-                                               access_token + ':' + refresh_token,
-                                               self._generate_voms_attrs(credential),
-                                               datetime.utcfromtimestamp(credential['exp']))
+            log.debug("generated refresh token")
+            credential_db = self._save_credential(dlg_id, credential['sub'],
+                                                  access_token + ':' + refresh_token,
+                                                  self._generate_voms_attrs(credential),
+                                                  datetime.utcfromtimestamp(credential['exp']))
+            log.debug("saved credentail")
 
+        log.debug("LAST PART")
         authorization.is_oauth = True
-        authorization.expires_in = credential.termination_time - datetime.utcnow()
-        authorization.token = credential.proxy.split(':')[0]
-        authorization.dlg_id = credential.dlg_id
+        authorization.expires_in = credential_db.termination_time - datetime.utcnow()
+        authorization.token = credential_db.proxy.split(':')[0]
+        authorization.dlg_id = credential_db.dlg_id
         if authorization.expires_in > timedelta(seconds=0):
-            authorization.credentials = self._get_credentials(credential.dlg_id)
+            authorization.credentials = self._get_credentials(credential_db.dlg_id)
             if authorization.credentials:
                 authorization.is_valid = True
+        log.debug("end: is_valid {}".format(authorization.is_valid))
 
     def _get_credentials(self, dlg_id):
         """
@@ -221,8 +235,10 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
         if 'email' in credential:
             if 'username' in credential:
+                # 'username' is never there whether offline or online
                 return credential['email'] + " " + credential['username']
             else:
+                # 'user_id' is there only online
                 return credential['email'] + " " + credential['user_id']
         else:
             if 'username' in credential:
@@ -274,6 +290,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             issuer = unverified_payload['iss']
             log.debug('issuer={}'.format(issuer))
             response = oidc_manager.introspect(issuer, access_token)
+            log.debug('online_response::: {}'.format(response))
             return response["active"], response
         except Exception as ex:
             log.debug('exception {}'.format(ex))
