@@ -180,58 +180,32 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         # Try to first validate the supplied access_token offline in order to avoid the expensive REST query to IAM
         validated_offline = False
         if self._should_validate_offline():
-            valid, offline_credential = self._validate_token_offline(access_token)
-            log.debug('offline_credential iss:::{}'.format(offline_credential['iss']))
-            if valid:
-                log.debug("Access token is valid")
-                # If token is valid, check if this user has been seen before and if yes authorize.
-                # If not, validate online in order to get the extra info i.e. email etc
-                credential_stored_offline = Session.query(Credential).filter(Credential.dn.like(offline_credential['sub'] + "%")).first()
-                if credential_stored_offline:
-                    validated_offline = True
-            else:
-                log.debug("Access token provided is not valid - offline validation")
-                return
-        log.debug('validated_offline={}'.format(validated_offline))
-
-        if validated_offline:
-            credential = credential_stored_offline
+            valid, credential = self._validate_token_offline(access_token)
         else:
-            credential = Session.query(Credential).filter(Credential.proxy.like(access_token + "%")).first()
-        if not credential or credential.expired():
-            # Delete the db entry in case of credential expired before validating the new one
-            if credential:
-                Session.delete(credential)
-                Session.commit()
-
-            log.debug('validate_token_online')
             valid, credential = self._validate_token_online(access_token)
-            log.debug('online_credential iss:::{}'.format(credential['iss']))
-            if not valid:
-                log.debug('online not valid')
-                return
-            log.debug('online is valid')
+        if not valid:
+            log.debug("Access token provided is not valid")
+            return
+
+        # Check if a credential exists in the DB
+        credential_db = Session.query(Credential).filter(Credential.dn == credential['sub']).first()
+        credential_db_has_expired = credential_db and credential_db.expired()
+        if credential_db_has_expired:
+            Session.delete(credential_db)
+            Session.commit()
+        if not credential_db or credential_db_has_expired:
+            # Store credential in DB
             dlg_id = generate_delegation_id(credential['sub'], "")
-            c = Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
-            if c:
-                Session.delete(c)
-                Session.commit()
-
-            log.debug("Credential is as follows: " + str(credential))
-
             refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
-
             credential = self._save_credential(dlg_id, credential['sub'],
                                                access_token + ':' + refresh_token,
                                                self._generate_voms_attrs(credential),
                                                datetime.utcfromtimestamp(credential['exp']))
-            log.debug("credentials stored")
 
         authorization.is_oauth = True
         authorization.expires_in = credential.termination_time - datetime.utcnow()
         authorization.token = credential.proxy.split(':')[0]
         authorization.dlg_id = credential.dlg_id
-        #authorization.scope = token.scope
         if authorization.expires_in > timedelta(seconds=0):
             authorization.credentials = self._get_credentials(credential.dlg_id)
             if authorization.credentials:
