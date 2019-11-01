@@ -3,6 +3,7 @@ from oic.oic.message import RegistrationResponse
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 from oic.extension.message import TokenIntrospectionRequest
 from oic.extension.message import TokenIntrospectionResponse
+from oic.oic.message import Message
 
 import logging
 log = logging.getLogger(__name__)
@@ -12,8 +13,10 @@ class OIDCmanager:
 
     def __init__(self):
         self.clients = {}
+        self.config = None
 
     def __call__(self, config):
+        self.config = config
         self._configure_clients(config['fts3.Providers'])
         self._set_keys_cache_time(int(config['fts3.JWKCacheSeconds']))
         self._retrieve_clients_keys()
@@ -61,7 +64,30 @@ class OIDCmanager:
         return response
 
     def generate_refresh_token(self, issuer, access_token):
-        pass
+        log.debug("enter generate_refresh_token")
+        client = self.clients[issuer]
+        body = {'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange',
+                'subject_token_type': 'urn:ietf:params:oauth:token-type:access_token',
+                'subject_token': access_token,
+                'scope': 'offline_access openid profile',
+                'audience': client.client_id}
+        log.debug("before do any")
+        try:
+            response = client.do_any(Message,
+                                     request_args=body,
+                                     endpoint=client.provider_info["token_endpoint"],
+                                     body_type='json',
+                                     method='POST',
+                                     authn_method="client_secret_basic"
+                                     )
+            response = response.json()
+            refresh_token = response['refresh_token']
+        except Exception as ex:
+            log.debug('exception in refresh token')
+            log.debug(ex)
+            refresh_token = ""
+        log.debug('refresh_token_response::: {}'.format(refresh_token))
+        return refresh_token
 
     @staticmethod
     def find_key_with_kid(keys, kid):

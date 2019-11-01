@@ -219,14 +219,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
             log.debug("Credential is as follows: " + str(credential))
 
-            return
-
-            refresh_credential = self._generate_refresh_token(access_token)
-            if refresh_credential:
-                log.debug("Refresh credential is as follows: " + str(refresh_credential))
-                refresh_token = refresh_credential['refresh_token']
-            else:
-                refresh_token = ""
+            refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
 
             credential = self._save_credential(dlg_id, credential['sub'],
                                                access_token + ':' + refresh_token,
