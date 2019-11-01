@@ -27,7 +27,6 @@ def do_authentication(credentials, env):
     #log.info(credentials.vos)
     
     for key, value in env.iteritems(): 
-       # log.info(key + ' = ' + value)   
         if ('OIDC_CLAIM' in key) or ('HTTP_' in key):
            log.info(key + ' = ' + value)
     
