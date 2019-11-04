@@ -186,12 +186,13 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             log.debug("Access token provided is not valid")
             return
 
-        # Check if a credential exists in the DB
+        # Check if a credential already exists in the DB
         credential_db = Session.query(Credential).filter(Credential.dn == credential['sub']).first()
         credential_db_has_expired = credential_db and credential_db.expired()
 
         if self._should_validate_offline() and not credential_db:
             log.debug("offline and not in db")
+            # Introspect to obtain additional information
             valid, credential = self._validate_token_online(access_token)
             if not valid:
                 log.debug("Access token provided is not valid")
@@ -212,7 +213,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                                                   access_token + ':' + refresh_token,
                                                   self._generate_voms_attrs(credential),
                                                   datetime.utcfromtimestamp(credential['exp']))
-            log.debug("saved credentail")
+            log.debug("saved credential")
 
         log.debug("LAST PART")
         authorization.is_oauth = True
