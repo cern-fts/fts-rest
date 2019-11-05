@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from fts3rest.lib.base import Session
 from fts3rest.lib.middleware.fts3auth.constants import VALID_OPERATIONS
 from fts3rest.lib.middleware.fts3auth.credentials import generate_delegation_id
-from fts3rest.lib.oidc_configuration import oidc_manager
+from fts3rest.lib.openidconnect import oidc_manager
 from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceProvider, ResourceAuthorization
 from fts3.model.credentials import CredentialCache, Credential
 from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
@@ -261,11 +261,10 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             issuer = unverified_payload['iss']
             key_id = unverified_header['kid']
             log.debug('issuer={}, key_id={}'.format(issuer, key_id))
-            try:
-                algorithm = unverified_header['alg']
-                log.debug('alg={}'.format(algorithm))
-            except KeyError:
-                algorithm = 'RS256'
+
+            algorithm = unverified_header.get('alg', 'RS256')
+            log.debug('alg={}'.format(algorithm))
+
             pub_key = oidc_manager.get_provider_key(issuer, key_id)
             log.debug('key={}'.format(pub_key))
             pub_key = JWK.from_json(json.dumps(pub_key.to_dict()))

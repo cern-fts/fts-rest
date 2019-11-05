@@ -15,7 +15,7 @@ class OIDCmanager:
         self.clients = {}
         self.config = None
 
-    def __call__(self, config):
+    def setup(self, config):
         self.config = config
         self._configure_clients(config['fts3.Providers'])
         self._set_keys_cache_time(int(config['fts3.JWKCacheSeconds']))
@@ -48,8 +48,11 @@ class OIDCmanager:
 
     def get_provider_key(self, issuer, kid):
         client = self.clients[issuer]
-        keys = client.keyjar.get_issuer_keys(issuer)
-        return self.find_key_with_kid(keys, kid)
+        keys = client.keyjar.get_issuer_keys(issuer)  # List of Keys (from pyjwkest)
+        for key in keys:
+            if key.kid == kid:
+                return key
+        raise ValueError("Key with kid {} not found".format(kid))
 
     def introspect(self, issuer, access_token):
         client = self.clients[issuer]
@@ -88,18 +91,6 @@ class OIDCmanager:
             refresh_token = ""
         log.debug('refresh_token_response::: {}'.format(refresh_token))
         return refresh_token
-
-    @staticmethod
-    def find_key_with_kid(keys, kid):
-        """
-        :param keys: List of Keys (from pyjwkest)
-        :param kid:
-        :return: the key
-        """
-        for key in keys:
-            if key.kid == kid:
-                return key
-        raise ValueError("Key with kid {} not found".format(kid))
 
 
 # Should be the only instance, called during the middleware initialization
