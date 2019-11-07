@@ -4,6 +4,8 @@ from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 from oic.extension.message import TokenIntrospectionRequest
 from oic.extension.message import TokenIntrospectionResponse
 from oic.oic.message import Message
+import jwt
+from datetime import datetime, timedelta
 
 import logging
 log = logging.getLogger(__name__)
@@ -96,25 +98,21 @@ class OIDCmanager:
         # Request a new access token based on the refresh token
         # refresh every 10 minutes
         # check if refresh token has expired
-
-        from fts3.rest.client.request import Request
-        import json
-        from datetime import datetime, timedelta
-        requestor = Request(None, None)  # VERIFY:TRUE
-
         access_token, refresh_token = credential.proxy.split(':')
+        unverified_payload = jwt.decode(access_token, verify=False)
+        issuer = unverified_payload['iss']
+        client = self.clients[issuer]
+
         body = {'grant_type': 'refresh_token',
-                'refresh_token': refresh_token,
-                'client_id': self.config['fts3.ClientId'],
-                'client_secret': self.config['fts3.ClientSecret']}
+                'refresh_token': refresh_token}
+        response = client.do_access_token_refresh(request_args=body,
+                                                  authn_method="client_secret_basic")
+        new_credential = response.json()
 
-        new_credential = json.loads(
-            requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'], body=body,
-                             user=self.config['fts3.ClientId'],
-                             passw=self.config['fts3.ClientSecret']))
-
-        credential.proxy = new_credential['access_token'] + ':' + new_credential['refresh_token']
-        credential.termination_time = datetime.utcfromtimestamp(new_credential['exp'])
+        # A new refresh token is optional
+        refresh_token = new_credential.get('refresh_token', refresh_token)
+        credential.proxy = new_credential['access_token'] + ':' + refresh_token
+        credential.termination_time = datetime.utcfromtimestamp(new_credential['expires_in'])
 
         return credential
 
