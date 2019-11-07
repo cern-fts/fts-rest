@@ -96,13 +96,11 @@ class OIDCmanager:
 
     def refresh_access_token(self, credential):
         # Request a new access token based on the refresh token
-        # refresh every 10 minutes
-        # check if refresh token has expired
         access_token, refresh_token = credential.proxy.split(':')
         unverified_payload = jwt.decode(access_token, verify=False)
         issuer = unverified_payload['iss']
         client = self.clients[issuer]
-
+        log.debug('refresh_access_token for {}'.format(issuer))
         body = {'grant_type': 'refresh_token',
                 'refresh_token': refresh_token}
         response = client.do_access_token_refresh(request_args=body,
@@ -111,8 +109,14 @@ class OIDCmanager:
 
         # A new refresh token is optional
         refresh_token = new_credential.get('refresh_token', refresh_token)
+        log.debug('new refresh token? {}'.format('refresh_token' in new_credential))
+        # todo? check if refresh_token will expire soon
+        # if so, do a self.generate_refresh_token
+        access_token = new_credential.get('access_token')
+        unverified_payload = jwt.decode(access_token, verify=False)
+        expiration_time = unverified_payload['exp']
         credential.proxy = new_credential['access_token'] + ':' + refresh_token
-        credential.termination_time = datetime.utcfromtimestamp(new_credential['expires_in'])
+        credential.termination_time = datetime.utcfromtimestamp(expiration_time)
 
         return credential
 

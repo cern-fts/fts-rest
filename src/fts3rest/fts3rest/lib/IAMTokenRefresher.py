@@ -50,7 +50,7 @@ class IAMTokenRefresher(Thread):
         # to make sure that no two fts-token-refresh-daemons run simultaneously
         service_name = Session.query(Host).filter(Host.service_name == self.tag).first()
 
-        condition = (datetime.utcnow() - service_name.beat) > timedelta(seconds=int(self.interval))
+        condition = (datetime.utcnow() - service_name.beat) > timedelta(seconds=self.interval)
         if not service_name or condition:
             host = Host(hostname=socket.getfqdn(), service_name=self.tag)
             while self.interval:
@@ -63,9 +63,11 @@ class IAMTokenRefresher(Thread):
                     log.warning("Failed to update the fts-token-refresh-daemon heartbeat: %s" % str(e))
 
                 credentials = Session.query(Credential).filter(Credential.proxy.notilike("%CERTIFICATE%")).all()
+                log.debug('{} credentials to refresh'.format(len(credentials)))
                 for credential in credentials:
                     try:
                         credential = oidc_manager.refresh_access_token(credential)
+                        log.debug('OK refresh_access_token')
                         Session.merge(credential)
                         Session.commit()
                     except Exception, e:
