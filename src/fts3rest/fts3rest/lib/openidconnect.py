@@ -92,6 +92,32 @@ class OIDCmanager:
         log.debug('refresh_token_response::: {}'.format(refresh_token))
         return refresh_token
 
+    def refresh_access_token(self, credential):
+        # Request a new access token based on the refresh token
+        # refresh every 10 minutes
+        # check if refresh token has expired
+
+        from fts3.rest.client.request import Request
+        import json
+        from datetime import datetime, timedelta
+        requestor = Request(None, None)  # VERIFY:TRUE
+
+        access_token, refresh_token = credential.proxy.split(':')
+        body = {'grant_type': 'refresh_token',
+                'refresh_token': refresh_token,
+                'client_id': self.config['fts3.ClientId'],
+                'client_secret': self.config['fts3.ClientSecret']}
+
+        new_credential = json.loads(
+            requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'], body=body,
+                             user=self.config['fts3.ClientId'],
+                             passw=self.config['fts3.ClientSecret']))
+
+        credential.proxy = new_credential['access_token'] + ':' + new_credential['refresh_token']
+        credential.termination_time = datetime.utcfromtimestamp(new_credential['exp'])
+
+        return credential
+
 
 # Should be the only instance, called during the middleware initialization
 oidc_manager = OIDCmanager()

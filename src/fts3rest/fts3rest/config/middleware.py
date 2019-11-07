@@ -105,6 +105,6 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
 
     log.debug('start oidc manager')
     oidc_manager.setup(app.config)
-    IAMTokenRefresher('fts_token_refresh_daemon', int(config.get('fts3.TokenRefreshDaemonIntervalInSeconds', 600)), config).start()
+    IAMTokenRefresher('fts_token_refresh_daemon', app.config).start()
 
     return app
