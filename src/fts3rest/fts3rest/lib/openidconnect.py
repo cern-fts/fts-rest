@@ -3,7 +3,10 @@ from oic.oic.message import RegistrationResponse
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 from oic.extension.message import TokenIntrospectionRequest
 from oic.extension.message import TokenIntrospectionResponse
-from oic.oic.message import Message
+from oic.oic.message import Message, AccessTokenResponse
+from oic import rndstr
+from oic.oic import Grant, Token
+from oic.utils import time_util
 import jwt
 from datetime import datetime, timedelta
 
@@ -101,15 +104,22 @@ class OIDCmanager:
         issuer = unverified_payload['iss']
         client = self.clients[issuer]
         log.debug('refresh_access_token for {}'.format(issuer))
-        body = {'grant_type': 'refresh_token',
-                'refresh_token': refresh_token}
-        response = client.do_access_token_refresh(request_args=body,
-                                                  authn_method="client_secret_basic")
-        new_credential = response.json()
+
+        refresh_session_state = rndstr(50)
+        client.grant[refresh_session_state] = Grant()
+        client.grant[refresh_session_state].grant_expiration_time = time_util.utc_time_sans_frac() + 60
+        #client.grant[refresh_session_state].code = "access_code"
+        resp = AccessTokenResponse()
+        resp["refresh_token"] = refresh_token
+        client.grant[refresh_session_state].tokens.append(Token(resp))
+        new_credential = client.do_access_token_refresh(authn_method="client_secret_basic",
+                                                        state=refresh_session_state)
 
         # A new refresh token is optional
-        refresh_token = new_credential.get('refresh_token', refresh_token)
+        oldrefresh = refresh_token
+        refresh_token = new_credential.get('refresh_token', oldrefresh)
         log.debug('new refresh token? {}'.format('refresh_token' in new_credential))
+        log.debug('are they the same? {}'.format(refresh_token == oldrefresh))
         # todo? check if refresh_token will expire soon
         # if so, do a self.generate_refresh_token
         access_token = new_credential.get('access_token')

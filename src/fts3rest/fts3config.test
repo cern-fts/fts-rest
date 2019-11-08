@@ -21,7 +21,7 @@ CheckDuplicates=dteam;*
 
 MessagingDirectory=/tmp/rest-msgs
 HeartBeatInterval=0
-TokenRefreshDaemonIntervalInSeconds=1800
+TokenRefreshDaemonIntervalInSeconds=30
 
 #Time interval since last sumbit for a user to have his token refreshed (i.e. a for a month inactive user should not have his token refreshed)
 TokenRefreshTimeSinceLastTransferInSeconds=2629743

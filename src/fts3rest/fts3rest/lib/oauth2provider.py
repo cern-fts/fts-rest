@@ -188,21 +188,20 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
         # Check if a credential already exists in the DB
         credential_db = Session.query(Credential).filter(Credential.dn == credential['sub']).first()
-        credential_db_has_expired = credential_db and credential_db.expired()
-
-        if self._should_validate_offline() and not credential_db:
-            log.debug("offline and not in db")
-            # Introspect to obtain additional information
-            valid, credential = self._validate_token_online(access_token)
-            if not valid:
-                log.debug("Access token provided is not valid")
-                return
-
-        if credential_db_has_expired:
+        if credential_db and credential_db.expired():
             log.debug("credential_db_has_expired")
             Session.delete(credential_db)
             Session.commit()
-        if not credential_db or credential_db_has_expired:
+            credential_db = None
+
+        if not credential_db:
+            if self._should_validate_offline():
+                log.debug("offline and not in db")
+                # Introspect to obtain additional information
+                valid, credential = self._validate_token_online(access_token)
+                if not valid:
+                    log.debug("Access token provided is not valid")
+                    return
             # Store credential in DB
             log.debug("Store credential in DB")
             dlg_id = generate_delegation_id(credential['sub'], "")

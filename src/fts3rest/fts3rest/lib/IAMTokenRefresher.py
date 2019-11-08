@@ -52,6 +52,7 @@ class IAMTokenRefresher(Thread):
 
         condition = (datetime.utcnow() - service_name.beat) > timedelta(seconds=self.interval)
         if not service_name or condition:
+            log.debug('thread running')
             host = Host(hostname=socket.getfqdn(), service_name=self.tag)
             while self.interval:
                 host.beat = datetime.utcnow()
@@ -73,3 +74,5 @@ class IAMTokenRefresher(Thread):
                     except Exception, e:
                         log.warning("Failed to refresh token for dn: %s because: %s" % (str(credential.dn), str(e)))
                 time.sleep(self.interval)
+        else:
+            log.debug('thread skipping')
