@@ -216,9 +216,9 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
 
         log.debug("LAST PART")
         authorization.is_oauth = True
-        authorization.expires_in = credential_db.termination_time - datetime.utcnow()
         authorization.token = credential_db.proxy.split(':')[0]
         authorization.dlg_id = credential_db.dlg_id
+        authorization.expires_in = credential_db.termination_time - datetime.utcnow()
         if authorization.expires_in > timedelta(seconds=0):
             authorization.credentials = self._get_credentials(credential_db.dlg_id)
             if authorization.credentials:
