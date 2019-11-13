@@ -1,20 +1,24 @@
-from oic.oic import Client
-from oic.oic.message import RegistrationResponse
-from oic.utils.authn.client import CLIENT_AUTHN_METHOD
-from oic.extension.message import TokenIntrospectionRequest
-from oic.extension.message import TokenIntrospectionResponse
-from oic.oic.message import Message, AccessTokenResponse
-from oic import rndstr
-from oic.oic import Grant, Token
-from oic.utils import time_util
-import jwt
-from datetime import datetime, timedelta
-
 import logging
+from datetime import datetime
+
+import jwt
+from oic import rndstr
+from oic.extension.message import TokenIntrospectionRequest, TokenIntrospectionResponse
+from oic.oic import Client, Grant, Token
+from oic.oic.message import AccessTokenResponse, Message, RegistrationResponse
+from oic.utils import time_util
+from oic.utils.authn.client import CLIENT_AUTHN_METHOD
+
 log = logging.getLogger(__name__)
 
 
 class OIDCmanager:
+    """
+    Class that interfaces with PyOIDC
+
+    It is supposed to have a unique instance which provides all operations that require
+    information from the OIDC issuers.
+    """
 
     def __init__(self):
         self.clients = {}
@@ -47,11 +51,17 @@ class OIDCmanager:
         for provider in self.clients:
             client = self.clients[provider]
             keybundles = client.keyjar.issuer_keys[provider]
-            log.debug('len(keybundles)={}'.format(len(keybundles)))
             for keybundle in keybundles:
                 keybundle.cache_time = cache_time
 
     def get_provider_key(self, issuer, kid):
+        """
+        Get a Provider Key by ID
+        :param issuer: provider
+        :param kid: Key ID
+        :return: key
+        :raise ValueError: if key not found
+        """
         client = self.clients[issuer]
         keys = client.keyjar.get_issuer_keys(issuer)  # List of Keys (from pyjwkest)
         for key in keys:
@@ -60,6 +70,12 @@ class OIDCmanager:
         raise ValueError("Key with kid {} not found".format(kid))
 
     def introspect(self, issuer, access_token):
+        """
+        Make a Token Introspection request
+        :param issuer: issuer of the token
+        :param access_token: token to introspect
+        :return: JSON response
+        """
         client = self.clients[issuer]
         response = client.do_any(request_args={'token': access_token},
                                  request=TokenIntrospectionRequest,
@@ -72,6 +88,13 @@ class OIDCmanager:
         return response
 
     def generate_refresh_token(self, issuer, access_token):
+        """
+        Exchange an access token for a refresh token
+        :param issuer: issuer of the access token
+        :param access_token:
+        :return: refresh token
+        :raise Exception: If refresh token cannot be obtained
+        """
         log.debug("enter generate_refresh_token")
         client = self.clients[issuer]
         body = {'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange',
@@ -79,7 +102,6 @@ class OIDCmanager:
                 'subject_token': access_token,
                 'scope': 'offline_access openid profile',
                 'audience': client.client_id}
-        log.debug("before do any")
         try:
             response = client.do_any(Message,
                                      request_args=body,
@@ -91,20 +113,24 @@ class OIDCmanager:
             response = response.json()
             refresh_token = response['refresh_token']
         except Exception as ex:
-            log.debug('exception in refresh token')
-            log.debug(ex)
-            refresh_token = ""
+            log.warning("Exception raised when requesting refresh token")
+            raise ex
         log.debug('refresh_token_response::: {}'.format(refresh_token))
         return refresh_token
 
     def refresh_access_token(self, credential):
-        # Request a new access token based on the refresh token
+        """
+        Request new access token
+        :param credential: Credential from DB containing an access token and a refresh token
+        :return: Updated credential containing new access token
+        """
         access_token, refresh_token = credential.proxy.split(':')
         unverified_payload = jwt.decode(access_token, verify=False)
         issuer = unverified_payload['iss']
         client = self.clients[issuer]
         log.debug('refresh_access_token for {}'.format(issuer))
 
+        # Prepare and make request
         refresh_session_state = rndstr(50)
         client.grant[refresh_session_state] = Grant()
         client.grant[refresh_session_state].grant_expiration_time = time_util.utc_time_sans_frac() + 60
@@ -114,7 +140,6 @@ class OIDCmanager:
         client.grant[refresh_session_state].tokens.append(Token(resp))
         new_credential = client.do_access_token_refresh(authn_method="client_secret_basic",
                                                         state=refresh_session_state)
-
         # A new refresh token is optional
         oldrefresh = refresh_token
         refresh_token = new_credential.get('refresh_token', oldrefresh)

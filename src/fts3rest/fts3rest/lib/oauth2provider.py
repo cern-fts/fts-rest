@@ -13,22 +13,20 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import pylons
 import logging
-
 from datetime import datetime, timedelta
+
+import jwt
+import pylons
 from fts3rest.lib.base import Session
 from fts3rest.lib.middleware.fts3auth.constants import VALID_OPERATIONS
 from fts3rest.lib.middleware.fts3auth.credentials import generate_delegation_id
+from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceAuthorization, ResourceProvider
 from fts3rest.lib.openidconnect import oidc_manager
-from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceProvider, ResourceAuthorization
-from fts3.model.credentials import CredentialCache, Credential
-from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
-from fts3.rest.client.request import Request
-import json
-
-import jwt
 from jwcrypto.jwk import JWK
+
+from fts3.model.credentials import Credential, CredentialCache
+from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
 
 log = logging.getLogger(__name__)
 
@@ -175,6 +173,14 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         return self.environ.get('HTTP_AUTHORIZATION', None)
 
     def validate_access_token(self, access_token, authorization):
+        """
+        Validate access token offline or online
+
+        If a credential already exists in the DB and has not expired, the new token is discarded.
+        Otherwise, the access token is saved in the DB along with a generated refresh token.
+        :param access_token:
+        :param authorization: attribute .is_valid is set to True if validation successful
+        """
         authorization.is_valid = False
 
         if self._should_validate_offline():
@@ -183,7 +189,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         else:
             valid, credential = self._validate_token_online(access_token)
         if not valid:
-            log.debug("Access token provided is not valid")
+            log.warning("Access token provided is not valid")
             return
 
         # Check if a credential already exists in the DB
@@ -232,7 +238,6 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         return Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
 
     def _generate_voms_attrs(self, credential):
-
         if 'email' in credential:
             if 'username' in credential:
                 # 'username' is never there whether offline or online
@@ -294,24 +299,6 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         except Exception as ex:
             log.debug('exception {}'.format(ex))
             return False, None
-
-    def _generate_refresh_token(self, access_token):
-        requestor = Request(None, None)  # VERIFY:TRUE
-        # Request a refresh token based on this access token through the token-exchange grant-type
-        body = {'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange',
-                'subject_token_type': 'urn:ietf:params:oauth:token-type:access_token',
-                'subject_token': access_token,
-                'scope': 'offline_access openid profile',
-                'audience': self.config['fts3.ClientId']}
-        refresh_credential = None
-        try:
-            refresh_credential = json.loads(requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'],
-                                                             body=body,
-                                                             user=self.config['fts3.ClientId'],
-                                                             passw=self.config['fts3.ClientSecret']))
-        except Exception as e:
-            log.error("Error when requesting a refresh token: " + str(e))
-        return refresh_credential
 
     def _save_credential(self, dlg_id, dn, proxy, voms_attrs, termination_time):
         credential = Credential(

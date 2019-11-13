@@ -13,29 +13,28 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-
 import logging
-import time
 import socket
-from threading import Thread
+import time
 from datetime import datetime, timedelta
-from fts3.model import Host
-from fts3.model import Credential
+from threading import Thread
+
 from fts3rest.lib.base import Session
 from fts3rest.lib.openidconnect import oidc_manager
+
+from fts3.model import Credential, Host
 
 log = logging.getLogger(__name__)
 
 
 class IAMTokenRefresher(Thread):
     """
+    Daemon thread that refreshes all access tokens in the DB at every interval.
+
     Keeps running on the background updating the db marking the process as alive
     """
 
     def __init__(self, tag, config):
-        """
-        Constructor
-        """
         Thread.__init__(self)
         self.daemon = True
         self.tag = tag
