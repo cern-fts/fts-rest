@@ -213,9 +213,9 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             dlg_id = generate_delegation_id(credential['sub'], "")
             log.debug("generated dlg id")
             refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
-            log.debug("generated refresh token")
+            log.debug("generated refresh token, type {}".format(type(refresh_token)))
             credential_db = self._save_credential(dlg_id, credential['sub'],
-                                                  access_token + ':' + refresh_token,
+                                                  str(access_token) + ':' + str(refresh_token),
                                                   self._generate_voms_attrs(credential),
                                                   datetime.utcfromtimestamp(credential['exp']))
             log.debug("saved credential")

@@ -31,25 +31,31 @@ class IAMTokenRefresher(Thread):
     """
     Daemon thread that refreshes all access tokens in the DB at every interval.
 
-    Keeps running on the background updating the db marking the process as alive
+    Keeps running on the background updating the DB, marking the process as alive.
+    There should be ONLY ONE across all instances.
+    Keep in mind that with the Apache configuration line
+        WSGIDaemonProcess fts3rest python-path=... processes=2 threads=15
+    there will be 2 instances of the application per server, meaning we need to check that there is only one
+    IAMTokenRefresher per host, and only one between all hosts.
     """
 
     def __init__(self, tag, config):
         Thread.__init__(self)
-        self.daemon = True
+        self.daemon = True  # The thread will immediately exit when the main thread exit
         self.tag = tag
         self.interval = int(config.get('fts3.TokenRefreshDaemonIntervalInSeconds', 600))
         self.config = config
 
     def run(self):
-        """
-        Thread logic
-        """
         # verify that no other fts-token-refresh-daemon is running on this machine so as
         # to make sure that no two fts-token-refresh-daemons run simultaneously
         service_name = Session.query(Host).filter(Host.service_name == self.tag).first()
 
-        condition = (datetime.utcnow() - service_name.beat) > timedelta(seconds=self.interval)
+        # todo: fix this condition, if time between restarting server is less than interval, thread won't run
+        # also, should remove from DB when exiting (catch exit exception?)
+        #condition = (datetime.utcnow() - service_name.beat) > timedelta(seconds=self.interval)
+        condition = True
+
         if not service_name or condition:
             log.debug('thread running')
             host = Host(hostname=socket.getfqdn(), service_name=self.tag)

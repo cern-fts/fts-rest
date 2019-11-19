@@ -110,10 +110,14 @@ class OIDCmanager:
                                      method='POST',
                                      authn_method="client_secret_basic"
                                      )
+            log.debug("after do any")
             response = response.json()
+            log.debug("after .json")
             refresh_token = response['refresh_token']
+            log.debug("REFRESH TOKEN IS {}".format(refresh_token))
         except Exception as ex:
             log.warning("Exception raised when requesting refresh token")
+            log.warning(ex)
             raise ex
         log.debug('refresh_token_response::: {}'.format(refresh_token))
         return refresh_token
@@ -136,17 +140,13 @@ class OIDCmanager:
         client.grant[refresh_session_state].grant_expiration_time = time_util.utc_time_sans_frac() + 60
         #client.grant[refresh_session_state].code = "access_code"
         resp = AccessTokenResponse()
+        log.debug('refresh access token response {}'.format(resp))
         resp["refresh_token"] = refresh_token
         client.grant[refresh_session_state].tokens.append(Token(resp))
         new_credential = client.do_access_token_refresh(authn_method="client_secret_basic",
                                                         state=refresh_session_state)
         # A new refresh token is optional
-        oldrefresh = refresh_token
-        refresh_token = new_credential.get('refresh_token', oldrefresh)
-        log.debug('new refresh token? {}'.format('refresh_token' in new_credential))
-        log.debug('are they the same? {}'.format(refresh_token == oldrefresh))
-        # todo? check if refresh_token will expire soon
-        # if so, do a self.generate_refresh_token
+        refresh_token = new_credential.get('refresh_token', refresh_token)
         access_token = new_credential.get('access_token')
         unverified_payload = jwt.decode(access_token, verify=False)
         expiration_time = unverified_payload['exp']
