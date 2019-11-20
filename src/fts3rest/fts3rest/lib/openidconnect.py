@@ -138,9 +138,7 @@ class OIDCmanager:
         refresh_session_state = rndstr(50)
         client.grant[refresh_session_state] = Grant()
         client.grant[refresh_session_state].grant_expiration_time = time_util.utc_time_sans_frac() + 60
-        #client.grant[refresh_session_state].code = "access_code"
         resp = AccessTokenResponse()
-        log.debug('refresh access token response {}'.format(resp))
         resp["refresh_token"] = refresh_token
         client.grant[refresh_session_state].tokens.append(Token(resp))
         new_credential = client.do_access_token_refresh(authn_method="client_secret_basic",

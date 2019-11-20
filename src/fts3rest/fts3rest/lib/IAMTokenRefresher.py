@@ -40,7 +40,7 @@ class IAMTokenRefresher(Thread):
     there will be 2 instances of the application per server, meaning we need to check that there is only one
     IAMTokenRefresher per host, and only one between all hosts.
 
-    Todo: should use a different Session (it is non concurrent)
+    The SQLAlchemy scoped_session is thread-safe
     """
 
     def __init__(self, tag, config):
