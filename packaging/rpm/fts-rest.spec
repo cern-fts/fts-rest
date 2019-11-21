@@ -53,6 +53,7 @@ BuildRequires:  python-jwcrypto
 BuildRequires:  python-jwt
 %endif
 BuildRequires:  MySQL-python
+BuildRequires:  python-oic
 
 Requires:       gridsite%{?_isa} >= 1.7
 %if %{?rhel}%{!?rhel:0} == 6
