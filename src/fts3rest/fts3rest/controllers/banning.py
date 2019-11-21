@@ -190,7 +190,7 @@ def _set_to_wait_helper(storage, vo_name, from_state, to_state):
     file_ids = Session.query(File.file_id).filter(
         and_(
             File.file_state == from_state),
-            (File.source_se == storage) | (File.dest_se == storage)
+        (File.source_se == storage) | (File.dest_se == storage)
     )
     if vo_name and vo_name != '*':
         file_ids = file_ids.filter(File.vo_name == vo_name)
@@ -283,7 +283,7 @@ class BanningController(BaseController):
             raise HTTPBadRequest('Missing storage parameter')
 
         user = request.environ['fts3.User.Credentials']
-	vo_name = user.vos[0]
+        vo_name = user.vos[0]
         allow_submit = bool(input_dict.get('allow_submit', False))
         status = input_dict.get('status', 'cancel').upper()
 

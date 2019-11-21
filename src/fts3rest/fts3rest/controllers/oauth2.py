@@ -341,8 +341,8 @@ class Oauth2Controller(BaseController):
         authorized = self.oauth2_provider.is_already_authorized(user.delegation_id, app.client_id, auth['state']['scope'])
         if authorized:
             response = self.oauth2_provider.get_authorization_code(
-                    auth['response_type'], auth['client_id'],
-                    auth['redirect_uri'], **auth['state']
+                auth['response_type'], auth['client_id'],
+                auth['redirect_uri'], **auth['state']
             )
             for k, v in response.headers.iteritems():
                 pylons.response.headers[str(k)] = str(v)

@@ -42,7 +42,7 @@ class TestConfigLinks(TestController):
             'min_active': 25,
             'max_active': 150,
             'optimizer_mode': 5
-            }, status=200).json
+        }, status=200).json
 
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(1, len(audits))
@@ -84,7 +84,7 @@ class TestConfigLinks(TestController):
             'min_active': 150,
             'max_active': 25,
             'optimizer_mode': 5
-            
+
         }, status=400)
 
     def test_reconfig_link_se(self):
@@ -101,7 +101,7 @@ class TestConfigLinks(TestController):
             'min_active': 25,
             'max_active': 150,
             'optimizer_mode': 5
-            
+
         }, status=200).json
 
         audits = Session.query(ConfigAudit).all()
@@ -159,4 +159,4 @@ class TestConfigLinks(TestController):
         audits = Session.query(ConfigAudit).all()
         self.assertEqual(2, len(audits))
 
-    
+

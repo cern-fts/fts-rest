@@ -28,10 +28,10 @@ class Database:
         Returns the number of submitted files for a given src, dst and vo.
         """
         queue = self.session.query(func.count(File.source_se))\
-                                .filter(File.vo_name == vo)\
-                                .filter(File.file_state == 'SUBMITTED')\
-                                .filter(File.dest_se == dst)\
-                                .filter(File.source_se == src)
+            .filter(File.vo_name == vo)\
+            .filter(File.file_state == 'SUBMITTED')\
+            .filter(File.dest_se == dst)\
+            .filter(File.source_se == src)
         submitted = 0 if queue is None else queue[0][0]
         return submitted
 
@@ -44,7 +44,7 @@ class Database:
                           .filter(OptimizerEvolution.source_se == src)\
                           .filter(OptimizerEvolution.dest_se == dst)\
                           .filter(OptimizerEvolution.datetime >= 
-                                 (datetime.utcnow() - timedelta(hours=1)))
+                                  (datetime.utcnow() - timedelta(hours=1)))
         size = 0
         for x in arr:
             sum += x[0]
@@ -59,11 +59,11 @@ class Database:
         size = 0
 
         for tp, active in self.session.query\
-        (OptimizerEvolution.throughput, OptimizerEvolution.active)\
-        .filter(OptimizerEvolution.source_se == src)\
-        .filter(OptimizerEvolution.dest_se == dst)\
-        .filter(OptimizerEvolution.datetime >=
-               (datetime.utcnow() - timedelta(hours=1))):
+            (OptimizerEvolution.throughput, OptimizerEvolution.active)\
+            .filter(OptimizerEvolution.source_se == src)\
+            .filter(OptimizerEvolution.dest_se == dst)\
+            .filter(OptimizerEvolution.datetime >=
+                    (datetime.utcnow() - timedelta(hours=1))):
             total_throughput += tp * active
             size += 1
 
@@ -81,11 +81,11 @@ class Database:
         size = 0
 
         for per_file_throughput in self.session.query\
-        (OptimizerEvolution.throughput)\
-        .filter(OptimizerEvolution.source_se == src)\
-        .filter(OptimizerEvolution.dest_se == dst)\
-        .filter(OptimizerEvolution.datetime >=
-               (datetime.utcnow() - timedelta(hours=1))):
+            (OptimizerEvolution.throughput)\
+            .filter(OptimizerEvolution.source_se == src)\
+            .filter(OptimizerEvolution.dest_se == dst)\
+            .filter(OptimizerEvolution.datetime >=
+                    (datetime.utcnow() - timedelta(hours=1))):
             throughput += per_file_throughput[0]
             size += 1
 
@@ -114,11 +114,11 @@ class Database:
             for key in activities.keys():
                 if activities.get(key) >= activities.get(user_activity):
                     for data in self.session.query(File.user_filesize)\
-                                     .filter(File.source_se == src)\
-                                     .filter(File.dest_se == dst)\
-                                     .filter(File.vo_name == vo)\
-                                     .filter(File.activity == key)\
-                                     .filter(File.file_state == 'SUBMITTED'):
+                        .filter(File.source_se == src)\
+                        .filter(File.dest_se == dst)\
+                        .filter(File.vo_name == vo)\
+                        .filter(File.activity == key)\
+                            .filter(File.file_state == 'SUBMITTED'):
                         total_pending_data += data[0]
 
         return total_pending_data

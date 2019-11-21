@@ -62,7 +62,7 @@ def get_base_id():
 def get_vo_id(vo_name):
     log.debug("VO name: "+vo_name)
     return uuid.uuid5(BASE_ID, vo_name.encode('utf-8'))
-    
+
 def get_storage_element(uri):
     """
     Returns the storage element of the given uri, which is the scheme +
@@ -82,9 +82,9 @@ def _is_dest_surl_uuid_enabled(vo_name):
     """
     list_of_vos = pylons.config.get('fts3.CheckDuplicates', 'None')
     if not list_of_vos:
-	return False	
+        return False	
     if vo_name in list_of_vos or "*" in list_of_vos:
-	return True
+        return True
     return False
 
 def _validate_url(url):
@@ -163,47 +163,47 @@ def _select_best_replica(files, vo_name, entry_state, strategy):
 
     elif strategy == "queue" or strategy == "auto":
         sorted_ses = map(lambda x: x[0], s.rank_submitted(source_se_list,
-                                                        dst,
-                                                        vo_name))
+                                                          dst,
+                                                          vo_name))
 
     elif strategy == "success":
         sorted_ses = map(lambda x: x[0], s.rank_success_rate(source_se_list,
-                                                           dst))
+                                                             dst))
 
     elif strategy == "throughput":
         sorted_ses = map(lambda x: x[0], s.rank_throughput(source_se_list,
-                                                         dst))
+                                                           dst))
 
     elif strategy == "file-throughput":
         sorted_ses = map(lambda x: x[0], s.rank_per_file_throughput(
-                                                           source_se_list,
-                                                           dst))
+            source_se_list,
+            dst))
 
     elif strategy == "pending-data":
         sorted_ses = map(lambda x: x[0], s.rank_pending_data(source_se_list,
-                                                           dst,
-                                                           vo_name,
-                                                           activity))
+                                                             dst,
+                                                             vo_name,
+                                                             activity))
 
     elif strategy == "waiting-time":
         sorted_ses = map(lambda x: x[0], s.rank_waiting_time(source_se_list,
-                                                           dst,
-                                                           vo_name,
-                                                           activity))
+                                                             dst,
+                                                             vo_name,
+                                                             activity))
 
     elif strategy == "waiting-time-with-error":
         sorted_ses = map(lambda x: x[0], s.rank_waiting_time_with_error(
-                                                               source_se_list,
-                                                               dst,
-                                                               vo_name,
-                                                               activity))
+            source_se_list,
+            dst,
+            vo_name,
+            activity))
 
     elif strategy == "duration":
         sorted_ses = map(lambda x: x[0], s.rank_finish_time(source_se_list,
-                                                          dst,
-                                                          vo_name,
-                                                          activity,
-                                                          user_filesize))
+                                                            dst,
+                                                            vo_name,
+                                                            activity,
+                                                            user_filesize))
     else:
         raise HTTPBadRequest(strategy + " algorithm is not supported by Scheduler")
 
@@ -216,10 +216,10 @@ def _select_best_replica(files, vo_name, entry_state, strategy):
         if transfer['source_se'] == best_se:
             best_index = index
             break
-    
+
     files[best_index]['file_state'] = entry_state
     if _is_dest_surl_uuid_enabled(vo_name):
-    	files[best_index]['dest_surl_uuid'] = str(uuid.uuid5(BASE_ID, files[best_index]['dest_surl'].encode('utf-8'))) 
+        files[best_index]['dest_surl_uuid'] = str(uuid.uuid5(BASE_ID, files[best_index]['dest_surl'].encode('utf-8'))) 
 
 
 def _apply_banning(files):
@@ -352,6 +352,20 @@ class JobBuilder(object):
                 if elem['dest_se'] != self.job['dest_se']:
                     self.job['dest_se'] = None
 
+    def _set_activity_query_string(self, url, file_dict):
+        """
+        Set the activity query string in the given url
+        """
+        query_p = parse_qsl(url.query)
+        query_p.append(('activity', file_dict.get('activity', 'default')))
+        query_str = urlencode(query_p)
+        return ParseResult(scheme=url.scheme,
+                           netloc=url.netloc,
+                           path=url.path,
+                           params=url.params,
+                           query= query_str,
+                           fragment=url.fragment)
+        
     def _populate_files(self, file_dict, f_index, shared_hashed_id):
         """
         From the dictionary file_dict, generate a list of transfers for a job
@@ -383,36 +397,31 @@ class JobBuilder(object):
             # Multiple replicas, all must share the hashed-id
             if shared_hashed_id is None:
                 shared_hashed_id = _generate_hashed_id()
-	vo_name = self.user.vos[0]
+        vo_name = self.user.vos[0]
 
         for source,destination in pairs:
-	    if len(file_dict['sources']) > 1 or not _is_dest_surl_uuid_enabled(vo_name):
-		dest_uuid = None
-	    else:
-		dest_uuid = str(uuid.uuid5(BASE_ID, destination.geturl().encode('utf-8')))
+            if len(file_dict['sources']) > 1 or not _is_dest_surl_uuid_enabled(vo_name):
+                dest_uuid = None
+            else:
+                dest_uuid = str(uuid.uuid5(BASE_ID, destination.geturl().encode('utf-8')))
             if self.is_bringonline:
                 # add the new query parameter only for root -> EOS-CTA for now
                 if source.scheme == "root":
-                     query_p = parse_qsl(source.query)
-                     query_p.append(('activity', file_dict.get('activity', 'default')))
-                     query_str = urlencode(query_p)
-                     source = ParseResult(scheme=source.scheme, 
-                                          netloc=source.netloc, 
-                                          path=source.path,
-                                          params=source.params,
-                                          query= query_str, 
-                                          fragment=source.fragment)
+                    if source == destination:
+                        destination = self._set_activity_query_string(destination,file_dict)    
+                    source = self._set_activity_query_string(source,file_dict)
+
             f = dict(
                 job_id=self.job_id,
                 file_index=f_index,
-		dest_surl_uuid=dest_uuid,
+                dest_surl_uuid=dest_uuid,
                 file_state=initial_file_state,
                 source_surl=source.geturl(),
                 dest_surl=destination.geturl(),
                 source_se=get_storage_element(source),
                 dest_se=get_storage_element(destination),
                 vo_name=None,
-		priority=self.job['priority'],
+                priority=self.job['priority'],
                 user_filesize=_safe_filesize(file_dict.get('filesize', 0)),
                 selection_strategy=file_dict.get('selection_strategy', 'auto'),
                 checksum=file_dict.get('checksum', None),
@@ -434,10 +443,10 @@ class JobBuilder(object):
         """
         Initializes the list of transfers
         """
-        
+
         job_type = None
         log.debug("job type is " + str(job_type)+ " reuse"+ str(self.params['reuse']))
-        
+
         if self.params['multihop']:
             job_type = 'H'
         elif self.params['reuse'] is not None:
@@ -508,7 +517,7 @@ class JobBuilder(object):
                 has_checksum = len(file_dict['checksum']) > 0
             else: 
                 file_dict['checksum'] = 'ADLER32'
-                
+
         if type(self.job['checksum_method']) == bool:
             if not self.job['checksum_method'] and has_checksum:
                 self.job['checksum_method'] = 'target'
@@ -517,7 +526,7 @@ class JobBuilder(object):
                     self.job['checksum_method'] = 'none'
                 else: 
                     self.job['checksum_method'] = 'both'
-            
+
         self.job['checksum_method'] = self.job['checksum_method'][0]
         # Validate that if this is a multiple replica job, that there is one single unique file
         self.is_multiple, unique_files = _has_multiple_options(self.files)
@@ -539,19 +548,19 @@ class JobBuilder(object):
             self.files[0]['file_state'] = 'SUBMITTED'
 
         self._set_job_source_and_destination(self.files)
-        
+
         # If reuse is enabled, source and destination SE must be the same for all entries
         # Ignore for multiple replica jobs!
         min_reuse_files = int(pylons.config.get('fts3.SessionReuseMinFiles', 5))
         if job_type == 'Y' and (not self.job['source_se'] or not self.job['dest_se']):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
-        
+
         if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']) and len(self.files) > min_reuse_files:
             self.job['job_type'] == 'Y'
-        
+
         if job_type == 'N' and not self.is_multiple:
             self.job['job_type'] = 'N'
-        
+
         auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false')
         log.debug("AutoSessionReuse is "+str(auto_session_reuse)+ " job_type is" + str(job_type))
         max_reuse_files = int(pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000))
@@ -582,7 +591,7 @@ class JobBuilder(object):
                         shared_hashed_id = _generate_hashed_id()
                         for file in self.files:
                             file['hashed_id'] = shared_hashed_id
-        
+
         if self.job['job_type'] is None:
             self.job['job_type'] = 'N'
 
