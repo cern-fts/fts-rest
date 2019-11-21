@@ -10,21 +10,11 @@ CleanRecordsHost=false
 ValidateAccessTokenOffline=True
 JWKCacheSeconds=86400
 
-AuthorizationProvider=https://iam.extreme-datacloud.eu/introspect
-AuthorizationProviderTokenEndpoint=https://iam.extreme-datacloud.eu/token
-AuthorizationProviderJwkEndpoint=https://iam.extreme-datacloud.eu/jwk/
-# https://iam.extreme-datacloud.eu/.well-known/openid-configuration
-# introspection_endpoint
-# token_endpoint
-# jwks_uri
 CheckDuplicates=dteam;*
 
 MessagingDirectory=/tmp/rest-msgs
 HeartBeatInterval=0
 TokenRefreshDaemonIntervalInSeconds=30
-
-#Time interval since last sumbit for a user to have his token refreshed (i.e. a for a month inactive user should not have his token refreshed)
-TokenRefreshTimeSinceLastTransferInSeconds=2629743
 
 [roles]
 Public=vo:transfer;all:datamanagement
