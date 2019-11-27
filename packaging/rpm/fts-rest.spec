@@ -61,6 +61,9 @@ Requires:       httpd%{?_isa} >= 2.2.15-60
 %endif
 %if %{?rhel}%{!?rhel:0} >= 7
 Requires:       httpd%{?_isa}
+Requires:       python-oic
+Requires:       python-jwcrypto
+Requires:       python-jwt
 %endif
 Requires:       mod_wsgi
 Requires:       python-dirq
