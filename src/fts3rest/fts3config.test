@@ -7,18 +7,20 @@ Infosys=lcg-bdii.cern.ch:2170
 AuthorizedVO=dteam;*
 CleanRecordsHost=false
 
-AuthorizationProvider=https://iam.extreme-datacloud.eu/introspect
-AuthorizationProviderTokenEndpoint=https://iam.extreme-datacloud.eu/token
-AuthorizationProviderJwkEndpoint=https://iam.extreme-datacloud.eu/jwk/
+ValidateAccessTokenOffline=True
+JWKCacheSeconds=86400
+
 CheckDuplicates=dteam;*
 
 MessagingDirectory=/tmp/rest-msgs
 HeartBeatInterval=0
-TokenRefreshDaemonIntervalInSeconds=1800
-
-#Time interval since last sumbit for a user to have his token refreshed (i.e. a for a month inactive user should not have his token refreshed)
-TokenRefreshTimeSinceLastTransferInSeconds=2629743
+TokenRefreshDaemonIntervalInSeconds=30
 
 [roles]
 Public=vo:transfer;all:datamanagement
 lcgadmin=all:config
+
+[providers]
+xdc=https://iam.extreme-datacloud.eu
+xdc_ClientId=asdf
+xdc_ClientSecret=asdf
