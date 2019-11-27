@@ -37,11 +37,14 @@ from fts3rest.lib.helpers.connection_validator import connection_validator, conn
 from fts3rest.config.routing import make_map
 from fts3rest.model import init_model
 
+import logging
+log = logging.getLogger(__name__)
 
 def load_environment(global_conf, app_conf):
     """Configure the Pylons environment via the ``pylons.config``
     object
     """
+    log.debug('entered load_environment')
     # Pylons paths
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     paths = dict(root=root,
@@ -67,6 +70,7 @@ def load_environment(global_conf, app_conf):
     # If fts3.config is set, load configuration from there
     fts3_config_file = config.get('fts3.config')
     if fts3_config_file:
+        log.debug('call fts3_config_load')
         fts3cfg = fts3_config_load(fts3_config_file)
         # Let the database be overriden by fts3rest.ini
         if 'sqlalchemy.url' in config and 'sqlalchemy.url' in fts3cfg:

@@ -13,106 +13,102 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-
 import logging
-import json
-import time
 import socket
-from fts3.model import Host
-from threading import Thread
-from fts3.rest.client.request import Request
+import time
+import random
 from datetime import datetime, timedelta
+from threading import Thread
+from thread import get_ident
 
-from fts3.model import Credential
+
 from fts3rest.lib.base import Session
+from fts3rest.lib.openidconnect import oidc_manager
+from fts3.model import Credential, Host
+
+from sqlalchemy.exc import SQLAlchemyError
 
 log = logging.getLogger(__name__)
 
 
 class IAMTokenRefresher(Thread):
     """
-    Keeps running on the background updating the db marking the process as alive
+    Daemon thread that refreshes all access tokens in the DB at every interval.
+
+    Keeps running on the background updating the DB, marking the process as alive.
+    There should be ONLY ONE across all instances.
+    Keep in mind that with the Apache configuration line
+        WSGIDaemonProcess fts3rest python-path=... processes=2 threads=15
+    there will be 2 instances of the application per server, meaning we need to check that there is only one
+    IAMTokenRefresher per host, and only one between all hosts.
+
+    The SQLAlchemy scoped_session is thread-safe
     """
 
-    def __init__(self, tag, interval, config):
-        """
-        Constructor
-        """
+    def __init__(self, tag, config):
         Thread.__init__(self)
+        self.daemon = True  # The thread will immediately exit when the main thread exits
         self.tag = tag
-        self.interval = interval
-        self.daemon = True
+        self.refresh_interval = int(config.get('fts3.TokenRefreshDaemonIntervalInSeconds', 600))
         self.config = config
 
-    def _refresh_token(self, credential):
-        # Request a new access token based on the refresh token
-        requestor = Request(None, None)  # VERIFY:TRUE
-
-        refresh_token = credential.proxy.split(':')[1]
-        body = {'grant_type': 'refresh_token',
-                'refresh_token': refresh_token,
-                'client_id': self.config['fts3.ClientId'],
-                'client_secret': self.config['fts3.ClientSecret']}
-
-        new_credential = json.loads(
-            requestor.method('POST', self.config['fts3.AuthorizationProviderTokenEndpoint'], body=body,
-                             user=self.config['fts3.ClientId'],
-                             passw=self.config['fts3.ClientSecret']))
-
-        credential.proxy = new_credential['access_token'] + ':' + new_credential['refresh_token']
-        credential.termination_time = datetime.utcfromtimestamp(new_credential['exp'])
-
-        return credential
-
-    def _check_if_token_should_be_refreshed(self, credential):
-        last_submitted_querry = "SELECT j.submit_time " \
-                                "FROM t_job j " \
-                                "LEFT JOIN t_credential c on j.user_dn = c.dn " \
-                                "WHERE c.dn =\'{}\' " \
-                                "ORDER BY submit_time DESC " \
-                                "LIMIT 1"
-        latest = Session.execute(last_submitted_querry.format(credential.dn)).fetchone()
-
-        if latest is not None and (len(latest) > 0) and ((datetime.utcnow() - latest[0]) < timedelta(seconds=int(
-                self.config.get('fts3.TokenRefreshTimeSinceLastTransferInSeconds', 2629743)))):
-            return True
-        return False
+    def _thread_is_inactive(self, thread):
+        # The thread is considered inactive if it hasn't updated the DB for 3*refresh_interval
+        log.debug('time since last beat {}'.format(datetime.utcnow() - thread.beat))
+        if (datetime.utcnow() - thread.beat) > timedelta(seconds=3 * self.refresh_interval):
+            log.debug('thread is inactive! taking over, beat {}'.format(thread.beat))
+        return (datetime.utcnow() - thread.beat) > timedelta(seconds=3 * self.refresh_interval)
 
     def run(self):
         """
-        Thread logic
+        Regularly check if there is another active IAMTokenRefresher in the DB. If not, become the active thread.
         """
-
-        # verify that no other fts-token-refresh-daemon is running on this machine so as
-        # to make sure that no two fts-token-refresh-daemons run simultaneously
-        service_name = Session.query(Host).filter(Host.service_name == self.tag).first()
-
-        if not service_name or (service_name and (datetime.utcnow() - service_name.beat) > timedelta(
-                seconds=int(self.interval))):
-
-            host = Host(
-                hostname=socket.getfqdn(),
-                service_name=self.tag,
-            )
-
-            while self.interval:
-
-                host.beat = datetime.utcnow()
-                try:
-                    Session.merge(host)
-                    Session.commit()
-                    log.debug('fts-token-refresh-daemon heartbeat')
-                except Exception, e:
-                    log.warning("Failed to update the fts-token-refresh-daemon heartbeat: %s" % str(e))
-
-                credentials = Session.query(Credential).filter(Credential.proxy.notilike("%CERTIFICATE%")).all()
-
-                for c in credentials:
+        log.debug('CREATE THREAD ID: {}'.format(get_ident()))
+        # Initial sleep in case all threads started at the same time
+        time.sleep(random.randint(0, 60))
+        # The interval at which the thread will check if there is another active thread.
+        # It is arbitrary: I chose 2 times the refresh interval, plus a random offset to avoid multiple threads
+        # checking at the same time (although DB access is transactional)
+        db_check_interval = 3 * self.refresh_interval + random.randint(0, 120)
+        while True:
+            # Check that no other fts-token-refresh-daemon is running
+            refresher_threads = Session.query(Host).filter(Host.service_name == self.tag).all()
+            Session.commit()  # Close transaction to avoid repeated read
+            log.debug('refresher_threads {}, ID {}'.format(len(refresher_threads), get_ident()))
+            if all(self._thread_is_inactive(thread) for thread in refresher_threads):
+                log.debug('Activating thread')
+                for thread in refresher_threads:
+                    Session.delete(thread)
+                    log.debug('delete thread')
+                host = Host(hostname=socket.getfqdn(), service_name=self.tag)
+                log.debug('host object created')
+                while True:
+                    host.beat = datetime.utcnow()
+                    log.debug('THREAD ID: {}, beat {}'.format(get_ident(), host.beat))
                     try:
-                        if self._check_if_token_should_be_refreshed(c):
-                            c = self._refresh_token(c)
-                            Session.merge(c)
+                        h2 = Session.merge(host)
+                        Session.commit()
+                        log.debug('fts-token-refresh-daemon heartbeat {}'.format(h2.beat))
+                    except SQLAlchemyError as ex:
+                        log.warning("Failed to update the fts-token-refresh-daemon heartbeat: %s" % str(ex))
+                        Session.rollback()
+                        raise
+
+                    credentials = Session.query(Credential).filter(Credential.proxy.notilike("%CERTIFICATE%")).all()
+                    log.debug('{} credentials to refresh'.format(len(credentials)))
+                    for credential in credentials:
+                        try:
+                            credential = oidc_manager.refresh_access_token(credential)
+                            log.debug('OK refresh_access_token')
+                            Session.merge(credential)
                             Session.commit()
-                    except Exception, e:
-                        log.warning("Failed to refresh token for dn: %s because: %s" % (str(c.dn), str(e)))
-                time.sleep(self.interval)
+                        except Exception as ex:
+                            log.warning("Failed to refresh token for dn: %s because: %s" % (str(credential.dn),
+                                                                                            str(ex)))
+                            Session.rollback()
+                            raise
+                    time.sleep(self.refresh_interval)
+            else:
+                log.debug('THREAD ID: {}'.format(get_ident()))
+                log.debug('Another thread is active -- Going to sleep')
+                time.sleep(db_check_interval)
