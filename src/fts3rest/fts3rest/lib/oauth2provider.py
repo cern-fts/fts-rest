@@ -15,7 +15,7 @@
 
 import logging
 from datetime import datetime, timedelta
-
+import json
 import jwt
 import pylons
 from fts3rest.lib.base import Session
@@ -24,6 +24,7 @@ from fts3rest.lib.middleware.fts3auth.credentials import generate_delegation_id
 from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceAuthorization, ResourceProvider
 from fts3rest.lib.openidconnect import oidc_manager
 from jwcrypto.jwk import JWK
+
 
 from fts3.model.credentials import Credential, CredentialCache
 from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
@@ -258,7 +259,6 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         :return: tuple(valid, credential) or tuple(False, None)
         """
         log.debug('entered validate_token_offline')
-        import json
         try:
             unverified_payload = jwt.decode(access_token, verify=False)
             unverified_header = jwt.get_unverified_header(access_token)
