@@ -3,6 +3,7 @@ from fts3rest.lib.openidconnect import OIDCmanager
 from fts3.model import Credential
 
 import subprocess
+from subprocess import PIPE, STDOUT
 
 
 class TestOpenidconnect(TestController):
@@ -17,17 +18,17 @@ class TestOpenidconnect(TestController):
     def setUp(self):
         self.oidc_manager = OIDCmanager()
         self.config = self.app.app.config
-        self.issuer = 'https://iam.extreme-datacloud.eu/'
         self.issuer = 'https://wlcg.cloud.cnaf.infn.it/'
+
+    def _get_xdc_access_token(self):
+        command = "eval `oidc-agent` && oidc-add wlcgtest --pw-cmd=echo && oidc-token wlcgtest"
+        output = subprocess.check_output(command, shell=True)
+        token = str(output).strip()
+        return token
 
     def test_configure_clients(self):
         self.oidc_manager._configure_clients(self.config['fts3.Providers'])
         self.assertEqual(len(self.oidc_manager.clients), len(self.config['fts3.Providers']))
-
-    def _get_xdc_access_token(self):
-        output = subprocess.check_output('oidc-token wlcgtest', shell=True)
-        token = str(output).strip()
-        return token
 
     def test_introspect(self):
         print(self.config['fts3.Providers'])
