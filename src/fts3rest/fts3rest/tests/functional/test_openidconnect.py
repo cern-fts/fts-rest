@@ -23,7 +23,8 @@ class TestOpenidconnect(TestController):
     def _get_xdc_access_token(self):
         command = "eval `oidc-agent` && oidc-add wlcgtest --pw-cmd=echo && oidc-token wlcgtest"
         output = subprocess.check_output(command, shell=True)
-        token = str(output).strip()
+        output = str(output).strip()
+        token = output[output.find("ey"):]
         return token
 
     def test_configure_clients(self):
