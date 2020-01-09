@@ -23,7 +23,7 @@ class TestOpenidconnect(TestController):
         command = "eval `oidc-agent` && oidc-add wlcgtest --pw-cmd=echo && oidc-token wlcgtest"
         output = subprocess.check_output(command, shell=True)
         output = str(output).strip()
-        token = output.split('\n')[2]  # Should be the 3rd line
+        token = output.split('\n')[2]  # The 3rd line is the token
         return token
 
     def test_configure_clients(self):
@@ -40,6 +40,13 @@ class TestOpenidconnect(TestController):
         self.oidc_manager.setup(self.config)
         access_token = self._get_xdc_access_token()
         self.oidc_manager.generate_refresh_token(self.issuer, access_token)
+
+    def test_generate_refresh_token_invalid(self):
+        self.oidc_manager.setup(self.config)
+        access_token = self._get_xdc_access_token()
+        access_token += 'invalid'
+        with self.assertRaises(Exception):
+            self.oidc_manager.generate_refresh_token(self.issuer, access_token)
 
     def test_refresh_access_token(self):
         self.oidc_manager.setup(self.config)

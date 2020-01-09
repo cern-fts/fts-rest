@@ -112,7 +112,7 @@ class OIDCmanager:
                                      )
             log.debug("after do any")
             response = response.json()
-            log.debug("after .json")
+            log.debug("response: {}".format(response))
             refresh_token = response['refresh_token']
             log.debug("REFRESH TOKEN IS {}".format(refresh_token))
         except Exception as ex:
