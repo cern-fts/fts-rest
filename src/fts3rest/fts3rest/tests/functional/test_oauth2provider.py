@@ -30,6 +30,7 @@ class TestFTS3OAuth2ResourceProvider(TestController):
         return token
 
     def test_validate_access_token(self):
+        token = self._get_xdc_access_token()
         auth = self.oauth2_resource_provider.authorization_class()
         self.oauth2_resource_provider.validate_access_token(token, auth)
         self.assertTrue(auth.is_valid)
