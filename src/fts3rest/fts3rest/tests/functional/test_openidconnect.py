@@ -10,9 +10,8 @@ class TestOpenidconnect(TestController):
     """
     Tests OIDCmanager operations
 
-    To run these tests, the host should have an oidc-agent daemon active,
-    with an account 'wlcgtest' in the provider https://wlcg.cloud.cnaf.infn.it/,
-    added with oidc-add
+    To run these tests, the host should have oidc-agent installed,
+    with an account 'wlcgtest' in the provider https://wlcg.cloud.cnaf.infn.it/
     """
 
     def setUp(self):
@@ -24,7 +23,7 @@ class TestOpenidconnect(TestController):
         command = "eval `oidc-agent` && oidc-add wlcgtest --pw-cmd=echo && oidc-token wlcgtest"
         output = subprocess.check_output(command, shell=True)
         output = str(output).strip()
-        token = output[output.find("ey"):]
+        token = output.split('\n')[2]  # Should be the 3rd line
         return token
 
     def test_configure_clients(self):
@@ -32,7 +31,6 @@ class TestOpenidconnect(TestController):
         self.assertEqual(len(self.oidc_manager.clients), len(self.config['fts3.Providers']))
 
     def test_introspect(self):
-        print(self.config['fts3.Providers'])
         self.oidc_manager.setup(self.config)
         access_token = self._get_xdc_access_token()
         response = self.oidc_manager.introspect(self.issuer, access_token)
