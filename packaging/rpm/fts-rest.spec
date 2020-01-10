@@ -61,6 +61,9 @@ Requires:       httpd%{?_isa} >= 2.2.15-60
 %endif
 %if %{?rhel}%{!?rhel:0} >= 7
 Requires:       httpd%{?_isa}
+Requires:       python-oic
+Requires:       python-jwcrypto
+Requires:       python-jwt
 %endif
 Requires:       mod_wsgi
 Requires:       python-dirq
@@ -259,6 +262,7 @@ EOF
 %{python_sitelib}/fts3rest/lib/api/
 %{python_sitelib}/fts3rest/lib/app_globals.py*
 %{python_sitelib}/fts3rest/lib/base.py*
+%{python_sitelib}/fts3rest/lib/openidconnect.py*
 %{python_sitelib}/fts3rest/lib/gfal2_wrapper.py*
 %{python_sitelib}/fts3rest/lib/heartbeat.py*
 %{python_sitelib}/fts3rest/lib/IAMTokenRefresher.py*
