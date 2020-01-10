@@ -15,7 +15,7 @@
 
 import logging
 from datetime import datetime, timedelta
-
+import json
 import jwt
 import pylons
 from fts3rest.lib.base import Session
@@ -24,6 +24,7 @@ from fts3rest.lib.middleware.fts3auth.credentials import generate_delegation_id
 from fts3rest.lib.oauth2lib.provider import AuthorizationProvider, ResourceAuthorization, ResourceProvider
 from fts3rest.lib.openidconnect import oidc_manager
 from jwcrypto.jwk import JWK
+
 
 from fts3.model.credentials import Credential, CredentialCache
 from fts3.model.oauth2 import OAuth2Application, OAuth2Code, OAuth2Token
@@ -184,7 +185,6 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         authorization.is_valid = False
 
         if self._should_validate_offline():
-            log.debug("TO VALIDATE OFFLINE")
             valid, credential = self._validate_token_offline(access_token)
         else:
             valid, credential = self._validate_token_online(access_token)
@@ -211,16 +211,15 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             # Store credential in DB
             log.debug("Store credential in DB")
             dlg_id = generate_delegation_id(credential['sub'], "")
-            log.debug("generated dlg id")
-            refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
-            log.debug("generated refresh token, type {}".format(type(refresh_token)))
+            try:
+                refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
+            except Exception:
+                return
             credential_db = self._save_credential(dlg_id, credential['sub'],
                                                   str(access_token) + ':' + str(refresh_token),
                                                   self._generate_voms_attrs(credential),
                                                   datetime.utcfromtimestamp(credential['exp']))
-            log.debug("saved credential")
 
-        log.debug("LAST PART")
         authorization.is_oauth = True
         authorization.token = credential_db.proxy.split(':')[0]
         authorization.dlg_id = credential_db.dlg_id
@@ -229,7 +228,6 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             authorization.credentials = self._get_credentials(credential_db.dlg_id)
             if authorization.credentials:
                 authorization.is_valid = True
-        log.debug("end: is_valid {}".format(authorization.is_valid))
 
     def _get_credentials(self, dlg_id):
         """
@@ -258,7 +256,6 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         :return: tuple(valid, credential) or tuple(False, None)
         """
         log.debug('entered validate_token_offline')
-        import json
         try:
             unverified_payload = jwt.decode(access_token, verify=False)
             unverified_header = jwt.get_unverified_header(access_token)
