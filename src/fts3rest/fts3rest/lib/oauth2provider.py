@@ -219,7 +219,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             dlg_id = generate_delegation_id(credential['sub'], "")
             try:
                 #refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
-                scope = 'offline_access openid profile wlcg storage.read:/ storage.modify:/'
+                scope = 'offline_access openid profile storage.read:/ storage.modify:/'
                 access_token, refresh_token = oidc_manager.generate_token_with_scope(credential['iss'], access_token,
                                                                                      scope)
             except Exception:
