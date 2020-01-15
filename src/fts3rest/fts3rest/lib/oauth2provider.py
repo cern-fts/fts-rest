@@ -177,8 +177,14 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         """
         Validate access token offline or online
 
-        If a credential already exists in the DB and has not expired, the new token is discarded.
-        Otherwise, the access token is saved in the DB along with a generated refresh token.
+        Description of the algorithm:
+        - Validate access token offline (using cached keys) or online (using introspection RFC 7662).
+        - If a credential already exists in the DB and has not expired, the new token is discarded and the old
+        credential is used.
+        - If a credential already exists in the DB but has expired, delete it.
+        - If there's no credential, Instrospect the token to get additional information (if not done before). Then,
+        exchange the access token with a refresh token. Store both tokens in the DB.
+
         :param access_token:
         :param authorization: attribute .is_valid is set to True if validation successful
         """
@@ -212,7 +218,10 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             log.debug("Store credential in DB")
             dlg_id = generate_delegation_id(credential['sub'], "")
             try:
-                refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
+                #refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
+                scope = 'offline_access openid profile wlcg storage.read:/ storage.modify:/'
+                access_token, refresh_token = oidc_manager.generate_token_with_scope(credential['iss'], access_token,
+                                                                                     scope)
             except Exception:
                 return
             credential_db = self._save_credential(dlg_id, credential['sub'],

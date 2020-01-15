@@ -122,6 +122,57 @@ class OIDCmanager:
         log.debug('refresh_token_response::: {}'.format(refresh_token))
         return refresh_token
 
+
+    def request_token_exchange(self, issuer, access_token, scope=None, audience=None):
+        """
+        Do a token exchange request
+        :param issuer: issuer of the access token
+        :param access_token: token to exchange
+        :param scope: string containing scopes separated by space
+        :return: provider response in json
+        :raise Exception: if request fails
+        """
+        client = self.clients[issuer]
+        body = {'grant_type': 'urn:ietf:params:oauth:grant-type:token-exchange',
+                'subject_token_type': 'urn:ietf:params:oauth:token-type:access_token',
+                'subject_token': access_token
+                }
+        if scope:
+            body['scope'] = scope
+        if audience:
+            body['audience'] = audience
+
+        try:
+            response = client.do_any(Message,
+                                     request_args=body,
+                                     endpoint=client.provider_info["token_endpoint"],
+                                     body_type='json',
+                                     method='POST',
+                                     authn_method="client_secret_basic"
+                                     )
+            response = response.json()
+            log.debug("response: {}".format(response))
+        except Exception as ex:
+            log.warning("Exception raised when exchanging token")
+            log.warning(ex)
+            raise ex
+        return response
+
+
+    def generate_token_with_scope(self, issuer, access_token, scope):
+        """
+        Exchange an access token for another access token with the specified scope
+        :param issuer: issuer of the access token
+        :param access_token:
+        :param scope: string containing scopes separated by space
+        :return: new access token and optional refresh_token
+        :raise Exception: If token cannot be obtained
+        """
+        response = self.request_token_exchange(issuer, access_token, scope=scope)
+        access_token = response['access_token']
+        refresh_token = response.get('access_token', None)
+        return access_token, refresh_token
+
     def refresh_access_token(self, credential):
         """
         Request new access token
