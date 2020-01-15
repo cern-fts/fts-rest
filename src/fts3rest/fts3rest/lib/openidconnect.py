@@ -122,7 +122,6 @@ class OIDCmanager:
         log.debug('refresh_token_response::: {}'.format(refresh_token))
         return refresh_token
 
-
     def request_token_exchange(self, issuer, access_token, scope=None, audience=None):
         """
         Do a token exchange request
@@ -158,8 +157,7 @@ class OIDCmanager:
             raise ex
         return response
 
-
-    def generate_token_with_scope(self, issuer, access_token, scope):
+    def generate_token_with_scope(self, issuer, access_token, scope, audience=None):
         """
         Exchange an access token for another access token with the specified scope
         :param issuer: issuer of the access token
@@ -168,7 +166,7 @@ class OIDCmanager:
         :return: new access token and optional refresh_token
         :raise Exception: If token cannot be obtained
         """
-        response = self.request_token_exchange(issuer, access_token, scope=scope)
+        response = self.request_token_exchange(issuer, access_token, scope=scope, audience=audience)
         access_token = response['access_token']
         refresh_token = response.get('access_token', None)
         return access_token, refresh_token

@@ -219,9 +219,11 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             dlg_id = generate_delegation_id(credential['sub'], "")
             try:
                 #refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
-                scope = 'offline_access openid profile storage.read:/ storage.modify:/'
+                scope = 'offline_access openid storage.read:/ storage.modify:/'
+                audience = 'https://wlcg.cern.ch/jwt/v1/any'
                 access_token, refresh_token = oidc_manager.generate_token_with_scope(credential['iss'], access_token,
-                                                                                     scope)
+                                                                                     scope, audience)
+
             except Exception:
                 return
             credential_db = self._save_credential(dlg_id, credential['sub'],
@@ -280,7 +282,8 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             pub_key = JWK.from_json(json.dumps(pub_key.to_dict()))
             log.debug('pubkey={}'.format(pub_key))
             # Verify & Validate
-            credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm])
+            audience = 'https://wlcg.cern.ch/jwt/v1/any'
+            credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm], audience=[audience])
             log.debug('offline_response::: {}'.format(credential))
         except Exception as ex:
             log.debug(ex)
