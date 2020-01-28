@@ -12,19 +12,19 @@ class TestFTS3OAuth2ResourceProvider(TestController):
     Test token validation
 
     To run these tests, the host should have oidc-agent installed,
-    with an account 'wlcgtest' in the provider https://wlcg.cloud.cnaf.infn.it/
+    with an account 'xdctest'
     """
 
     def setUp(self):
         self.oidc_manager = OIDCmanager()
         self.config = self.app.app.config
-        self.issuer = 'https://wlcg.cloud.cnaf.infn.it/'
+        self.issuer = 'https://iam.extreme-datacloud.eu/'
         self.oidc_manager.setup(self.config)
         self.oauth2_resource_provider = FTS3OAuth2ResourceProvider(dict(), self.config)
-        self.expired_token = "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI4NmE1MDc1Ny01YzJjLTQwYjEtYTgwNy1lMjE0NTY1OGEwMmYiLCJpc3MiOiJodHRwczpcL1wvd2xjZy5jbG91ZC5jbmFmLmluZm4uaXRcLyIsImV4cCI6MTU3ODU2NjA5NywiaWF0IjoxNTc4NTYyNDk3LCJqdGkiOiI4OTA0MGMwZC0zNmU0LTRkMWQtYTJkMy02MWNkY2I1N2RjYzQifQ.DvGkRyoU6l0YC8gDhFOQ01JuvbmsZ-XHG6zd3jbY-rm4MzxtaKXWab2hechd5Al3w-eygziCEB8QO65G8phqOew_e5YQZpqw8P-x2NRXVlSGuEWp9PYtUMt4BV5pHvBVdwp1OyP2Sr53p3xMA-0oaGw0h_CmyOMGK-k2Wk_jkhU"
+        self.expired_token = "eyJraWQiOiJyc2ExIiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI5NGQyNTQyOS1mYTZhLTRiYTctOGM0NS1mMTk1YjI3ZWVkNjMiLCJpc3MiOiJodHRwczpcL1wvaWFtLmV4dHJlbWUtZGF0YWNsb3VkLmV1XC8iLCJleHAiOjE1ODAyMjIyMDksImlhdCI6MTU4MDIxODYwOSwianRpIjoiYTI0NDRhYTQtNTE3YS00Y2E0LTgwMTUtY2IyMjc0Nzg4YzlkIn0.hvTjA-Ix_YVxU3HmLB6FQa98eYtUwbw1WcZMO5p_qOjnPwD0OtQViVtV-a5__hLY1_qRFouAzgVvqKnueokh1pmKoI6TJN2KpmybueAZR30lIG_t_aAn4hGQvuVezs_0LLISojQUgprbi2PDsU1q8WTJq1J5mwGwlBijGmHQs60"
 
     def _get_xdc_access_token(self):
-        command = "eval `oidc-agent` && oidc-add wlcgtest --pw-cmd=echo && oidc-token wlcgtest"
+        command = "eval `oidc-agent` && oidc-add xdctest --pw-cmd=echo && oidc-token xdctest"
         output = subprocess.check_output(command, shell=True)
         output = str(output).strip()
         token = output.split('\n')[2]  # The 3rd line is the token

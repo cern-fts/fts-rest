@@ -11,16 +11,16 @@ class TestOpenidconnect(TestController):
     Tests OIDCmanager operations
 
     To run these tests, the host should have oidc-agent installed,
-    with an account 'wlcgtest' in the provider https://wlcg.cloud.cnaf.infn.it/
+    with an account 'xdctest'
     """
 
     def setUp(self):
         self.oidc_manager = OIDCmanager()
         self.config = self.app.app.config
-        self.issuer = 'https://wlcg.cloud.cnaf.infn.it/'
+        self.issuer = 'https://iam.extreme-datacloud.eu/'
 
     def _get_xdc_access_token(self):
-        command = "eval `oidc-agent` && oidc-add wlcgtest --pw-cmd=echo && oidc-token wlcgtest"
+        command = "eval `oidc-agent` && oidc-add xdctest --pw-cmd=echo && oidc-token xdctest"
         output = subprocess.check_output(command, shell=True)
         output = str(output).strip()
         token = output.split('\n')[2]  # The 3rd line is the token
