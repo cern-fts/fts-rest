@@ -46,6 +46,7 @@ def _get_fts_core_version():
     else:
         return versions
 
+
 class ApiController(BaseController):
     """
     API documentation
@@ -106,7 +107,7 @@ class ApiController(BaseController):
 
                 'fts:optimizer': {'href': '/optimizer/', 'title': 'Optimizer'},
 
-                'fts:archive':  {'href': '/archive/', 'title': 'Archive'}
+                'fts:archive': {'href': '/archive/', 'title': 'Archive'}
             }
         }
 
