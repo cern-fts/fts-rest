@@ -284,8 +284,11 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             pub_key = JWK.from_json(json.dumps(pub_key.to_dict()))
             log.debug('pubkey={}'.format(pub_key))
             # Verify & Validate
-            audience = 'https://wlcg.cern.ch/jwt/v1/any'
-            credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm], audience=[audience])
+            if 'wlcg' in issuer:
+                audience = 'https://wlcg.cern.ch/jwt/v1/any'
+                credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm], audience=[audience])
+            else:
+                credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm])
             log.debug('offline_response::: {}'.format(credential))
         except Exception as ex:
             log.debug(ex)
