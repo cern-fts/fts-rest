@@ -218,12 +218,14 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             log.debug("Store credential in DB")
             dlg_id = generate_delegation_id(credential['sub'], "")
             try:
-                #refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
-                scope = 'offline_access openid storage.read:/ storage.modify:/'
-                audience = 'https://wlcg.cern.ch/jwt/v1/any'
-                access_token, refresh_token = oidc_manager.generate_token_with_scope(credential['iss'], access_token,
-                                                                                     scope, audience)
-
+                if 'wlcg' in credential['iss']:
+                    # Hardcoded scope and audience for wlcg tokens. To change once the wlcg standard evolves
+                    scope = 'offline_access openid storage.read:/ storage.modify:/'
+                    audience = 'https://wlcg.cern.ch/jwt/v1/any'
+                    access_token, refresh_token = oidc_manager.generate_token_with_scope(credential['iss'],
+                                                                                         access_token, scope, audience)
+                else:
+                    refresh_token = oidc_manager.generate_refresh_token(credential['iss'], access_token)
             except Exception:
                 return
             credential_db = self._save_credential(dlg_id, credential['sub'],
