@@ -27,7 +27,8 @@ import time
 from base import Base
 from fts3.rest.client import Submitter, Delegator, Inquirer
 
-DEFAULT_CHECKSUM = 'ADLER32' 
+DEFAULT_CHECKSUM = 'ADLER32'
+
 
 def _metadata(data):
     try:
@@ -180,29 +181,30 @@ class JobSubmitter(Base):
             return [{"sources": [self.source], "destinations": [self.destination]}]
 
     def _do_submit(self, context):
-        #Backwards compatibility: compare_checksum parameter 
+        #Backwards compatibility: compare_checksum parameter
         if self.options.compare_checksum:
-            checksum_mode = 'both' 
+            checksum_mode = 'both'
         else:
             if self.checksum:
                 checksum_mode = 'target'
-            else: 
-                checksum = 'none'  
-        #Compare checksum has major priority than checksum_mode     
-        if not self.options.compare_checksum:   
-            if len(self.options.checksum_mode) > 0:
-                checksum_mode = self.options.checksum_mode   
             else:
-                 checksum_mode = 'none'        
-        
+                checksum = 'none'
+        #Compare checksum has major priority than checksum_mode
+        if not self.options.compare_checksum:
+            if len(self.options.checksum_mode) > 0:
+                checksum_mode = self.options.checksum_mode
+            else:
+                checksum_mode = 'none'
+
         if not self.checksum:
             self.checksum = DEFAULT_CHECKSUM
-            
-        delegator = Delegator(context)
-        delegator.delegate(
-            timedelta(minutes=self.options.proxy_lifetime),
-            delegate_when_lifetime_lt=timedelta(minutes=self.options.delegate_when_lifetime_lt)
-        )
+
+        if not self.options.access_token:
+            delegator = Delegator(context)
+            delegator.delegate(
+                timedelta(minutes=self.options.proxy_lifetime),
+                delegate_when_lifetime_lt=timedelta(minutes=self.options.delegate_when_lifetime_lt)
+            )
 
         submitter = Submitter(context)
 
@@ -210,7 +212,7 @@ class JobSubmitter(Base):
             self._build_transfers(),
             checksum=self.checksum,
             bring_online=self.options.bring_online,
-            timeout = self.options.timeout,
+            timeout=self.options.timeout,
             verify_checksum=checksum_mode[0],
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,
@@ -251,30 +253,30 @@ class JobSubmitter(Base):
         return job_id
 
     def _do_dry_run(self, context):
-        #Backwards compatibility: compare_checksum parameter 
+        #Backwards compatibility: compare_checksum parameter
         if self.options.compare_checksum:
-            checksum_mode = 'both' 
+            checksum_mode = 'both'
         else:
             if self.checksum:
                 checksum_mode = 'target'
-            else: 
-                checksum = 'none'  
-        #Compare checksum has major priority than checksum_mode     
-        if not self.options.compare_checksum:   
-            if len(self.options.checksum_mode) > 0:
-                checksum_mode = self.options.checksum_mode   
             else:
-                 checksum_mode = 'none'        
-        
+                checksum = 'none'
+        #Compare checksum has major priority than checksum_mode
+        if not self.options.compare_checksum:
+            if len(self.options.checksum_mode) > 0:
+                checksum_mode = self.options.checksum_mode
+            else:
+                checksum_mode = 'none'
+
         if not self.checksum:
             self.checksum = DEFAULT_CHECKSUM
-                
+
         submitter = Submitter(context)
         print submitter.build_submission(
             self._build_transfers(),
             checksum=self.checksum,
             bring_online=self.options.bring_online,
-            timeout = self.options.timeout,
+            timeout=self.options.timeout,
             verify_checksum=checksum_mode,
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,

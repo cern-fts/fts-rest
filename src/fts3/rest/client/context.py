@@ -146,7 +146,7 @@ class Context(object):
         return endpoint_info
 
     def __init__(self, endpoint, ucert=None, ukey=None, verify=True, access_token=None, no_creds=False, capath=None,
-                 request_class=PycurlRequest, connectTimeout=30, timeout=30):
+                 request_class=Request, connectTimeout=30, timeout=30):
         self.passwd = None
         self.access_method = None
 
@@ -162,9 +162,9 @@ class Context(object):
             else:
                 self._set_x509(ucert, ukey)
                 self.access_method = 'X509'
-                
+
         self._requester = request_class(
-        self.ucert, self.ukey, passwd=self.passwd, verify=verify, access_token=self.access_token, capath=capath,
+            self.ucert, self.ukey, passwd=self.passwd, verify=verify, access_token=self.access_token, capath=capath,
             connectTimeout=connectTimeout, timeout=timeout)
 
         self.endpoint_info = self._validate_endpoint()
