@@ -22,23 +22,21 @@ import tempfile
 from exceptions import *
 import os
 
+
 class Request(object):
 
     def __init__(self, ucert, ukey, capath=None, passwd=None, verify=False, access_token=None, connectTimeout=30, timeout=30):
         self.ucert = ucert
-        self.ukey  = ukey
+        self.ukey = ukey
         self.passwd = passwd
         self.access_token = access_token
         self.verify = verify
         # Disable the warnings
         if not verify:
-          requests.packages.urllib3.disable_warnings()
+            requests.packages.urllib3.disable_warnings()
 
         self.connectTimeout = connectTimeout
         self.timeout = timeout
-
-        self.session = requests.Session()
-        
 
     def _handle_error(self, url, code, response_body=None):
         # Try parsing the response, maybe we can get the error message
@@ -65,7 +63,7 @@ class Request(object):
             else:
                 raise ClientError('Bad request')
         elif 401 <= code <= 403:
-            if message: 
+            if message:
                 raise Unauthorized(message)
             else:
                 raise Unauthorized()
@@ -94,13 +92,12 @@ class Request(object):
             from requests.auth import HTTPBasicAuth
             auth = HTTPBasicAuth(user, passw)
 
-        response = self.session.request(method=method, url=str(url),
-                             data=body, headers=_headers, verify = self.verify, 
-                             timeout=(self.connectTimeout, self.timeout), 
-                             cert=(self.ucert, self.ukey),
-                             auth=auth)
-        
-       
+        response = requests.request(method=method, url=str(url),
+                                    data=body, headers=_headers, verify=self.verify,
+                                    timeout=(self.connectTimeout, self.timeout),
+                                    cert=(self.ucert, self.ukey),
+                                    auth=auth)
+
         #log.debug(response.text)
 
         self._handle_error(url, response.status_code, response.text)

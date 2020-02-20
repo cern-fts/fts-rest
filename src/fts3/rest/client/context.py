@@ -146,7 +146,7 @@ class Context(object):
         return endpoint_info
 
     def __init__(self, endpoint, ucert=None, ukey=None, verify=True, access_token=None, no_creds=False, capath=None,
-                 request_class=PycurlRequest, connectTimeout=30, timeout=30):
+                 request_class=Request, connectTimeout=30, timeout=30):
         self.passwd = None
         self.access_method = None
 
