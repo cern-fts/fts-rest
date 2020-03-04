@@ -48,11 +48,11 @@ BuildRequires:  python-slimit
 BuildRequires:  pandoc
 BuildRequires:  python-dirq
 BuildRequires:  python-pycurl
-%if %{?rhel}%{!?rhel:0} >= 7
+
 BuildRequires:  python-jwcrypto
 BuildRequires:  python-jwt
 BuildRequires:  python-oic
-%endif
+
 BuildRequires:  MySQL-python
 
 Requires:       gridsite%{?_isa} >= 1.7
