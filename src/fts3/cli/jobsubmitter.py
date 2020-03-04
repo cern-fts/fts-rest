@@ -122,7 +122,7 @@ class JobSubmitter(Base):
         self.opt_parser.add_option('--timeout', dest='timeout', type='long', default=None,
                                    help='transfer timeout in seconds.')
         self.opt_parser.add_option('--fail-nearline', dest='fail_nearline', default=False, action='store_true',
-                                   help='fail the transfer is the file is nearline.')
+                                   help='fail the transfer if the file is nearline.')
         self.opt_parser.add_option('--dry-run', dest='dry_run', default=False, action='store_true',
                                    help='do not send anything, just print the JSON message.')
         self.opt_parser.add_option('-f', '--file', dest='bulk_file', type='string',
