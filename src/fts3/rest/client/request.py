@@ -21,6 +21,7 @@ import requests
 import tempfile
 from exceptions import *
 import os
+import urllib3
 
 
 class Request(object):
@@ -33,7 +34,7 @@ class Request(object):
         self.verify = verify
         # Disable the warnings
         if not verify:
-            requests.packages.urllib3.disable_warnings()
+            urllib3.disable_warnings()
 
         self.connectTimeout = connectTimeout
         self.timeout = timeout
