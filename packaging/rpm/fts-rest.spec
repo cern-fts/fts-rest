@@ -48,11 +48,11 @@ BuildRequires:  python-slimit
 BuildRequires:  pandoc
 BuildRequires:  python-dirq
 BuildRequires:  python-pycurl
-%if %{?rhel}%{!?rhel:0} >= 7
+
 BuildRequires:  python-jwcrypto
 BuildRequires:  python-jwt
 BuildRequires:  python-oic
-%endif
+
 BuildRequires:  MySQL-python
 
 Requires:       gridsite%{?_isa} >= 1.7
@@ -61,10 +61,10 @@ Requires:       httpd%{?_isa} >= 2.2.15-60
 %endif
 %if %{?rhel}%{!?rhel:0} >= 7
 Requires:       httpd%{?_isa}
+%endif
 Requires:       python-oic
 Requires:       python-jwcrypto
 Requires:       python-jwt
-%endif
 Requires:       mod_wsgi
 Requires:       python-dirq
 Requires:       python-fts = %{version}-%{release}
