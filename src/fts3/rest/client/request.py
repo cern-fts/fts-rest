@@ -26,12 +26,13 @@ import urllib3
 
 class Request(object):
 
-    def __init__(self, ucert, ukey, capath=None, passwd=None, verify=False, access_token=None, connectTimeout=30, timeout=30):
+    def __init__(self, ucert, ukey, capath=None, passwd=None, verify=True, access_token=None, connectTimeout=30, timeout=30):
         self.ucert = ucert
         self.ukey = ukey
         self.passwd = passwd
         self.access_token = access_token
         self.verify = verify
+        self.capath = capath
         # Disable the warnings
         if not verify:
             urllib3.disable_warnings()
@@ -93,11 +94,19 @@ class Request(object):
             from requests.auth import HTTPBasicAuth
             auth = HTTPBasicAuth(user, passw)
 
-        response = requests.request(method=method, url=str(url),
-                                    data=body, headers=_headers, verify=self.verify,
-                                    timeout=(self.connectTimeout, self.timeout),
-                                    cert=(self.ucert, self.ukey),
-                                    auth=auth)
+        if self.verify and self.capath:
+            self.verify = self.capath
+
+        response = requests.request(
+            method=method,
+            url=str(url),
+            data=body,
+            headers=_headers,
+            verify=self.verify,
+            timeout=(self.connectTimeout, self.timeout),
+            cert=(self.ucert, self.ukey),
+            auth=auth,
+        )
 
         #log.debug(response.text)
 
