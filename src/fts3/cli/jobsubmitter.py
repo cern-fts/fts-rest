@@ -139,6 +139,8 @@ class JobSubmitter(Base):
                                    help='force ipv4')
         self.opt_parser.add_option('--ipv6', dest='ipv6', default=False, action='store_true',
                                    help='force ipv6')
+        self.opt_parser.add_option('--s3alternate', dest='s3alternate', default=False, action='store_true',
+                                   help='use S3 alternate URL')
 
     def validate(self):
         self.checksum = None
@@ -225,7 +227,8 @@ class JobSubmitter(Base):
             credential=self.options.cloud_cred,
             nostreams=self.options.nostreams,
             ipv4=self.options.ipv4,
-            ipv6=self.options.ipv6
+            ipv6=self.options.ipv6,
+            s3alternate=self.options.s3alternate
         )
 
         if self.options.json:
@@ -288,7 +291,8 @@ class JobSubmitter(Base):
             credential=self.options.cloud_cred,
             nostreams=self.options.nostreams,
             ipv4=self.options.ipv4,
-            ipv6=self.options.ipv6
+            ipv6=self.options.ipv6,
+            s3alternate=self.options.s3alternate
         )
         return None
 
