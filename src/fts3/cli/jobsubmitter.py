@@ -297,7 +297,8 @@ class JobSubmitter(Base):
             nostreams=self.options.nostreams,
             ipv4=self.options.ipv4,
             ipv6=self.options.ipv6,
-            s3alternate=self.options.s3alternate
+            s3alternate=self.options.s3alternate,
+            target_qos=self.options.target_qos
         )
         return None
 
