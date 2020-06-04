@@ -102,9 +102,11 @@ def make_app(global_conf, full_stack=True, static_files=True, **app_conf):
     # Heartbeat thread
     Heartbeat('fts_rest', int(config.get('fts3.HeartBeatInterval', 60))).start()
     # Start OIDC clients
-
-    log.debug('start oidc manager')
-    oidc_manager.setup(app.config)
-    IAMTokenRefresher('fts_token_refresh_daemon', app.config).start()
+    if "fts3.Providers" in app.config and app.config["fts3.Providers"]:
+        oidc_manager.setup(app.config)
+        IAMTokenRefresher("fts_token_refresh_daemon", app.config).start()
+        log.info("OpenID Connect support enabled.")
+    else:
+        log.info("OpenID Connect support disabled. Providers not found in config")
 
     return app

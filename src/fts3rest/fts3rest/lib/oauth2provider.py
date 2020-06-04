@@ -288,7 +288,11 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
                 audience = 'https://wlcg.cern.ch/jwt/v1/any'
                 credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm], audience=[audience])
             else:
-                credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm])
+                credential = jwt.decode(access_token,
+                                        pub_key.export_to_pem(),
+                                        algorithms=[algorithm],
+                                        options={'verify_aud': False} # We don't check audience for non-WLCG token)
+                                        )
             log.debug('offline_response::: {}'.format(credential))
         except Exception as ex:
             log.debug(ex)
