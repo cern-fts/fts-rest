@@ -11,12 +11,7 @@ Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
 License:        ASL 2.0
 URL:            http://fts3-service.web.cern.ch/
-# git clone https://gitlab.cern.ch/fts/fts-rest.git --depth 1 -b master fts-rest-3.8.1
-# cd fts-rest-3.8.1
-# git checkout v3.8.1
-# git submodule init && git submodule update
-# cd ..
-# tar vczf fts-rest-3.8.1.tar.gz --exclude-vcs fts-rest-3.8.1
+
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  gfal2-python
@@ -48,11 +43,6 @@ BuildRequires:  python-slimit
 BuildRequires:  pandoc
 BuildRequires:  python-dirq
 BuildRequires:  python-pycurl
-
-BuildRequires:  python-jwcrypto
-BuildRequires:  python-jwt
-BuildRequires:  python-oic
-
 BuildRequires:  MySQL-python
 
 Requires:       gridsite%{?_isa} >= 1.7

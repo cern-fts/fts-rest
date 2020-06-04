@@ -7,20 +7,15 @@ Infosys=lcg-bdii.cern.ch:2170
 AuthorizedVO=dteam;*
 CleanRecordsHost=false
 
-ValidateAccessTokenOffline=True
-JWKCacheSeconds=86400
+
 
 CheckDuplicates=dteam;*
 
 MessagingDirectory=/tmp/rest-msgs
 HeartBeatInterval=0
-TokenRefreshDaemonIntervalInSeconds=30
+
 
 [roles]
 Public=vo:transfer;all:datamanagement
 lcgadmin=all:config
 
-[providers]
-xdc=https://iam.extreme-datacloud.eu
-xdc_ClientId=asdf
-xdc_ClientSecret=asdf
