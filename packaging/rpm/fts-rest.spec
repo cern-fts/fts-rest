@@ -45,6 +45,11 @@ BuildRequires:  python-dirq
 BuildRequires:  python-pycurl
 BuildRequires:  MySQL-python
 
+BuildRequires:  python-jwcrypto
+BuildRequires:  python-jwt
+BuildRequires:  python-oic
+
+
 Requires:       gridsite%{?_isa} >= 1.7
 %if %{?rhel}%{!?rhel:0} == 6
 Requires:       httpd%{?_isa} >= 2.2.15-60
