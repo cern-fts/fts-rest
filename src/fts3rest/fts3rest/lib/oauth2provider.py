@@ -286,7 +286,7 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
             # Verify & Validate
             if 'wlcg' in issuer:
                 audience = 'https://wlcg.cern.ch/jwt/v1/any'
-                credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm], audience=[audience])
+                credential = jwt.decode(access_token, pub_key.export_to_pem(), algorithms=[algorithm], audience=audience)
             else:
                 credential = jwt.decode(access_token,
                                         pub_key.export_to_pem(),
