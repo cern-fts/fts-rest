@@ -67,7 +67,7 @@ Requires:       python-paste-deploy
 Requires:       python-pylons
 Requires:       python-simplejson%{?_isa}
 Requires:       gfal2-python%{?_isa}
-Requires: 	    python-requests >= 2.23
+Requires:       python-requests >= 2.23
 Requires:       python-chardet >=3.0.2
 Requires:       python-idna >=2.5
 Requires:       python-urllib3 >=1.21.1
