@@ -37,10 +37,10 @@ BuildRequires:  python-sqlalchemy
 BuildRequires:  python-sqlalchemy0.8
 %endif
 BuildRequires:  python-requests
-BuildRequires:  python-chardet
-BuildRequires:  python-idna
-BuildRequires:  python-urllib3
-BuildRequires:  python-certifi
+#BuildRequires:  python-chardet
+#BuildRequires:  python-idna
+#BuildRequires:  python-urllib3
+#BuildRequires:  python-certifi
 %if %{?rhel}%{!?rhel:0} == 6
 BuildRequires:  python-slimit
 %endif
@@ -72,10 +72,10 @@ Requires:       python-pylons
 Requires:       python-simplejson%{?_isa}
 Requires:       gfal2-python%{?_isa}
 Requires:       python-requests
-Requires:       python-chardet
-Requires:       python-idna
-Requires:       python-urllib3
-Requires:       python-certifi
+#Requires:       python-chardet
+#Requires:       python-idna
+#Requires:       python-urllib3
+#Requires:       python-certifi
 
 %description
 This package provides the FTS3 REST interface
@@ -149,11 +149,12 @@ Requires:       python-sqlalchemy
 %else
 Requires:       python-sqlalchemy0.8
 %endif
-Requires:       python-requests >= 2.23
-Requires:       python-chardet >= 3.0.2
-Requires:       python-idna >= 2.5
-Requires:       python-urllib3 >= 1.21.1
-Requires:       python-certifi >= 2017.4.17
+Requires:       python-requests
+#Requires:       python-requests >= 2.23
+#Requires:       python-chardet >= 3.0.2
+#Requires:       python-idna >= 2.5
+#Requires:       python-urllib3 >= 1.21.1
+#Requires:       python-certifi >= 2017.4.17
 
 %description -n python-fts
 This package provides an object model of the FTS3
