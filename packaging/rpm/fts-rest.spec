@@ -39,7 +39,7 @@ BuildRequires:  python-sqlalchemy0.8
 BuildRequires:  python-requests
 #BuildRequires:  python-chardet
 #BuildRequires:  python-idna
-#BuildRequires:  python-urllib3
+BuildRequires:  python-urllib3
 #BuildRequires:  python-certifi
 %if %{?rhel}%{!?rhel:0} == 6
 BuildRequires:  python-slimit
@@ -74,7 +74,7 @@ Requires:       gfal2-python%{?_isa}
 Requires:       python-requests
 #Requires:       python-chardet
 #Requires:       python-idna
-#Requires:       python-urllib3
+Requires:       python-urllib3
 #Requires:       python-certifi
 
 %description
