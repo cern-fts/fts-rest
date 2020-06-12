@@ -37,6 +37,10 @@ BuildRequires:  python-sqlalchemy
 BuildRequires:  python-sqlalchemy0.8
 %endif
 BuildRequires:  python-requests
+BuildRequires:  python-chardet
+BuildRequires:  python-idna
+BuildRequires:  python-urllib3
+BuildRequires:  python-certifi
 %if %{?rhel}%{!?rhel:0} == 6
 BuildRequires:  python-slimit
 %endif
@@ -68,6 +72,10 @@ Requires:       python-pylons
 Requires:       python-simplejson%{?_isa}
 Requires:       gfal2-python%{?_isa}
 Requires:       python-requests
+Requires:       python-chardet
+Requires:       python-idna
+Requires:       python-urllib3
+Requires:       python-certifi
 
 %description
 This package provides the FTS3 REST interface
