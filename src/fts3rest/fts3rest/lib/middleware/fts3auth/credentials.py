@@ -107,7 +107,7 @@ class UserCredentials(object):
         self.method = 'unauthenticated'
         self.dn.append(self.user_dn)
 
-    def __init__(self, env, role_permissions=None):
+    def __init__(self, env, role_permissions=None, config=None):
         """
         Constructor
 
@@ -128,7 +128,7 @@ class UserCredentials(object):
         self.method    = None
         self.is_root   = False
 
-        got_creds = self.authenticator(self, env)
+        got_creds = self.authenticator(self, env, config)
 
         # Last resort: anonymous access
         if not got_creds:

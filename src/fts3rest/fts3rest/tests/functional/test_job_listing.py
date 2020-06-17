@@ -31,7 +31,7 @@ class TestJobListing(TestController):
 
     def _submit(self, file_metadata=None, dest_surl='root://dest.ch/file', random_url=True):
         if random_url:
-	    dest_surl = dest_surl+str(random.randint(200,1000))
+            dest_surl = dest_surl+str(random.randint(200,1000))
         job = {
             'files': [{
                 'sources': ['root://source.es/file'],
@@ -411,7 +411,7 @@ class TestJobListing(TestController):
         self.assertIn('start_time', f)
         self.assertIn('source_surl', f)
         self.assertNotIn('finish_time', f)
-        
+
 
         self.assertEqual('root://source.es/file', f['source_surl'])
 
@@ -487,24 +487,24 @@ class TestJobListing(TestController):
 
         # Try one hour
         job_list = self.app.get(url="/jobs",
-            params={
-                'dlg_id': creds.delegation_id,
-                'state_in': 'FINISHED',
-                'time_window': '1'},
-            status=200
-        ).json
+                                params={
+                                    'dlg_id': creds.delegation_id,
+                                    'state_in': 'FINISHED',
+                                    'time_window': '1'},
+                                status=200
+                                ).json
 
         self.assertIn(job_id, [j['job_id'] for j in job_list])
 
         # Try 15 minutes
         job_list = self.app.get(url="/jobs",
-            params={
-                'dlg_id': creds.delegation_id,
-                'state_in': 'FINISHED',
-                'time_window': '0:15'
-            },
-            status=200
-        ).json
+                                params={
+                                    'dlg_id': creds.delegation_id,
+                                    'state_in': 'FINISHED',
+                                    'time_window': '0:15'
+                                },
+                                status=200
+                                ).json
 
         self.assertNotIn(job_id, [j['job_id'] for j in job_list])
 

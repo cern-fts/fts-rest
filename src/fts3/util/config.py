@@ -15,10 +15,13 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from ConfigParser import ConfigParser, NoOptionError
+from ConfigParser import ConfigParser, NoOptionError, NoSectionError
 from StringIO import StringIO
 from urllib import quote_plus
 import os
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def fts3_config_load(path='/etc/fts3/fts3config'):
@@ -26,6 +29,7 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
     Read the configuration from the FTS3 configuration file and
     pass it to the Pylons configuration
     """
+    log.debug('entered fts3_config_load')
     fts3cfg = {}
 
     # Dirty workaround: ConfigParser doesn't like files without
@@ -91,5 +95,24 @@ def fts3_config_load(path='/etc/fts3/fts3config'):
             if role.lower() not in fts3cfg['fts3.Roles']:
                 fts3cfg['fts3.Roles'][role.lower()] = {}
             fts3cfg['fts3.Roles'][role.lower()][operation.lower()] = level.lower()
+
+    # Initialize providers
+    log.debug('initialize providers config in load environment')
+    fts3cfg["fts3.Providers"] = {}
+    try:
+        for option in parser.options("providers"):
+            if "_" not in option:
+                provider_name = option
+                provider_url = parser.get("providers", provider_name)
+                if not provider_url.endswith("/"):
+                    provider_url += "/"
+                fts3cfg["fts3.Providers"][provider_url] = {}
+                client_id = parser.get("providers", option + "_ClientId")
+                fts3cfg["fts3.Providers"][provider_url]["client_id"] = client_id
+                client_secret = parser.get("providers", option + "_ClientSecret")
+                fts3cfg["fts3.Providers"][provider_url]["client_secret"] = client_secret
+    except NoSectionError:
+        pass
+
 
     return fts3cfg

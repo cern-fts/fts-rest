@@ -6,8 +6,8 @@ from pyvirtualdisplay import Display
 class FTS3develSeTab(unittest.TestCase):
 
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
         profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
         self.driver = webdriver.Firefox(profile)
 
@@ -18,15 +18,15 @@ class FTS3develSeTab(unittest.TestCase):
         driver = self.driver
         driver.get("https://fts3-devel.cern.ch:8446/config/global")
 
-	#SET UP 
+        #SET UP 
         setup_list = [
-                      ("testvo5", "0", "0", "0", "0", "yes"),
-                      ("testvo6", "5", "15", "20", "25", "no"),
-                      ("testvo7", "10", "20", "30", "40", "no")
-                     ]
-     
+            ("testvo5", "0", "0", "0", "0", "yes"),
+            ("testvo6", "5", "15", "20", "25", "no"),
+            ("testvo7", "10", "20", "30", "40", "no")
+        ]
+
         for element in setup_list:
-	
+
             voname_field = driver.find_element_by_id('vo-config-add-field-vo')
             voname_field.clear()
             voname_field.send_keys(element[0])
@@ -49,27 +49,27 @@ class FTS3develSeTab(unittest.TestCase):
 
 
             showdn_field = driver.find_element_by_xpath('//tbody[@id="vo-config-add"][tr/td/select[@id="show_user_dn"]]')
-	    if element[5] == 'no':
-		showdn_field.click()
-		options = showdn_field.find_elements_by_tag_name("option")
-		for option in options:
-		    if option.get_attribute("value") == 'false':
-			option.click()
+            if element[5] == 'no':
+                showdn_field.click()
+                options = showdn_field.find_elements_by_tag_name("option")
+                for option in options:
+                    if option.get_attribute("value") == 'false':
+                        option.click()
 
 
-	    button_add = driver.find_element_by_id('button_add_global')
-	    button_add.click()
-	    time.sleep(1)
-	
-	driver.refresh()
-	time.sleep(2)
+            button_add = driver.find_element_by_id('button_add_global')
+            button_add.click()
+            time.sleep(1)
 
-	#CHECK IF EVERYTHING WAS SAVED
-	check0_list = []
-	check1_list = []
+        driver.refresh()
+        time.sleep(2)
+
+        #CHECK IF EVERYTHING WAS SAVED
+        check0_list = []
+        check1_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//td[@class="vo_name"]')
+        page_list = driver.find_elements_by_xpath('//td[@class="vo_name"]')
 
         for elem in page_list:
             check0_list.append(elem.text)
@@ -77,126 +77,126 @@ class FTS3develSeTab(unittest.TestCase):
 
         count = 0
         for element in setup_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if not set(check1_list) < set(check0_list):
-	    return self.assertFalse("SETUP: The retry wasn't saved", set(check1_list) - set(check0_list))
+        if not set(check1_list) < set(check0_list):
+            return self.assertFalse("SETUP: The retry wasn't saved", set(check1_list) - set(check0_list))
 
-	#TEST test_delete_global
+        #TEST test_delete_global
         input_list = [
-                      ("testvo", "0", "0", "0", "0", "yes"),
-                      ("testvo1", "5", "15", "20", "25", "no"),
-                      ("testvo2", "10", "20", "30", "40", "no"),
-		      ("testvo3@vo.ru", "1", "1", "1", "1", "yes"),
-                      ("testvo4_vo", "0", "0", "0", "0", "no"),                      
-		      ("testvo5", "0", "0", "0", "0", "yes"),
-                      ("testvo6", "5", "15", "20", "25", "no"),
-                      ("testvo7", "10", "20", "30", "40", "no"),
-                      ("testvo8", "0", "0", "0", "0", "yes"),
-                      ("testvo9", "5", "15", "20", "25", "no"),
-                      ("testvo10", "10", "20", "30", "40", "no"),
-                      ("testvo11", "10", "20", "30", "40", "yes"),
-                      ("badvo", "", "0", "0", "0", "yes"),
-                      ("badvo1", "5", "", "20", "25", "no"),
-                      ("badvo2", "10", "20", "", "40", "no"),
-                      ("badvo3", "10", "20", "30", "", "yes"),
-                      (" ", "10", "20", "30", "40", "yes"),
-                      ("badvo4", " ", "0", "0", "0", "yes"),
-                      ("badvo5", "5", " ", "20", "25", "no"),
-                      ("badvo6", "10", "20", " ", "40", "no"),
-                      ("badvo7", "10", "20", "30", " ", "yes"),
-                      ("badvo8", "", "0", "0", "0", "yes"),
-                      ("badvo9", "5", "", "20", "25", "no"),
-                      ("badvo10", "10", "20", "", "40", "no"),
-                      ("badvo11", "10", "20", "30", "", "yes"),
-                      ("badvo12", "3.14", "0", "0", "0", "yes"),
-                      ("badvo13", "5", "3.14", "20", "25", "no"),
-                      ("badvo14", "10", "20", "3.14", "40", "no"),
-                      ("badvo15", "10", "20", "30", "3.14", "yes"),
-                      ("badvo12", "abc", "0", "0", "0", "yes"),
-                      ("badvo13", "5", "abc", "20", "25", "no"),
-                      ("badvo14", "10", "20", "abc", "40", "no"),
-                      ("badvo15", "10", "20", "30", "abc", "yes"),
-                      ("badvo16", "$@%", "0", "0", "0", "yes"),
-                      ("badvo17", "5", "$@%", "20", "25", "no"),
-                      ("badvo18", "10", "20", "$@%", "40", "no"),
-                      ("badvo19", "10", "20", "30", "$@%", "yes"),
-                      ("badvo20", "-1", "20", "30", "0", "yes"),
-                      ("badvo21", "8", "-1", "0", "0", "yes"),
-                      ("badvo22", "5", "5", "-1", "25", "no"),
-                      ("badvo23", "10", "20", "98", "-1", "no"),
-                      ("badvo24", "11", "20", "30", "456", "yes"),
-                      ("badvo 25", "10", "20", "98", "0", "no"),
-                      ("badvo28", "0", "0", "0", "0", "true"),
-                      ("badvo29", "5", "15", "20", "25", "false"),
-                      ("badvo30", "10", "20", "30", "40", "false"),
-                      ("badvo31", "10", "20", "30", "40", "true"),
-                      ("badvo32", "0", "0", "0", "0", "true"),
-                      ("badvo33", "5", "15", "20", "25", "false"),
-                      ("badvo34", "10", "20", "30", "40", "true"),
-                      ("badvo35", "10", "20", "30", "40", "true"),
-                      ("badvo36", "0", "0", "0", "0", "true"),
-                      ("badvo37", "5", "15", "20", "25", "false"),
-                      ("badvo38", "10", "20", "30", "40", "false"),
-                      ("badvo39", "10", "20", "30", "40", "true"),
-                      ("badvo40", "0", "0", "0", "0", "true"),
-                      ("badvo41", "5", "15", "20", "25", "false"),
-                      ("badvo42", "10", "20", "30", "40", "false"),
-                      ("badvo43", "10", "20", "30", "40", "true"),
-                      ("badvo44", "0", "0", "0", "0", "true")
-		]
+            ("testvo", "0", "0", "0", "0", "yes"),
+            ("testvo1", "5", "15", "20", "25", "no"),
+            ("testvo2", "10", "20", "30", "40", "no"),
+            ("testvo3@vo.ru", "1", "1", "1", "1", "yes"),
+            ("testvo4_vo", "0", "0", "0", "0", "no"),                      
+            ("testvo5", "0", "0", "0", "0", "yes"),
+            ("testvo6", "5", "15", "20", "25", "no"),
+            ("testvo7", "10", "20", "30", "40", "no"),
+            ("testvo8", "0", "0", "0", "0", "yes"),
+            ("testvo9", "5", "15", "20", "25", "no"),
+            ("testvo10", "10", "20", "30", "40", "no"),
+            ("testvo11", "10", "20", "30", "40", "yes"),
+            ("badvo", "", "0", "0", "0", "yes"),
+            ("badvo1", "5", "", "20", "25", "no"),
+            ("badvo2", "10", "20", "", "40", "no"),
+            ("badvo3", "10", "20", "30", "", "yes"),
+            (" ", "10", "20", "30", "40", "yes"),
+            ("badvo4", " ", "0", "0", "0", "yes"),
+            ("badvo5", "5", " ", "20", "25", "no"),
+            ("badvo6", "10", "20", " ", "40", "no"),
+            ("badvo7", "10", "20", "30", " ", "yes"),
+            ("badvo8", "", "0", "0", "0", "yes"),
+            ("badvo9", "5", "", "20", "25", "no"),
+            ("badvo10", "10", "20", "", "40", "no"),
+            ("badvo11", "10", "20", "30", "", "yes"),
+            ("badvo12", "3.14", "0", "0", "0", "yes"),
+            ("badvo13", "5", "3.14", "20", "25", "no"),
+            ("badvo14", "10", "20", "3.14", "40", "no"),
+            ("badvo15", "10", "20", "30", "3.14", "yes"),
+            ("badvo12", "abc", "0", "0", "0", "yes"),
+            ("badvo13", "5", "abc", "20", "25", "no"),
+            ("badvo14", "10", "20", "abc", "40", "no"),
+            ("badvo15", "10", "20", "30", "abc", "yes"),
+            ("badvo16", "$@%", "0", "0", "0", "yes"),
+            ("badvo17", "5", "$@%", "20", "25", "no"),
+            ("badvo18", "10", "20", "$@%", "40", "no"),
+            ("badvo19", "10", "20", "30", "$@%", "yes"),
+            ("badvo20", "-1", "20", "30", "0", "yes"),
+            ("badvo21", "8", "-1", "0", "0", "yes"),
+            ("badvo22", "5", "5", "-1", "25", "no"),
+            ("badvo23", "10", "20", "98", "-1", "no"),
+            ("badvo24", "11", "20", "30", "456", "yes"),
+            ("badvo 25", "10", "20", "98", "0", "no"),
+            ("badvo28", "0", "0", "0", "0", "true"),
+            ("badvo29", "5", "15", "20", "25", "false"),
+            ("badvo30", "10", "20", "30", "40", "false"),
+            ("badvo31", "10", "20", "30", "40", "true"),
+            ("badvo32", "0", "0", "0", "0", "true"),
+            ("badvo33", "5", "15", "20", "25", "false"),
+            ("badvo34", "10", "20", "30", "40", "true"),
+            ("badvo35", "10", "20", "30", "40", "true"),
+            ("badvo36", "0", "0", "0", "0", "true"),
+            ("badvo37", "5", "15", "20", "25", "false"),
+            ("badvo38", "10", "20", "30", "40", "false"),
+            ("badvo39", "10", "20", "30", "40", "true"),
+            ("badvo40", "0", "0", "0", "0", "true"),
+            ("badvo41", "5", "15", "20", "25", "false"),
+            ("badvo42", "10", "20", "30", "40", "false"),
+            ("badvo43", "10", "20", "30", "40", "true"),
+            ("badvo44", "0", "0", "0", "0", "true")
+        ]
 
-	#FIND ELEMENTS FROM THE INPUT_LIST THAT ARE ON THE PAGE
-	check2_list = []
-	check3_list = []
+        #FIND ELEMENTS FROM THE INPUT_LIST THAT ARE ON THE PAGE
+        check2_list = []
+        check3_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//td[@class="vo_name"]')
+        page_list = driver.find_elements_by_xpath('//td[@class="vo_name"]')
         for elem in page_list:
             check2_list.append(elem.text)
         count = count + 1
 
         count = 0
         for element in input_list:
-	    check3_list.append(element[0])
+            check3_list.append(element[0])
         count = count + 1
 
-	output_list = set(check2_list)&set(check3_list)
+        output_list = set(check2_list)&set(check3_list)
 
 
-	#DELETE
+        #DELETE
         for element in output_list:
-	    btn = '//button[@class="btn btn-link bt-delete"][@name="' +element+ '"]'
-	    button_delete = driver.find_element_by_xpath(btn)
-	    button_delete.click()
+            btn = '//button[@class="btn btn-link bt-delete"][@name="' +element+ '"]'
+            button_delete = driver.find_element_by_xpath(btn)
+            button_delete.click()
 
-	driver.refresh()
+        driver.refresh()
 
-	#CHECK IF IT WAS DELETED
-	check4_list = []
-	check5_list = []
+        #CHECK IF IT WAS DELETED
+        check4_list = []
+        check5_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//td[@class="vo_name"]')
+        page_list = driver.find_elements_by_xpath('//td[@class="vo_name"]')
         for elem in page_list:
             check4_list.append(elem.text)
         count = count + 1
 
         count = 0
         for element in input_list:
-	    check5_list.append(element[0])
+            check5_list.append(element[0])
         count = count + 1
 
-	not_deleted = set(check4_list)&set(check5_list)
-	if not_deleted:
+        not_deleted = set(check4_list)&set(check5_list)
+        if not_deleted:
             return self.assertFalse("TEST: The retry wasn't deleted", not_deleted)
 
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()
 

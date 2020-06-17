@@ -7,11 +7,15 @@ Infosys=lcg-bdii.cern.ch:2170
 AuthorizedVO=dteam;*
 CleanRecordsHost=false
 
+
+
 CheckDuplicates=dteam;*
 
 MessagingDirectory=/tmp/rest-msgs
 HeartBeatInterval=0
 
+
 [roles]
 Public=vo:transfer;all:datamanagement
 lcgadmin=all:config
+

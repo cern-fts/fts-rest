@@ -6,8 +6,8 @@ from pyvirtualdisplay import Display
 class FTS3develSeTab(unittest.TestCase):
 
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
         profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
         self.driver = webdriver.Firefox(profile)
 
@@ -19,16 +19,16 @@ class FTS3develSeTab(unittest.TestCase):
         driver.get("https://fts3-devel.cern.ch:8446/config/links")
 
         input_list = [
-                      ("*", "*", "*", "0", "20","130", "2", "1"),
-                      ("syname0", "0test://test.test", "test://test1.test", "0", "2","2", "0", "0"),
-                      ("syname1", "1test://test.test", "test://test2.test", "10", "15", "25", "5", "30"),
-                      ("syname2", "2test://test.test", "test://test3.test", "30", "40", "190", "3", "230"),
-                      ("syname3", "3test://test.test", "test://test4.test", "99", "8", "10", "1", "20"),
-                      ("syname4", "4test://test.test", "test://test5.test", "67", "780", "8990", "2", "80")
-                     ]
-	
+            ("*", "*", "*", "0", "20","130", "2", "1"),
+            ("syname0", "0test://test.test", "test://test1.test", "0", "2","2", "0", "0"),
+            ("syname1", "1test://test.test", "test://test2.test", "10", "15", "25", "5", "30"),
+            ("syname2", "2test://test.test", "test://test3.test", "30", "40", "190", "3", "230"),
+            ("syname3", "3test://test.test", "test://test4.test", "99", "8", "10", "1", "20"),
+            ("syname4", "4test://test.test", "test://test5.test", "67", "780", "8990", "2", "80")
+        ]
+
         for element in input_list:
-	    count = 0
+            count = 0
             symbname_field = driver.find_element_by_xpath('//input[@name="symbolicname"]')
             symbname_field.clear()
             symbname_field.send_keys(element[0])
@@ -61,33 +61,33 @@ class FTS3develSeTab(unittest.TestCase):
             tcp_field.clear()
             tcp_field.send_keys(element[7])
 
-	    button_add = driver.find_element_by_id('button_add_link')
-	    button_add.click()
-	    time.sleep(1)
+            button_add = driver.find_element_by_id('button_add_link')
+            button_add.click()
+            time.sleep(1)
 
-	#CHECK IF EVERYTHING WAS SAVED
-	check0_list = []
-	check1_list = []
+        #CHECK IF EVERYTHING WAS SAVED
+        check0_list = []
+        check1_list = []
 
         count = 0
-	page_list = driver.find_elements_by_id('symname')
+        page_list = driver.find_elements_by_id('symname')
         for elem in page_list:
             check0_list.append(elem.text)
         count = count + 1
 
         count = 0
         for element in input_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if not set(check1_list) < set(check0_list):
-	    return self.assertFalse("TEST: The link configuration wasn't saved", set(check1_list) - set(check0_list))
+        if not set(check1_list) < set(check0_list):
+            return self.assertFalse("TEST: The link configuration wasn't saved", set(check1_list) - set(check0_list))
 
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()
 

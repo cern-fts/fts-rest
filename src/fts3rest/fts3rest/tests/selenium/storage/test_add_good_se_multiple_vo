@@ -4,12 +4,12 @@ from selenium import webdriver
 from pyvirtualdisplay import Display
 
 class FTS3develSeTab(unittest.TestCase):
- 
+
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
-	profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
-	self.driver = webdriver.Firefox(profile)
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
+        profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
+        self.driver = webdriver.Firefox(profile)
 
     def test_add_se_with_multiple_vo(self):
 
@@ -17,31 +17,31 @@ class FTS3develSeTab(unittest.TestCase):
         driver.get("https://fts3-devel.cern.ch:8446/config/se")
 
         input_list = [
-                      ("testvo://addvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0","0",[("vo_new_0","staging","500")] ),
-                      ("testvo://addvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", [("vo_new_1", "delete", "300"), ("vo_new_1_1", "staging", "160"), ("vo_new_1_2", "delete", "800")]),
-                      ("testvo://addvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", [("vo_new_2", "staging", "10")])
-                     ]
-	
-	compare_list =[]
-	for element in input_list:
+            ("testvo://addvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0","0",[("vo_new_0","staging","500")] ),
+            ("testvo://addvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", [("vo_new_1", "delete", "300"), ("vo_new_1_1", "staging", "160"), ("vo_new_1_2", "delete", "800")]),
+            ("testvo://addvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", [("vo_new_2", "staging", "10")])
+        ]
+
+        compare_list =[]
+        for element in input_list:
 
             storage_field = driver.find_element_by_id('se-add-field-se')
-	    storage_field.clear()
+            storage_field.clear()
             storage_field.send_keys(element[0])
 
             se_meta_field = driver.find_element_by_id('se_metadata')
-	    se_meta_field.clear()
+            se_meta_field.clear()
             se_meta_field.send_keys(element[1])
 
             inbound_field = driver.find_element_by_id('inbound_max_active')
-	    inbound_field.clear()
-	    inbound_field.send_keys(element[2])
+            inbound_field.clear()
+            inbound_field.send_keys(element[2])
 
             outbound_field = driver.find_element_by_id('outbound_max_active')
-	    outbound_field.clear()
+            outbound_field.clear()
             outbound_field.send_keys(element[3])
 
-	    i_throughput_field = driver.find_element_by_id('inbound_max_throughput')
+            i_throughput_field = driver.find_element_by_id('inbound_max_throughput')
             i_throughput_field.clear()
             i_throughput_field.send_keys(element[4])
 
@@ -61,33 +61,33 @@ class FTS3develSeTab(unittest.TestCase):
             debug_field.clear()
             debug_field.send_keys(element[8])
 
-	    count = 0
-    	    for elem in element[9]:
-		compare_list.append(element[0])
-		compare_list.append(element[1])
-		compare_list.append(element[2])
-		compare_list.append(element[3])
-		compare_list.append(element[4])
-		compare_list.append(element[5])
-		compare_list.append(element[6])
-		compare_list.append(element[7])
-		compare_list.append(element[8])
-		compare_list.append(elem[0])
-		compare_list.append(elem[1])
-		compare_list.append(elem[2])
+            count = 0
+            for elem in element[9]:
+                compare_list.append(element[0])
+                compare_list.append(element[1])
+                compare_list.append(element[2])
+                compare_list.append(element[3])
+                compare_list.append(element[4])
+                compare_list.append(element[5])
+                compare_list.append(element[6])
+                compare_list.append(element[7])
+                compare_list.append(element[8])
+                compare_list.append(elem[0])
+                compare_list.append(elem[1])
+                compare_list.append(elem[2])
 
-           	vo_field = driver.find_element_by_id('se-add-field-vo')
-          	vo_field.clear()
-           	vo_field.send_keys(elem[0])
+                vo_field = driver.find_element_by_id('se-add-field-vo')
+                vo_field.clear()
+                vo_field.send_keys(elem[0])
 
-	        if elem[1] == 'staging':
-            	    operation_field = driver.find_element_by_id('operation')
-            	    operation_field.click()
+                if elem[1] == 'staging':
+                    operation_field = driver.find_element_by_id('operation')
+                    operation_field.click()
 
-            	    options = operation_field.find_elements_by_tag_name("option")
-            	    for option in options:
+                    options = operation_field.find_elements_by_tag_name("option")
+                    for option in options:
                         if option.get_attribute("value") == 'staging':
-                    	    option.click()
+                            option.click()
 
                 limit_field = driver.find_element_by_id('limit')
                 limit_field.clear()
@@ -96,17 +96,17 @@ class FTS3develSeTab(unittest.TestCase):
                 plus_vo = driver.find_element_by_id('se-add-ops-add-btn')
                 plus_vo.click()
 
-	    driver.find_element_by_css_selector("button[type='submit']").click()
-	    count = count+1
-	    time.sleep(1)
+            driver.find_element_by_css_selector("button[type='submit']").click()
+            count = count+1
+            time.sleep(1)
 
 
-	#CHECK IF EVERYTHING WAS SAVED
-	check0_list = []
-	check1_list = []
+        #CHECK IF EVERYTHING WAS SAVED
+        check0_list = []
+        check1_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+        page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
 
         for elem in page_list:
             check0_list.append(elem.text)
@@ -114,29 +114,29 @@ class FTS3develSeTab(unittest.TestCase):
 
         count = 0
         for element in input_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if not set(check1_list) < set(check0_list):
-	    return self.assertFalse("TEST: The se wasn't saved", set(check1_list) - set(check0_list))
+        if not set(check1_list) < set(check0_list):
+            return self.assertFalse("TEST: The se wasn't saved", set(check1_list) - set(check0_list))
 
-	inputs_list = []
+        inputs_list = []
         for element in check1_list:
-	    for elem in driver.find_elements_by_xpath('//h2[@class="panel-title"]'):
-		if elem.text == element:
-		    input_name = '//form[@name="' +element + '"]//input'
-		    inputs = driver.find_elements_by_xpath(input_name)
-		    for inp in inputs:
-		        inputs_list.append(inp.get_attribute('value'))
+            for elem in driver.find_elements_by_xpath('//h2[@class="panel-title"]'):
+                if elem.text == element:
+                    input_name = '//form[@name="' +element + '"]//input'
+                    inputs = driver.find_elements_by_xpath(input_name)
+                    for inp in inputs:
+                        inputs_list.append(inp.get_attribute('value'))
 
-	if set(compare_list)-set(inputs_list):
-	    return self.assertFalse("TEST: The share was NOT saved", set(compare_list) - set(inputs_list))
+        if set(compare_list)-set(inputs_list):
+            return self.assertFalse("TEST: The share was NOT saved", set(compare_list) - set(inputs_list))
 
 
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-	unittest.main()
+    unittest.main()

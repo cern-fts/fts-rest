@@ -4,45 +4,45 @@ from selenium import webdriver
 from pyvirtualdisplay import Display
 
 class FTS3develSeTab(unittest.TestCase):
- 
+
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
-	profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
-	self.driver = webdriver.Firefox(profile)
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
+        profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
+        self.driver = webdriver.Firefox(profile)
 
     def test_save_bad_se_vo(self):
-	"""
-	Test changing the inputs with correct data and clicking save (no check for operations)
-	"""
+        """
+        Test changing the inputs with correct data and clicking save (no check for operations)
+        """
         driver = self.driver
         driver.get("https://fts3-devel.cern.ch:8446/config/se")
 
-	#SET UP
-	setup_list = [
-                      ("s3://savebadvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0"),
-                      ("s3://savebadvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", ""),
-                      ("s3://savebadvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3"),
-                      ("s3://savebadvo3.cern.ch", "metadata_new3", "", "", "", "10", "", "", "3"),
-                      ("s3://savebadvo4.cern.ch", "metadata_new4", "0", "0", "0", "0", "0", "0", "0"),
-                      ("s3://savebadvo5.cern.ch", "metadata_new5", "", "", "", "", "1", "1", ""),
-                      ("s3://savebadvo6.cern.ch", "metadata_new6", "", "", "", "10", "", "", "3"),
-                      ("s3://savebadvo7.cern.ch", "metadata_new7", "", "", "", "10", "", "", "3"),
-                      ("s3://savebadvo8.cern.ch", "metadata_new8", "0", "0", "0", "0", "0", "0", "0")
-	             ]
-	for element in setup_list:
+        #SET UP
+        setup_list = [
+            ("s3://savebadvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0"),
+            ("s3://savebadvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", ""),
+            ("s3://savebadvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3"),
+            ("s3://savebadvo3.cern.ch", "metadata_new3", "", "", "", "10", "", "", "3"),
+            ("s3://savebadvo4.cern.ch", "metadata_new4", "0", "0", "0", "0", "0", "0", "0"),
+            ("s3://savebadvo5.cern.ch", "metadata_new5", "", "", "", "", "1", "1", ""),
+            ("s3://savebadvo6.cern.ch", "metadata_new6", "", "", "", "10", "", "", "3"),
+            ("s3://savebadvo7.cern.ch", "metadata_new7", "", "", "", "10", "", "", "3"),
+            ("s3://savebadvo8.cern.ch", "metadata_new8", "0", "0", "0", "0", "0", "0", "0")
+        ]
+        for element in setup_list:
 
             storage_field = driver.find_element_by_id('se-add-field-se')
-	    storage_field.clear()
+            storage_field.clear()
             storage_field.send_keys(element[0])
 
             se_meta_field = driver.find_element_by_id('se_metadata')
-	    se_meta_field.clear()
+            se_meta_field.clear()
             se_meta_field.send_keys(element[1])
 
             inbound_field = driver.find_element_by_id('inbound_max_active')
             inbound_field.clear()
-	    inbound_field.send_keys(element[2])
+            inbound_field.send_keys(element[2])
 
             outbound_field = driver.find_element_by_id('outbound_max_active')
             outbound_field.clear()
@@ -69,15 +69,15 @@ class FTS3develSeTab(unittest.TestCase):
             debug_field.send_keys(element[8])
 
 
-	    driver.find_element_by_css_selector("button[type='submit']").click()
-	    time.sleep(1)
+            driver.find_element_by_css_selector("button[type='submit']").click()
+            time.sleep(1)
 
-	#CHECK IF EVERYTHING WAS SAVED
-	check0_list = []
-	check1_list = []
+        #CHECK IF EVERYTHING WAS SAVED
+        check0_list = []
+        check1_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+        page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
 
         for elem in page_list:
             check0_list.append(elem.text)
@@ -85,97 +85,97 @@ class FTS3develSeTab(unittest.TestCase):
 
         count = 0
         for element in setup_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if not set(check1_list) < set(check0_list):
-	    return self.assertFalse("TEST: The storage wasn't saved", set(check1_list) - set(check0_list))
+        if not set(check1_list) < set(check0_list):
+            return self.assertFalse("TEST: The storage wasn't saved", set(check1_list) - set(check0_list))
 
 
-	#TEST
+        #TEST
         input_list = [
-                      ("s3://savebadvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0",[("delete_0","staging","3.14")] ),
-                      ("s3://savebadvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", [("delete_1", "staging", "-8")]),
-                      ("s3://savebadvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", [("delete_2", "staging", "abc")]),
-                      ("s3://savebadvo3.cern.ch", "metadata_new3", "", "", "", "10", "", "", "3", [("delete_2", "staging", "$")]),
-                      ("s3://savebadvo4.cern.ch", "metadata_new4", "0", "0", "0", "0", "0", "0", "0",[("delete_0","staging"," ")] ),
-                      ("s3://savebadvo5.cern.ch", "metadata_new5", "", "", "", "", "1", "1", "", [("delete_1", "staging", "")]),
-                      ("s3://savebadvo6.cern.ch", "metadata_new6", "", "", "", "10", "", "", "3", [("word word", "staging", "34")]),
-                      ("s3://savebadvo7.cern.ch", "metadata_new7", "", "", "", "10", "", "", "3", [(" ", "staging", "234")]),
-                      ("s3://savebadvo8.cern.ch", "metadata_new8", "0", "0", "0", "0", "0", "0", "0",[("","staging","2456")] )
-                     ]
-	compare_list = []
+            ("s3://savebadvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0",[("delete_0","staging","3.14")] ),
+            ("s3://savebadvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", [("delete_1", "staging", "-8")]),
+            ("s3://savebadvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", [("delete_2", "staging", "abc")]),
+            ("s3://savebadvo3.cern.ch", "metadata_new3", "", "", "", "10", "", "", "3", [("delete_2", "staging", "$")]),
+            ("s3://savebadvo4.cern.ch", "metadata_new4", "0", "0", "0", "0", "0", "0", "0",[("delete_0","staging"," ")] ),
+            ("s3://savebadvo5.cern.ch", "metadata_new5", "", "", "", "", "1", "1", "", [("delete_1", "staging", "")]),
+            ("s3://savebadvo6.cern.ch", "metadata_new6", "", "", "", "10", "", "", "3", [("word word", "staging", "34")]),
+            ("s3://savebadvo7.cern.ch", "metadata_new7", "", "", "", "10", "", "", "3", [(" ", "staging", "234")]),
+            ("s3://savebadvo8.cern.ch", "metadata_new8", "0", "0", "0", "0", "0", "0", "0",[("","staging","2456")] )
+        ]
+        compare_list = []
         for element in input_list:
-	    count = 0
+            count = 0
 
-	    panel = '//div[@name="panelc_' +element[0] + '"][@class="panel panel-primary panel-collapse"]' 
-	    panel_f = driver.find_element_by_xpath(panel)
+            panel = '//div[@name="panelc_' +element[0] + '"][@class="panel panel-primary panel-collapse"]' 
+            panel_f = driver.find_element_by_xpath(panel)
 
-	    if panel_f.get_attribute("name") == 'panelc_'+element[0]:
-		panel_f.click()
+            if panel_f.get_attribute("name") == 'panelc_'+element[0]:
+                panel_f.click()
 
-		for op in element[9]:
-		    compare_list.append(element[9][count][0])
+                for op in element[9]:
+                    compare_list.append(element[9][count][0])
 
-	            vo_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="vo_hidden"]'
-		    vo_field = driver.find_element_by_xpath(vo_name)
-          	    vo_field.clear()
-           	    vo_field.send_keys(element[9][count][0])
+                    vo_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="vo_hidden"]'
+                    vo_field = driver.find_element_by_xpath(vo_name)
+                    vo_field.clear()
+                    vo_field.send_keys(element[9][count][0])
 
-	            if element[9][count][1] == 'staging':
-	                operation_name = '//div[@name="panelc_' +element[0] + '"]//select[@id="operation_hidden"]'
-		        operation_field = driver.find_element_by_xpath(operation_name)
-              	        operation_field.click()
+                    if element[9][count][1] == 'staging':
+                        operation_name = '//div[@name="panelc_' +element[0] + '"]//select[@id="operation_hidden"]'
+                        operation_field = driver.find_element_by_xpath(operation_name)
+                        operation_field.click()
 
-            	        options = operation_field.find_elements_by_tag_name("option")
-            	        for option in options:
+                        options = operation_field.find_elements_by_tag_name("option")
+                        for option in options:
                             if option.get_attribute("value") == 'staging':
-                    	        option.click()
+                                option.click()
 
-	            limit_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="limit_hidden"]'
-		    limit_field = driver.find_element_by_xpath(limit_name)
-		    limit_field.clear()
+                    limit_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="limit_hidden"]'
+                    limit_field = driver.find_element_by_xpath(limit_name)
+                    limit_field.clear()
                     limit_field.send_keys(element[9][count][2])
 
-	            plus_name = '//div[@name="panelc_' +element[0] + '"]//a[@id="se-add-ops-save-btn"]'
-		    plus_vo = driver.find_element_by_xpath(plus_name)
+                    plus_name = '//div[@name="panelc_' +element[0] + '"]//a[@id="se-add-ops-save-btn"]'
+                    plus_vo = driver.find_element_by_xpath(plus_name)
                     plus_vo.click()
-		    count = count +1
+                    count = count +1
 
-		btn = '//button[@name="save_' +element[0] + '"][@class="btn btn-primary btn-save"]'
+                btn = '//button[@name="save_' +element[0] + '"][@class="btn btn-primary btn-save"]'
                 button_save = driver.find_element_by_xpath(btn)
-		button_save.click()	
-		time.sleep(1)
+                button_save.click()	
+                time.sleep(1)
 
 
-	#CHECK IF EVERYTHING WAS SAVED
-	driver.refresh()
-	saved_list = []
+        #CHECK IF EVERYTHING WAS SAVED
+        driver.refresh()
+        saved_list = []
 
         for element in input_list:
-	    count = 0
-	    panel = '//div[@name="panelc_' +element[0] + '"][@class="panel panel-primary panel-collapse"]' 
-	    panel_f = driver.find_element_by_xpath(panel)
-	    if panel_f.get_attribute("name") == 'panelc_'+element[0]:
-	        vo_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="vo_value"]'
-	        vo_field = driver.find_elements_by_xpath(vo_name)
-	        operation_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="operation_value"]'
-	        operation_field = driver.find_elements_by_xpath(operation_name)
-	        limit_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="limit_value"]'
-	        limit_field = driver.find_elements_by_xpath(limit_name)
-	        
-		if vo_field:
-		    for op in element[9]:
-              	        saved_list.append(vo_field[count].get_attribute("value"))
+            count = 0
+            panel = '//div[@name="panelc_' +element[0] + '"][@class="panel panel-primary panel-collapse"]' 
+            panel_f = driver.find_element_by_xpath(panel)
+            if panel_f.get_attribute("name") == 'panelc_'+element[0]:
+                vo_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="vo_value"]'
+                vo_field = driver.find_elements_by_xpath(vo_name)
+                operation_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="operation_value"]'
+                operation_field = driver.find_elements_by_xpath(operation_name)
+                limit_name = '//div[@name="panelc_' +element[0] + '"]//input[@id="limit_value"]'
+                limit_field = driver.find_elements_by_xpath(limit_name)
 
-		        count = count + 1
+                if vo_field:
+                    for op in element[9]:
+                        saved_list.append(vo_field[count].get_attribute("value"))
 
-	if set(saved_list)&set(compare_list):
-	    return self.assertFalse("TEST: The SE operation parameter WAS saved", set(saved_list)&set(compare_list))
+                        count = count + 1
+
+        if set(saved_list)&set(compare_list):
+            return self.assertFalse("TEST: The SE operation parameter WAS saved", set(saved_list)&set(compare_list))
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-	unittest.main()
+    unittest.main()

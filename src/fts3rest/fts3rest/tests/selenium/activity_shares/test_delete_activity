@@ -7,8 +7,8 @@ from pyvirtualdisplay import Display
 class FTS3develSeTab(unittest.TestCase):
 
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
         profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
         self.driver = webdriver.Firefox(profile)
 
@@ -19,20 +19,20 @@ class FTS3develSeTab(unittest.TestCase):
         driver = self.driver
         driver.get("https://fts3-devel.cern.ch:8446/config/activity_shares")
 
-	#SET UP
+        #SET UP
         setup_list = [
-		      ("deletevo", [("activity", "0.3")]),
-		      ("deletevo1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
-		      ("deletevo2", [("activity2", "0")])
-                     ]
-	
+            ("deletevo", [("activity", "0.3")]),
+            ("deletevo1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
+            ("deletevo2", [("activity2", "0")])
+        ]
+
         for element in setup_list:
-	    count = 0
+            count = 0
             vo_field = driver.find_element_by_id('activity-share-add-field-vo')
             vo_field.clear()
             vo_field.send_keys(element[0])
 
-	    for elem in element[1]:
+            for elem in element[1]:
                 activity_field = driver.find_element_by_id('activity-share-add-field-share-name')
                 activity_field.clear()
                 activity_field.send_keys(elem[0])
@@ -42,20 +42,20 @@ class FTS3develSeTab(unittest.TestCase):
                 weight_field.send_keys(Keys.BACKSPACE)
                 weight_field.send_keys(elem[1])
 
-		plus = driver.find_element_by_id('activity-share-add-entry-btn')
-		plus.click()
+                plus = driver.find_element_by_id('activity-share-add-entry-btn')
+                plus.click()
 
             button_add = driver.find_element_by_id('button-add')
-	    button_add.click()
-	    count = count+1
-	    time.sleep(1)
+            button_add.click()
+            count = count+1
+            time.sleep(1)
 
-	#CHECK IF EVERYTHING WAS SAVED
-	check0_list = []
-	check1_list = []
+        #CHECK IF EVERYTHING WAS SAVED
+        check0_list = []
+        check1_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+        page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
 
         for elem in page_list:
             check0_list.append(elem.text)
@@ -63,97 +63,97 @@ class FTS3develSeTab(unittest.TestCase):
 
         count = 0
         for element in setup_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if not set(check1_list) < set(check0_list):
-	    return self.assertFalse("SETUP: The static authorization wasn't saved", set(check1_list) - set(check0_list))
+        if not set(check1_list) < set(check0_list):
+            return self.assertFalse("SETUP: The static authorization wasn't saved", set(check1_list) - set(check0_list))
 
-	# TEST test_delete_activity
-	delete_list = [
-		      ("deletevo", [("activity", "0.3")]),
-		      ("deletevo1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
-		      ("deletevo2", [("activity2", "0")]),
-		      ("testvo", [("activity", "0.3")]),
-		      ("testvo1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
-		      ("testvo2", [("activity2", "0")]),
-		      (" ", [("", "")]),
-		      ("badvo2", [("activity3", "3")]),
-		      ("badvo3", [("activity4", "$")]),
-		      ("badvo4", [("activity5", "abc")]),
-		      ("badvo6", [(" ", "0.9")]),
-		      ("badvo7", [("", "0.9")]),
-		      ("badvo5", [("activity2_1", "0.9"), ("activity2", "-100")]),
-		      ("savebadvo", [("activity0", "0.3")]),
-		      ("savebadvo1", [("activity1", "0.56")]),
-		      ("savebadvo2", [("activity2", "0.5")]),
-		      ("savebadvo3", [("activity3", "0.2")]),
-		      ("savebadvo4", [("activity4", "0.99")]),
-		      ("savebadvo5", [("activity5", "0.98")]),
-		      ("savebad", [("activity0", "0.3")]),
-		      ("savebad1", [("activity1", "0.56")]),
-		      ("savebad2", [("activity2", "0.2")]),
-		      ("savebad3", [("activity3", "0")]),
-		      ("savebad4", [("activity4", "0.9")]),
-		      ("savebad5", [("activity5", "0.9")]),
-		      ("savegoodvo", [("activity0", "0.3")]),
-		      ("savegoodvo1", [("activity1", "0.56")]),
-		      ("savevo", [("activity0", "0.3")]),
-		      ("savevo1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
-		      ("savevo2", [("activity2", "0"), ("activity2_1", "1"), ("activity2_2", "0.63")]),
-		      ("savedel", [("activity0", "0.3"),("activity0_1", "0.3")]),
-		      ("savedel1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
-		      ("savedel2", [("activity2", "0"), ("activity2_1", "0.3")])
-                     ]
+        # TEST test_delete_activity
+        delete_list = [
+            ("deletevo", [("activity", "0.3")]),
+            ("deletevo1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
+            ("deletevo2", [("activity2", "0")]),
+            ("testvo", [("activity", "0.3")]),
+            ("testvo1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
+            ("testvo2", [("activity2", "0")]),
+            (" ", [("", "")]),
+            ("badvo2", [("activity3", "3")]),
+            ("badvo3", [("activity4", "$")]),
+            ("badvo4", [("activity5", "abc")]),
+            ("badvo6", [(" ", "0.9")]),
+            ("badvo7", [("", "0.9")]),
+            ("badvo5", [("activity2_1", "0.9"), ("activity2", "-100")]),
+            ("savebadvo", [("activity0", "0.3")]),
+            ("savebadvo1", [("activity1", "0.56")]),
+            ("savebadvo2", [("activity2", "0.5")]),
+            ("savebadvo3", [("activity3", "0.2")]),
+            ("savebadvo4", [("activity4", "0.99")]),
+            ("savebadvo5", [("activity5", "0.98")]),
+            ("savebad", [("activity0", "0.3")]),
+            ("savebad1", [("activity1", "0.56")]),
+            ("savebad2", [("activity2", "0.2")]),
+            ("savebad3", [("activity3", "0")]),
+            ("savebad4", [("activity4", "0.9")]),
+            ("savebad5", [("activity5", "0.9")]),
+            ("savegoodvo", [("activity0", "0.3")]),
+            ("savegoodvo1", [("activity1", "0.56")]),
+            ("savevo", [("activity0", "0.3")]),
+            ("savevo1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
+            ("savevo2", [("activity2", "0"), ("activity2_1", "1"), ("activity2_2", "0.63")]),
+            ("savedel", [("activity0", "0.3"),("activity0_1", "0.3")]),
+            ("savedel1", [("activity1", "0.56"), ("activity1_1", "0.9"), ("activity1_2", "0.34")]),
+            ("savedel2", [("activity2", "0"), ("activity2_1", "0.3")])
+        ]
 
-	#FIND ELEMENTS FROM THE INPUT_LIST THAT ARE ON THE PAGE
-	check2_list = []
-	check3_list = []
+        #FIND ELEMENTS FROM THE INPUT_LIST THAT ARE ON THE PAGE
+        check2_list = []
+        check3_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+        page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
         for elem in page_list:
             check2_list.append(elem.text)
         count = count + 1
 
         count = 0
         for element in delete_list:
-	    check3_list.append(element[0])
+            check3_list.append(element[0])
         count = count + 1
 
-	output_list = set(check2_list)&set(check3_list)
+        output_list = set(check2_list)&set(check3_list)
 
-	#DELETE
+        #DELETE
         for element in output_list:
-	    for elem in driver.find_elements_by_xpath('//h2[@class="panel-title"]'):
-		if elem.text == element:
-		    btn = '//button[@name="delete_' +element + '"][@class="btn btn-danger"]'
-		    button_delete = driver.find_element_by_xpath(btn)
-		    button_delete.click()
+            for elem in driver.find_elements_by_xpath('//h2[@class="panel-title"]'):
+                if elem.text == element:
+                    btn = '//button[@name="delete_' +element + '"][@class="btn btn-danger"]'
+                    button_delete = driver.find_element_by_xpath(btn)
+                    button_delete.click()
 
-	#CHECK IF IT WAS DELETED
-	check4_list = []
-	check5_list = []
+        #CHECK IF IT WAS DELETED
+        check4_list = []
+        check5_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+        page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
         for elem in page_list:
             check4_list.append(elem.text)
         count = count + 1
 
         count = 0
         for element in delete_list:
-	    check5_list.append(element[0])
+            check5_list.append(element[0])
         count = count + 1
 
-	not_deleted = set(check4_list)&set(check5_list)
-	if not_deleted:
+        not_deleted = set(check4_list)&set(check5_list)
+        if not_deleted:
             return self.assertFalse("TEST: The share activity wasn't deleted", not_deleted)
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-        unittest.main()
+    unittest.main()
 

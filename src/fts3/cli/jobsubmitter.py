@@ -27,7 +27,8 @@ import time
 from base import Base
 from fts3.rest.client import Submitter, Delegator, Inquirer
 
-DEFAULT_CHECKSUM = 'ADLER32' 
+DEFAULT_CHECKSUM = 'ADLER32'
+
 
 def _metadata(data):
     try:
@@ -122,6 +123,8 @@ class JobSubmitter(Base):
                                    help='archive timeout in seconds.')
         self.opt_parser.add_option('--timeout', dest='timeout', type='long', default=None,
                                    help='transfer timeout in seconds.')
+        self.opt_parser.add_option('--fail-nearline', dest='fail_nearline', default=False, action='store_true',
+                                   help='fail the transfer if the file is nearline.')
         self.opt_parser.add_option('--dry-run', dest='dry_run', default=False, action='store_true',
                                    help='do not send anything, just print the JSON message.')
         self.opt_parser.add_option('-f', '--file', dest='bulk_file', type='string',
@@ -139,6 +142,10 @@ class JobSubmitter(Base):
                                    help='force ipv4')
         self.opt_parser.add_option('--ipv6', dest='ipv6', default=False, action='store_true',
                                    help='force ipv6')
+        self.opt_parser.add_option('--s3alternate', dest='s3alternate', default=False, action='store_true',
+                                   help='use S3 alternate URL')
+        self.opt_parser.add_option('--target-qos', dest='target_qos', type='string', default=None,
+                                   help='define the target QoS for this transfer for CDMI endpoints')
 
     def validate(self):
         self.checksum = None
@@ -178,29 +185,30 @@ class JobSubmitter(Base):
             return [{"sources": [self.source], "destinations": [self.destination]}]
 
     def _do_submit(self, context):
-        #Backwards compatibility: compare_checksum parameter 
+        #Backwards compatibility: compare_checksum parameter
         if self.options.compare_checksum:
-            checksum_mode = 'both' 
+            checksum_mode = 'both'
         else:
             if self.checksum:
                 checksum_mode = 'target'
-            else: 
-                checksum = 'none'  
-        #Compare checksum has major priority than checksum_mode     
-        if not self.options.compare_checksum:   
-            if len(self.options.checksum_mode) > 0:
-                checksum_mode = self.options.checksum_mode   
             else:
-                 checksum_mode = 'none'        
-        
+                checksum = 'none'
+        #Compare checksum has major priority than checksum_mode
+        if not self.options.compare_checksum:
+            if len(self.options.checksum_mode) > 0:
+                checksum_mode = self.options.checksum_mode
+            else:
+                checksum_mode = 'none'
+
         if not self.checksum:
             self.checksum = DEFAULT_CHECKSUM
-            
-        delegator = Delegator(context)
-        delegator.delegate(
-            timedelta(minutes=self.options.proxy_lifetime),
-            delegate_when_lifetime_lt=timedelta(minutes=self.options.delegate_when_lifetime_lt)
-        )
+
+        if not self.options.access_token:
+            delegator = Delegator(context)
+            delegator.delegate(
+                timedelta(minutes=self.options.proxy_lifetime),
+                delegate_when_lifetime_lt=timedelta(minutes=self.options.delegate_when_lifetime_lt)
+            )
 
         submitter = Submitter(context)
 
@@ -225,7 +233,9 @@ class JobSubmitter(Base):
             credential=self.options.cloud_cred,
             nostreams=self.options.nostreams,
             ipv4=self.options.ipv4,
-            ipv6=self.options.ipv6
+            ipv6=self.options.ipv6,
+            s3alternate=self.options.s3alternate,
+            target_qos=self.options.target_qos
         )
 
         if self.options.json:
@@ -236,7 +246,7 @@ class JobSubmitter(Base):
         if job_id and self.options.blocking:
             inquirer = Inquirer(context)
             job = inquirer.get_job_status(job_id)
-            while job['job_state'] in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE']:
+            while job['job_state'] in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE', 'QOS_TRANSITION']:
                 self.logger.info("Job in state %s" % job['job_state'])
                 time.sleep(self.options.poll_interval)
                 job = inquirer.get_job_status(job_id)
@@ -248,24 +258,24 @@ class JobSubmitter(Base):
         return job_id
 
     def _do_dry_run(self, context):
-        #Backwards compatibility: compare_checksum parameter 
+        #Backwards compatibility: compare_checksum parameter
         if self.options.compare_checksum:
-            checksum_mode = 'both' 
+            checksum_mode = 'both'
         else:
             if self.checksum:
                 checksum_mode = 'target'
-            else: 
-                checksum = 'none'  
-        #Compare checksum has major priority than checksum_mode     
-        if not self.options.compare_checksum:   
-            if len(self.options.checksum_mode) > 0:
-                checksum_mode = self.options.checksum_mode   
             else:
-                 checksum_mode = 'none'        
-        
+                checksum = 'none'
+        #Compare checksum has major priority than checksum_mode
+        if not self.options.compare_checksum:
+            if len(self.options.checksum_mode) > 0:
+                checksum_mode = self.options.checksum_mode
+            else:
+                checksum_mode = 'none'
+
         if not self.checksum:
             self.checksum = DEFAULT_CHECKSUM
-                
+
         submitter = Submitter(context)
         print submitter.build_submission(
             self._build_transfers(),
@@ -288,7 +298,9 @@ class JobSubmitter(Base):
             credential=self.options.cloud_cred,
             nostreams=self.options.nostreams,
             ipv4=self.options.ipv4,
-            ipv6=self.options.ipv6
+            ipv6=self.options.ipv6,
+            s3alternate=self.options.s3alternate,
+            target_qos=self.options.target_qos
         )
         return None
 

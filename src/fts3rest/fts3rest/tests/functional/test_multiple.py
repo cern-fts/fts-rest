@@ -426,8 +426,8 @@ class TestMultiple(TestController):
                 self.assertEqual(hashed, f.hashed_id)
         else:
             self.assertEqual(job.job_type, 'N')
-        
-       
+
+
 
     def test_submit_reuse_auto_big(self):
         """

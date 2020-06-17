@@ -59,7 +59,7 @@ class OptimizerController(BaseController):
         evolution = evolution.order_by(OptimizerEvolution.datetime.desc())
 
         return evolution[:50]
-    
+
     @doc.return_type(array_of=Optimizer)
     @jsonify
     def get_optimizer_values(self):
@@ -75,7 +75,7 @@ class OptimizerController(BaseController):
         optimizer = optimizer.order_by(Optimizer.datetime.desc())
 
         return optimizer
-    
+
     @doc.response(400, 'Invalid values passed in the request')
     @jsonify
     def set_optimizer_values(self):
@@ -86,25 +86,25 @@ class OptimizerController(BaseController):
         source_se = input_dict.get('source_se', None)
         dest_se = input_dict.get('dest_se', None)
         rationale = input_dict.get('rationale', None)
-        
+
         current_time = datetime.utcnow()
         if not source_se or not dest_se:
             raise HTTPBadRequest('Missing source and/or destination')
-        
+
         try:
             active = int(input_dict.get('active', 2))
         except Exception, e:
             raise HTTPBadRequest('Active must be an integer (%s)' % str(e))
         if active < 0:
             raise HTTPBadRequest('Active must be positive (%s)' % str(active))
-        
+
         try:
             nostreams = int(input_dict.get('nostreams', 1))
         except Exception, e:
             raise HTTPBadRequest('Nostreams must be an integer (%s)' % str(e))
         if nostreams < 0:
             raise HTTPBadRequest('Nostreams must be positive (%s)' % str(nostreams))
-        
+
         try:
             diff = int(input_dict.get('diff', 1))
         except Exception, e:
@@ -153,7 +153,7 @@ class OptimizerController(BaseController):
             raise HTTPBadRequest('Filesize_stddev must be a float (%s)' % str(e))
         if filesize_stddev < 0:
             raise HTTPBadRequest('Filesize_stddev must be positive (%s)' % str(filesize_stddev))
-    
+
         optimizer = Optimizer(
             source_se=source_se,
             dest_se=dest_se,
@@ -177,8 +177,8 @@ class OptimizerController(BaseController):
             filesize_avg=filesize_avg,
             filesize_stddev=filesize_stddev
         )
-                                    
-        
+
+
 
         for key, value in input_dict.iteritems():
             setattr(evolution, key, value)
@@ -194,4 +194,4 @@ class OptimizerController(BaseController):
             raise
 
         return (evolution, optimizer)
-    
+

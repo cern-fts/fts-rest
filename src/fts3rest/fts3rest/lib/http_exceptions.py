@@ -30,7 +30,7 @@ class HTTPMethodFailure(HTTPClientError):
     code = 424
     title = 'Method Failure'
     explanation = ('Method failure')
-    
+
 class HTTPConflict(HTTPClientError):
     code = 409
     title = 'Conflict'

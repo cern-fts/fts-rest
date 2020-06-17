@@ -497,7 +497,7 @@ Usage: fts-rest-transfer-submit [options] SOURCE DESTINATION [CHECKSUM]
 :	Transfer timeout in seconds. 
 
 --fail-nearline
-:	Fail the transfer is the file is nearline. 
+:	Fail the transfer if the file is nearline. 
 
 --dry-run
 :	Do not send anything, just print the json message. 

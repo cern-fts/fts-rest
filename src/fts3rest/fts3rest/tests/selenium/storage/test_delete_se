@@ -7,8 +7,8 @@ from pyvirtualdisplay import Display
 class FTS3develSeTab(unittest.TestCase):
 
     def setUp(self):
-	self.display = Display(visible=0, size=(800, 600))
-	self.display.start()
+        self.display = Display(visible=0, size=(800, 600))
+        self.display.start()
         profile = webdriver.FirefoxProfile('/home/jenkins/.mozilla/firefox/browser/default/jenkins')
         self.driver = webdriver.Firefox(profile)
 
@@ -20,26 +20,26 @@ class FTS3develSeTab(unittest.TestCase):
         driver = self.driver
         driver.get("https://fts3-devel.cern.ch:8446/config/se")
 
-	#SET UP
-	setup_list = [
-		      ("s3://delete.cern.ch", "", "", "", "", "", "", "", ""),
-		      ("s3://delete1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
-		      ("s3://delete2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
-		      ("s3://delete3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0")
-	             ]
-	for element in setup_list:
+        #SET UP
+        setup_list = [
+            ("s3://delete.cern.ch", "", "", "", "", "", "", "", ""),
+            ("s3://delete1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
+            ("s3://delete2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
+            ("s3://delete3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0")
+        ]
+        for element in setup_list:
 
             storage_field = driver.find_element_by_id('se-add-field-se')
-	    storage_field.clear()
+            storage_field.clear()
             storage_field.send_keys(element[0])
 
             se_meta_field = driver.find_element_by_id('se_metadata')
-	    se_meta_field.clear()
+            se_meta_field.clear()
             se_meta_field.send_keys(element[1])
 
             inbound_field = driver.find_element_by_id('inbound_max_active')
             inbound_field.clear()
-	    inbound_field.send_keys(element[2])
+            inbound_field.send_keys(element[2])
 
             outbound_field = driver.find_element_by_id('outbound_max_active')
             outbound_field.clear()
@@ -66,15 +66,15 @@ class FTS3develSeTab(unittest.TestCase):
             debug_field.send_keys(element[8])
 
 
-	    driver.find_element_by_css_selector("button[type='submit']").click()
-	    time.sleep(1)
+            driver.find_element_by_css_selector("button[type='submit']").click()
+            time.sleep(1)
 
-	#CHECK IF EVERYTHING WAS SAVED
-	check0_list = []
-	check1_list = []
+        #CHECK IF EVERYTHING WAS SAVED
+        check0_list = []
+        check1_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+        page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
 
         for elem in page_list:
             check0_list.append(elem.text)
@@ -82,186 +82,186 @@ class FTS3develSeTab(unittest.TestCase):
 
         count = 0
         for element in setup_list:
-	    check1_list.append(element[0])
+            check1_list.append(element[0])
         count = count + 1
 
-	if not set(check1_list) < set(check0_list):
-	    return self.assertFalse("TEST: The storage wasn't saved", set(check1_list) - set(check0_list))
+        if not set(check1_list) < set(check0_list):
+            return self.assertFalse("TEST: The storage wasn't saved", set(check1_list) - set(check0_list))
 
 
-	#TEST
+        #TEST
 
         input_list = [
-		      ("*", "", "", "", "", "", "", "", ""),
-		      ("s3://delete.cern.ch", "", "", "", "", "", "", "", ""),
-		      ("s3://delete1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
-		      ("s3://delete2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
-		      ("s3://delete3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0"),
-		      ("s3://goodse.cern.ch", "", "", "", "", "", "", "", ""),
-		      ("s3://goodse1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
-		      ("s3://goodse2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
-		      ("s3://goodse3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0"),
-                      ("testvo://goodsevo.cern.ch", "0", "0", "0", "0", "0", "0", "0", "0","vo_0","staging","50"),
-                      ("testvo://goodsevo1.cern.ch", "1", "", "", "", "", "", "", "","vo_1","staging","100"),
-                      ("testvo://goodsevo2.cern.ch", "2", "", "", "", "", "", "", "","vo_2","delete","200"),
-                      ("sometext", "", "", "", "", "", "", "", ""),
-                      ("104958434", "", "", "", "", "", "", "", ""),
-                      ("&(#)%&#*+", "", "", "", "", "", "", "", ""),
-                      ("site.ch", "", "", "", "", "", "", "", ""),
-                      ("http://site", "", "", "", "", "", "", "", ""),
-                      ("s3://badse1.cern.ch", "", "3.14", "", "", "", "", "", ""),
-                      ("s3://badse2.cern.ch", "", "", "3.14", "", "", "", "", ""),
-                      ("s3://badse3.cern.ch", "", "", "", "3.14", "", "", "", ""),
-                      ("s3://badse4.cern.ch", "", "", "", "", "3.14", "", "", ""),
-                      ("s3://badse5.cern.ch", "", "", "", "", "", "3.14", "", ""),
-                      ("s3://badse6.cern.ch", "", "", "", "", "", "", "3.14", ""),
-                      ("s3://badse7.cern.ch", "", "", "", "", "", "", "", "3.14"),
-                      ("s3://badse8.cern.ch", "", "-8", "", "", "", "", "", ""),
-                      ("s3://badse9.cern.ch", "", "", "-8", "", "", "", "", ""),
-                      ("s3://badse10.cern.ch", "", "", "", "-8", "", "", "", ""),
-                      ("s3://badse11.cern.ch", "", "", "", "", "-8", "", "", ""),
-                      ("s3://badse12.cern.ch", "", "", "", "", "", "-8", "", ""),
-                      ("s3://badse13.cern.ch", "", "", "", "", "", "", "-8", ""),
-                      ("s3://badse14.cern.ch", "", "", "", "", "", "", "", "-8"),
-                      ("s3://badse15.cern.ch", "", "abc", "", "", "", "", "", ""),
-                      ("s3://badse16.cern.ch", "", "", "abc", "", "", "", "", ""),
-                      ("s3://badse17.cern.ch", "", "", "", "abc", "", "", "", ""),
-                      ("s3://badse18.cern.ch", "", "", "", "", "abc", "", "", ""),
-                      ("s3://badse19.cern.ch", "", "", "", "", "", "abc", "", ""),
-                      ("s3://badse20.cern.ch", "", "", "", "", "", "", "abc", ""),
-                      ("s3://badse21.cern.ch", "", "", "", "", "", "", "", "abc"),
-                      ("s3://badse22.cern.ch", "", "$", "", "", "", "", "", ""),
-                      ("s3://badse23.cern.ch", "", "", "$", "", "", "", "", ""),
-                      ("s3://badse24.cern.ch", "", "", "", "$", "", "", "", ""),
-                      ("s3://badse25.cern.ch", "", "", "", "", "$", "", "", ""),
-                      ("s3://badse26.cern.ch", "", "", "", "", "", "$", "", ""),
-                      ("s3://badse27.cern.ch", "", "", "", "", "", "", "$", ""),
-                      ("s3://badse28.cern.ch", "", "", "", "", "", "", "", "$"),
-                      ("s3://badse29.cern.ch", "", " ", "", "", "", "", "", ""),
-                      ("s3://badse30.cern.ch", "", "", " ", "", "", "", "", ""),
-                      ("s3://badse31.cern.ch", "", "", "", " ", "", "", "", ""),
-                      ("s3://badse32.cern.ch", "", "", "", "", " ", "", "", ""),
-                      ("s3://badse33.cern.ch", "", "", "", "", "", " ", "", ""),
-                      ("s3://badse34.cern.ch", "", "", "", "", "", "", " ", ""),
-                      ("s3://badse35.cern.ch", "", "", "", "", "", "", "", " "),
-		      ("s3://save.cern.ch", "", "", "", "", "", "", "", ""),
-		      ("s3://save1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
-		      ("s3://save2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
-		      ("s3://save3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0"),
-                      ("s3://savebad.cern.ch", "", "3.14", "", "", "", "", "", ""),
-                      ("s3://savebad1.cern.ch", "", "", "3.14", "", "", "", "", ""),
-                      ("s3://savebad2.cern.ch", "", "", "", "3.14", "", "", "", ""),
-                      ("s3://savebad3.cern.ch", "", "", "", "", "3.14", "", "", ""),
-                      ("s3://savebad4.cern.ch", "", "", "", "", "", "3.14", "", ""),
-                      ("s3://savebad5.cern.ch", "", "", "", "", "", "", "3.14", ""),
-                      ("s3://savebad6.cern.ch", "", "", "", "", "", "", "", "3.14"),
-                      ("s3://savebad7.cern.ch", "", "-8", "", "", "", "", "", ""),
-                      ("s3://savebad8.cern.ch", "", "", "-8", "", "", "", "", ""),
-                      ("s3://savebad9.cern.ch", "", "", "", "-8", "", "", "", ""),
-                      ("s3://savebad10.cern.ch", "", "", "", "", "-8", "", "", ""),
-                      ("s3://savebad11.cern.ch", "", "", "", "", "", "-8", "", ""),
-                      ("s3://savebad12.cern.ch", "", "", "", "", "", "", "-8", ""),
-                      ("s3://savebad13.cern.ch", "", "", "", "", "", "", "", "-8"),
-                      ("s3://savebad14.cern.ch", "", "abc", "", "", "", "", "", ""),
-                      ("s3://savebad15.cern.ch", "", "", "abc", "", "", "", "", ""),
-                      ("s3://savebad16.cern.ch", "", "", "", "abc", "", "", "", ""),
-                      ("s3://savebad17.cern.ch", "", "", "", "", "abc", "", "", ""),
-                      ("s3://savebad18.cern.ch", "", "", "", "", "", "abc", "", ""),
-                      ("s3://savebad19.cern.ch", "", "", "", "", "", "", "abc", ""),
-                      ("s3://savebad20.cern.ch", "", "", "", "", "", "", "", "abc"),
-                      ("s3://savebad21.cern.ch", "", "$", "", "", "", "", "", ""),
-                      ("s3://savebad22.cern.ch", "", "", "$", "", "", "", "", ""),
-                      ("s3://savebad23.cern.ch", "", "", "", "$", "", "", "", ""),
-                      ("s3://savebad24.cern.ch", "", "", "", "", "$", "", "", ""),
-                      ("s3://savebad25.cern.ch", "", "", "", "", "", "$", "", ""),
-                      ("s3://savebad26.cern.ch", "", "", "", "", "", "", "$", ""),
-                      ("s3://savebad27.cern.ch", "", "", "", "", "", "", "", "$"),
-                      ("s3://savebad28.cern.ch", "", " ", "", "", "", "", "", ""),
-                      ("s3://savebad29.cern.ch", "", "", " ", "", "", "", "", ""),
-                      ("s3://savebad30.cern.ch", "", "", "", " ", "", "", "", ""),
-                      ("s3://savebad31.cern.ch", "", "", "", "", " ", "", "", ""),
-                      ("s3://savebad32.cern.ch", "", "", "", "", "", " ", "", ""),
-                      ("s3://savebad33.cern.ch", "", "", "", "", "", "", " ", ""),
-                      ("s3://savebad34.cern.ch", "", "", "", "", "", "", "", " "),
-                      ("s3://savebadvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0"),
-                      ("s3://savebadvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", ""),
-                      ("s3://savebadvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3"),
-                      ("s3://savebadvo3.cern.ch", "metadata_new3", "", "", "", "10", "", "", "3"),
-                      ("s3://savebadvo4.cern.ch", "metadata_new4", "0", "0", "0", "0", "0", "0", "0"),
-                      ("s3://savebadvo5.cern.ch", "metadata_new5", "", "", "", "", "1", "1", ""),
-                      ("s3://savebadvo6.cern.ch", "metadata_new6", "", "", "", "10", "", "", "3"),
-                      ("s3://savebadvo7.cern.ch", "metadata_new7", "", "", "", "10", "", "", "3"),
-                      ("s3://savebadvo8.cern.ch", "metadata_new8", "0", "0", "0", "0", "0", "0", "0"),
-		      ("s3://savevo.cern.ch", "", "", "", "", "", "", "", ""),
-		      ("s3://savevo1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
-		      ("s3://savevo2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
-                      ("s3://deletevo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0",[("delete_0","staging","500")] ),
-                      ("s3://deletevo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", [("stay_1", "delete", "300"), ("delete_1_1", "staging", "160"), ("stay_1_2", "delete", "800"),("delete_1_3", "delete", "800")]),
-                      ("s3://deletevo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", [("delete_2", "staging", "10")]),
-                      ("testvo://addvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0","0",[("vo_new_0","staging","500")] ),
-                      ("testvo://addvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", [("vo_new_1", "delete", "300"), ("vo_new_1_1", "staging", "160"), ("vo_new_1_2", "delete", "800")]),
-                      ("testvo://addvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", [("vo_new_2", "staging", "10")]),
-                      ("s3://goodsebadvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0","delete_0","staging","3.14" ),
-                      ("s3://goodsebadvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", "delete_1", "staging", "-8"),
-                      ("s3://goodsebadvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", "delete_2", "staging", "abc"),
-                      ("s3://goodsebadvo3.cern.ch", "metadata_new3", "", "", "", "10", "", "", "3", "delete_2", "staging", "$"),
-                      ("s3://goodsebadvo4.cern.ch", "metadata_new4", "0", "0", "0", "0", "0", "0", "0","delete_0","staging"," " ),
-                      ("s3://goodsebadvo5.cern.ch", "metadata_new5", "", "", "", "", "1", "1", "", "delete_1", "staging", ""),
-                      ("s3://goodsebadvo6.cern.ch", "metadata_new6", "", "", "", "10", "", "", "3","word word", "staging", "34"),
-                      ("s3://goodsebadvo7.cern.ch", "metadata_new7", "", "", "", "10", "", "", "3"," ", "staging", "234"),
-                      ("s3://goodsebadvo8.cern.ch", "metadata_new8", "0", "0", "0", "0", "0", "0", "0","","staging","2456" )
-		     ]
-	
+            ("*", "", "", "", "", "", "", "", ""),
+            ("s3://delete.cern.ch", "", "", "", "", "", "", "", ""),
+            ("s3://delete1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
+            ("s3://delete2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
+            ("s3://delete3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0"),
+            ("s3://goodse.cern.ch", "", "", "", "", "", "", "", ""),
+            ("s3://goodse1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
+            ("s3://goodse2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
+            ("s3://goodse3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0"),
+            ("testvo://goodsevo.cern.ch", "0", "0", "0", "0", "0", "0", "0", "0","vo_0","staging","50"),
+            ("testvo://goodsevo1.cern.ch", "1", "", "", "", "", "", "", "","vo_1","staging","100"),
+            ("testvo://goodsevo2.cern.ch", "2", "", "", "", "", "", "", "","vo_2","delete","200"),
+            ("sometext", "", "", "", "", "", "", "", ""),
+            ("104958434", "", "", "", "", "", "", "", ""),
+            ("&(#)%&#*+", "", "", "", "", "", "", "", ""),
+            ("site.ch", "", "", "", "", "", "", "", ""),
+            ("http://site", "", "", "", "", "", "", "", ""),
+            ("s3://badse1.cern.ch", "", "3.14", "", "", "", "", "", ""),
+            ("s3://badse2.cern.ch", "", "", "3.14", "", "", "", "", ""),
+            ("s3://badse3.cern.ch", "", "", "", "3.14", "", "", "", ""),
+            ("s3://badse4.cern.ch", "", "", "", "", "3.14", "", "", ""),
+            ("s3://badse5.cern.ch", "", "", "", "", "", "3.14", "", ""),
+            ("s3://badse6.cern.ch", "", "", "", "", "", "", "3.14", ""),
+            ("s3://badse7.cern.ch", "", "", "", "", "", "", "", "3.14"),
+            ("s3://badse8.cern.ch", "", "-8", "", "", "", "", "", ""),
+            ("s3://badse9.cern.ch", "", "", "-8", "", "", "", "", ""),
+            ("s3://badse10.cern.ch", "", "", "", "-8", "", "", "", ""),
+            ("s3://badse11.cern.ch", "", "", "", "", "-8", "", "", ""),
+            ("s3://badse12.cern.ch", "", "", "", "", "", "-8", "", ""),
+            ("s3://badse13.cern.ch", "", "", "", "", "", "", "-8", ""),
+            ("s3://badse14.cern.ch", "", "", "", "", "", "", "", "-8"),
+            ("s3://badse15.cern.ch", "", "abc", "", "", "", "", "", ""),
+            ("s3://badse16.cern.ch", "", "", "abc", "", "", "", "", ""),
+            ("s3://badse17.cern.ch", "", "", "", "abc", "", "", "", ""),
+            ("s3://badse18.cern.ch", "", "", "", "", "abc", "", "", ""),
+            ("s3://badse19.cern.ch", "", "", "", "", "", "abc", "", ""),
+            ("s3://badse20.cern.ch", "", "", "", "", "", "", "abc", ""),
+            ("s3://badse21.cern.ch", "", "", "", "", "", "", "", "abc"),
+            ("s3://badse22.cern.ch", "", "$", "", "", "", "", "", ""),
+            ("s3://badse23.cern.ch", "", "", "$", "", "", "", "", ""),
+            ("s3://badse24.cern.ch", "", "", "", "$", "", "", "", ""),
+            ("s3://badse25.cern.ch", "", "", "", "", "$", "", "", ""),
+            ("s3://badse26.cern.ch", "", "", "", "", "", "$", "", ""),
+            ("s3://badse27.cern.ch", "", "", "", "", "", "", "$", ""),
+            ("s3://badse28.cern.ch", "", "", "", "", "", "", "", "$"),
+            ("s3://badse29.cern.ch", "", " ", "", "", "", "", "", ""),
+            ("s3://badse30.cern.ch", "", "", " ", "", "", "", "", ""),
+            ("s3://badse31.cern.ch", "", "", "", " ", "", "", "", ""),
+            ("s3://badse32.cern.ch", "", "", "", "", " ", "", "", ""),
+            ("s3://badse33.cern.ch", "", "", "", "", "", " ", "", ""),
+            ("s3://badse34.cern.ch", "", "", "", "", "", "", " ", ""),
+            ("s3://badse35.cern.ch", "", "", "", "", "", "", "", " "),
+            ("s3://save.cern.ch", "", "", "", "", "", "", "", ""),
+            ("s3://save1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
+            ("s3://save2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
+            ("s3://save3.cern.ch", "", "0", "0", "0", "0", "0", "0", "0"),
+            ("s3://savebad.cern.ch", "", "3.14", "", "", "", "", "", ""),
+            ("s3://savebad1.cern.ch", "", "", "3.14", "", "", "", "", ""),
+            ("s3://savebad2.cern.ch", "", "", "", "3.14", "", "", "", ""),
+            ("s3://savebad3.cern.ch", "", "", "", "", "3.14", "", "", ""),
+            ("s3://savebad4.cern.ch", "", "", "", "", "", "3.14", "", ""),
+            ("s3://savebad5.cern.ch", "", "", "", "", "", "", "3.14", ""),
+            ("s3://savebad6.cern.ch", "", "", "", "", "", "", "", "3.14"),
+            ("s3://savebad7.cern.ch", "", "-8", "", "", "", "", "", ""),
+            ("s3://savebad8.cern.ch", "", "", "-8", "", "", "", "", ""),
+            ("s3://savebad9.cern.ch", "", "", "", "-8", "", "", "", ""),
+            ("s3://savebad10.cern.ch", "", "", "", "", "-8", "", "", ""),
+            ("s3://savebad11.cern.ch", "", "", "", "", "", "-8", "", ""),
+            ("s3://savebad12.cern.ch", "", "", "", "", "", "", "-8", ""),
+            ("s3://savebad13.cern.ch", "", "", "", "", "", "", "", "-8"),
+            ("s3://savebad14.cern.ch", "", "abc", "", "", "", "", "", ""),
+            ("s3://savebad15.cern.ch", "", "", "abc", "", "", "", "", ""),
+            ("s3://savebad16.cern.ch", "", "", "", "abc", "", "", "", ""),
+            ("s3://savebad17.cern.ch", "", "", "", "", "abc", "", "", ""),
+            ("s3://savebad18.cern.ch", "", "", "", "", "", "abc", "", ""),
+            ("s3://savebad19.cern.ch", "", "", "", "", "", "", "abc", ""),
+            ("s3://savebad20.cern.ch", "", "", "", "", "", "", "", "abc"),
+            ("s3://savebad21.cern.ch", "", "$", "", "", "", "", "", ""),
+            ("s3://savebad22.cern.ch", "", "", "$", "", "", "", "", ""),
+            ("s3://savebad23.cern.ch", "", "", "", "$", "", "", "", ""),
+            ("s3://savebad24.cern.ch", "", "", "", "", "$", "", "", ""),
+            ("s3://savebad25.cern.ch", "", "", "", "", "", "$", "", ""),
+            ("s3://savebad26.cern.ch", "", "", "", "", "", "", "$", ""),
+            ("s3://savebad27.cern.ch", "", "", "", "", "", "", "", "$"),
+            ("s3://savebad28.cern.ch", "", " ", "", "", "", "", "", ""),
+            ("s3://savebad29.cern.ch", "", "", " ", "", "", "", "", ""),
+            ("s3://savebad30.cern.ch", "", "", "", " ", "", "", "", ""),
+            ("s3://savebad31.cern.ch", "", "", "", "", " ", "", "", ""),
+            ("s3://savebad32.cern.ch", "", "", "", "", "", " ", "", ""),
+            ("s3://savebad33.cern.ch", "", "", "", "", "", "", " ", ""),
+            ("s3://savebad34.cern.ch", "", "", "", "", "", "", "", " "),
+            ("s3://savebadvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0"),
+            ("s3://savebadvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", ""),
+            ("s3://savebadvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3"),
+            ("s3://savebadvo3.cern.ch", "metadata_new3", "", "", "", "10", "", "", "3"),
+            ("s3://savebadvo4.cern.ch", "metadata_new4", "0", "0", "0", "0", "0", "0", "0"),
+            ("s3://savebadvo5.cern.ch", "metadata_new5", "", "", "", "", "1", "1", ""),
+            ("s3://savebadvo6.cern.ch", "metadata_new6", "", "", "", "10", "", "", "3"),
+            ("s3://savebadvo7.cern.ch", "metadata_new7", "", "", "", "10", "", "", "3"),
+            ("s3://savebadvo8.cern.ch", "metadata_new8", "0", "0", "0", "0", "0", "0", "0"),
+            ("s3://savevo.cern.ch", "", "", "", "", "", "", "", ""),
+            ("s3://savevo1.cern.ch", "metadata_1", "1", "1", "1", "1", "0", "0", "0"),
+            ("s3://savevo2.cern.ch", "metadata_2", "", "", "", "", "0", "0", "0"),
+            ("s3://deletevo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0",[("delete_0","staging","500")] ),
+            ("s3://deletevo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", [("stay_1", "delete", "300"), ("delete_1_1", "staging", "160"), ("stay_1_2", "delete", "800"),("delete_1_3", "delete", "800")]),
+            ("s3://deletevo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", [("delete_2", "staging", "10")]),
+            ("testvo://addvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0","0",[("vo_new_0","staging","500")] ),
+            ("testvo://addvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", [("vo_new_1", "delete", "300"), ("vo_new_1_1", "staging", "160"), ("vo_new_1_2", "delete", "800")]),
+            ("testvo://addvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", [("vo_new_2", "staging", "10")]),
+            ("s3://goodsebadvo.cern.ch", "metadata_new", "0", "0", "0", "0", "0", "0", "0","delete_0","staging","3.14" ),
+            ("s3://goodsebadvo1.cern.ch", "metadata_new1", "", "", "", "", "1", "1", "", "delete_1", "staging", "-8"),
+            ("s3://goodsebadvo2.cern.ch", "metadata_new2", "", "", "", "10", "", "", "3", "delete_2", "staging", "abc"),
+            ("s3://goodsebadvo3.cern.ch", "metadata_new3", "", "", "", "10", "", "", "3", "delete_2", "staging", "$"),
+            ("s3://goodsebadvo4.cern.ch", "metadata_new4", "0", "0", "0", "0", "0", "0", "0","delete_0","staging"," " ),
+            ("s3://goodsebadvo5.cern.ch", "metadata_new5", "", "", "", "", "1", "1", "", "delete_1", "staging", ""),
+            ("s3://goodsebadvo6.cern.ch", "metadata_new6", "", "", "", "10", "", "", "3","word word", "staging", "34"),
+            ("s3://goodsebadvo7.cern.ch", "metadata_new7", "", "", "", "10", "", "", "3"," ", "staging", "234"),
+            ("s3://goodsebadvo8.cern.ch", "metadata_new8", "0", "0", "0", "0", "0", "0", "0","","staging","2456" )
+        ]
 
-	#FIND ELEMENTS FROM THE INPUT_LIST THAT ARE ON THE PAGE
-	check2_list = []
-	check3_list = []
+
+        #FIND ELEMENTS FROM THE INPUT_LIST THAT ARE ON THE PAGE
+        check2_list = []
+        check3_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+        page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
         for elem in page_list:
             check2_list.append(elem.text)
         count = count + 1
 
         count = 0
         for element in input_list:
-	    check3_list.append(element[0])
+            check3_list.append(element[0])
         count = count + 1
 
-	delete_list = set(check2_list)&set(check3_list)
+        delete_list = set(check2_list)&set(check3_list)
 
-	#DELETE
+        #DELETE
         for element in delete_list:
             for elem in driver.find_elements_by_xpath('//h2[@class="panel-title"]'):
                 if elem.text == element:
-		    btn = '//button[@name="delete_' +element + '"][@class="btn btn-danger btn-delete"]'
-		    button_delete = driver.find_element_by_xpath(btn)
+                    btn = '//button[@name="delete_' +element + '"][@class="btn btn-danger btn-delete"]'
+                    button_delete = driver.find_element_by_xpath(btn)
                     elem.click()
-		    button_delete.click()
+                    button_delete.click()
                     time.sleep(1)
 
-	#CHECK IF IT WAS DELETED
-	check4_list = []
-	check5_list = []
+        #CHECK IF IT WAS DELETED
+        check4_list = []
+        check5_list = []
 
         count = 0
-	page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
+        page_list = driver.find_elements_by_xpath('//h2[@class="panel-title"]')
         for elem in page_list:
             check4_list.append(elem.text)
         count = count + 1
 
         count = 0
         for element in delete_list:
-	    check5_list.append(element[0])
+            check5_list.append(element[0])
         count = count + 1
 
-	not_deleted = set(check4_list)&set(check5_list)
-	if not_deleted:
+        not_deleted = set(check4_list)&set(check5_list)
+        if not_deleted:
             return self.assertFalse("TEST: The share activity wasn't deleted", not_deleted)
 
     def tearDown(self):
         self.driver.close()
-	self.display.stop()
+        self.display.stop()
 
 if __name__ == "__main__":
-	unittest.main()
+    unittest.main()

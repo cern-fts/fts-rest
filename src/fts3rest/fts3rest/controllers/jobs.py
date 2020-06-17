@@ -421,9 +421,9 @@ class JobsController(BaseController):
                 Session.query(File).filter(File.job_id == job.job_id)\
                     .filter(File.file_state.in_(FileActiveStates), File.pid == None) \
                     .update({
-                    'file_state': 'CANCELED', 'reason': 'Job canceled by the user', 'dest_surl_uuid':None,
-                    'finish_time': now
-                }, synchronize_session=False)
+                        'file_state': 'CANCELED', 'reason': 'Job canceled by the user', 'dest_surl_uuid':None,
+                        'finish_time': now
+                    }, synchronize_session=False)
                 # However, for data management operations there is nothing to signal, so
                 # set job_finished
                 Session.query(DataManagement).filter(DataManagement.job_id == job.job_id)\
@@ -494,10 +494,10 @@ class JobsController(BaseController):
         try:
             for job in modifiable_jobs:
                 if priority:
-		    for file in job.files:
-			file.priority = priority
-			file = Session.merge(file)
-			log.info("File from Job %s priority changed to %d" % (job.job_id, priority))
+                    for file in job.files:
+                        file.priority = priority
+                        file = Session.merge(file)
+                        log.info("File from Job %s priority changed to %d" % (job.job_id, priority))
                     job.priority = priority
                     job = Session.merge(job)
                     log.info("Job %s priority changed to %d" % (job.job_id, priority))
@@ -543,7 +543,7 @@ class JobsController(BaseController):
             raise HTTPAuthenticationTimeout(
                 'The delegated credentials expired %d seconds ago (%s)' % (seconds, user.delegation_id)
             )
-        if credential.remaining() < timedelta(hours=1):
+        if user.method != 'oauth2' and credential.remaining() < timedelta(hours=1):
             raise HTTPAuthenticationTimeout(
                 'The delegated credentials has less than one hour left (%s)' % user.delegation_id
             )
@@ -565,9 +565,9 @@ class JobsController(BaseController):
                 Session.execute(DataManagement.__table__.insert(), populated.datamanagement)
             Session.flush()
             Session.commit()
-	except IntegrityError as err:
-		Session.rollback()
-		raise HTTPConflict('The submission is duplicated '+ str(err))
+        except IntegrityError as err:
+            Session.rollback()
+            raise HTTPConflict('The submission is duplicated '+ str(err))
         except:
             Session.rollback()
             raise
@@ -631,7 +631,7 @@ class JobsController(BaseController):
                 .update({
                     'job_state': 'CANCELED', 'reason': 'Job canceled by the user',
                     'job_finished': now
-                 }, synchronize_session=False)
+                }, synchronize_session=False)
             Session.commit()
             Session.expire_all()
             log.info("Active jobs for VO %s canceled" % vo_name)

@@ -33,8 +33,8 @@ class AutocompleteController(BaseController):
     @jsonify
     def autocomplete_dn(self):
         """
-    	Autocomplete for users' dn
-    	"""
+        Autocomplete for users' dn
+        """
         term = request.params.get('term', '/DC=cern.ch')
         matches = Session.query(Credential.dn).filter(Credential.dn.startswith(term)).distinct().all()
         return map(lambda r: r[0], matches)

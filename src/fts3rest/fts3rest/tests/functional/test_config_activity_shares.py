@@ -39,7 +39,7 @@ class TestConfigActivityShare(TestController):
         else:
             msg = {"vo": "dteam", "active": True, "share": {"High": 80, "Medium": 15, "Low": 5}}
         self.app.post_json(url="/config/activity_shares", params=msg, status=200)
-        
+
         activity_share = Session.query(ActivityShare).get("dteam")
         self.assertIsNotNone(activity_share)
         self.assertEqual(activity_share.vo, "dteam")
