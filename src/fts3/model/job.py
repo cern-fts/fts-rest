@@ -22,7 +22,7 @@ from sqlalchemy.orm import relation, backref
 from base import Base, Flag, TernaryFlag, Json
 
 
-JobActiveStates = ['STAGING', 'SUBMITTED', 'READY', 'ACTIVE', 'DELETE', 'QOS_TRANSITION']
+JobActiveStates = ['STAGING', 'SUBMITTED', 'READY', 'ACTIVE', 'DELETE', 'QOS_TRANSITION', 'QOS_REQUEST_SUBMITTED']
 JobTerminalStates = ['FINISHED', 'FAILED', 'FINISHEDDIRTY', 'CANCELED']
 
 
