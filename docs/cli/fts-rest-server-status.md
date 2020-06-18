@@ -22,7 +22,7 @@ Use this command to check on the service status.
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 
