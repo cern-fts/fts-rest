@@ -27,10 +27,12 @@ class Submitter(object):
         self.context = context
 
     @staticmethod
-    def build_submission(transfers=None, delete=None, staging=None, **kwargs):
+    def build_submission(transfers=None, delete=None, staging=None, params=None, **kwargs):
         job = dict()
-
-        job['params'] = dict()
+        if params:
+            job['params'] = params
+        else:
+            job['params'] = dict()
         job['params'].update(kwargs)
 
         if delete:
@@ -55,8 +57,11 @@ class Submitter(object):
 
         return json.dumps(job, indent=2)
 
-    def submit(self, transfers=None, delete=None, **kwargs):
-        job = Submitter.build_submission(transfers, delete, **kwargs)
+    def submit(self, transfers=None, delete=None, params=None, **kwargs):
+        job = Submitter.build_submission(transfers=transfers,
+                                         delete=delete,
+                                         params=params,
+                                         **kwargs)
         r = json.loads(self.context.post_json('/jobs', job))
         return r['job_id']
 

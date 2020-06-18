@@ -172,8 +172,9 @@ class JobSubmitter(Base):
 
     def _build_transfers(self):
         if self.options.bulk_file:
-            filecontent = open(self.options.bulk_file).read()
-            bulk = json.loads(filecontent)
+            with open(self.options.bulk_file, 'r') as file:
+                filecontent = file.read()
+                bulk = json.loads(filecontent)
             if "files" in bulk:
                 return bulk["files"]
             elif "Files" in bulk:
@@ -183,6 +184,15 @@ class JobSubmitter(Base):
                 sys.exit(1)
         else:
             return [{"sources": [self.source], "destinations": [self.destination]}]
+
+    def _build_params(self):
+        with open(self.options.bulk_file, 'r') as file:
+            filecontent = file.read()
+            bulk = json.loads(filecontent)
+        params = None
+        if 'params' in bulk:
+            params = bulk['params']
+        return params
 
     def _do_submit(self, context):
         #Backwards compatibility: compare_checksum parameter
@@ -213,7 +223,8 @@ class JobSubmitter(Base):
         submitter = Submitter(context)
 
         job_id = submitter.submit(
-            self._build_transfers(),
+            transfers=self._build_transfers(),
+            params=self._build_params(),
             checksum=self.checksum,
             bring_online=self.options.bring_online,
             archive_timeout=self.options.archive_timeout,
