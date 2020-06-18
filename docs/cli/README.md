@@ -73,7 +73,7 @@ Usage: fts-rest-delegate [options]
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 
@@ -120,7 +120,7 @@ Usage: fts-rest-delete-submit [options] SURL1 [SURL2] [SURL3] [...]
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 
@@ -195,7 +195,7 @@ Usage: fts-rest-server-status [options]
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 
@@ -239,7 +239,7 @@ Usage: fts-rest-transfer-cancel [options]
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 
@@ -281,7 +281,7 @@ Usage: fts-rest-transfer-list [options]
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 
@@ -347,7 +347,7 @@ Usage: fts-rest-transfer-status [options] JOB_ID
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 
@@ -425,7 +425,7 @@ Usage: fts-rest-transfer-submit [options] SOURCE DESTINATION [CHECKSUM]
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 
@@ -550,7 +550,7 @@ Usage: fts-rest-whoami [options]
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 
