@@ -13,7 +13,7 @@ Usage: fts-rest-ban [options]
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 
