@@ -21,7 +21,7 @@ from base import Base
 class CloudStorage(Base):
     __tablename__ = 't_cloudStorage'
 
-    storage_name    = Column(String(50), primary_key=True, name='cloudStorage_name')
+    storage_name    = Column(String(150), primary_key=True, name='cloudStorage_name')
     app_key         = Column(String(255))
     app_secret      = Column(String(255))
     service_api_url = Column(String(1024))
@@ -31,7 +31,7 @@ class CloudStorageUser(Base):
     __tablename__ = 't_cloudStorageUser'
 
     user_dn              = Column(String(700), primary_key=True)
-    storage_name         = Column(String(36), ForeignKey('t_cloudStorage.cloudStorage_name'),
+    storage_name         = Column(String(150), ForeignKey('t_cloudStorage.cloudStorage_name'),
                                   primary_key=True, name='cloudStorage_name')
     access_token         = Column(String(255))
     access_token_secret  = Column(String(255))
