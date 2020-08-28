@@ -101,6 +101,12 @@ def _validate_url(url):
     if not url.hostname:
         raise ValueError('Missing host (%s)' % url.geturl())
 
+def _metadata(data):
+    try:
+        return json.loads(data)
+    except:
+        return {"label": str(data)}
+
 
 def _safe_flag(flag):
     """
@@ -306,6 +312,11 @@ class JobBuilder(object):
         for k, v in params.iteritems():
             if v is None and k in DEFAULT_PARAMS:
                 params[k] = DEFAULT_PARAMS[k]
+
+        # Enforce JSON type for 'job_metadata'
+        if params['job_metadata'] is not None:
+            params['job_metadata'] = _metadata(params['job_metadata'])
+
         return params
 
     def _build_internal_job_params(self):
