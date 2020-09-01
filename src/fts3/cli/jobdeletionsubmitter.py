@@ -118,7 +118,7 @@ class JobDeletionSubmitter(Base):
         if job_id and self.options.blocking:
             inquirer = Inquirer(context)
             job = inquirer.get_job_status(job_id)
-            while job['job_state'] in ['SUBMITTED', 'READY', 'STAGING', 'QOS_TRANSITION', 'ACTIVE', 'DELETE']:
+            while job['job_state'] in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE', 'DELETE', 'QOS_TRANSITION', 'QOS_REQUEST_SUBMITTED']:
                 self.logger.info("Job in state %s" % job['job_state'])
                 time.sleep(self.options.poll_interval)
                 job = inquirer.get_job_status(job_id)
