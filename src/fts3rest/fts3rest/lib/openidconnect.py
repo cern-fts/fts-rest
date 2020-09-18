@@ -40,7 +40,8 @@ class OIDCmanager:
             client_reg = RegistrationResponse(client_id=providers_config[provider]['client_id'],
                                               client_secret=providers_config[provider]['client_secret'])
             client.store_registration_info(client_reg)
-            self.clients[provider] = client
+            issuer = client.provider_info['issuer']
+            self.clients[issuer] = client
 
     def _retrieve_clients_keys(self):
         for provider in self.clients:
