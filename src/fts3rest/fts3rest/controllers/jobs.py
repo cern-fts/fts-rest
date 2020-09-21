@@ -224,14 +224,12 @@ class JobsController(BaseController):
                 setattr(job, 'http_status', '200 Ok')
                 statuses.append(job)
             except HTTPError, e:
-                if len(job_ids) == 1:
-                    raise
                 statuses.append(dict(
                     job_id=job_id,
                     http_status="%s %s" % (e.code, e.title),
                     http_message=e.detail
                 ))
-                multistatus = True
+                multistatus = (len(job_ids) > 1)
 
         if len(job_ids) == 1:
             return statuses[0]
