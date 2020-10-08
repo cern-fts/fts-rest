@@ -22,7 +22,7 @@ from sqlalchemy.orm import relation, backref
 
 from base import Base, Json
 
-FileActiveStates = ['STAGING', 'STARTED', 'SUBMITTED', 'READY', 'ACTIVE', 'QOS_TRANSITION']
+FileActiveStates = ['STAGING', 'STARTED', 'SUBMITTED', 'READY', 'ACTIVE', 'ARCHIVING', 'QOS_TRANSITION', 'QOS_REQUEST_SUBMITTED']
 FileTerminalStates = ['FINISHED', 'FAILED', 'CANCELED']
 # NOT_USED is not terminal, nor not-terminal
 FileOnHoldStates = ['NOT_USED', 'ON_HOLD', 'ON_HOLD_STAGING']
@@ -55,6 +55,8 @@ class File(Base):
     checksum             = Column(String(100))
     finish_time          = Column(DateTime)
     start_time           = Column(DateTime)
+    archive_start_time   = Column(DateTime)
+    archive_finish_time  = Column(DateTime)
     internal_file_params = Column(String(255))
     pid                  = Column(Integer)
     tx_duration          = Column(Float)
@@ -102,6 +104,8 @@ class ArchivedFile(Base):
     checksum             = Column(String(100))
     finish_time          = Column(DateTime)
     start_time           = Column(DateTime)
+    archive_start_time   = Column(DateTime)
+    archive_finish_time  = Column(DateTime)
     internal_file_params = Column(String(255))
     job_finished         = Column(DateTime)
     pid                  = Column(Integer)

@@ -119,6 +119,8 @@ class JobSubmitter(Base):
                                    help='pin lifetime of the copy in seconds.')
         self.opt_parser.add_option('--bring-online', dest='bring_online', type='long', default=None,
                                    help='bring online timeout in seconds.')
+        self.opt_parser.add_option('--archive-timeout', dest='archive_timeout', type='long', default=None,
+                                   help='archive timeout in seconds.')
         self.opt_parser.add_option('--timeout', dest='timeout', type='long', default=None,
                                    help='transfer timeout in seconds.')
         self.opt_parser.add_option('--fail-nearline', dest='fail_nearline', default=False, action='store_true',
@@ -214,7 +216,8 @@ class JobSubmitter(Base):
             self._build_transfers(),
             checksum=self.checksum,
             bring_online=self.options.bring_online,
-            timeout=self.options.timeout,
+            archive_timeout=self.options.archive_timeout,
+            timeout = self.options.timeout,
             verify_checksum=checksum_mode[0],
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,
@@ -244,7 +247,7 @@ class JobSubmitter(Base):
         if job_id and self.options.blocking:
             inquirer = Inquirer(context)
             job = inquirer.get_job_status(job_id)
-            while job['job_state'] in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE', 'QOS_TRANSITION']:
+            while job['job_state'] in ['SUBMITTED', 'READY', 'STAGING', 'ACTIVE', 'ARCHIVING', 'QOS_TRANSITION', 'QOS_REQUEST_SUBMITTED']:
                 self.logger.info("Job in state %s" % job['job_state'])
                 time.sleep(self.options.poll_interval)
                 job = inquirer.get_job_status(job_id)
@@ -279,7 +282,8 @@ class JobSubmitter(Base):
             self._build_transfers(),
             checksum=self.checksum,
             bring_online=self.options.bring_online,
-            timeout=self.options.timeout,
+            archive_timeout = self.options.archive_timeout, 
+            timeout = self.options.timeout,
             verify_checksum=checksum_mode,
             spacetoken=self.options.destination_token,
             source_spacetoken=self.options.source_token,

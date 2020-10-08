@@ -40,6 +40,7 @@ BASE_ID = uuid.UUID('urn:uuid:01874efb-4735-4595-bc9c-591aef8240c9')
 
 DEFAULT_PARAMS = {
     'bring_online': -1,
+    'archive_timeout': -1,
     'verify_checksum': False,
     'copy_pin_lifetime': -1,
     'gridftp': '',
@@ -99,6 +100,12 @@ def _validate_url(url):
         raise ValueError('Missing path (%s)' % url.geturl())
     if not url.hostname:
         raise ValueError('Missing host (%s)' % url.geturl())
+
+def _metadata(data):
+    try:
+        return json.loads(data)
+    except:
+        return {"label": str(data)}
 
 
 def _safe_flag(flag):
@@ -305,6 +312,11 @@ class JobBuilder(object):
         for k, v in params.iteritems():
             if v is None and k in DEFAULT_PARAMS:
                 params[k] = DEFAULT_PARAMS[k]
+
+        # Enforce JSON type for 'job_metadata'
+        if params['job_metadata'] is not None:
+            params['job_metadata'] = _metadata(params['job_metadata'])
+
         return params
 
     def _build_internal_job_params(self):
@@ -493,6 +505,7 @@ class JobBuilder(object):
             copy_pin_lifetime=int(self.params['copy_pin_lifetime']),
             checksum_method=self.params['verify_checksum'],
             bring_online=self.params['bring_online'],
+            archive_timeout=self.params['archive_timeout'],
             job_metadata=self.params['job_metadata'],
             internal_job_params=self._build_internal_job_params(),
             max_time_in_queue=expiration_time,
@@ -629,6 +642,7 @@ class JobBuilder(object):
             copy_pin_lifetime=-1,
             checksum_method=None,
             bring_online=None,
+            archive_timeout=None,
             job_metadata=self.params['job_metadata'],
             internal_job_params=None,
             max_time_in_queue=self.params['max_time_in_queue']
