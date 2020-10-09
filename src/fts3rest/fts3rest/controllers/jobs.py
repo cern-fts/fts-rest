@@ -193,7 +193,7 @@ class JobsController(BaseController):
         Get the job with the given ID
         """
         job_ids = job_list.split(',')
-        multistatus = False
+        status_error_count = 0
 
         # request is not available inside the generator
         environ = request.environ
@@ -229,13 +229,15 @@ class JobsController(BaseController):
                     http_status="%s %s" % (e.code, e.title),
                     http_message=e.detail
                 ))
-                multistatus = (len(job_ids) > 1)
+                status_error_count += 1
 
         if len(job_ids) == 1:
+            if status_error_count == 1:
+                start_response(statuses[0].get('http_status'), [('Content-Type', 'application/json')])
             return statuses[0]
-
-        if multistatus:
+        elif status_error_count > 0:
             start_response('207 Multi-Status', [('Content-Type', 'application/json')])
+
         return statuses
 
     @doc.response(403, 'The user doesn\'t have enough privileges')
