@@ -184,11 +184,9 @@ class JobSubmitter(Base):
                 self.logger.critical("Too many parameters")
                 sys.exit(1)
 
-        if self.options.ipv4 and self.options.ipv6:
+        self._prepare_options()
+        if self.params['ipv4'] and self.params['ipv6']:
             self.opt_parser.error('ipv4 and ipv6 can not be used at the same time')
-
-        if self.options.verbose:
-            self.logger.setLevel(logging.DEBUG)
 
     def _build_transfers(self):
         if self.options.bulk_file:
@@ -306,7 +304,6 @@ class JobSubmitter(Base):
 
     def run(self):
         context = self._create_context()
-        self._prepare_options()
         if not self.options.dry_run:
             return self._do_submit(context)
         else:
