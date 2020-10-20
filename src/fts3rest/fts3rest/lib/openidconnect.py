@@ -55,20 +55,25 @@ class OIDCmanager:
             for keybundle in keybundles:
                 keybundle.cache_time = cache_time
 
-    def get_provider_key(self, issuer, kid):
+    def filter_provider_keys(self, issuer, kid=None, alg=None):
         """
-        Get a Provider Key by ID
+        Return Provider Keys after applying Key ID and Algorithm filter.
+        If no filters match, return the full set.
         :param issuer: provider
         :param kid: Key ID
-        :return: key
-        :raise ValueError: if key not found
+        :param alg: Algorithm
+        :return: keys
+        :raise ValueError: client could not be retrieved
         """
-        client = self.clients[issuer]
-        keys = client.keyjar.get_issuer_keys(issuer)  # List of Keys (from pyjwkest)
-        for key in keys:
-            if key.kid == kid:
-                return key
-        raise ValueError("Key with kid {} not found".format(kid))
+        client = self.clients.get(issuer)
+        if client is None:
+            raise ValueError('Could not retrieve client for issuer={}'.format(issuer))
+        # List of Keys (from pyjwkest)
+        keys = client.keyjar.get_issuer_keys(issuer)
+        filtered_keys = [key for key in keys if key.kid == kid or key.alg == alg]
+        if len(filtered_keys) is 0:
+            return keys
+        return filtered_keys
 
     def introspect(self, issuer, access_token):
         """
