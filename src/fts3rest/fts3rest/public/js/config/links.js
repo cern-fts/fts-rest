@@ -53,7 +53,7 @@ function refreshLinks()
                 });
             });
 
-           var updateBtn = $("<button class='btn btn-link' type='button'></button>")
+            var updateBtn = $("<button class='btn btn-link' type='button'></button>")
                 .append("<i class='glyphicon glyphicon-floppy-disk'></i>");
 
             tr.append($("<td></td>").append(deleteBtn).append(updateBtn))
@@ -72,11 +72,16 @@ function refreshLinks()
               .append($("<td></td>")
               .append($("<input type='number' name='optimizer_mode_"+link.symbolicname+"' min='0' max='3' class='form-control'/>").val(link.optimizer_mode)))
               .append($("<td></td>")
-              .append($("<input type='number' name='tcp_buffer_size_"+link.symbolicname+"' class='form-control'/>").val(link.tcp_buffer_size)));
-           tbody.append(tr);
+              .append($("<input type='number' name='tcp_buffer_size_"+link.symbolicname+"' class='form-control'/>").val(link.tcp_buffer_size)))
+              .append($("<td></td>")
+              .append($("<select name='no_delegation_"+link.symbolicname+"' class='form-control'>" +
+                  "<option value='true'>Yes</option>" +
+                  "<option value='false'>No</option>>" +
+                  "</select>").val(link.no_delegation.toString())));
+            tbody.append(tr);
 
                 updateBtn.click(function() {
-                  //  tr.css("background", "#3CB371");
+                    // tr.css("background", "#3CB371");
                     var saveload = {
                         symbolicname: tr.find("input[name='symbolicname_"+link.symbolicname+"']").val(),
                         source: tr.find("input[name='source_"+link.symbolicname+"']").val(),
@@ -85,7 +90,8 @@ function refreshLinks()
                         min_active: tr.find("input[name='min_active_"+link.symbolicname+"']").val(),
                         max_active: tr.find("input[name='max_active_"+link.symbolicname+"']").val(),
                         optimizer_mode: tr.find("input[name='optimizer_mode_"+link.symbolicname+"']").val(),
-                        tcp_buffer_size: tr.find("input[name='tcp_buffer_size_"+link.symbolicname+"']").val()
+                        tcp_buffer_size: tr.find("input[name='tcp_buffer_size_"+link.symbolicname+"']").val(),
+                        no_delegation: tr.find("select[name='no_delegation_"+link.symbolicname+"']").val()
                     };
                     console.log(saveload);
                     $.ajax({
@@ -271,6 +277,7 @@ function setupLinks()
             max_active: addFrm.find("[name=max_active]").val(),
             optimizer_mode: addFrm.find("[name=optimizer_mode]").val(),
             tcp_buffer_size: addFrm.find("[name=tcp_buffer_size]").val(),
+            no_delegation: addFrm.find("[name=no_delegation]").val(),
         };
         console.log(payload);
 
@@ -287,7 +294,7 @@ function setupLinks()
             $("#link-config-add-frm").trigger("reset");
         })
         .fail(function(jqXHR) {
-	    errorMessage(jqXHR);
+	        errorMessage(jqXHR);
         })
         .always(function() {
             $("#link-config-add-frm input").prop("disabled", false);

@@ -21,6 +21,7 @@
                 <th>Max Actives</th>
                 <th>Optimizer Mode</th>
                 <th>TCP buffer size</th>
+                <th>Disable delegation</th>
             </tr>
         </thead>
         <tbody id="link-config-list">
@@ -63,7 +64,12 @@
                     <input class="form-control" type="number" placeholder="TCP buffer size" name="tcp_buffer_size"
                         min="0" max="999999" value="0"/>
                 </td>
-     
+                <td>
+                    <select class="form-control" name="no_delegation">
+                        <option value="true">Yes</option>
+                        <option value="false" selected>No</option>
+                    </select>
+                </td>
             </tr>
         </tbody>
     </table>
