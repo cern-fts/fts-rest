@@ -252,18 +252,14 @@ class FTS3OAuth2ResourceProvider(ResourceProvider):
         return Session.query(Credential).filter(Credential.dlg_id == dlg_id).first()
 
     def _generate_voms_attrs(self, credential):
-        if 'email' in credential:
-            if 'username' in credential:
-                # 'username' is never there whether offline or online
-                return credential['email'] + " " + credential['username']
-            else:
-                # 'user_id' is there only online
-                return credential['email'] + " " + credential['user_id']
-        else:
-            if 'username' in credential:
-                return credential['username'] + " "
-            else:
-                return credential['user_id'] + " "
+        attrs = [
+            credential.get("email"),
+            credential.get("username") or credential.get("user_id") or credential.get("client_id")
+        ]
+
+        voms_attrs = ' '.join(filter(None, attrs))
+        log.debug('voms_attrs::: {}'.format(voms_attrs))
+        return voms_attrs
 
     def _validate_token_offline(self, access_token):
         """

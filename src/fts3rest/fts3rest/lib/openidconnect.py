@@ -116,16 +116,14 @@ class OIDCmanager:
                                      method='POST',
                                      authn_method="client_secret_basic"
                                      )
-            log.debug("after do any")
             response = response.json()
             log.debug("response: {}".format(response))
             refresh_token = response['refresh_token']
-            log.debug("REFRESH TOKEN IS {}".format(refresh_token))
+            log.debug('refresh_token_response::: {}'.format(refresh_token))
         except Exception as ex:
             log.warning("Exception raised when requesting refresh token")
             log.warning(ex)
             raise ex
-        log.debug('refresh_token_response::: {}'.format(refresh_token))
         return refresh_token
 
     def request_token_exchange(self, issuer, access_token, scope=None, audience=None):
