@@ -33,15 +33,19 @@ class OIDCmanager:
     def _configure_clients(self, providers_config):
         # log.debug('provider_info::: {}'.format(client.provider_info))
         for provider in providers_config:
-            client = Client(client_authn_method=CLIENT_AUTHN_METHOD)
-            # Retrieve well-known configuration
-            client.provider_config(provider)
-            # Register
-            client_reg = RegistrationResponse(client_id=providers_config[provider]['client_id'],
-                                              client_secret=providers_config[provider]['client_secret'])
-            client.store_registration_info(client_reg)
-            issuer = client.provider_info['issuer']
-            self.clients[issuer] = client
+            try:
+                client = Client(client_authn_method=CLIENT_AUTHN_METHOD)
+                # Retrieve well-known configuration
+                client.provider_config(provider)
+                # Register
+                client_reg = RegistrationResponse(client_id=providers_config[provider]['client_id'],
+                                                  client_secret=providers_config[provider]['client_secret'])
+                client.store_registration_info(client_reg)
+                issuer = client.provider_info['issuer']
+                self.clients[issuer] = client
+            except Exception, ex:
+                log.warning("Exception registering provider: {}".format(provider))
+                log.warning(ex)
 
     def _retrieve_clients_keys(self):
         for provider in self.clients:
