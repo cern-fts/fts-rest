@@ -98,6 +98,7 @@ class ServerConfig(Base):
     global_timeout = Column(Integer, default=0)
     sec_per_mb     = Column(Integer, default=0)
     vo_name        = Column(String(100), primary_key=True)
+    no_streaming   = Column(Flag(negative='off', positive='on'), default='off')
     show_user_dn   = Column(Flag(negative='off', positive='on'), default='off')
 
 
