@@ -11,7 +11,14 @@ Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
 License:        ASL 2.0
 URL:            http://fts3-service.web.cern.ch/
-
+# The source for this package was pulled from upstream VCS.
+# Use the following commands to generate the tarball:
+# git clone https://gitlab.cern.ch/fts/fts-rest.git -b master --depth 1 fts-rest-3.10.0
+# cd fts-rest-3.10.0
+# git checkout v3.10.0
+# git submodule init && git submodule update
+# cd ..
+# tar -vczf fts-rest-3.10.0.tar.gz --exclude-vcs fts-rest-3.10.0
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  gfal2-python
@@ -343,6 +350,17 @@ EOF
 
 
 %changelog
+* Mon Dec 07 2020 Mihai Patrascoiu <mihai.patrascoiu@cern.ch> - 3.10.0-1
+- New Minor release
+- OIDC Tokens Integration
+- Archive Monitoring and QoS features
+
+* Tue Jun 02 2020 Carles Garcia Cabot <carles.garcia.cabot@cern.ch> - 3.9.4-1
+- New bugfix release
+
+* Thu Nov 21 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.3-1
+- New bugfix release
+
 * Mon Aug 19 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.2-1
 - New bugfix release
 
