@@ -104,7 +104,7 @@ class PycurlRequest(object):
             else:
                 raise ClientError('Bad request')
         elif 401 <= code <= 403:
-            raise Unauthorized()
+            raise Unauthorized("Credentials not valid")
         elif code == 404:
             raise NotFound(url, message)
         elif code == 419:

@@ -23,7 +23,7 @@ This command can be used to submit a deletion job to FTS3. It supports simple an
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 

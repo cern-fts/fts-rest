@@ -79,7 +79,6 @@ class LinkConfigController(BaseController):
         if min_active > max_active:
             raise HTTPBadRequest('max_active is lower than min_active')
 
-
         if not link_cfg:
             link_cfg = LinkConfig(
                 source=source,
@@ -89,10 +88,8 @@ class LinkConfigController(BaseController):
                 max_active = max_active
             )
 
-
         for key, value in input_dict.iteritems():
-
-            #value = validate_type(LinkConfig, key, value)
+            value = validate_type(LinkConfig, key, value)
             setattr(link_cfg, key, value)
 
         audit_configuration('link', json.dumps(input_dict))

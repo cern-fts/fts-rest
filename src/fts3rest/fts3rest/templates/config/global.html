@@ -18,18 +18,14 @@
                     Retries
                     <i class="glyphicon glyphicon-question-sign"></i>
                 </th>
-                <th>
-                    Global transfer timeout
+                <th>Global transfer timeout</th>
+                <th>Queue timeout</th>
+                <th>Add seconds/MB</th>
+                <th title="If set, allow only transfers that can be handled entierly by a Gfal2 plugin. Most of the time, this means same-protocol or TPC.">
+                    Disable streaming
+                    <i class="glyphicon glyphicon-question-sign"></i>
                 </th>
-                <th>
-                    Queue timeout
-                </th>
-                <th>
-                    Add seconds/MB
-                </th>
-                <th>
-                    Show user DN
-                </th>
+                <th>Show user DN</th>
             </tr>
         </thead>
         <tbody id="vo-config-list">
@@ -58,6 +54,12 @@
                 </td>
                 <td>
                     <input type="number" id="sec_per_mb" name="sec_per_mb" class="form-control" min="0"/>
+                </td>
+                <td>
+                    <select name="no_streaming" id="no_streaming" class="form-control">
+                        <option value="true">Yes</option>
+                        <option value="false" selected>No</option>
+                    </select>
                 </td>
                 <td>
                     <select name="show_user_dn" id="show_user_dn" class="form-control">

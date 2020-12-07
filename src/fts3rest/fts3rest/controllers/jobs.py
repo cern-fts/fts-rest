@@ -193,7 +193,7 @@ class JobsController(BaseController):
         Get the job with the given ID
         """
         job_ids = job_list.split(',')
-        multistatus = False
+        status_error_count = 0
 
         # request is not available inside the generator
         environ = request.environ
@@ -224,20 +224,20 @@ class JobsController(BaseController):
                 setattr(job, 'http_status', '200 Ok')
                 statuses.append(job)
             except HTTPError, e:
-                if len(job_ids) == 1:
-                    raise
                 statuses.append(dict(
                     job_id=job_id,
                     http_status="%s %s" % (e.code, e.title),
                     http_message=e.detail
                 ))
-                multistatus = True
+                status_error_count += 1
 
         if len(job_ids) == 1:
+            if status_error_count == 1:
+                start_response(statuses[0].get('http_status'), [('Content-Type', 'application/json')])
             return statuses[0]
-
-        if multistatus:
+        elif status_error_count > 0:
             start_response('207 Multi-Status', [('Content-Type', 'application/json')])
+
         return statuses
 
     @doc.response(403, 'The user doesn\'t have enough privileges')
@@ -543,7 +543,7 @@ class JobsController(BaseController):
             raise HTTPAuthenticationTimeout(
                 'The delegated credentials expired %d seconds ago (%s)' % (seconds, user.delegation_id)
             )
-        if credential.remaining() < timedelta(hours=1):
+        if user.method != 'oauth2' and credential.remaining() < timedelta(hours=1):
             raise HTTPAuthenticationTimeout(
                 'The delegated credentials has less than one hour left (%s)' % user.delegation_id
             )

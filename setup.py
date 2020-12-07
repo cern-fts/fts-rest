@@ -64,7 +64,7 @@ base_dir = os.path.dirname(__file__)
 
 setup(
     name='fts3-rest',
-    version='3.9.4',
+    version='3.10.0',
     description='FTS3 Python Libraries',
     long_description='FTS3 Python Libraries',
     author='FTS3 Developers',
@@ -72,7 +72,7 @@ setup(
     url='http://fts.web.cern.ch/',
     download_url='https://gitlab.cern.ch/fts/fts-rest',
     license='Apache 2',
-    packages=['fts3', 'fts3.cli', 'fts3.model', 'fts3.rest', 'fts3.rest.client', 'fts3.rest.client.easy'],
+    packages=['fts3', 'fts3.cli', 'fts3.model', 'fts3.util', 'fts3.rest', 'fts3.rest.client', 'fts3.rest.client.easy'],
     package_dir={'fts3': os.path.join(base_dir, 'src', 'fts3')},
     scripts=glob(os.path.join(base_dir, 'src', 'cli', 'fts-*')),
     keywords='fts3, grid, rest api, data management clients',

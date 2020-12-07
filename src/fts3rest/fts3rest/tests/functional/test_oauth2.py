@@ -23,6 +23,7 @@ from fts3rest.tests import TestController
 from fts3rest.lib.base import Session
 from fts3.model import OAuth2Application, OAuth2Code, OAuth2Token, AuthorizationByDn
 from Cookie import SimpleCookie as Cookie
+from nose.plugins.skip import SkipTest
 
 
 class TestOAuth2(TestController):
@@ -60,6 +61,7 @@ class TestOAuth2(TestController):
         """
         Test the registration of an app
         """
+        raise SkipTest('Disabled as code is not used atm')
         self.setup_gridsite_environment(no_vo=no_vo)
         req = {
             'name': 'MyApp',
@@ -96,6 +98,7 @@ class TestOAuth2(TestController):
         """
         Get my list of apps
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id = self.test_register()
         apps = self.app.get(
             url="/oauth2/apps",
@@ -109,6 +112,7 @@ class TestOAuth2(TestController):
         """
         Ask for a given app
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id = self.test_register()
         app = self.app.get(
             url="/oauth2/apps/%s" % str(client_id),
@@ -120,6 +124,7 @@ class TestOAuth2(TestController):
         """
         Test the removal of an app
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id = self.test_register()
         self.app.delete(
             url="/oauth2/apps/%s" % str(client_id),
@@ -132,6 +137,7 @@ class TestOAuth2(TestController):
         """
         Ask for an app that does not belong to us
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id = self.test_register()
         self.app.extra_environ.update({'GRST_CRED_AURI_0': 'dn:/DC=ch/DC=cern/CN=Test User 2'})
         self.app.get(
@@ -143,6 +149,7 @@ class TestOAuth2(TestController):
         """
         Test the removal of an app that does not belong to us
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id = self.test_register()
         self.app.extra_environ.update({'GRST_CRED_AURI_0': 'dn:/DC=ch/DC=cern/CN=Test User 2'})
         self.app.delete(
@@ -154,6 +161,7 @@ class TestOAuth2(TestController):
         """
         An authorization POST must come from the FTS3 server itself!
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id = self.test_register()
         self.app.post(
             url="/oauth2/authorize?client_id=%s&redirect_to=https://mysite.com/callback&something=else" % str(client_id),
@@ -165,6 +173,7 @@ class TestOAuth2(TestController):
         """
         Get a OAuth2 code (second step, after redirection)
         """
+        raise SkipTest('Disabled as code is not used atm')
         if not client_id:
             client_id = self.test_register(scope=scope, no_vo=no_vo)
 
@@ -192,6 +201,7 @@ class TestOAuth2(TestController):
         """
         Try to get a OAuth2 code (second step) with a scope that wasn't registered
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id = self.test_register(scope='transfer')
 
         self.app.get(
@@ -210,6 +220,7 @@ class TestOAuth2(TestController):
         """
         Get a OAuth2 token (third step)
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id, code = self.test_get_code(scope=scope, no_vo=no_vo, client_id=client_id)
         auth = self.app.post(
             url="/oauth2/token",
@@ -233,6 +244,7 @@ class TestOAuth2(TestController):
         """
         Get a OAuth2 token (third step) but requesting a token that is not registered
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id, code = self.test_get_code(scope='transfer')
         self.app.post(
             url="/oauth2/token",
@@ -251,6 +263,7 @@ class TestOAuth2(TestController):
         """
         Refresh a token
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id, access_token, refresh_token, expires = self.test_get_token('transfer')
         auth = self.app.post(
             url="/oauth2/token",
@@ -271,6 +284,7 @@ class TestOAuth2(TestController):
         """
         Ask for /whoami using only the bearer token
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id, access_token, refresh_token, expires = self.test_get_token()
 
         del self.app.extra_environ['GRST_CRED_AURI_0']
@@ -295,6 +309,7 @@ class TestOAuth2(TestController):
         """
         Authorize, then revoke and check if it can be used
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id, access_token, refresh_token, expires = self.test_get_token()
         self.app.get(
             url="/oauth2/revoke/%s" % client_id,
@@ -311,6 +326,7 @@ class TestOAuth2(TestController):
         """
         Using bearer tokens in the OAuth2 controller must be denied
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id, access_token, refresh_token, expires = self.test_get_token()
 
         del self.app.extra_environ['GRST_CRED_AURI_0']
@@ -336,6 +352,7 @@ class TestOAuth2(TestController):
         """
         Get a token, the token expires, so it should be denied
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id, access_token, refresh_token, expires = self.test_get_token()
         del self.app.extra_environ['GRST_CRED_AURI_0']
 
@@ -362,6 +379,7 @@ class TestOAuth2(TestController):
         Get a token but only for transfer, trying to configure even if the user
         is allowed must fail
         """
+        raise SkipTest('Disabled as code is not used atm')
         AuthorizationByDn(dn=self.TEST_USER_DN, operation='config')
 
         client_id, access_token, refresh_token, expires = self.test_get_token()
@@ -377,6 +395,7 @@ class TestOAuth2(TestController):
         """
         Get a token including config, try to configure
         """
+        raise SkipTest('Disabled as code is not used atm')
         AuthorizationByDn(dn=self.TEST_USER_DN, operation='config')
 
         client_id, access_token, refresh_token, expires = self.test_get_token(scope='transfer,config')
@@ -392,6 +411,7 @@ class TestOAuth2(TestController):
         """
         Even if the scope is present, if the user has no permission it should be forbidden
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id, access_token, refresh_token, expires = self.test_get_token(scope='transfer,config', no_vo=True)
         del self.app.extra_environ['GRST_CRED_AURI_0']
 
@@ -405,6 +425,7 @@ class TestOAuth2(TestController):
         """
         Even being authorized and having the config scope, adding new authorizations must be denied
         """
+        raise SkipTest('Disabled as code is not used atm')
         AuthorizationByDn(dn=self.TEST_USER_DN, operation='config')
 
         client_id, access_token, refresh_token, expires = self.test_get_token(scope='transfer,config')
@@ -420,6 +441,7 @@ class TestOAuth2(TestController):
         """
         Register an application with transfer and config, grant only transfer, config must be forbidden
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id = self.test_register(scope='transfer,config')
         client_id, access_token, refresh_token, expires = self.test_get_token(scope='transfer', client_id=client_id)
         del self.app.extra_environ['GRST_CRED_AURI_0']
@@ -434,6 +456,7 @@ class TestOAuth2(TestController):
         """
         Application not found
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id = self.test_get_app()
         self.app.get(
             url="/oauth2/apps/%s" % client_id,
@@ -444,6 +467,7 @@ class TestOAuth2(TestController):
         """
         Try to update app
         """
+        raise SkipTest('Disabled as code is not used atm')
         client_id = str(self.test_register())
 
         config = {'redirect_to': 'https://xxx/path', 'description': 'abcd'}
@@ -465,6 +489,7 @@ class TestOAuth2(TestController):
         """
         Set invalid scope
         """
+        raise SkipTest('Disabled as code is not used atm')
         self.setup_gridsite_environment()
         req = {
             'name': 'MyApp',
@@ -483,7 +508,7 @@ class TestOAuth2(TestController):
         """
         Missing website
         """
-
+        raise SkipTest('Disabled as code is not used atm')
         config = {'name': 'MyApp', 'website': 'https://example.com'}
 
         for i in config:
@@ -497,6 +522,7 @@ class TestOAuth2(TestController):
         """
         Missing redirect_to
         """
+        raise SkipTest('Disabled as code is not used atm')
         self.setup_gridsite_environment()
         req = {
             'name': 'MyApp',
@@ -515,6 +541,7 @@ class TestOAuth2(TestController):
         """
         Lines 100,101
         """
+        raise SkipTest('Disabled as code is not used atm')
         self.setup_gridsite_environment()
         req = {
             'name': 'MyApp',

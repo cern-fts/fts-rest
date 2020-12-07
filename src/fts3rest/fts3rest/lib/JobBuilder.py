@@ -40,6 +40,7 @@ BASE_ID = uuid.UUID('urn:uuid:01874efb-4735-4595-bc9c-591aef8240c9')
 
 DEFAULT_PARAMS = {
     'bring_online': -1,
+    'archive_timeout': -1,
     'verify_checksum': False,
     'copy_pin_lifetime': -1,
     'gridftp': '',
@@ -99,6 +100,12 @@ def _validate_url(url):
         raise ValueError('Missing path (%s)' % url.geturl())
     if not url.hostname:
         raise ValueError('Missing host (%s)' % url.geturl())
+
+def _metadata(data):
+    try:
+        return json.loads(data)
+    except:
+        return {"label": str(data)}
 
 
 def _safe_flag(flag):
@@ -305,6 +312,11 @@ class JobBuilder(object):
         for k, v in params.iteritems():
             if v is None and k in DEFAULT_PARAMS:
                 params[k] = DEFAULT_PARAMS[k]
+
+        # Enforce JSON type for 'job_metadata'
+        if params['job_metadata'] is not None:
+            params['job_metadata'] = _metadata(params['job_metadata'])
+
         return params
 
     def _build_internal_job_params(self):
@@ -383,6 +395,8 @@ class JobBuilder(object):
         # Create one File entry per matching pair
         if self.is_bringonline:
             initial_file_state = 'STAGING'
+        elif self.is_qos_cdmi_transfer:
+            initial_file_state = 'QOS_TRANSITION'
         else:
             initial_file_state = 'SUBMITTED'
 
@@ -457,7 +471,14 @@ class JobBuilder(object):
         log.debug("job type is " + str(job_type))
         self.is_bringonline = self.params['copy_pin_lifetime'] > 0 or self.params['bring_online'] > 0
 
-        job_initial_state = 'STAGING' if self.is_bringonline else 'SUBMITTED'
+        self.is_qos_cdmi_transfer = (self.params['target_qos'] if 'target_qos' in self.params.keys() else None) is not None
+
+        if self.is_bringonline:
+            job_initial_state = 'STAGING'
+        elif self.is_qos_cdmi_transfer:
+            job_initial_state = 'QOS_TRANSITION'
+        else:
+            job_initial_state = 'SUBMITTED'
 
         max_time_in_queue = _seconds_from_value(self.params.get('max_time_in_queue', None))
         expiration_time = None
@@ -484,9 +505,11 @@ class JobBuilder(object):
             copy_pin_lifetime=int(self.params['copy_pin_lifetime']),
             checksum_method=self.params['verify_checksum'],
             bring_online=self.params['bring_online'],
+            archive_timeout=self.params['archive_timeout'],
             job_metadata=self.params['job_metadata'],
             internal_job_params=self._build_internal_job_params(),
-            max_time_in_queue=expiration_time
+            max_time_in_queue=expiration_time,
+            target_qos=self.params['target_qos'] if 'target_qos' in self.params.keys() else None
         )
 
         if 'credential' in self.params:
@@ -562,7 +585,7 @@ class JobBuilder(object):
             self.job['job_type'] = 'N'
 
         auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false')
-        log.debug("AutoSessionReuse is "+str(auto_session_reuse)+ " job_type is" + str(job_type))
+        log.debug("AutoSessionReuse is "+ str(auto_session_reuse) + " job_type is" + str(job_type))
         max_reuse_files = int(pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000))
         max_size_small_file = int(pylons.config.get('fts3.AutoSessionReuseMaxSmallFileSize', 104857600)) #100MB
         max_size_big_file = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFileSize', 1073741824)) #1GB
@@ -619,6 +642,7 @@ class JobBuilder(object):
             copy_pin_lifetime=-1,
             checksum_method=None,
             bring_online=None,
+            archive_timeout=None,
             job_metadata=self.params['job_metadata'],
             internal_job_params=None,
             max_time_in_queue=self.params['max_time_in_queue']
@@ -674,6 +698,12 @@ class JobBuilder(object):
         for dm in self.datamanagement:
             dm['vo_name'] = self.user.vos[0]
 
+    def _add_auth_method_on_job_metadata(self):
+        if self.params['job_metadata'] is not None and self.params['job_metadata'] != 'None':
+            self.params['job_metadata'].update({"auth_method": self.user.method})
+        else:
+            self.params['job_metadata'] = {"auth_method": self.user.method}
+
     def __init__(self, user, **kwargs):
         """
         Constructor
@@ -682,6 +712,9 @@ class JobBuilder(object):
             self.user = user
             # Get the job parameters
             self.params = self._get_params(kwargs.pop('params', dict()))
+
+            # Update auth method used
+            self._add_auth_method_on_job_metadata()
 
             files_list = kwargs.pop('files', None)
             datamg_list = kwargs.pop('delete', None)

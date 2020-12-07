@@ -40,6 +40,12 @@ var globalConfigRowHtml = '\
         <input type="number" name="sec_per_mb" class="form-control" min="0"/> \
     </td> \
     <td> \
+        <select name="no_streaming" id="no_streaming" class="form-control"> \
+            <option value="true">Yes</option> \
+            <option value="false">No</option> \
+        </select> \
+    </td> \
+    <td> \
         <select name="show_user_dn" id="show_user_dn" class="form-control"> \
             <option value="true">Yes</option> \
             <option value="false">No</option> \
@@ -69,18 +75,16 @@ function refreshVoConfigList()
 
             tr.find(".vo_name").text(vo_name);
             $.each(vo, function(op_name, op_value) {
-		tr.attr('name',vo.vo_name);
-		tr.find("button[id='button_delete_global']").attr('name', vo.vo_name);
-		tr.find("input[name='" + op_name + "']").each(function(){
-		 $(this).attr('value',op_value);
+                tr.attr('name', vo.vo_name);
+                tr.find("button[id='button_delete_global']").attr('name', vo.vo_name);
+                tr.find("input[name='" + op_name + "']").each(function() {
+                    $(this).attr('value', op_value);
                 });
-		tr.find("select[name='" + op_name + "']").each(function(){
-                 $(this).attr('value',op_value.toString());
-		 tr.find("select[name='" + op_name + "']").val(op_value.toString());
+                tr.find("select[name='" + op_name + "']").each(function() {
+                    $(this).attr('value', op_value.toString());
+                    tr.find("select[name='" + op_name + "']").val(op_value.toString());
                 });
-		
             });
-
 
             tr.find(".bt-delete").click(function() {
                 tr.css("background", "#d9534f");
@@ -107,8 +111,12 @@ function refreshVoConfigList()
                 tr.find("select").prop("disabled", true);
                 tr.css("background", "#3c763d");
 
-		if ((tr.find("input[name='retry']").val() > 10)||(tr.find("input[name='retry']").val() < 0) ||(tr.find("input[name='max_time_queue']").val() < 0)||(tr.find("input[name='global_timeout']").val() < 0)||(tr.find("input[name='sec_per_mb']").val() < 0)){ 
-		    errorMessage(jqXHR);
+            if ((tr.find("input[name='retry']").val() > 10) ||
+                (tr.find("input[name='retry']").val() < 0) ||
+                (tr.find("input[name='max_time_queue']").val() < 0) ||
+                (tr.find("input[name='global_timeout']").val() < 0) ||
+                (tr.find("input[name='sec_per_mb']").val() < 0)) {
+		            errorMessage(jqXHR);
                     tr.find("input").prop("disabled", false);
                     tr.find("select").prop("disabled", false);
                     tr.css("background", "#ffffff");
@@ -116,8 +124,7 @@ function refreshVoConfigList()
                     max_wrong.val(encodeURIComponent(vo.max_time_queue));
                     glo_wrong.val(encodeURIComponent(vo.global_timeout));
                     sec_wrong.val(encodeURIComponent(vo.sec_per_mb));
-		}
-		else{
+		    } else {
                 $.ajax({
                     url: "/config/global?",
                     type: "POST",
@@ -129,6 +136,7 @@ function refreshVoConfigList()
                         max_time_queue: tr.find("input[name='max_time_queue']").val(),
                         global_timeout: tr.find("input[name='global_timeout']").val(),
                         sec_per_mb: tr.find("input[name='sec_per_mb']").val(),
+                        no_streaming: tr.find("select[name='no_streaming']").val(),
                         show_user_dn: tr.find("select[name='show_user_dn']").val()
                     })
                 })

@@ -8,20 +8,21 @@
         However, the way of configuring differs.
     </p>
 
-    <h4>S3</h4>
-    <p>
-        Can only be configured from this tab. For being able to configure an S3 endpoint, you need to:
-    </p>
-    <dl>
-        <dt>Register the S3 storage</dt>
-        <dd>The name should have the form S3:hostname (i.e. S3:s3.example.com). App key and secret are not used.</dd>
-        <dt>Grant access to a set of VO roles and/or users</dt>
-        <dd>Empty user with a value in VO roles grant access to all members from that VO.
-            Access token = access key, access secret = secret key. Leave request fields empty.
-        </dd>
-    </dl>
+    <h4>Configuring S3 endpoint</h4>
+    <ol>
+        <li>Register the S3 storage</li>
+        <ul>
+            <li>The name should have the form S3:hostname (i.e. S3:s3.example.com)</li>
+            <li>Access token = &lt;access key&gt;, access secret = &lt;secret key&gt;</li>
+            <li>Leave request fields empty. App key and secret are not used</li>
+        </ul>
+        <li>Grant access to a set of VO roles and/or users</li>
+        <ul>
+            <li>Empty user with a value in VO roles grant access to all members from that VO</li>
+        </ul>
+    </ol>
 
-    <h4>Dropbox</h4>
+    <h4>Configuring Dropbox</h4>
     <p>
         Dropbox is normally not supposed to be used without user interaction. For supporting Dropbox (for instance,
         for an FTS3 that run WebFTS as well), you will need first to register a new application at

@@ -22,7 +22,7 @@ This command can be used to check the current status of a given job
 :	Verbose output. 
 
 -s/--endpoint
-:	Fts3 rest endpoint. 
+:	FTS3 REST endpoint. 
 
 -j/--json
 :	Print the output in json format. 

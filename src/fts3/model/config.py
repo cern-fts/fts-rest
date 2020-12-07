@@ -46,10 +46,10 @@ class LinkConfig(Base):
     symbolicname      = Column(String(255), unique=True, name='symbolic_name')
     min_active        = Column(Integer)
     max_active        = Column(Integer)
-    optimizer_mode    = Column (Integer)
+    optimizer_mode    = Column(Integer)
     tcp_buffer_size   = Column(Integer)
     nostreams         = Column(Integer)
-    
+    no_delegation     = Column(Flag(negative='off', positive='on'), default='off')
 
     def __str__(self):
         return "%s => %s" % (self.source, self.destination)
@@ -98,6 +98,7 @@ class ServerConfig(Base):
     global_timeout = Column(Integer, default=0)
     sec_per_mb     = Column(Integer, default=0)
     vo_name        = Column(String(100), primary_key=True)
+    no_streaming   = Column(Flag(negative='off', positive='on'), default='off')
     show_user_dn   = Column(Flag(negative='off', positive='on'), default='off')
 
 

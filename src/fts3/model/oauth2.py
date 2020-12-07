@@ -50,3 +50,9 @@ class OAuth2Token(Base):
     token_type    = Column(String(64), nullable=False)
     expires       = Column(DateTime, nullable=False)
     refresh_token = Column(String(128), nullable=False, primary_key=True)
+
+class OAuth2Providers(Base):
+    __tablename__ = 't_oauth2_providers'
+
+    provider_url     = Column(String(250), nullable=False, primary_key=True)
+    provider_jwk        = Column(String(1000), nullable=False)

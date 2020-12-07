@@ -28,7 +28,7 @@ from fts3rest.lib.base import BaseController, Session
 from fts3rest.lib.helpers import jsonify
 from fts3rest.lib import api
 
-API_VERSION = dict(major=3, minor=9, patch=4)
+API_VERSION = dict(major=3, minor=10, patch=0)
 
 
 def _get_fts_core_version():
@@ -45,6 +45,7 @@ def _get_fts_core_version():
         return versions[0]
     else:
         return versions
+
 
 class ApiController(BaseController):
     """
@@ -106,7 +107,7 @@ class ApiController(BaseController):
 
                 'fts:optimizer': {'href': '/optimizer/', 'title': 'Optimizer'},
 
-                'fts:archive':  {'href': '/archive/', 'title': 'Archive'}
+                'fts:archive': {'href': '/archive/', 'title': 'Archive'}
             }
         }
 

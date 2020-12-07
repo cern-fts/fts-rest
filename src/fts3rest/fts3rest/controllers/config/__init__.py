@@ -54,7 +54,7 @@ def validate_type(Type, key, value):
     """
     Validate that value is of a suitable type of the attribute key of the type Type
     """
-    column = Type.__table__.columns.get(key, None)
+    column = Type.__mapper__.columns.get(key, None)
     if column is None:
         raise HTTPBadRequest('Field %s unknown' % key)
 

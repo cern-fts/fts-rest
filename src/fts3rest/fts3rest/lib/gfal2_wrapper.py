@@ -22,6 +22,7 @@ except:
     import json
 import os
 import signal
+import urlparse
 from StringIO import StringIO
 
 try:
@@ -47,12 +48,12 @@ class Gfal2Wrapper(object):
     impacting the REST API (i.e FTS-35)
     """
 
-    def __init__(self, proxy, method):
+    def __init__(self, cred, method):
         """
         Calls method in a new process, with the environment properly set up, and a
         gfal2 context already initialized
         """
-        self.proxy = proxy
+        self.cred = cred
         self.method = method
 
     def __call__(self, *args, **kwargs):
@@ -87,14 +88,33 @@ class Gfal2Wrapper(object):
     def _child(self, pipe, args, kwargs):
         signal.alarm(30)
 
-        os.environ['X509_USER_CERT'] = self.proxy.name
-        os.environ['X509_USER_KEY'] = self.proxy.name
-        os.environ['X509_USER_PROXY'] = self.proxy.name
+        if not isinstance(self.cred, basestring):
+            os.environ['X509_USER_CERT'] = self.cred.name
+            os.environ['X509_USER_KEY'] = self.cred.name
+            os.environ['X509_USER_PROXY'] = self.cred.name
+
         exit_code = 0
         try:
             if context_type is None:
                 raise RuntimeError('Could not load the gfal2 python module')
             ctx = context_type()
+
+            if isinstance(self.cred, basestring):
+                # A IAM token is used for authentication, set it in the context
+                s_cred = gfal2.cred_new("BEARER", self.cred.split(':')[0])
+                try:
+                    if isinstance(args[0], dict):
+                        if "surl" in args[0].keys():
+                            domain = urlparse.urlparse(args[0]["surl"]).hostname
+                        else:
+                            domain = urlparse.urlparse(args[0]["old"]).hostname
+                    else:
+                        domain = urlparse.urlparse(args[0]).hostname
+                except Exception, e:
+                    # Will get a 401 from storage
+                    domain = ""
+                gfal2.cred_set(ctx, domain, s_cred)
+
             result = self.method(ctx, *args, **kwargs)
             pipe.write(json.dumps(result))
         except gfal2.GError, e:

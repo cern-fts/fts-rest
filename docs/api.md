@@ -1,36 +1,3 @@
-/usr/bin/python2.7 /opt/pycharm-community-2018.1/helpers/pydev/pydevd.py --multiproc --qt-support=auto --client 127.0.0.1 --port 33255 --file /home/aris/projects/fts-rest/docs/generate-api-md.py
-pydev debugger: process 24104 is connecting
-
-Connected to pydev debugger (build 181.4203.547)
-Using SQLAlchemy 1.2.7
-Found controller banning
-Recurse for controllers into /home/aris/projects/fts-rest/src/fts3rest/fts3rest/controllers/config
-Found controller config/audit
-Found controller config/authz
-Found controller config/se
-Found controller config/cloud
-Found controller config/links
-Found controller config/activities
-Found controller config/global
-Found controller config/drain
-Found controller config/shares
-Found controller cloudStorage
-Found controller files
-Found controller error
-Found controller api
-No module named CSdropbox
-Found controller datamanagement
-Could not get controller CSInterface
-Could not get controller CSdropbox
-Found controller autocomplete
-Found controller archive
-Found controller delegation
-Found controller optimizer
-Found controller jobs
-Found controller oauth2
-Found controller serverstatus
-config not found in controllers
-content not found in controllers
 API
 ===
 This document has been generated automatically
@@ -1601,10 +1568,10 @@ Models
 |submit_host        |string  |
 |priority           |integer |
 |source_space_token |string  |
-|reuse_job          |boolean |
+|max_time_in_queue  |integer |
 |job_metadata       |string  |
 |source_se          |string  |
-|max_time_in_queue  |integer |
+|archive_timeout    |integer |
 |files              |array   |
 |job_params         |string  |
 |bring_online       |integer |
@@ -1615,6 +1582,8 @@ Models
 |internal_job_params|string  |
 |vo_name            |string  |
 |copy_pin_lifetime  |integer |
+|reuse_job          |boolean |
+|target_qos         |string  |
 |verify_checksum    |string  |
 |job_finished       |dateTime|
 |overwrite_flag     |boolean |
@@ -1636,6 +1605,7 @@ Models
 |max_time_in_queue  |integer |
 |job_metadata       |string  |
 |source_se          |string  |
+|archive_timeout    |integer |
 |files              |array   |
 |dm                 |array   |
 |bring_online       |integer |
@@ -1647,6 +1617,7 @@ Models
 |internal_job_params|string  |
 |vo_name            |string  |
 |copy_pin_lifetime  |integer |
+|target_qos         |string  |
 |verify_checksum    |string  |
 |job_finished       |dateTime|
 |overwrite_flag     |boolean |
@@ -1662,12 +1633,16 @@ Models
 |log_debug           |integer |
 |retry               |integer |
 |job_id              |string  |
+|dest_surl_uuid      |string  |
+|priority            |integer |
 |staging_start       |dateTime|
 |filesize            |integer |
 |source_se           |string  |
 |file_state          |string  |
 |start_time          |dateTime|
-|internal_file_params|string  |
+|archive_start_time  |dateTime|
+|archive_finish_time |dateTime|
+|file_index          |integer |
 |reason              |string  |
 |file_id             |string  |
 |staging_host        |string  |
@@ -1677,7 +1652,7 @@ Models
 |selection_strategy  |string  |
 |retries             |array   |
 |dest_se             |string  |
-|file_index          |integer |
+|internal_file_params|string  |
 |finish_time         |dateTime|
 |checksum            |string  |
 |staging_finished    |dateTime|
@@ -1704,20 +1679,23 @@ Models
 |--------------------|--------|
 |tx_duration         |float   |
 |pid                 |integer |
-|dest_surl           |string  |
 |retry               |integer |
 |job_id              |string  |
+|dest_surl_uuid      |string  |
 |job_finished        |dateTime|
+|priority            |integer |
 |staging_start       |dateTime|
 |filesize            |integer |
 |source_se           |string  |
 |file_state          |string  |
 |start_time          |dateTime|
+|archive_start_time  |dateTime|
+|archive_finish_time |dateTime|
 |file_index          |integer |
 |reason              |string  |
 |file_id             |string  |
 |staging_host        |string  |
-|user_filesize       |integer |
+|dest_surl           |string  |
 |source_surl         |string  |
 |bringonline_token   |string  |
 |selection_strategy  |string  |
@@ -1726,10 +1704,9 @@ Models
 |finish_time         |dateTime|
 |checksum            |string  |
 |staging_finished    |dateTime|
+|user_filesize       |integer |
 |file_metadata       |string  |
 |transferhost        |string  |
 |throughput          |float   |
 |current_failures    |integer |
 
-
-Process finished with exit code 0

@@ -4,19 +4,21 @@
 %{!?nosetest_path: %global nosetest_path "/tmp"}
 
 Name:           fts-rest
-Version:        3.9.4
+Version:        3.10.0
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
 License:        ASL 2.0
 URL:            http://fts3-service.web.cern.ch/
-# git clone https://gitlab.cern.ch/fts/fts-rest.git --depth 1 -b master fts-rest-3.8.1
-# cd fts-rest-3.8.1
-# git checkout v3.8.1
+# The source for this package was pulled from upstream VCS.
+# Use the following commands to generate the tarball:
+# git clone https://gitlab.cern.ch/fts/fts-rest.git -b master --depth 1 fts-rest-3.10.0
+# cd fts-rest-3.10.0
+# git checkout v3.10.0
 # git submodule init && git submodule update
 # cd ..
-# tar vczf fts-rest-3.8.1.tar.gz --exclude-vcs fts-rest-3.8.1
+# tar -vczf fts-rest-3.10.0.tar.gz --exclude-vcs fts-rest-3.10.0
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  gfal2-python
@@ -42,12 +44,19 @@ BuildRequires:  python-sqlalchemy
 BuildRequires:  python-sqlalchemy0.8
 %endif
 BuildRequires:  python-requests
+BuildRequires:  python-urllib3
 %if %{?rhel}%{!?rhel:0} == 6
 BuildRequires:  python-slimit
 %endif
 BuildRequires:  pandoc
 BuildRequires:  python-dirq
+BuildRequires:  python-pycurl
 BuildRequires:  MySQL-python
+
+BuildRequires:  python-jwcrypto
+BuildRequires:  python-jwt
+BuildRequires:  python-oic
+
 
 Requires:       gridsite%{?_isa} >= 1.7
 %if %{?rhel}%{!?rhel:0} == 6
@@ -56,6 +65,9 @@ Requires:       httpd%{?_isa} >= 2.2.15-60
 %if %{?rhel}%{!?rhel:0} >= 7
 Requires:       httpd%{?_isa}
 %endif
+Requires:       python-oic
+Requires:       python-jwcrypto >= 0.6
+Requires:       python-jwt
 Requires:       mod_wsgi
 Requires:       python-dirq
 Requires:       python-fts = %{version}-%{release}
@@ -63,7 +75,10 @@ Requires:       python-paste-deploy
 Requires:       python-pylons
 Requires:       python-simplejson%{?_isa}
 Requires:       gfal2-python%{?_isa}
-Requires: 	python-requests
+Requires:       python-requests
+Requires:       python-urllib3
+
+
 %description
 This package provides the FTS3 REST interface
 
@@ -136,6 +151,12 @@ Requires:       python-sqlalchemy
 %else
 Requires:       python-sqlalchemy0.8
 %endif
+Requires:       python-requests
+#Requires:       python-requests >= 2.23
+#Requires:       python-chardet >= 3.0.2
+#Requires:       python-idna >= 2.5
+#Requires:       python-urllib3 >= 1.21.1
+#Requires:       python-certifi >= 2017.4.17
 
 %description -n python-fts
 This package provides an object model of the FTS3
@@ -193,11 +214,11 @@ make %{?_smp_mflags}
 pushd src/fts3rest
 %if %{?rhel}%{!?rhel:0} == 6
 PYTHONPATH=../:/usr/lib64/python2.6/site-packages/SQLAlchemy-0.8.2-py2.6-linux-x86_64.egg/ \
-    nosetests1.1 --with-xunit --xunit-file=%{?nosetest_path}/nosetests.xml
+    nosetests1.1 --with-xunit --xunit-file=%{?nosetest_path}/nosetests.xml --no-skip
 %endif
 %if %{?rhel}%{!?rhel:0} >= 7
 PYTHONPATH=../ ./setup_pylons_plugin.py install --user
-PYTHONPATH=../ nosetests --with-xunit --xunit-file=%{?nosetest_path}/nosetests.xml
+PYTHONPATH=../ nosetests --with-xunit --xunit-file=%{?nosetest_path}/nosetests.xml --no-skip
 %endif
 popd
 
@@ -253,8 +274,10 @@ EOF
 %{python_sitelib}/fts3rest/lib/api/
 %{python_sitelib}/fts3rest/lib/app_globals.py*
 %{python_sitelib}/fts3rest/lib/base.py*
+%{python_sitelib}/fts3rest/lib/openidconnect.py*
 %{python_sitelib}/fts3rest/lib/gfal2_wrapper.py*
 %{python_sitelib}/fts3rest/lib/heartbeat.py*
+%{python_sitelib}/fts3rest/lib/IAMTokenRefresher.py*
 %{python_sitelib}/fts3rest/lib/helpers/
 %{python_sitelib}/fts3rest/lib/http_exceptions.py*
 %{python_sitelib}/fts3rest/lib/__init__.py*
@@ -327,7 +350,15 @@ EOF
 
 
 %changelog
+* Mon Dec 07 2020 Mihai Patrascoiu <mihai.patrascoiu@cern.ch> - 3.10.0-1
+- New Minor release
+- OIDC Tokens Integration
+- Archive Monitoring and QoS features
+
 * Tue Jun 02 2020 Carles Garcia Cabot <carles.garcia.cabot@cern.ch> - 3.9.4-1
+- New bugfix release
+
+* Thu Nov 21 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.3-1
 - New bugfix release
 
 * Mon Aug 19 2019 Andrea Manzi <amanzi@cern.ch> - 3.9.2-1
