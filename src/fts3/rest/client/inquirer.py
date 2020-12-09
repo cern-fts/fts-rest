@@ -61,7 +61,7 @@ class Inquirer(object):
 
             return job_info
         except NotFound:
-            raise NotFound(job_id)
+            raise NotFound(job_ids)
 
     def get_job_list(self, user_dn=None, vo_name=None, source_se=None, dest_se=None, delegation_id=None, state_in=None):
         url = "/jobs?"
