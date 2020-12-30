@@ -69,7 +69,9 @@ the values defined in the `X509_USER_PROXY` or `X509_USER_CERT + X509_USER_KEY` 
 
 If verify is False, the server certificate will not be verified.
 
-Additionally, the `Context` object provides a method `get_endpoint_info()` to retrieve information
+#### get_endpoint_info
+
+The `Context` object provides a method `get_endpoint_info()` to retrieve information
 about the endpoint, after it has passed validation. This method returns a dictionary
 with relevant information about the endpoint:
 - url: the endpoint URL string
