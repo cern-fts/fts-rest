@@ -46,7 +46,7 @@ jsonschema==2.5.1
 jwcrypto==0.6.0
 kerberos==1.1
 kitchen==1.1.1
-lxml==3.2.1
+lxml==4.6.2
 M2Crypto==0.21.1
 m2ext==0.1
 Mako==0.8.1
