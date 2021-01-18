@@ -20,6 +20,7 @@ import time
 import types
 import uuid
 import pylons
+import json
 
 from datetime import datetime
 from urlparse import urlparse,parse_qsl, ParseResult
@@ -102,6 +103,8 @@ def _validate_url(url):
         raise ValueError('Missing host (%s)' % url.geturl())
 
 def _metadata(data):
+    if isinstance(data, dict):
+        return data
     try:
         return json.loads(data)
     except:
