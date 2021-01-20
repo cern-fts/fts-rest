@@ -220,8 +220,10 @@ class JobSubmitter(Base):
                 params[k] = v
 
         # JSONify metadata
-        params['job_metadata'] = _metadata(params['job_metadata'])
-        params['file_metadata'] = _metadata(params['file_metadata'])
+        if params['job_metadata'] is not None:
+            params['job_metadata'] = _metadata(params['job_metadata'])
+        if params['file_metadata'] is not None:
+            params['file_metadata'] = _metadata(params['file_metadata'])
         return params
 
     def _prepare_options(self):
