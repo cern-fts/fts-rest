@@ -59,15 +59,29 @@ The endpoint to use corresponds to the FTS instance REST server and it must have
 
 `https://<host>:<port>` 
 
-for instance https://fts3.cern.ch:8446
+Example: https://fts3.cern.ch:8446
 
 If you are using a proxy certificate, you can either specify only user_certificate, or point both parameters
 to the proxy.
 
-user_certificate and user_key can be safely omitted, and the program will use the values
-defined in the environment variables `X509_USER_PROXY` or `X509_USER_CERT + X509_USER_KEY`.
+The user_certificate and user_key parameters can be safely omitted, and the program will use 
+the values defined in the `X509_USER_PROXY` or `X509_USER_CERT + X509_USER_KEY` environment variables.
 
 If verify is False, the server certificate will not be verified.
+
+#### get_endpoint_info
+
+The `Context` object provides a method `get_endpoint_info()` to retrieve information
+about the endpoint, after it has passed validation. This method returns a dictionary
+with relevant information about the endpoint:
+- url: the endpoint URL string
+- delegation: `{major, minor, patch}` delegation version dictionary
+- core: `{major, minor, patch}` FTS server version dictionary
+- api: `{major, minor, patch}` REST API version dictionary
+- schema: `{major, minor, patch}` schema version dictionary
+
+Note: the same info can be obtained via a GET request 
+to the `https://<host>:<port>/` address of the FTS REST endpoint
 
 ### whoami
 Queries the server to see how does it see us

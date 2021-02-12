@@ -576,11 +576,9 @@ class ResourceProvider(Provider):
 
     def get_authorization(self):
         """Get authorization object representing status of authentication."""
-        log.info('get_authorization')
         auth = self.authorization_class()
         header = self.get_authorization_header()
         if not header or not header.split:
-            log.info('no header')
             return auth
         header = header.split()
         if len(header) > 1 and header[0] == 'Bearer':

@@ -4,7 +4,7 @@
 %{!?nosetest_path: %global nosetest_path "/tmp"}
 
 Name:           fts-rest
-Version:        3.10.0
+Version:        3.10.1
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
@@ -350,6 +350,9 @@ EOF
 
 
 %changelog
+* Fri Feb 12 2021 Mihai Patrascoiu <mihai.patrascoiu@cern.ch> - 3.10.1-1
+- New bugfix release
+
 * Mon Dec 07 2020 Mihai Patrascoiu <mihai.patrascoiu@cern.ch> - 3.10.0-1
 - New Minor release
 - OIDC Tokens Integration
