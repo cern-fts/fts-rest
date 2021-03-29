@@ -77,7 +77,7 @@ pycparser==2.14
 pycryptodomex==3.9.0
 pycurl==7.19.0
 pyflakes==2.1.1
-Pygments==1.4
+Pygments==2.7.4
 pygobject==3.22.0
 pygpgme==0.3
 pyjwkest==1.4.2
