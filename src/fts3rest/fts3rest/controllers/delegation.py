@@ -72,7 +72,7 @@ def _generate_proxy_request():
     Returns:
         A tuple (X509 request, generated private key)
     """
-    key_pair = RSA.gen_key(1024, 65537, callback=_mute_callback)
+    key_pair = RSA.gen_key(2048, 65537, callback=_mute_callback)
     pkey = EVP.PKey()
     pkey.assign_rsa(key_pair)
     x509_request = X509.Request()
