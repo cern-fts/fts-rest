@@ -55,6 +55,7 @@ Note that _all_ parameters are optional.
 * **sid** 				Specific id given by the user to be used with the deterministic job id generator algorithm
 * **max_time_in_queue** Max time the job can be on the queue. Accepts an integer without suffix (interpreted as hours), or with a suffix s (seconds), m (minutes) or h (hours). e.g `60s`
 * **priority**          Job priority. It should be a number between 1 and 5. The higher the number, the higher the priority.
+* **buffer_size**		TCP buffer size (in bytes) that will be used for the given transfer job
 
 ### Returns:
 A dictionary representing a new job submission
