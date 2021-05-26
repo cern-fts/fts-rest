@@ -65,14 +65,17 @@ def _populated_x509_name(components):
     return x509_name
 
 
-def _generate_proxy_request():
+def _generate_proxy_request(key_len=2048):
     """
     Generates a X509 proxy request.
+    
+    Args:
+        key_len: Length of the RSA key in bits
 
     Returns:
         A tuple (X509 request, generated private key)
     """
-    key_pair = RSA.gen_key(2048, 65537, callback=_mute_callback)
+    key_pair = RSA.gen_key(key_len, 65537, callback=_mute_callback)
     pkey = EVP.PKey()
     pkey.assign_rsa(key_pair)
     x509_request = X509.Request()
@@ -282,8 +285,17 @@ class DelegationController(BaseController):
         credential_cache = Session.query(CredentialCache)\
             .get((user.delegation_id, user.user_dn))
 
-        if credential_cache is None or credential_cache.cert_request is None:
-            (x509_request, private_key) = _generate_proxy_request()
+        user_cert = self.certificate()
+        if user_cert:
+            user_key = X509.load_cert_string(user_cert)
+            request_key_len = user_key.get_pubkey().size()*8
+        else:
+            request_key_len = 2048
+
+        cached = credential_cache is not None and credential_cache.cert_request is not None
+
+        if not cached or request_key_len != EVP.load_key_string(credential_cache.priv_key).size()*8:
+            (x509_request, private_key) = _generate_proxy_request(key_len=request_key_len)
             credential_cache = CredentialCache(dlg_id=user.delegation_id, dn=user.user_dn,
                                                cert_request=x509_request.as_pem(),
                                                priv_key=private_key.as_pem(cipher=None),
@@ -296,7 +308,7 @@ class DelegationController(BaseController):
                 raise
             log.debug("Generated new credential request for %s" % dlg_id)
         else:
-            log.debug("Using cached request for %s" % dlg_id)
+            log.debug("Using cached request for %s" % dlg_id)        
 
         start_response('200 Ok', [('X-Delegation-ID', str(credential_cache.dlg_id)),
                                   ('Content-Type', 'text/plain')])
