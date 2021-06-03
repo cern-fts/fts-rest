@@ -41,6 +41,7 @@ DEFAULT_PARAMS = {
     'copy_pin_lifetime': -1,
     'bring_online': -1,
     'archive_timeout': -1,
+    'dst_file_report': False,
     'timeout': None,
     'fail_nearline': False,
     'retry': 0,
@@ -145,6 +146,8 @@ class JobSubmitter(Base):
                                    help='bring online timeout in seconds.')
         self.opt_parser.add_option('--archive-timeout', dest='archive_timeout', type='long',
                                    help='archive timeout in seconds.')
+        self.opt_parser.add_option('--dst_file_report', dest='dst_file_report', default=False, action='store_true',
+                                   help='report on the destination tape file if it already exists and overwrite is off.')
         self.opt_parser.add_option('--timeout', dest='timeout', type='long',
                                    help='transfer timeout in seconds.')
         self.opt_parser.add_option('--fail-nearline', dest='fail_nearline', action='store_true',
@@ -244,6 +247,7 @@ class JobSubmitter(Base):
             checksum=self.checksum,
             bring_online=self.options.bring_online,
             archive_timeout=self.options.archive_timeout,
+            dst_file_report=self.options.dst_file_report,
             timeout = self.options.timeout,
             verify_checksum=checksum_mode[0],
             spacetoken=self.options.destination_token,
