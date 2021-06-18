@@ -74,7 +74,9 @@ function saveUser(storage_name, form)
         access_token: form.find("input[name='access-token']").val(),
         access_token_secret: form.find("input[name='access-secret']").val(),
         request_token: form.find("input[name='request-token']").val(),
-        request_token_secret: form.find("input[name='request-secret']").val()
+        request_token_secret: form.find("input[name='request-secret']").val(),
+        os_token: form.find("input[name='os-token']").val(),
+        os_project_id: form.find("input[name='os-project_id']").val()
     };
 
     console.log(msg);

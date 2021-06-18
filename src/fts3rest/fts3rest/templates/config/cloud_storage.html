@@ -72,6 +72,8 @@
                         <th>Access secret</th>
                         <th>Request token</th>
                         <th>Request secret</th>
+                        <th>OS token</th>
+                        <th>OS project id</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -101,6 +103,12 @@
                         <td>
                             <input type="text" name="request-secret" class="form-control" value="{{request_token_secret}}"/>
                         </td>
+                        <td>
+                            <input type="text" name="os-token" class="form-control" value="{{os_token}}"/>
+                        </td>
+                        <td>
+                            <input type="text" name="os-project-id" class="form-control" value="{{os_project_id}}"/>
+                        </td>
                     </tr>
                     {{/each}}
                 </tbody>
@@ -126,6 +134,12 @@
                         </td>
                         <td>
                             <input name="request-secret" type="text" class="form-control" value=""/>
+                        </td>
+                        <td>
+                            <input name="os-token" type="text" class="form-control" value=""/>
+                        </td>
+                        <td>
+                            <input name="os-project-id" type="text" class="form-control" value=""/>
                         </td>
                     </tr>
                 </tbody>

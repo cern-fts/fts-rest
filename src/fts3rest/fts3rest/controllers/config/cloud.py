@@ -146,6 +146,8 @@ class CloudConfigController(BaseController):
             access_token_secret=input_dict.get('secret_key', input_dict.get('access_token_secret', None)),
             request_token=input_dict.get('request_token'),
             request_token_secret=input_dict.get('request_token_secret'),
+            os_token=input_dict.get('os_token', input_dict.get('os_token', None)),
+            os_project_id=input_dict.get('os_project_id', input_dict.get('os_project_id', None)),
             vo_name=input_dict.get('vo_name', ''),
         )
 

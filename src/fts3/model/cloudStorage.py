@@ -37,6 +37,8 @@ class CloudStorageUser(Base):
     access_token_secret  = Column(String(255))
     request_token        = Column(String(255))
     request_token_secret = Column(String(255))
+    os_token             = Column(String(255))
+    os_project_id        = Column(String(255))
     vo_name              = Column(String(100), primary_key=True)
 
     def is_access_requested(self):
