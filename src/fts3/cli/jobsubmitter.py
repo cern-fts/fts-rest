@@ -146,7 +146,7 @@ class JobSubmitter(Base):
                                    help='bring online timeout in seconds.')
         self.opt_parser.add_option('--archive-timeout', dest='archive_timeout', type='long',
                                    help='archive timeout in seconds.')
-        self.opt_parser.add_option('--dst_file_report', dest='dst_file_report', default=False, action='store_true',
+        self.opt_parser.add_option('--dst-file-report', dest='dst_file_report', default=False, action='store_true',
                                    help='report on the destination tape file if it already exists and overwrite is off.')
         self.opt_parser.add_option('--timeout', dest='timeout', type='long',
                                    help='transfer timeout in seconds.')
