@@ -447,6 +447,8 @@ class JobBuilder(object):
                 activity=file_dict.get('activity', 'default'),
                 hashed_id=shared_hashed_id if shared_hashed_id else _generate_hashed_id()
             )
+            if f['file_metadata'] != None:
+                f['file_metadata'] = _metadata(f['file_metadata'])
             self.files.append(f)
 
     def _apply_selection_strategy(self):
