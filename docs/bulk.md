@@ -102,7 +102,7 @@ job.
 {
   "files": [],
   "params": {
-    "max_time_in_queue": 36000,
+    "max_time_in_queue": "36000s",
     "timeout": 3600,
     "nostreams": 0,
     "buffer_size": 1024,
@@ -132,14 +132,14 @@ job.
 Of course, all these parameters are optional. You can set only a subset of them,
 or none at all.
 
-* **max_time_in_queue** After this number of seconds on the queue, the transfer will be
-canceled.
+* **max_time_in_queue** After this number of hours on the queue, the transfer will be canceled.
+A suffix such as 's', 'm' or 'h' is accepted.
 * **timeout** After this number of seconds running, the transfer will be aborted.
 * **nostreams** Number of streams  to use during the transfer.
 Not all protocols support this.
 * **buffer_size** TCP buffer size.
 * **strict_copy** If true, only a transfer will be done. No checksum, no size validation, no
-parent directory creation... useful for endpoints that do not support any, of some, of this
+parent directory creation... useful for endpoints that do not support any, or some, of these
 operations, like S3.
 * **ipv4** Enable/disable IPv4 support. Not all protocols support this.
 * **ipv6** Enable/disable IPv6 support. Not all protocols support this.
@@ -148,7 +148,7 @@ If any step fails, the remaining ones wil be canceled.
 * **reuse** Transfer all the files within the job reusing the same connection. Not all protocols
 support this. Useful for small files.
 * **copy_pin_lifetime** If greater than -1, a Bring Online operation will be done prior to the
-stransfer. The value of this field will be sent to the remote storage for the lifetime
+transfer. The value of this field will be sent to the remote storage for the lifetime
 of the replica on disk.
 * **bring_online** Bring online timeout. After this number of seconds, the staging operation will
 be canceled, and the transfer will not take place. If greater than -1, a Bring Online operation will
@@ -157,7 +157,7 @@ be done.
 * **source_spacetoken** Source space token.
 * **retry** Let FTS3 retry the file on error. Not all errors are retries. For instance,
 a "File not found" will *not* be retried.
-* **retry_dely** Wait this many seconds between retries.
+* **retry_delay** Wait this many seconds between retries.
 * **priority** Job priority. Applied after VO Shares, and Activity Shares. *No* fair share.
 If you keep submitting jobs with high priorities, jobs with lower priority will not go
 through.
