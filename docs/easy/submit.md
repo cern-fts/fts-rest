@@ -43,6 +43,7 @@ Note that _all_ parameters are optional.
 * **verify_checksum**   Enable checksum verification or indicate source, target, both or none checksum mode.
 * **reuse**             Enable reuse (all transfers are handled by the same process)
 * **overwrite**         Overwrite the destinations if exist
+* **overwrite_on_retry** Enable overwrite files only during FTS retries
 * **multihop**          Treat the transfer as a multihop transfer
 * **source_spacetoken** Source space token
 * **spacetoken**        Destination space token

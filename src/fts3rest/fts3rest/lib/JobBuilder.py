@@ -48,6 +48,7 @@ DEFAULT_PARAMS = {
     'job_metadata': None,
     'overwrite': False,
     'dst_file_report': False,
+    'overwrite_on_retry': False,
     'reuse': None,
     'multihop': False,
     'source_spacetoken': '',
@@ -491,6 +492,13 @@ class JobBuilder(object):
         if max_time_in_queue is not None:
             expiration_time = time.time() + max_time_in_queue
 
+        if self.params['overwrite']:
+            overwrite_flag = 'Y'
+        elif self.params['overwrite_on_retry']:
+            overwrite_flag = 'R'
+        else:
+            overwrite_flag = None
+
         self.job = dict(
             job_id=self.job_id,
             job_state=job_initial_state,
@@ -506,8 +514,8 @@ class JobBuilder(object):
             submit_time=datetime.utcnow(),
             priority=max(min(int(self.params['priority']), 5), 1),
             space_token=self.params['spacetoken'],
-            overwrite_flag=_safe_flag(self.params['overwrite']),
             dst_file_report=_safe_flag(self.params['dst_file_report']),
+            overwrite_flag=overwrite_flag,
             source_space_token=self.params['source_spacetoken'],
             copy_pin_lifetime=int(self.params['copy_pin_lifetime']),
             checksum_method=self.params['verify_checksum'],

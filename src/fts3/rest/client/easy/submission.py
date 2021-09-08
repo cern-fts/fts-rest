@@ -103,7 +103,7 @@ def add_alternative_source(transfer, alt_source):
     return transfer
 
 
-def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, overwrite=False, multihop=False,
+def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, overwrite=False, overwrite_on_retry=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
             bring_online=None, archive_timeout=None, dst_file_report=False, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
@@ -119,6 +119,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         verify_checksum:   Enable checksum verification: source, destination, both or none
         reuse:             Enable reuse (all transfers are handled by the same process)
         overwrite:         Overwrite the destinations if exist
+        overwrite_on_retry: Enable overwrite files only during FTS retries
         multihop:          Treat the transfer as a multihop transfer
         source_spacetoken: Source space token
         spacetoken:        Destination space token
@@ -147,6 +148,10 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
     if isinstance(verify_checksum, basestring):
             if not verify_checksum in ('source','target','both', 'none'):
                 raise ClientError('Bad request: verify_checksum does not contain a valid value')
+    
+    if overwrite != False and overwrite_on_retry != False:
+        raise ClientError('Bad request: overwrite and overwrite-on-retry can not be used at the same time')
+
     params = dict(
         verify_checksum=verify_checksum,
         reuse=reuse,
@@ -158,6 +163,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         job_metadata=metadata,
         source_spacetoken=source_spacetoken,
         overwrite=overwrite,
+        overwrite_on_retry=overwrite_on_retry,
         multihop=multihop,
         retry=retry,
         retry_delay=retry_delay,
