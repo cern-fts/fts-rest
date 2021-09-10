@@ -105,7 +105,7 @@ def add_alternative_source(transfer, alt_source):
 
 def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, overwrite=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
-            bring_online=None, archive_timeout=None, copy_pin_lifetime=None,
+            bring_online=None, archive_timeout=None, dst_file_report=False, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
             max_time_in_queue=None, timeout=None,
             id_generator=JobIdGenerator.standard, sid=None, 
@@ -124,6 +124,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         spacetoken:        Destination space token
         bring_online:      Bring online timeout
         archive_timeout:   Archive timeout
+        dst_file_report:   Report on the destination tape file if it already exists and overwrite is off
         copy_pin_lifetime: Pin lifetime
         retry:             Number of retries: <0 is no retries, 0 is server default, >0 is whatever value is passed
         metadata:          Metadata to bind to the job
@@ -152,6 +153,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         spacetoken=spacetoken,
         bring_online=bring_online,
         archive_timeout=archive_timeout,
+        dst_file_report=dst_file_report,
         copy_pin_lifetime=copy_pin_lifetime,
         job_metadata=metadata,
         source_spacetoken=source_spacetoken,

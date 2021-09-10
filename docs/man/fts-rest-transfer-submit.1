@@ -188,6 +188,15 @@ E.
 Dropbox).
 .RS
 .RE
+.TP
+.B --dst_file_report
+Report on the destination tape file if archiving to tape, overwrite is not
+switched on and the tape file already exists.  The report will include both the
+size and checksum of the file.  This integrity check can be used by the end user
+or system to decide whether or not to stop trying to archive the file to tape
+because it already exists.
+.RS
+.RE
 .SH EXAMPLE
 .IP
 .nf

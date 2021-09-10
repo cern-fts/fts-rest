@@ -77,6 +77,9 @@ paramSchema = {
         'overwrite': {
             'type': ['boolean', 'null']
         },
+        'dst_file_report': {
+            'type': ['boolean', 'null']
+        },
         'gridftp': {
             'type': ['string', 'null'],
             'title': 'Reserved for future usage'
