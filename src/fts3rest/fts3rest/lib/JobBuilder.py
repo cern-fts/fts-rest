@@ -497,7 +497,7 @@ class JobBuilder(object):
         elif self.params['overwrite_on_retry']:
             overwrite_flag = 'R'
         else:
-            overwrite_flag = None
+            overwrite_flag = False
 
         self.job = dict(
             job_id=self.job_id,
