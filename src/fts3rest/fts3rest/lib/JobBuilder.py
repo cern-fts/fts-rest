@@ -466,7 +466,7 @@ class JobBuilder(object):
         """
 
         job_type = None
-        log.debug("job type is " + str(job_type)+ " reuse"+ str(self.params['reuse']))
+        log.debug("job_type=" + str(job_type) + " reuse=" + str(self.params['reuse']))
 
         if self.params['multihop']:
             job_type = 'H'
@@ -475,7 +475,7 @@ class JobBuilder(object):
                 job_type = 'Y'
             else:
                 job_type = 'N'
-        log.debug("job type is " + str(job_type))
+        log.debug("job_type=" + str(job_type))
         self.is_bringonline = self.params['copy_pin_lifetime'] > 0 or self.params['bring_online'] > 0
 
         self.is_qos_cdmi_transfer = (self.params['target_qos'] if 'target_qos' in self.params.keys() else None) is not None
@@ -600,7 +600,7 @@ class JobBuilder(object):
             self.job['job_type'] = 'N'
 
         auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false')
-        log.debug("AutoSessionReuse is "+ str(auto_session_reuse) + " job_type is" + str(job_type))
+        log.debug("AutoSessionReuse=" + str(auto_session_reuse) + " job_type=" + str(job_type))
         max_reuse_files = int(pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000))
         max_size_small_file = int(pylons.config.get('fts3.AutoSessionReuseMaxSmallFileSize', 104857600)) #100MB
         max_size_big_file = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFileSize', 1073741824)) #1GB
@@ -610,7 +610,7 @@ class JobBuilder(object):
             if ((self.job['source_se']) and (self.job['dest_se']) and (job_type is None) and (len(self.files) > 1)):
                 if len(self.files) > max_reuse_files:
                     self.job['job_type'] == 'N'
-                    log.debug("The number of files "+str(len(self.files))+"is bigger than the auto maximum reuse files "+str(max_reuse_files))
+                    log.debug("The number of files " + str(len(self.files)) + " is bigger than the auto maximum reuse files " + str(max_reuse_files))
                 else:
                     small_files = 0
                     big_files = 0
@@ -624,7 +624,7 @@ class JobBuilder(object):
                                 big_files +=1
                     if small_files > min_small_files and big_files <= max_big_files:
                         self.job['job_type'] = 'Y'
-                        log.debug("Reuse jobs with "+str(small_files)+" small files up to "+str(len(self.files))+" total files")
+                        log.debug("Reuse jobs with " + str(small_files) + " small files up to " + str(len(self.files)) + " total files")
                         # Need to reset their hashed_id so they land on the same machine
                         shared_hashed_id = _generate_hashed_id()
                         for file in self.files:
