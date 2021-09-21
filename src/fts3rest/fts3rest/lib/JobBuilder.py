@@ -294,6 +294,8 @@ def _seconds_from_value(value):
             return int(value) * 60
         elif suffix == 'h':
             return int(value) * 3600
+        elif suffix == 'd':
+            return int(value) * 3600 * 24
         else:
             return None
     except:
@@ -491,6 +493,15 @@ class JobBuilder(object):
         expiration_time = None
         if max_time_in_queue is not None:
             expiration_time = time.time() + max_time_in_queue
+
+        if max_time_in_queue is not None and self.params['bring_online'] > 0:
+            # Ensure that the bringonline and expiration delta is respected
+            timeout_delta = _seconds_from_value(
+                pylons.config.get('fts3.BringOnlineAndExpirationDelta', None))
+            if timeout_delta is not None:
+                log.debug("Will enforce BringOnlineAndExpirationDelta=" + str(timeout_delta) + "s")
+                if max_time_in_queue - self.params['bring_online'] < timeout_delta:
+                    raise HTTPBadRequest('Bringonline and Expiration timeout must be at least ' + str(timeout_delta) + ' seconds apart')
 
         if self.params['overwrite']:
             overwrite_flag = 'Y'
