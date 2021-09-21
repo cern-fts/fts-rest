@@ -594,7 +594,7 @@ class JobBuilder(object):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
 
         if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']) and len(self.files) > min_reuse_files:
-            self.job['job_type'] == 'Y'
+            self.job['job_type'] = 'Y'
 
         if job_type == 'N' and not self.is_multiple:
             self.job['job_type'] = 'N'
@@ -609,7 +609,7 @@ class JobBuilder(object):
         if auto_session_reuse == 'true' and not self.is_multiple and not self.is_bringonline and len(self.files) > min_reuse_files:
             if ((self.job['source_se']) and (self.job['dest_se']) and (job_type is None) and (len(self.files) > 1)):
                 if len(self.files) > max_reuse_files:
-                    self.job['job_type'] == 'N'
+                    self.job['job_type'] = 'N'
                     log.debug("The number of files " + str(len(self.files)) + " is bigger than the auto maximum reuse files " + str(max_reuse_files))
                 else:
                     small_files = 0
