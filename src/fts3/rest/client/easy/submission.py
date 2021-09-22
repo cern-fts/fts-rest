@@ -103,12 +103,13 @@ def add_alternative_source(transfer, alt_source):
     return transfer
 
 
-def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, overwrite=False, multihop=False,
+def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, overwrite=False, overwrite_on_retry=False, multihop=False,
             source_spacetoken=None, spacetoken=None,
-            bring_online=None, archive_timeout=None, copy_pin_lifetime=None,
+            bring_online=None, archive_timeout=None, dst_file_report=False, copy_pin_lifetime=None,
             retry=-1, retry_delay=0, metadata=None, priority=None, strict_copy=False,
             max_time_in_queue=None, timeout=None,
-            id_generator=JobIdGenerator.standard, sid=None, s3alternate=False, nostreams=1):
+            id_generator=JobIdGenerator.standard, sid=None, 
+            s3alternate=False, nostreams=1, buffer_size=None):
     """
     Creates a new dictionary representing a job
 
@@ -118,11 +119,13 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         verify_checksum:   Enable checksum verification: source, destination, both or none
         reuse:             Enable reuse (all transfers are handled by the same process)
         overwrite:         Overwrite the destinations if exist
+        overwrite_on_retry: Enable overwrite files only during FTS retries
         multihop:          Treat the transfer as a multihop transfer
         source_spacetoken: Source space token
         spacetoken:        Destination space token
         bring_online:      Bring online timeout
         archive_timeout:   Archive timeout
+        dst_file_report:   Report on the destination tape file if it already exists and overwrite is off
         copy_pin_lifetime: Pin lifetime
         retry:             Number of retries: <0 is no retries, 0 is server default, >0 is whatever value is passed
         metadata:          Metadata to bind to the job
@@ -132,6 +135,7 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         sid:               Specific id given by the client
         s3alternate:       Use S3 alternate url schema
         nostreams:         Number of streams
+        buffer_size:       Tcp buffer size (in bytes) that will be used for the given transfer-job
 
     Returns:
         An initialized dictionary representing a job
@@ -144,16 +148,22 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
     if isinstance(verify_checksum, basestring):
             if not verify_checksum in ('source','target','both', 'none'):
                 raise ClientError('Bad request: verify_checksum does not contain a valid value')
+    
+    if overwrite != False and overwrite_on_retry != False:
+        raise ClientError('Bad request: overwrite and overwrite-on-retry can not be used at the same time')
+
     params = dict(
         verify_checksum=verify_checksum,
         reuse=reuse,
         spacetoken=spacetoken,
         bring_online=bring_online,
         archive_timeout=archive_timeout,
+        dst_file_report=dst_file_report,
         copy_pin_lifetime=copy_pin_lifetime,
         job_metadata=metadata,
         source_spacetoken=source_spacetoken,
         overwrite=overwrite,
+        overwrite_on_retry=overwrite_on_retry,
         multihop=multihop,
         retry=retry,
         retry_delay=retry_delay,
@@ -164,7 +174,8 @@ def new_job(transfers=None, deletion=None, verify_checksum=False, reuse=None, ov
         id_generator=id_generator,
         sid=sid,
         s3alternate=s3alternate,
-        nostreams=nostreams
+        nostreams=nostreams,
+        buffer_size=buffer_size
     )
     job = dict(
         files=transfers,

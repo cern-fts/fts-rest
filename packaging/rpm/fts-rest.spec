@@ -4,21 +4,21 @@
 %{!?nosetest_path: %global nosetest_path "/tmp"}
 
 Name:           fts-rest
-Version:        3.10.1
+Version:        3.11.0
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
 Group:          Applications/Internet
 License:        ASL 2.0
-URL:            http://fts3-service.web.cern.ch/
+URL:            https://fts.web.cern.ch/
 # The source for this package was pulled from upstream VCS.
 # Use the following commands to generate the tarball:
-# git clone https://gitlab.cern.ch/fts/fts-rest.git -b master --depth 1 fts-rest-3.10.0
-# cd fts-rest-3.10.0
-# git checkout v3.10.0
+# git clone https://gitlab.cern.ch/fts/fts-rest.git -b master --depth 1 fts-rest-3.11.0
+# cd fts-rest-3.11.0
+# git checkout v3.11.0
 # git submodule init && git submodule update
 # cd ..
-# tar -vczf fts-rest-3.10.0.tar.gz --exclude-vcs fts-rest-3.10.0
+# tar -vczf fts-rest-3.11.0.tar.gz --exclude-vcs fts-rest-3.11.0
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  gfal2-python
@@ -350,6 +350,10 @@ EOF
 
 
 %changelog
+* Wed Sep 22 2021 Mihai Patrascoiu <mihai.patrascoiu@cern.ch> - 3.11.0-1
+- New Minor release
+- Destination file report feature
+
 * Fri Feb 12 2021 Mihai Patrascoiu <mihai.patrascoiu@cern.ch> - 3.10.1-1
 - New bugfix release
 

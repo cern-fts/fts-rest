@@ -30,6 +30,7 @@ from fts3.rest.client import Submitter, Delegator, Inquirer
 DEFAULT_PARAMS = {
     'checksum': 'ADLER32',
     'overwrite': False,
+    'overwrite_on_retry': False,
     'reuse': False,
     'job_metadata': None,
     'file_metadata': None,
@@ -41,6 +42,7 @@ DEFAULT_PARAMS = {
     'copy_pin_lifetime': -1,
     'bring_online': -1,
     'archive_timeout': -1,
+    'dst_file_report': False,
     'timeout': None,
     'fail_nearline': False,
     'retry': 0,
@@ -50,7 +52,8 @@ DEFAULT_PARAMS = {
     's3alternate': False,
     'target_qos': None,
     'ipv4': False,
-    'ipv6': False
+    'ipv6': False,
+    'buffer_size': None
 }
 
 def _metadata(data):
@@ -120,6 +123,8 @@ class JobSubmitter(Base):
                                    help='delegate the proxy when the remote lifetime is less than this value (in minutes)')
         self.opt_parser.add_option('-o', '--overwrite', dest='overwrite', action='store_true',
                                    help='overwrite files.')
+        self.opt_parser.add_option('--overwrite-on-retry', dest='overwrite_on_retry', action='store_true',
+                                   help='enable overwrite files only during FTS retries.')
         self.opt_parser.add_option('-r', '--reuse', dest='reuse', action='store_true',
                                    help='enable session reuse for the transfer job.')
         self.opt_parser.add_option('--job-metadata', dest='job_metadata',
@@ -144,6 +149,8 @@ class JobSubmitter(Base):
                                    help='bring online timeout in seconds.')
         self.opt_parser.add_option('--archive-timeout', dest='archive_timeout', type='long',
                                    help='archive timeout in seconds.')
+        self.opt_parser.add_option('--dst-file-report', dest='dst_file_report', default=False, action='store_true',
+                                   help='report on the destination tape file if it already exists and overwrite is off.')
         self.opt_parser.add_option('--timeout', dest='timeout', type='long',
                                    help='transfer timeout in seconds.')
         self.opt_parser.add_option('--fail-nearline', dest='fail_nearline', action='store_true',
@@ -169,6 +176,8 @@ class JobSubmitter(Base):
                                    help='use S3 alternate URL')
         self.opt_parser.add_option('--target-qos', dest='target_qos', type='string',
                                    help='define the target QoS for this transfer for CDMI endpoints')
+        self.opt_parser.add_option('--buffer-size', '--buff-size', dest='buffer_size', type=int,
+                                    help="TCP buffer size (expressed in bytes) that will be used for the given transfer job")
 
     def validate(self):
         self.checksum = None
@@ -187,6 +196,8 @@ class JobSubmitter(Base):
         self._prepare_options()
         if self.params['ipv4'] and self.params['ipv6']:
             self.opt_parser.error('ipv4 and ipv6 can not be used at the same time')
+        if self.params['overwrite'] and self.params['overwrite_on_retry']:
+            self.opt_parser.error('overwrite and overwrite-on-retry can not be used at the same time')
 
     def _build_transfers(self):
         if self.options.bulk_file:
@@ -241,6 +252,7 @@ class JobSubmitter(Base):
             checksum=self.checksum,
             bring_online=self.options.bring_online,
             archive_timeout=self.options.archive_timeout,
+            dst_file_report=self.options.dst_file_report,
             timeout = self.options.timeout,
             verify_checksum=checksum_mode[0],
             spacetoken=self.options.destination_token,
@@ -251,6 +263,7 @@ class JobSubmitter(Base):
             gridftp=self.options.gridftp_params,
             job_metadata=self.options.job_metadata,
             overwrite=self.options.overwrite,
+            overwrite_on_retry=self.options.overwrite_on_retry,
             copy_pin_lifetime=self.options.pin_lifetime,
             reuse=self.options.reuse,
             retry=self.options.retry,
@@ -260,7 +273,8 @@ class JobSubmitter(Base):
             ipv4=self.options.ipv4,
             ipv6=self.options.ipv6,
             s3alternate=self.options.s3alternate,
-            target_qos=self.options.target_qos
+            target_qos=self.options.target_qos,
+            buffer_size=self.options.buffer_size
         )
 
     def _do_submit(self, context):

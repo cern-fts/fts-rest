@@ -47,6 +47,8 @@ DEFAULT_PARAMS = {
     'gridftp': '',
     'job_metadata': None,
     'overwrite': False,
+    'dst_file_report': False,
+    'overwrite_on_retry': False,
     'reuse': None,
     'multihop': False,
     'source_spacetoken': '',
@@ -292,6 +294,8 @@ def _seconds_from_value(value):
             return int(value) * 60
         elif suffix == 'h':
             return int(value) * 3600
+        elif suffix == 'd':
+            return int(value) * 3600 * 24
         else:
             return None
     except:
@@ -446,6 +450,8 @@ class JobBuilder(object):
                 activity=file_dict.get('activity', 'default'),
                 hashed_id=shared_hashed_id if shared_hashed_id else _generate_hashed_id()
             )
+            if f['file_metadata'] != None:
+                f['file_metadata'] = _metadata(f['file_metadata'])
             self.files.append(f)
 
     def _apply_selection_strategy(self):
@@ -462,7 +468,7 @@ class JobBuilder(object):
         """
 
         job_type = None
-        log.debug("job type is " + str(job_type)+ " reuse"+ str(self.params['reuse']))
+        log.debug("job_type=" + str(job_type) + " reuse=" + str(self.params['reuse']))
 
         if self.params['multihop']:
             job_type = 'H'
@@ -471,7 +477,7 @@ class JobBuilder(object):
                 job_type = 'Y'
             else:
                 job_type = 'N'
-        log.debug("job type is " + str(job_type))
+        log.debug("job_type=" + str(job_type))
         self.is_bringonline = self.params['copy_pin_lifetime'] > 0 or self.params['bring_online'] > 0
 
         self.is_qos_cdmi_transfer = (self.params['target_qos'] if 'target_qos' in self.params.keys() else None) is not None
@@ -488,6 +494,22 @@ class JobBuilder(object):
         if max_time_in_queue is not None:
             expiration_time = time.time() + max_time_in_queue
 
+        if max_time_in_queue is not None and self.params['bring_online'] > 0:
+            # Ensure that the bringonline and expiration delta is respected
+            timeout_delta = _seconds_from_value(
+                pylons.config.get('fts3.BringOnlineAndExpirationDelta', None))
+            if timeout_delta is not None:
+                log.debug("Will enforce BringOnlineAndExpirationDelta=" + str(timeout_delta) + "s")
+                if max_time_in_queue - self.params['bring_online'] < timeout_delta:
+                    raise HTTPBadRequest('Bringonline and Expiration timeout must be at least ' + str(timeout_delta) + ' seconds apart')
+
+        if self.params['overwrite']:
+            overwrite_flag = 'Y'
+        elif self.params['overwrite_on_retry']:
+            overwrite_flag = 'R'
+        else:
+            overwrite_flag = False
+
         self.job = dict(
             job_id=self.job_id,
             job_state=job_initial_state,
@@ -503,7 +525,8 @@ class JobBuilder(object):
             submit_time=datetime.utcnow(),
             priority=max(min(int(self.params['priority']), 5), 1),
             space_token=self.params['spacetoken'],
-            overwrite_flag=_safe_flag(self.params['overwrite']),
+            dst_file_report=_safe_flag(self.params['dst_file_report']),
+            overwrite_flag=overwrite_flag,
             source_space_token=self.params['source_spacetoken'],
             copy_pin_lifetime=int(self.params['copy_pin_lifetime']),
             checksum_method=self.params['verify_checksum'],
@@ -582,13 +605,13 @@ class JobBuilder(object):
             raise HTTPBadRequest('Reuse jobs can only contain transfers for the same source and destination storage')
 
         if job_type == 'Y' and (self.job['source_se'] and self.job['dest_se']) and len(self.files) > min_reuse_files:
-            self.job['job_type'] == 'Y'
+            self.job['job_type'] = 'Y'
 
         if job_type == 'N' and not self.is_multiple:
             self.job['job_type'] = 'N'
 
         auto_session_reuse= pylons.config.get('fts3.AutoSessionReuse', 'false')
-        log.debug("AutoSessionReuse is "+ str(auto_session_reuse) + " job_type is" + str(job_type))
+        log.debug("AutoSessionReuse=" + str(auto_session_reuse) + " job_type=" + str(job_type))
         max_reuse_files = int(pylons.config.get('fts3.AutoSessionReuseMaxFiles', 1000))
         max_size_small_file = int(pylons.config.get('fts3.AutoSessionReuseMaxSmallFileSize', 104857600)) #100MB
         max_size_big_file = int(pylons.config.get('fts3.AutoSessionReuseMaxBigFileSize', 1073741824)) #1GB
@@ -597,8 +620,8 @@ class JobBuilder(object):
         if auto_session_reuse == 'true' and not self.is_multiple and not self.is_bringonline and len(self.files) > min_reuse_files:
             if ((self.job['source_se']) and (self.job['dest_se']) and (job_type is None) and (len(self.files) > 1)):
                 if len(self.files) > max_reuse_files:
-                    self.job['job_type'] == 'N'
-                    log.debug("The number of files "+str(len(self.files))+"is bigger than the auto maximum reuse files "+str(max_reuse_files))
+                    self.job['job_type'] = 'N'
+                    log.debug("The number of files " + str(len(self.files)) + " is bigger than the auto maximum reuse files " + str(max_reuse_files))
                 else:
                     small_files = 0
                     big_files = 0
@@ -612,7 +635,7 @@ class JobBuilder(object):
                                 big_files +=1
                     if small_files > min_small_files and big_files <= max_big_files:
                         self.job['job_type'] = 'Y'
-                        log.debug("Reuse jobs with "+str(small_files)+" small files up to "+str(len(self.files))+" total files")
+                        log.debug("Reuse jobs with " + str(small_files) + " small files up to " + str(len(self.files)) + " total files")
                         # Need to reset their hashed_id so they land on the same machine
                         shared_hashed_id = _generate_hashed_id()
                         for file in self.files:
@@ -641,6 +664,7 @@ class JobBuilder(object):
             priority=3,
             space_token=self.params['spacetoken'],
             overwrite_flag='N',
+            dst_file_report='N',
             source_space_token=self.params['source_spacetoken'],
             copy_pin_lifetime=-1,
             checksum_method=None,

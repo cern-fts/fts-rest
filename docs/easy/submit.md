@@ -43,6 +43,7 @@ Note that _all_ parameters are optional.
 * **verify_checksum**   Enable checksum verification or indicate source, target, both or none checksum mode.
 * **reuse**             Enable reuse (all transfers are handled by the same process)
 * **overwrite**         Overwrite the destinations if exist
+* **overwrite_on_retry** Enable overwrite files only during FTS retries
 * **multihop**          Treat the transfer as a multihop transfer
 * **source_spacetoken** Source space token
 * **spacetoken**        Destination space token
@@ -55,6 +56,7 @@ Note that _all_ parameters are optional.
 * **sid** 				Specific id given by the user to be used with the deterministic job id generator algorithm
 * **max_time_in_queue** Max time the job can be on the queue. Accepts an integer without suffix (interpreted as hours), or with a suffix s (seconds), m (minutes) or h (hours). e.g `60s`
 * **priority**          Job priority. It should be a number between 1 and 5. The higher the number, the higher the priority.
+* **buffer_size**		TCP buffer size (in bytes) that will be used for the given transfer job
 
 ### Returns:
 A dictionary representing a new job submission
