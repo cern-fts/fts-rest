@@ -32,10 +32,11 @@ import logging
 from fts3.model import Job, File, JobActiveStates, FileActiveStates
 from fts3.model import DataManagement, DataManagementActiveStates
 from fts3.model import Credential, FileRetryLog
+from fts3.model import CloudStorage, CloudStorageUser
 from fts3rest.lib.JobBuilder import JobBuilder
 from fts3rest.lib.api import doc
 from fts3rest.lib.base import BaseController, Session
-from fts3rest.lib.helpers import jsonify, get_input_as_dict
+from fts3rest.lib.helpers import jsonify, get_input_as_dict, swift
 from fts3rest.lib.http_exceptions import *
 from fts3rest.lib.middleware.fts3auth import authorize, authorized
 from fts3rest.lib.middleware.fts3auth.constants import *
@@ -62,6 +63,22 @@ def _multistatus(responses, start_response, expecting_multistatus=False):
             start_response("207 Multi-Status", [('Content-Type', 'application/json')])
             break
     return responses
+
+
+def _set_swift_credentials(se_url, user_dn, access_token):
+    storage_name = 'SWIFT:' + se_url[se_url.rfind('/') + 1:]
+    cloud_user = Session.query(CloudStorageUser).filter_by(user_dn=user_dn, storage_name=storage_name).one()
+    cloud_storage = Session.query(CloudStorage).get(storage_name)
+    if cloud_user and cloud_storage:
+        try:
+            cloud_user = swift.get_os_token(cloud_user, access_token, cloud_storage)
+            Session.merge(cloud_user)
+            Session.commit()
+        except Exception as ex:
+            log.warning("Failed to retrieve OS token for dn: %s because: %s" % (user_dn, str(ex)))
+            Session.rollback()
+    else:
+        log.info("Error retrieving cloud user %s for storage %s", (user_dn, storage_name))
 
 
 class JobsController(BaseController):
@@ -552,6 +569,15 @@ class JobsController(BaseController):
         populated = JobBuilder(user, **submitted_dict)
 
         log.info("%s (%s) is submitting a transfer job" % (user.user_dn, user.vos[0]))
+
+        # Exchange access token for OS token(s) for swift stores
+        source_se = populated.job['source_se']
+        dest_se = populated.job['dest_se']
+        access_token = credential.proxy[:credential.proxy.find(':')]
+        if source_se[:5] == 'swift':
+            _set_swift_credentials(source_se, user.user_dn, access_token)
+        if dest_se[:5] == 'swift' and dest_se != source_se:
+            _set_swift_credentials(dest_se, user.user_dn, access_token)
 
         # Insert the job
         try:

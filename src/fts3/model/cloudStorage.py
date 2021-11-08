@@ -25,6 +25,8 @@ class CloudStorage(Base):
     app_key         = Column(String(255))
     app_secret      = Column(String(255))
     service_api_url = Column(String(1024))
+    keystone_url    = Column(String(255))
+    keystone_idp    = Column(String(50))
 
 
 class CloudStorageUser(Base):
