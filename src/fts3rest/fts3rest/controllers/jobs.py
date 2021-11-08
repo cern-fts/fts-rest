@@ -66,6 +66,9 @@ def _multistatus(responses, start_response, expecting_multistatus=False):
 
 
 def _set_swift_credentials(se_url, user_dn, access_token):
+    """
+    Retrieve and save OS token for accessing Swift object store
+    """
     storage_name = 'SWIFT:' + se_url[se_url.rfind('/') + 1:]
     cloud_user = Session.query(CloudStorageUser).filter_by(user_dn=user_dn, storage_name=storage_name).one()
     cloud_storage = Session.query(CloudStorage).get(storage_name)

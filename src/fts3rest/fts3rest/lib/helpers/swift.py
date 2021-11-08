@@ -23,6 +23,9 @@ log = logging.getLogger(__name__)
 
 
 def get_os_token(cloud_user, access_token, cloud_storage):
+    """
+    Get an OS token using an OIDC access token for the cloud storage (in particular, Swift) user
+    """
     project_id = cloud_user.os_project_id
 
     keystone_auth = v3.oidc.OidcAccessToken(auth_url=cloud_storage.keystone_url,
@@ -33,7 +36,7 @@ def get_os_token(cloud_user, access_token, cloud_storage):
     sess = session.Session(auth=keystone_auth)
     try:
         os_token = sess.get_token()
-        log.debug("retrieved OS token %s" % os_token)
+        log.debug("Retrieved OS token %s" % os_token)
         cloud_user.os_token = os_token
     except Exception as ex:
         log.warning("Failed to retrieve OS token because: %s" % str(ex))
