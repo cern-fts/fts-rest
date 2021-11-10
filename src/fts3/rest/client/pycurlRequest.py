@@ -129,7 +129,7 @@ class PycurlRequest(object):
         elif method == 'PUT':
             self.curl_handle.setopt(pycurl.UPLOAD, True)
 
-        _headers = {'Accept': 'application/json', "User-Agent": "fts-rest-client/3.11.0"}
+        _headers = {'Accept': 'application/json'}
         if headers:
             _headers.update(headers)
         if self.access_token:

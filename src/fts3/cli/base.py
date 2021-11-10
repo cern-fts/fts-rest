@@ -23,7 +23,7 @@ import socket
 import sys
 
 from fts3.rest.client import Context
-
+from fts3 import __version__ as CLIENT_VERSION
 
 CONFIG_FILENAMES = [
     '/etc/fts3/fts3client.cfg',
@@ -138,7 +138,8 @@ class Base(object):
         raise NotImplementedError('Run method not implemented in %s' % type(self).__name__)
 
     def _create_context(self):
+        user_agent = "fts-rest-cli/" + CLIENT_VERSION
         return Context(
             self.options.endpoint, ukey=self.options.ukey, ucert=self.options.ucert, verify=self.options.verify,
-            access_token=self.options.access_token, capath=self.options.capath
+            access_token=self.options.access_token, capath=self.options.capath, user_agent=user_agent
         )
