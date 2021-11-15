@@ -18,8 +18,18 @@
 from keystoneauth1 import session, exceptions
 from keystoneauth1.identity import v3
 import logging
+from datetime import datetime, timedelta
 
 log = logging.getLogger(__name__)
+
+
+def _set_swift_credential_cache(cred, cloud_user, os_token):
+    cred['user_dn'] = cloud_user.user_dn
+    cred['os_project_id'] = cloud_user.os_project_id
+    cred['storage_name'] = cloud_user.storage_name
+    cred['os_token'] = os_token
+    cred['os_token_recvtime'] = datetime.utcnow()
+    return cred
 
 
 def get_os_token(cloud_user, access_token, cloud_storage):
@@ -27,6 +37,7 @@ def get_os_token(cloud_user, access_token, cloud_storage):
     Get an OS token using an OIDC access token for the cloud storage (in particular, Swift) user
     """
     project_id = cloud_user.os_project_id
+    cloudcredential = dict()
 
     keystone_auth = v3.oidc.OidcAccessToken(auth_url=cloud_storage.keystone_url,
                                             identity_provider=cloud_storage.keystone_idp,
@@ -36,8 +47,8 @@ def get_os_token(cloud_user, access_token, cloud_storage):
     sess = session.Session(auth=keystone_auth)
     try:
         os_token = sess.get_token()
+        cloudcredential = _set_swift_credential_cache(cloudcredential, cloud_user, os_token)
         log.debug("Retrieved OS token %s" % os_token)
-        cloud_user.os_token = os_token
     except Exception as ex:
         log.warning("Failed to retrieve OS token because: %s" % str(ex))
-    return cloud_user
+    return cloudcredential

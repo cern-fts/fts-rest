@@ -13,7 +13,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String, ForeignKey, DateTime
+from datetime import datetime, timedelta
 
 from base import Base
 
@@ -48,3 +49,19 @@ class CloudStorageUser(Base):
 
     def is_registered(self):
         return not (self.access_token is None or self.access_token_secret is None)
+
+
+class CloudCredentialCache(Base):
+    __tablename__ = 't_cloudCredentialCache'
+
+    user_dn              = Column(String(700), primary_key=True)
+    storage_name         = Column(String(150), ForeignKey('t_cloudStorage.cloudStorage_name'),
+                                  primary_key=True, name='cloudStorage_name')
+    os_project_id        = Column(String(255), primary_key=True)
+    os_token             = Column(String(255))
+    os_token_recvtime    = Column(DateTime(timezone=True))
+
+    def os_token_is_expired(self):
+        if self.os_token_recvtime:
+            return datetime.utcnow() - self.os_token_recvtime >= timedelta(hours=6)
+        return False
