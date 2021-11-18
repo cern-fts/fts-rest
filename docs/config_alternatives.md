@@ -159,6 +159,7 @@ Where `config.json` is a json with the following parameters
             "ipv6": 1,
             "udt": 1,
             "debug_level": 3,
+            "eviction": 1,
             "inbound_max_active": 55,
             "oubound_max_active": 100,
             "inbound_max_throughput": 500,

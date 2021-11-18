@@ -54,6 +54,10 @@
 									<label>Debug Level</label>
 									<input id="debug_level_hidden" class="form-control" name="debug_level" type="number" min="0" max="3" value="{{se_info.debug_level}}"/>
 								</div>
+								<div class="form-group">
+									<label>Eviction</label>
+									<input id="eviction_hidden" class="form-control" type="number" name="eviction" value="{{se_info.eviction}}" min="0" max="1"/>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -186,6 +190,10 @@
 								<label for="debug_level">Debug Level</label> <input
 								class="form-control" name="debug_level" id="debug_level"
 								type="number" min="0" max="3"/>
+							</div>
+							<div class="form-group">
+								<label for="eviction">Eviction</label>
+								<input class="form-control" name="eviction" id="eviction" type="number" min="0" max="1"/> 
 							</div>
 						</div>
 					</div>
