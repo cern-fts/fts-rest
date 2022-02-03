@@ -4,7 +4,7 @@
 %{!?nosetest_path: %global nosetest_path "/tmp"}
 
 Name:           fts-rest
-Version:        3.11.0
+Version:        3.11.1
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        FTS3 Rest Interface
@@ -350,6 +350,9 @@ EOF
 
 
 %changelog
+* Thu Feb 03 2022 Joao Lopes <joao.pedro.batista.lopes@cern.ch> - 3.11.1-1
+- New patch release
+
 * Wed Sep 22 2021 Mihai Patrascoiu <mihai.patrascoiu@cern.ch> - 3.11.0-1
 - New Minor release
 - Destination file report feature

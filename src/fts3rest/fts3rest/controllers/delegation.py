@@ -235,6 +235,7 @@ class DelegationController(BaseController):
         if not cred:
             return None
         else:
+            log.info("dlg_id={} termination_time=\"{}\"".format(dlg_id, cred.termination_time))
             return {
                 'termination_time': cred.termination_time,
                 'voms_attrs': cred.voms_attrs.split('\n')

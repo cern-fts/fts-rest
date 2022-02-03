@@ -97,6 +97,9 @@ class JobsController(BaseController):
     def index(self):
         """
         Get a list of active jobs, or those that match the filter requirements
+
+        To prevent heavy queries, only non-terminal (e.g.: ACTIVE) jobs are listed.
+        If 'state_in' argument is requested, make sure to also provide either 'limit' or 'time_window' to get completed jobs
         """
         user = request.environ['fts3.User.Credentials']
 

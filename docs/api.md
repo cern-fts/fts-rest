@@ -1119,6 +1119,9 @@ Get a list of active jobs, or those that match the filter requirements
 ##### Returns
 Array of [Job](#job)
 
+##### Notes
+To prevent heavy queries, only non-terminal (e.g.: ACTIVE) jobs are listed.<br/>If 'state_in' argument is requested, make sure to also provide either 'limit' or 'time_window' to get completed jobs
+
 ##### Query arguments
 
 |Name       |Type  |Required|Description                                                         |
@@ -1145,6 +1148,9 @@ Get a list of active jobs, or those that match the filter requirements
 
 ##### Returns
 Array of [Job](#job)
+
+##### Notes
+To prevent heavy queries, only non-terminal (e.g.: ACTIVE) jobs are listed.<br/>If 'state_in' argument is requested, make sure to also provide either 'limit' or 'time_window' to get completed jobs
 
 ##### Query arguments
 
@@ -1561,6 +1567,7 @@ Models
 |-------------------|--------|
 |cred_id            |string  |
 |user_dn            |string  |
+|dst_file_report    |boolean |
 |retry              |integer |
 |job_id             |string  |
 |cancel_job         |boolean |
@@ -1586,7 +1593,7 @@ Models
 |target_qos         |string  |
 |verify_checksum    |string  |
 |job_finished       |dateTime|
-|overwrite_flag     |boolean |
+|overwrite_flag     |string  |
 
 ### Job
 
@@ -1595,6 +1602,7 @@ Models
 |cred_id            |string  |
 |user_dn            |string  |
 |job_type           |string  |
+|dst_file_report    |boolean |
 |retry              |integer |
 |job_id             |string  |
 |cancel_job         |boolean |
@@ -1620,7 +1628,7 @@ Models
 |target_qos         |string  |
 |verify_checksum    |string  |
 |job_finished       |dateTime|
-|overwrite_flag     |boolean |
+|overwrite_flag     |string  |
 
 ### File
 

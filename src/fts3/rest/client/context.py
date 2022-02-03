@@ -17,6 +17,8 @@
 
 from datetime import datetime
 from M2Crypto import X509, RSA, EVP, BIO
+from fts3 import __version__ as CLIENT_VERSION
+
 try:
     from M2Crypto.ASN1 import UTC
 except:
@@ -145,11 +147,18 @@ class Context(object):
             raise BadEndpoint("%s (%s)" % (self.endpoint, str(e))), None, sys.exc_info()[2]
         return endpoint_info
 
+    def _set_user_agent(self, user_agent=None):
+        if user_agent is None:
+            self.user_agent = 'fts-python-bindings/' + CLIENT_VERSION
+        else:
+            self.user_agent = user_agent
+
     def __init__(self, endpoint, ucert=None, ukey=None, verify=True, access_token=None, no_creds=False, capath=None,
-                 request_class=PycurlRequest, connectTimeout=30, timeout=30):
+                 request_class=PycurlRequest, connectTimeout=30, timeout=30, user_agent=None):
         self.passwd = None
         self.access_method = None
 
+        self._set_user_agent(user_agent)
         self._set_endpoint(endpoint)
         if no_creds:
             self.ucert = self.ukey = self.access_token = None
@@ -180,21 +189,24 @@ class Context(object):
             query = '&'.join(map(lambda (k, v): "%s=%s" % (k, urllib.quote(v)), args.iteritems()))
             path += '?' + query
         return self._requester.method('GET',
-                                      "%s/%s" % (self.endpoint, path))
+                                      "%s/%s" % (self.endpoint, path),
+                                      headers = {'User-Agent': self.user_agent})
 
     def put(self, path, body):
         return self._requester.method('PUT',
                                       "%s/%s" % (self.endpoint, path),
-                                      body)
+                                      body = body, headers = {'User-Agent': self.user_agent})
 
     def delete(self, path):
         return self._requester.method('DELETE',
-                                      "%s/%s" % (self.endpoint, path))
+                                      "%s/%s" % (self.endpoint, path),
+                                      headers = {'User-Agent': self.user_agent})
 
     def post_json(self, path, body):
         if not isinstance(body, str) and not isinstance(body, unicode):
             body = json.dumps(body)
+        headers = {'Content-Type': 'application/json', 'User-Agent': self.user_agent}
         return self._requester.method('POST',
                                       "%s/%s" % (self.endpoint, path),
-                                      body,
-                                      headers={'Content-Type': 'application/json'})
+                                      body = body,
+                                      headers = headers)
