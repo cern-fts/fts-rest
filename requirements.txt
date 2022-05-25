@@ -81,7 +81,7 @@ Pygments==1.4
 pygobject==3.22.0
 pygpgme==0.3
 pyjwkest==1.4.2
-PyJWT==1.7.1
+PyJWT==2.4.0
 pyliblzma==0.5.3
 Pylons==1.0.1
 pyOpenSSL==0.13.1
