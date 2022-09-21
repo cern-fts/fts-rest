@@ -43,7 +43,7 @@ Jinja2==2.7.2
 jsonpatch==1.2
 jsonpointer==1.9
 jsonschema==2.5.1
-jwcrypto==0.6.0
+jwcrypto==1.4
 kerberos==1.1
 kitchen==1.1.1
 lxml==3.2.1
