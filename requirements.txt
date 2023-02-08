@@ -18,7 +18,7 @@ collectd-yum==1.3.0
 colorama==0.4.1
 configobj==4.7.2
 configparser==0.0.0
-cryptography==1.7.2
+cryptography==39.0.1
 decorator==3.4.0
 defusedxml==0.6.0
 dirq==1.7.1
